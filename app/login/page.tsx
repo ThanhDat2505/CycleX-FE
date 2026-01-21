@@ -70,7 +70,7 @@ export default function LoginPage() {
                 </header>
 
                 {/* ===== LOGIN FORM ===== */}
-                <form className="space-y-6" onSubmit={handleSubmit}>
+                <form className="space-y-6" method="post" onSubmit={handleSubmit}>
                     {/* Error Message */}
                     {error && (
                         <div className="bg-red-50 border-2 border-red-200 text-red-800 px-4 py-3 rounded-lg text-sm font-medium">
