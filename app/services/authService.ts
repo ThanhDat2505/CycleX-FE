@@ -13,27 +13,31 @@ export const authService = {
      * @param password - User password
      * @param rememberMe - Whether to remember the user
      * @returns Promise with login response
+     * async báo hiệu có thể dùng await, gọi APi mất thời gian, không block code khác, đợi kết quả rồi mới chạy
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
+        // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {
+            // chờ việc gọi API
             const response = await fetch(`${API_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json', // báo cho sever biết gửi data kiểu json
                 },
                 body: JSON.stringify({ email, password, rememberMe } as LoginRequest),
+                // chuyển object thành json rồi ép kiểu loginRequest
             });
 
             if (!response.ok) {
-                const error: AuthError = await response.json();
-                throw error;
+                const error: AuthError = await response.json(); // đợi parse JSON body thành kiểu AuthError
+                throw error; // ném lỗi, nhảy và catch
             }
 
-            const data: LoginResponse = await response.json();
+            const data: LoginResponse = await response.json(); // đợi parse JSON body thành kiểu LoginResponse
 
             // Save token if login successful
             if (data.token) {
-                this.saveToken(data.token);
+                authService.saveToken(data.token); // nếu có token thì lưu vào localStorage
             }
 
             return data;
@@ -46,8 +50,8 @@ export const authService = {
      * Save authentication token to localStorage
      * @param token - JWT token from backend
      */
-    saveToken: (token: string): void => {
-        if (typeof window !== 'undefined') {
+    saveToken: (token: string): void => { // hàm không return
+        if (typeof window !== 'undefined') { //next render code ở server nên không có window, chỉ browser mới có window
             localStorage.setItem('authToken', token);
         }
     },
@@ -56,7 +60,7 @@ export const authService = {
      * Get authentication token from localStorage
      * @returns Token string or null
      */
-    getToken: (): string | null => {
+    getToken: (): string | null => { // return string or null
         if (typeof window !== 'undefined') {
             return localStorage.getItem('authToken');
         }
@@ -77,6 +81,6 @@ export const authService = {
      * @returns boolean
      */
     isAuthenticated: (): boolean => {
-        return !!authService.getToken();
+        return !!authService.getToken(); // nếu có token thì return true, không có thì return false
     },
 };

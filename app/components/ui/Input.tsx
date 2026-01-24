@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 
-interface InputProps {
+interface InputProps { // interface là định dạng kiểu dữ liệu
     label: string;
     id: string;
-    type?: string;
+    type?: string; // dấu ? có nghĩa là optional
     value: string;
     onChange: (value: string) => void;
     disabled?: boolean;
@@ -24,10 +24,11 @@ export function Input({
     placeholder,
     error,
     className = ''
-}: InputProps) {
+}: InputProps) { //objec truyền vào bắt buộc phải tuân thủ interface InputProps
     const [showPassword, setShowPassword] = useState(false);
-    const isPasswordField = type === 'password';
+    const isPasswordField = type === 'password'; //Kiểm tra có phải password field không
     const inputType = isPasswordField && showPassword ? 'text' : type;
+    // nếu là password và tick vào show thì sẽ hiện password, còn không thì ***
 
     return (
         <div className={className}>
@@ -40,10 +41,10 @@ export function Input({
             <div className="relative">
                 <input
                     id={id}
-                    type={inputType}
+                    type={inputType} // dùng inout type là do có chỗ kiểm xem password có show không
                     value={value}
-                    onChange={(e) => onChange(e.target.value)}
-                    disabled={disabled}
+                    onChange={(e) => onChange(e.target.value)} // onChange của props là set, update
+                    disabled={disabled} // nếu là isloading = true thì không được nhập
                     placeholder={placeholder}
                     className={`
                         w-full px-4 py-3 border rounded-lg 
@@ -52,21 +53,41 @@ export function Input({
                         ${isPasswordField ? 'pr-12' : ''}
                         ${error ? 'border-red-500' : 'border-gray-300'}
                         ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
-                    `}
+                    `} // tailwindcss
+                /** 
+                 *  w-full - Width 100% (chiếm hết chiều rộng)
+                px-4 - Padding left/right = 16px (1rem)
+                py-3 - Padding top/bottom = 12px (0.75rem)
+                border - Viền 1px
+                rounded-lg - Bo góc lớn (8px) 
+                
+                focus:ring-2 - Khi focus → Hiện ring (vòng sáng) 2px
+                focus:ring-orange-500 - Ring màu cam
+                focus:border-orange-500 - Border màu cam
+
+                outline-none - Tắt outline mặc định của browser 
+                transition-all - Smooth transition cho tất cả thay đổi
+
+                Nếu isPasswordField = true → Thêm class pr-12, padding right = 12px
+                Nếu isPasswordField = false → Không thêm gì
+
+                Nếu disabled → Background xám + Cursor "not-allowed"
+                Nếu không disabled → Background trắng   
+                */
                 />
-                {isPasswordField && (
+                {isPasswordField && ( // nếu là input password thì mới có icon show/hide
                     <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
                         tabIndex={-1}
                     >
-                        {showPassword ? (
+                        {showPassword ? ( // nếu showPassword = true thì hiện icon hide
                             // Eye slash icon (hide)
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
                             </svg>
-                        ) : (
+                        ) : ( // nếu showPassword = false thì hiện icon show
                             // Eye icon (show)
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

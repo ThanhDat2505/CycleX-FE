@@ -1,12 +1,13 @@
-'use client';
-
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
+'use client'; //Báo cho Next.js biết: "File này chạy ở phía client (browser), không phải server"
+// bởi vì dùng useState (chỉ chạy được ở browser)
+import { useState } from 'react'; // giống như biến, nhưng khi thay đổi, react sẽ tự động render lại
+import { useRouter } from 'next/navigation'; // hook của nextjs để điều hướng 
+import Link from 'next/link'; // component để tạo link thay cho a
 import { Input, Button, ErrorMessage, Checkbox } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
 
 export function LoginForm() {
+    // mục đích là lưu email, password, rememberMe, error, isLoading
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -14,7 +15,10 @@ export function LoginForm() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+
+
     // Email validation
+    // tạo hàm, nhận ham số email kiểu string, trả về true/false
     const validateEmail = (email: string): boolean => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
@@ -25,25 +29,29 @@ export function LoginForm() {
         return password.length >= 6;
     };
 
+    // Handel submit
     const handleSubmit = async () => {
+        // xóa thông báo lỗi cũ (nếu có)
         setError('');
 
         // Client-side validation
         if (!email || !password) {
-            setError('Email và mật khẩu là bắt buộc');
+            setError('Email and password are required');
             return;
         }
 
         if (!validateEmail(email)) {
-            setError('Email không hợp lệ');
+            setError('Email is invalid');
             return;
         }
 
         if (!validatePassword(password)) {
-            setError('Mật khẩu phải có ít nhất 6 ký tự');
+            setError('Password must be at least 6 characters long');
             return;
         }
 
+        // nếu không phải return có nghĩa là thỏa điều kiện, để được gửi đi
+        // button sẽ hiện 'đang xử lí' và disabled
         setIsLoading(true);
 
         try {
@@ -52,18 +60,19 @@ export function LoginForm() {
             // router.push('/home');
 
             // Temporary mock for testing
+            // đợi tạo promise để imitate API call sau 1 giây
             await new Promise((resolve) => setTimeout(resolve, 1000));
             router.push('/home');
         } catch (err: any) {
             // Handle API errors
             if (err.status === 401) {
-                setError('Email hoặc mật khẩu không đúng');
+                setError('Email or password is incorrect');
             } else if (err.status === 403) {
-                setError('Tài khoản của bạn đã bị khóa');
+                setError('Your account has been locked');
             } else if (err.status === 404) {
-                setError('Tài khoản không tồn tại');
+                setError('Account not found');
             } else {
-                setError('Đã có lỗi xảy ra. Vui lòng thử lại');
+                setError('An error occurred.Please try again.');
             }
         } finally {
             setIsLoading(false);
@@ -84,7 +93,7 @@ export function LoginForm() {
             />
 
             <Input
-                label="Mật khẩu"
+                label="Password"
                 id="password"
                 type="password"
                 value={password}
@@ -95,7 +104,7 @@ export function LoginForm() {
             <div className="flex items-center justify-between">
                 <Checkbox
                     id="remember"
-                    label="Ghi nhớ đăng nhập"
+                    label="Remember me"
                     checked={rememberMe}
                     onChange={setRememberMe}
                 />
@@ -104,7 +113,7 @@ export function LoginForm() {
                     href="/forgot-password"
                     className="text-sm text-[#FF6B00] hover:underline font-medium"
                 >
-                    Quên mật khẩu?
+                    Forgot password?
                 </Link>
             </div>
 
@@ -113,16 +122,16 @@ export function LoginForm() {
                 loading={isLoading}
                 onClick={handleSubmit}
             >
-                Đăng nhập
+                Login
             </Button>
 
             <div className="text-center mt-4 text-sm text-gray-600">
-                Chưa có tài khoản?{' '}
+                Don't have an account?{' '}
                 <Link
                     href="/register"
                     className="text-[#FF6B00] hover:underline font-semibold"
                 >
-                    Đăng ký ngay
+                    Register now
                 </Link>
             </div>
         </div>
