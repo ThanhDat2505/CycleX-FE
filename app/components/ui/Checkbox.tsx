@@ -14,7 +14,7 @@ export function Checkbox({ id, label, checked, onChange, className = '' }: Check
                 type="checkbox"
                 checked={checked}
                 onChange={(e) => onChange(e.target.checked)}
-                className="w-4 h-4 text-[#FF6B00] bg-gray-100 border-gray-300 rounded focus:ring-[#FF6B00] focus:ring-2 cursor-pointer"
+                className="w-4 h-4 text-brand-primary bg-gray-100 border-gray-300 rounded focus:ring-brand-primary focus:ring-2 cursor-pointer"
             />
             <label
                 htmlFor={id}

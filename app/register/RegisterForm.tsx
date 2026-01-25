@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input, Button, ErrorMessage } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
+import {
+    validateEmail,
+    validatePasswordRegister,
+    validateCccd,
+    validatePhone
+} from '@/app/utils/validation';
+import { handleAuthError } from '@/app/utils/errorHandler';
 
 export function RegisterForm() {
     const router = useRouter();
@@ -20,29 +27,7 @@ export function RegisterForm() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    // Email validation
-    const validateEmail = (email: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
-
-    // Password validation (8-20 characters)
-    const validatePassword = (password: string): boolean => {
-        return password.length >= 8 && password.length <= 20;
-    };
-
-    // CCCD validation (12 digits)
-    const validateCccd = (cccd: string): boolean => {
-        const cccdRegex = /^\d{12}$/;
-        return cccdRegex.test(cccd);
-    };
-
-    // Phone validation (10 digits, starts with 0)
-    const validatePhone = (phone: string): boolean => {
-        if (!phone) return true; // Optional field
-        const phoneRegex = /^0\d{9}$/;
-        return phoneRegex.test(phone);
-    };
+    // Validation functions moved to utils/validation.ts
 
     const handleSubmit = async () => {
         setError('');
@@ -58,7 +43,7 @@ export function RegisterForm() {
             return;
         }
 
-        if (!validatePassword(password)) {
+        if (!validatePasswordRegister(password)) {
             setError('Password must be 8-20 characters long');
             return;
         }
@@ -89,14 +74,8 @@ export function RegisterForm() {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             router.push('/verify-email');
         } catch (err: any) {
-            // Handle API errors
-            if (err.status === 400) {
-                setError(err.message || 'Email already exists');
-            } else if (err.errors?.email) {
-                setError(err.errors.email[0]);
-            } else {
-                setError('An error occurred. Please try again.');
-            }
+            // Use centralized error handler
+            setError(handleAuthError(err));
         } finally {
             setIsLoading(false);
         }
@@ -163,7 +142,7 @@ export function RegisterForm() {
                 Already have an account?{' '}
                 <Link
                     href="/login"
-                    className="text-[#FF6B00] hover:underline font-semibold"
+                    className="text-brand-primary hover:underline font-semibold"
                 >
                     Login now
                 </Link>
@@ -171,5 +150,3 @@ export function RegisterForm() {
         </div>
     );
 }
-
-export default RegisterForm;

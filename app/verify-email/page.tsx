@@ -4,7 +4,7 @@ import { Button } from '@/app/components/ui';
 
 export default function VerifyEmailPage() {
     return (
-        <div className="min-h-screen flex items-center justify-center px-4 bg-[#1A2332]">
+        <div className="min-h-screen flex items-center justify-center px-4 bg-brand-bg">
             <AuthCard title="Verify Your Email">
                 <div className="space-y-6 text-center">
                     {/* Success Icon */}
@@ -44,7 +44,7 @@ export default function VerifyEmailPage() {
 
                         <p className="text-sm text-gray-600">
                             Didn't receive the email?{' '}
-                            <button className="text-[#FF6B00] hover:underline font-semibold">
+                            <button className="text-brand-primary hover:underline font-semibold">
                                 Resend
                             </button>
                         </p>

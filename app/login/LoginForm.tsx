@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'; // hook của nextjs để điều 
 import Link from 'next/link'; // component để tạo link thay cho a
 import { Input, Button, ErrorMessage, Checkbox } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
+import { validateEmail, validatePasswordLogin } from '@/app/utils/validation';
+import { handleAuthError } from '@/app/utils/errorHandler';
 
 export function LoginForm() {
     // mục đích là lưu email, password, rememberMe, error, isLoading
@@ -16,18 +18,7 @@ export function LoginForm() {
     const [isLoading, setIsLoading] = useState(false);
 
 
-
-    // Email validation
-    // tạo hàm, nhận ham số email kiểu string, trả về true/false
-    const validateEmail = (email: string): boolean => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
-
-    // Password validation
-    const validatePassword = (password: string): boolean => {
-        return password.length >= 6;
-    };
+    // Validation functions moved to utils/validation.ts
 
     // Handel submit
     const handleSubmit = async () => {
@@ -45,7 +36,7 @@ export function LoginForm() {
             return;
         }
 
-        if (!validatePassword(password)) {
+        if (!validatePasswordLogin(password)) {
             setError('Password must be at least 6 characters long');
             return;
         }
@@ -64,16 +55,8 @@ export function LoginForm() {
             await new Promise((resolve) => setTimeout(resolve, 1000));
             router.push('/home');
         } catch (err: any) {
-            // Handle API errors
-            if (err.status === 401) {
-                setError('Email or password is incorrect');
-            } else if (err.status === 403) {
-                setError('Your account has been locked');
-            } else if (err.status === 404) {
-                setError('Account not found');
-            } else {
-                setError('An error occurred.Please try again.');
-            }
+            // Use centralized error handler
+            setError(handleAuthError(err));
         } finally {
             setIsLoading(false);
         }
@@ -111,7 +94,7 @@ export function LoginForm() {
 
                 <Link
                     href="/forgot-password"
-                    className="text-sm text-[#FF6B00] hover:underline font-medium"
+                    className="text-sm text-brand-primary hover:underline font-medium"
                 >
                     Forgot password?
                 </Link>
@@ -129,7 +112,7 @@ export function LoginForm() {
                 Don't have an account?{' '}
                 <Link
                     href="/register"
-                    className="text-[#FF6B00] hover:underline font-semibold"
+                    className="text-brand-primary hover:underline font-semibold"
                 >
                     Register now
                 </Link>
