@@ -28,10 +28,16 @@ export interface AuthError {
 }
 
 export interface RegisterRequest {
-    name: string;
     email: string;
     password: string;
-    confirmPassword: string;
+    cccd: string;
+    phone?: string; // optional
+}
+
+export interface RegisterResponse {
+    message: string;
+    user: User;
+    // ❌ No token - register doesn't return token
 }
 
 export interface ForgotPasswordRequest {
