@@ -13,11 +13,17 @@ export interface LoginResponse {
     message?: string;
 }
 
+/**
+ * User Interface
+ * BR-03: Must include role, status, is_verified
+ */
 export interface User {
     id: string;
     email: string;
     name: string;
-    role: 'buyer' | 'seller' | 'admin' | 'inspector' | 'shipper';
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'; // BR-03: Uppercase
+    status: 'ACTIVE' | 'INACTIVE'; // BR-03: Required field
+    is_verified: boolean; // BR-03: Required field (email verification status)
     avatar?: string;
 }
 
@@ -34,14 +40,45 @@ export interface RegisterRequest {
     phone?: string; // optional
 }
 
+/**
+ * RegisterResponse Interface
+ * BR-08: Register API does not return token
+ * BR-08: Must include user object with role, status, is_verified
+ */
 export interface RegisterResponse {
+    success: boolean; // Added for consistency
     message: string;
-    user: User;
-    // ❌ No token - register doesn't return token
+    user: User; // User object includes role, status, is_verified
+    // ❌ No token - register doesn't return token (BR-08)
 }
 
 export interface ForgotPasswordRequest {
     email: string;
+}
+
+/**
+ * OTP Verification Interfaces (BR-12, BR-13, BR-14)
+ */
+export interface VerifyOtpRequest {
+    email: string;
+    otp: string; // 6-digit OTP code
+}
+
+export interface VerifyOtpResponse {
+    success: boolean;
+    message: string;
+    // BR-14: Verify thành công → BE set is_verified = TRUE
+    // User vẫn chưa login, không có token
+}
+
+export interface ResendOtpRequest {
+    email: string;
+}
+
+export interface ResendOtpResponse {
+    success: boolean;
+    message: string;
+    expiresIn?: number; // OTP expiration time in seconds (optional)
 }
 
 /**

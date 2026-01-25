@@ -66,16 +66,25 @@ export function RegisterForm() {
         setIsLoading(true);
 
         try {
-            // TODO: Replace with actual API call when backend is ready
-            // const response = await authService.register(email, password, cccd, phone);
-            // router.push('/verify-email');
+            // BR-02: Call register API
+            const response = await authService.register(email, password, cccd, phone);
 
-            // Temporary mock for testing
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            router.push('/verify-email');
+            // BR-10, BR-17: Redirect to verify email screen with email parameter
+            router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         } catch (err: any) {
-            // Use centralized error handler
-            setError(handleAuthError(err));
+            // Handle specific error cases
+            if (err.status === 409) { // Conflict - duplicate data
+                if (err.message.toLowerCase().includes('email')) {
+                    setError('Email already exists. Please use another email or login.');
+                } else if (err.message.toLowerCase().includes('phone')) {
+                    setError('Phone number already exists. Please use another number.');
+                } else {
+                    setError('This information already exists in the system.');
+                }
+            } else {
+                // Use centralized error handler for other errors
+                setError(handleAuthError(err));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -92,6 +101,7 @@ export function RegisterForm() {
                 value={email}
                 onChange={setEmail}
                 placeholder="example@email.com"
+                disabled={isLoading}
             />
 
             <Input
@@ -101,6 +111,7 @@ export function RegisterForm() {
                 value={password}
                 onChange={setPassword}
                 placeholder="8-20 characters"
+                disabled={isLoading}
             />
 
             <Input
@@ -110,6 +121,7 @@ export function RegisterForm() {
                 value={confirmPassword}
                 onChange={setConfirmPassword}
                 placeholder="Re-enter password"
+                disabled={isLoading}
             />
 
             <Input
@@ -119,6 +131,7 @@ export function RegisterForm() {
                 value={cccd}
                 onChange={setCccd}
                 placeholder="12 digits"
+                disabled={isLoading}
             />
 
             <Input
@@ -128,6 +141,7 @@ export function RegisterForm() {
                 value={phone}
                 onChange={setPhone}
                 placeholder="0123456789"
+                disabled={isLoading}
             />
 
             <Button

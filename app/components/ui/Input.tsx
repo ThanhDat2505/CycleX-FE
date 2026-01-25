@@ -12,6 +12,7 @@ interface InputProps { // interface là định dạng kiểu dữ liệu
     placeholder?: string;
     error?: string;
     className?: string;
+    maxLength?: number; // Maximum length for input
 }
 
 export function Input({
@@ -23,7 +24,8 @@ export function Input({
     disabled = false,
     placeholder,
     error,
-    className = ''
+    className = '',
+    maxLength
 }: InputProps) { //objec truyền vào bắt buộc phải tuân thủ interface InputProps
     const [showPassword, setShowPassword] = useState(false);
     const isPasswordField = type === 'password'; //Kiểm tra có phải password field không
@@ -46,6 +48,7 @@ export function Input({
                     onChange={(e) => onChange(e.target.value)} // onChange của props là set, update
                     disabled={disabled} // nếu là isloading = true thì không được nhập
                     placeholder={placeholder}
+                    maxLength={maxLength} // Maximum input length
                     className={`
                         w-full px-4 py-3 border rounded-lg 
                         focus:ring-2 focus:ring-orange-500 focus:border-orange-500 

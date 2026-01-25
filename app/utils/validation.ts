@@ -51,3 +51,14 @@ export const validatePhone = (phone: string): boolean => {
     const phoneRegex = /^0\d{9}$/;
     return phoneRegex.test(phone);
 };
+
+/**
+ * Validate OTP (6 digits)
+ * BR-12: OTP verification for email
+ * @param otp - OTP string to validate
+ * @returns true if OTP is exactly 6 digits, false otherwise
+ */
+export const validateOtp = (otp: string): boolean => {
+    const otpRegex = /^\d{6}$/;
+    return otpRegex.test(otp);
+};

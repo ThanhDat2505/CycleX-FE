@@ -1,4 +1,14 @@
-import { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse, AuthError } from '@/app/types/auth';
+import {
+    LoginRequest,
+    LoginResponse,
+    RegisterRequest,
+    RegisterResponse,
+    VerifyOtpRequest,
+    VerifyOtpResponse,
+    ResendOtpRequest,
+    ResendOtpResponse,
+    AuthError
+} from '@/app/types/auth';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4491';
 
@@ -75,6 +85,69 @@ export const authService = {
             // ❌ DO NOT auto-login
             // ✅ Just return data for redirect to verify email
 
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    /**
+     * Verify OTP for email verification
+     * BR-12: Email verification using OTP
+     * BR-14: Verify thành công → BE set is_verified = TRUE
+     * @param email - User email
+     * @param otp - 6-digit OTP code
+     * @returns Promise with verification response (no token)
+     */
+    verifyOtp: async (email: string, otp: string): Promise<VerifyOtpResponse> => {
+        try {
+            const response = await fetch(`${API_URL}/auth/verify-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, otp } as VerifyOtpRequest),
+            });
+
+            if (!response.ok) {
+                const error: AuthError = await response.json();
+                throw error;
+            }
+
+            const data: VerifyOtpResponse = await response.json();
+
+            // ❌ DO NOT save token - verification doesn't return token
+            // ❌ DO NOT auto-login
+            // ✅ User must login after verification (BR-14)
+
+            return data;
+        } catch (error) {
+            throw error;
+        }
+    },
+
+    /**
+     * Resend OTP for email verification
+     * BR-13: User can resend OTP, old OTP becomes invalid
+     * @param email - User email
+     * @returns Promise with resend response
+     */
+    resendOtp: async (email: string): Promise<ResendOtpResponse> => {
+        try {
+            const response = await fetch(`${API_URL}/auth/resend-otp`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email } as ResendOtpRequest),
+            });
+
+            if (!response.ok) {
+                const error: AuthError = await response.json();
+                throw error;
+            }
+
+            const data: ResendOtpResponse = await response.json();
             return data;
         } catch (error) {
             throw error;
