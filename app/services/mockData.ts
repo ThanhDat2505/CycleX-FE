@@ -171,13 +171,20 @@ export const verifyMockOtp = (email: string, otp: string): boolean => {
 
 /**
  * Register new mock user
+ * Per API Document: all fields required
  */
-export const registerMockUser = (email: string, password: string, cccd: string, phone?: string): User => {
+export const registerMockUser = (
+    email: string,
+    password: string,
+    phone: string,      // Required per API doc
+    cccd: string,
+    fullName: string    // Required per API doc
+): User => {
     const newUser: User & { password: string } = {
         userId: Date.now(), // Use timestamp as number ID
         email: email,
-        fullName: email.split('@')[0],
-        phone: phone || '',
+        fullName: fullName,  // Use provided fullName
+        phone: phone,        // Required
         password: password,
         role: 'USER',
         isVerify: false, // Needs email verification

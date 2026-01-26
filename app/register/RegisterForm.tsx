@@ -20,8 +20,9 @@ export function RegisterForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [cccd, setCccd] = useState('');
+    const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
+    const [cccd, setCccd] = useState('');
 
     // UI state
     const [error, setError] = useState('');
@@ -32,8 +33,8 @@ export function RegisterForm() {
     const handleSubmit = async () => {
         setError('');
 
-        // Client-side validation
-        if (!email || !password || !confirmPassword || !cccd) {
+        // Client-side validation - all fields required per API doc
+        if (!email || !password || !confirmPassword || !fullName || !phone || !cccd) {
             setError('Please fill in all required fields');
             return;
         }
@@ -53,23 +54,28 @@ export function RegisterForm() {
             return;
         }
 
-        if (!validateCccd(cccd)) {
-            setError('CCCD must be 12 digits');
+        if (!fullName.trim()) {
+            setError('Full name is required');
             return;
         }
 
-        if (phone && !validatePhone(phone)) {
+        if (!validatePhone(phone)) {
             setError('Phone number is invalid (must be 10 digits starting with 0)');
+            return;
+        }
+
+        if (!validateCccd(cccd)) {
+            setError('CCCD must be 12 digits');
             return;
         }
 
         setIsLoading(true);
 
         try {
-            // BR-02: Call register API
-            const response = await authService.register(email, password, cccd, phone);
+            // Call register API with all required fields per API doc
+            const response = await authService.register(email, password, phone, cccd, fullName);
 
-            // BR-10, BR-17: Redirect to verify email screen with email parameter
+            // Redirect to verify email screen with email parameter
             router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         } catch (err: any) {
             // Handle specific error cases
@@ -110,7 +116,7 @@ export function RegisterForm() {
                 type="password"
                 value={password}
                 onChange={setPassword}
-                placeholder="8-20 characters"
+                placeholder="6-20 characters"
                 disabled={isLoading}
             />
 
@@ -125,22 +131,32 @@ export function RegisterForm() {
             />
 
             <Input
+                label="Full Name"
+                id="fullName"
+                type="text"
+                value={fullName}
+                onChange={setFullName}
+                placeholder="Your full name"
+                disabled={isLoading}
+            />
+
+            <Input
+                label="Phone"
+                id="phone"
+                type="text"
+                value={phone}
+                onChange={setPhone}
+                placeholder="0123456789"
+                disabled={isLoading}
+            />
+
+            <Input
                 label="CCCD"
                 id="cccd"
                 type="text"
                 value={cccd}
                 onChange={setCccd}
                 placeholder="12 digits"
-                disabled={isLoading}
-            />
-
-            <Input
-                label="Phone (Optional)"
-                id="phone"
-                type="text"
-                value={phone}
-                onChange={setPhone}
-                placeholder="0123456789"
                 disabled={isLoading}
             />
 

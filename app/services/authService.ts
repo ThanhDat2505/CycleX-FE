@@ -97,14 +97,16 @@ export const authService = {
     },
 
     /**
-     * Register new user (Buyer only)
+     * Register new user
+     * Per API Document: /api/auth/register
      * @param email - User email
-     * @param password - User password
+     * @param password - User password (6-20 chars)
+     * @param phone - User phone (required, 10 digits starting with 0)
      * @param cccd - User CCCD (12 digits)
-     * @param phone - User phone (optional)
+     * @param fullName - User full name
      * @returns Promise with register response (no token)
      */
-    register: async (email: string, password: string, cccd: string, phone?: string): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string, fullName: string): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
@@ -118,7 +120,7 @@ export const authService = {
             }
 
             // Check for duplicate phone
-            if (phone && mockPhoneExists(phone)) {
+            if (mockPhoneExists(phone)) {
                 throw {
                     status: 409,
                     message: 'Phone number already exists',
@@ -126,10 +128,9 @@ export const authService = {
             }
 
             // Register new user and generate OTP
-            const user = registerMockUser(email, password, cccd, phone);
+            const user = registerMockUser(email, password, phone, cccd, fullName);
 
             return {
-                success: true,
                 message: 'Registration successful! Please check your email for OTP.',
                 user: user
             };
@@ -141,7 +142,13 @@ export const authService = {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ email, password, cccd, phone } as RegisterRequest),
+                body: JSON.stringify({
+                    email,
+                    password,
+                    phone,
+                    cccd,
+                    fullName
+                } as RegisterRequest),
             });
 
             if (!response.ok) {

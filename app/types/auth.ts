@@ -42,20 +42,19 @@ export interface AuthError {
 export interface RegisterRequest {
     email: string;
     password: string;
+    phone: string;        // Required per API doc
     cccd: string;
-    phone?: string; // optional
+    fullName: string;     // New field per API doc
 }
 
 /**
  * RegisterResponse Interface
- * BR-08: Register API does not return token
- * BR-08: Must include user object with role, status, is_verified
+ * Per API Document: /api/auth/register
+ * Response contains message and user object only
  */
 export interface RegisterResponse {
-    success: boolean; // Added for consistency
-    message: string;
-    user: User; // User object includes role, status, is_verified
-    // ❌ No token - register doesn't return token (BR-08)
+    message: string;      // "Registration successful"
+    user: User;           // User object with all fields
 }
 
 export interface ForgotPasswordRequest {
