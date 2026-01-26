@@ -7,24 +7,30 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-    success: boolean;
-    token: string;
+    accessToken: string;
+    tokenType: string;
     user: User;
     message?: string;
 }
 
 /**
  * User Interface
- * BR-03: Must include role, status, is_verified
+ * Merged from fe/login + fe/register requirements
+ * - fe/login: userId, fullName, phone, avatarUrl, timestamps
+ * - fe/register (BR-03): status, is_verified required for register flow
  */
 export interface User {
-    id: string;
+    userId: string;                    // From fe/login (was 'id')
     email: string;
-    name: string;
-    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'; // BR-03: Uppercase
-    status: 'ACTIVE' | 'INACTIVE'; // BR-03: Required field
-    is_verified: boolean; // BR-03: Required field (email verification status)
-    avatar?: string;
+    fullName: string;                  // From fe/login (was 'name')
+    phone: string;                     // From fe/login (was optional)
+    role: 'buyer' | 'seller' | 'admin' | 'inspector' | 'shipper'; // From fe/login (lowercase)
+    status?: 'ACTIVE' | 'INACTIVE';    // From fe/register (BR-03) - made optional for compatibility
+    is_verified?: boolean;             // From fe/register (BR-03) - made optional for compatibility
+    avatarUrl?: string;                // From fe/login (was 'avatar')
+    createdAt?: Date;                  // From fe/login
+    updatedAt?: Date;                  // From fe/login
+    lastLogin?: Date;                  // From fe/login
 }
 
 export interface AuthError {

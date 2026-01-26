@@ -46,8 +46,8 @@ export const authService = {
                 authService.saveToken(mockToken);
 
                 return {
-                    success: true,
-                    token: mockToken,
+                    accessToken: mockToken,
+                    tokenType: 'Bearer',
                     user: user,
                     message: 'Login successful!'
                 };
@@ -70,7 +70,7 @@ export const authService = {
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {
             // chờ việc gọi API
-            const response = await fetch(`${API_URL}/auth/login`, {
+            const response = await fetch(`/backend/api/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json', // báo cho sever biết gửi data kiểu json
@@ -78,7 +78,6 @@ export const authService = {
                 body: JSON.stringify({ email, password, rememberMe } as LoginRequest),
                 // chuyển object thành json rồi ép kiểu loginRequest
             });
-
             if (!response.ok) {
                 const error: AuthError = await response.json(); // đợi parse JSON body thành kiểu AuthError
                 throw error; // ném lỗi, nhảy và catch
@@ -87,8 +86,8 @@ export const authService = {
             const data: LoginResponse = await response.json(); // đợi parse JSON body thành kiểu LoginResponse
 
             // Save token if login successful
-            if (data.token) {
-                authService.saveToken(data.token); // nếu có token thì lưu vào localStorage
+            if (data.accessToken) {
+                authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
             }
 
             return data;
@@ -266,6 +265,7 @@ export const authService = {
      */
     saveToken: (token: string): void => { // hàm không return
         if (typeof window !== 'undefined') { //next render code ở server nên không có window, chỉ browser mới có window
+            console.log(`Saving token to localStorage: ${token}`);
             localStorage.setItem('authToken', token);
         }
     },

@@ -10,41 +10,46 @@ import { User } from '@/app/types/auth';
 /**
  * Mock Users Database
  * Simulates registered users in the system
+ * Updated to match merged User interface (fe/login + fe/register)
  */
 export const mockUsers: Record<string, User & { password: string }> = {
     'test@example.com': {
-        id: 'mock-user-1',
+        userId: 'mock-user-1',
         email: 'test@example.com',
-        name: 'Test User',
+        fullName: 'Test User',
+        phone: '0123456789',
         password: 'password123',
-        role: 'BUYER',
+        role: 'buyer',
         status: 'ACTIVE',
         is_verified: true,
     },
     'buyer@example.com': {
-        id: 'mock-user-2',
+        userId: 'mock-user-2',
         email: 'buyer@example.com',
-        name: 'Buyer User',
+        fullName: 'Buyer User',
+        phone: '0987654321',
         password: 'buyer123',
-        role: 'BUYER',
+        role: 'buyer',
         status: 'ACTIVE',
         is_verified: true,
     },
     'seller@example.com': {
-        id: 'mock-user-3',
+        userId: 'mock-user-3',
         email: 'seller@example.com',
-        name: 'Seller User',
+        fullName: 'Seller User',
+        phone: '0999888777',
         password: 'seller123',
-        role: 'SELLER',
+        role: 'seller',
         status: 'ACTIVE',
         is_verified: true,
     },
     'unverified@example.com': {
-        id: 'mock-user-4',
+        userId: 'mock-user-4',
         email: 'unverified@example.com',
-        name: 'Unverified User',
+        fullName: 'Unverified User',
+        phone: '0888777666',
         password: 'unverified123',
-        role: 'BUYER',
+        role: 'buyer',
         status: 'ACTIVE',
         is_verified: false, // Not verified yet
     },
@@ -119,11 +124,12 @@ export const verifyMockOtp = (email: string, otp: string): boolean => {
  */
 export const registerMockUser = (email: string, password: string, cccd: string, phone?: string): User => {
     const newUser: User & { password: string } = {
-        id: 'mock-user-' + Date.now(),
+        userId: 'mock-user-' + Date.now(),
         email: email,
-        name: email.split('@')[0],
+        fullName: email.split('@')[0],
+        phone: phone || '',
         password: password,
-        role: 'BUYER',
+        role: 'buyer',
         status: 'ACTIVE',
         is_verified: false, // Needs email verification
     };
