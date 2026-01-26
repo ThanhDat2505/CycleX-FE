@@ -7,18 +7,22 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-    success: boolean;
-    token: string;
+    accessToken: string;
+    tokenType: string;
     user: User;
     message?: string;
 }
 
 export interface User {
-    id: string;
+    userId: string;
     email: string;
-    name: string;
+    fullName: string;
+    phone: string;
     role: 'buyer' | 'seller' | 'admin' | 'inspector' | 'shipper';
-    avatar?: string;
+    avatarUrl?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+    lastLogin?: Date;
 }
 
 export interface AuthError {

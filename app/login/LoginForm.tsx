@@ -56,13 +56,13 @@ export function LoginForm() {
 
         try {
             // TODO: Replace with actual API call when backend is ready
-            // const response = await authService.login(email, password, rememberMe);
+            const response = await authService.login(email, password, rememberMe);
             // router.push('/home');
 
             // Temporary mock for testing
             // đợi tạo promise để imitate API call sau 1 giây
             await new Promise((resolve) => setTimeout(resolve, 1000));
-            router.push('/home');
+            router.push('/');
         } catch (err: any) {
             // Handle API errors
             if (err.status === 401) {
