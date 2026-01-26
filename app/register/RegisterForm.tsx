@@ -44,7 +44,7 @@ export function RegisterForm() {
         }
 
         if (!validatePasswordRegister(password)) {
-            setError('Password must be 8-20 characters long');
+            setError('Password must be 6-20 characters long');
             return;
         }
 
