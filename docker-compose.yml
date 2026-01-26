@@ -44,6 +44,8 @@ services:
     depends_on:
       - api
     environment:
+      DOCKER: "true"
+      API_PROXY_TARGET: http://api:4491
       NODE_ENV: production
       TZ: Asia/Ho_Chi_Minh
     ports:
