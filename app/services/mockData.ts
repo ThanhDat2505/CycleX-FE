@@ -10,48 +10,68 @@ import { User } from '@/app/types/auth';
 /**
  * Mock Users Database
  * Simulates registered users in the system
- * Updated to match merged User interface (fe/login + fe/register)
+ * Updated to match ACTUAL API response format
  */
 export const mockUsers: Record<string, User & { password: string }> = {
     'test@example.com': {
-        userId: 'mock-user-1',
+        userId: 1,
         email: 'test@example.com',
         fullName: 'Test User',
         phone: '0123456789',
         password: 'password123',
-        role: 'buyer',
+        role: 'USER',
+        isVerify: true,
         status: 'ACTIVE',
-        is_verified: true,
+        cccd: '001234567890',
+        avatarUrl: null,
+        createdAt: '2026-01-25T16:38:24.814248',
+        updatedAt: '2026-01-25T16:38:24.814248',
+        lastLogin: null,
     },
     'buyer@example.com': {
-        userId: 'mock-user-2',
+        userId: 2,
         email: 'buyer@example.com',
         fullName: 'Buyer User',
         phone: '0987654321',
         password: 'buyer123',
-        role: 'buyer',
+        role: 'USER',
+        isVerify: true,
         status: 'ACTIVE',
-        is_verified: true,
+        cccd: '001234567891',
+        avatarUrl: null,
+        createdAt: '2026-01-25T16:38:24.814248',
+        updatedAt: '2026-01-25T16:38:24.814248',
+        lastLogin: null,
     },
     'seller@example.com': {
-        userId: 'mock-user-3',
+        userId: 3,
         email: 'seller@example.com',
         fullName: 'Seller User',
         phone: '0999888777',
         password: 'seller123',
-        role: 'seller',
+        role: 'ADMIN',
+        isVerify: true,
         status: 'ACTIVE',
-        is_verified: true,
+        cccd: '001234567892',
+        avatarUrl: null,
+        createdAt: '2026-01-25T16:38:24.814248',
+        updatedAt: '2026-01-25T16:38:24.814248',
+        lastLogin: null,
     },
     'unverified@example.com': {
-        userId: 'mock-user-4',
+        userId: 4,
         email: 'unverified@example.com',
         fullName: 'Unverified User',
         phone: '0888777666',
         password: 'unverified123',
-        role: 'buyer',
+        role: 'USER',
+        isVerify: false, // Not verified yet
         status: 'ACTIVE',
-        is_verified: false, // Not verified yet
+        cccd: '001234567893',
+        avatarUrl: null,
+        createdAt: '2026-01-25T16:38:24.814248',
+        updatedAt: '2026-01-25T16:38:24.814248',
+        lastLogin: null,
     },
 };
 
@@ -124,14 +144,19 @@ export const verifyMockOtp = (email: string, otp: string): boolean => {
  */
 export const registerMockUser = (email: string, password: string, cccd: string, phone?: string): User => {
     const newUser: User & { password: string } = {
-        userId: 'mock-user-' + Date.now(),
+        userId: Date.now(), // Use timestamp as number ID
         email: email,
         fullName: email.split('@')[0],
         phone: phone || '',
         password: password,
-        role: 'buyer',
+        role: 'USER',
+        isVerify: false, // Needs email verification
         status: 'ACTIVE',
-        is_verified: false, // Needs email verification
+        cccd: cccd,
+        avatarUrl: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        lastLogin: null,
     };
 
     mockUsers[email] = newUser;
@@ -149,7 +174,7 @@ export const registerMockUser = (email: string, password: string, cccd: string, 
  */
 export const verifyMockUserEmail = (email: string): void => {
     if (mockUsers[email]) {
-        mockUsers[email].is_verified = true;
+        mockUsers[email].isVerify = true; // Use correct field name from API
         delete mockOtpStorage[email]; // Clean up OTP
     }
 };
@@ -173,7 +198,7 @@ export const validateMockLogin = (email: string, password: string): User | null 
 
     if (!user) return null; // User not found
     if (user.password !== password) return null; // Wrong password
-    if (!user.is_verified) return null; // Not verified
+    if (!user.isVerify) return null; // Not verified (use correct field name)
 
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
