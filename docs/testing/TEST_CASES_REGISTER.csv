@@ -1,0 +1,182 @@
+Test Case ID,Category,Priority,Test Case Name,Precondition,Test Steps,Test Data,Expected Result,Business Rule,Status,Actual Result,Notes
+TC-REG-001,Form Validation,P0,Valid Registration (Happy Path),User is Guest (not logged in),"1. Navigate to /register
+2. Enter valid email: newuser@example.com
+3. Enter password: password123
+4. Enter confirm password: password123
+5. Enter CCCD: 123456789012
+6. Enter phone: 0987654321
+7. Click Register","Email: newuser@example.com
+Password: password123
+Confirm: password123
+CCCD: 123456789012
+Phone: 0987654321","✅ No validation errors
+✅ Loading state shown
+✅ Redirect to /verify-email?email=newuser@example.com
+✅ Success message","BR-02, BR-05, BR-10, BR-17",Not Tested,,
+TC-REG-002,Form Validation,P1,Valid Registration Without Phone,User is Guest,"1. Navigate to /register
+2. Enter email: user2@example.com
+3. Enter password: password123
+4. Enter confirm password: password123
+5. Enter CCCD: 123456789012
+6. Leave phone empty
+7. Click Register","Email: user2@example.com
+Password: password123
+CCCD: 123456789012
+Phone: (empty)","✅ Registration successful
+✅ Redirect to verify email",BR-05 (phone optional),Not Tested,,
+TC-REG-003,Form Validation,P1,Empty Email,User is Guest,"1. Navigate to /register
+2. Leave email empty
+3. Fill other fields correctly
+4. Click Register","Email: (empty)
+Password: password123
+CCCD: 123456789012","❌ Error: Please fill in all required fields
+❌ No API call made",BR-05,Not Tested,,
+TC-REG-004,Form Validation,P1,Invalid Email Format,User is Guest,"1. Enter invalid email: notanemail
+2. Fill other fields correctly
+3. Click Register","Email: notanemail
+Password: password123
+CCCD: 123456789012","❌ Error: Email is invalid
+❌ No API call made","BR-02, BR-05",Not Tested,,
+TC-REG-005,Form Validation,P1,Empty Password,User is Guest,"1. Fill email correctly
+2. Leave password empty
+3. Fill other fields
+4. Click Register","Email: test@example.com
+Password: (empty)
+CCCD: 123456789012",❌ Error: Please fill in all required fields,BR-05,Not Tested,,
+TC-REG-006,Form Validation,P0,Password Too Short (< 8 chars),User is Guest,"1. Enter password: pass123 (7 chars)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: pass123 (7 chars)
+CCCD: 123456789012",❌ Error: Password must be 8-20 characters long,BR-06,Not Tested,,
+TC-REG-007,Form Validation,P0,Password Too Long (> 20 chars),User is Guest,"1. Enter password: thispasswordiswaytoolong123 (27 chars)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: thispasswordiswaytoolong123
+CCCD: 123456789012",❌ Error: Password must be 8-20 characters long,BR-06,Not Tested,,
+TC-REG-008,Form Validation,P1,Password Mismatch,User is Guest,"1. Enter password: password123
+2. Enter confirm password: password456
+3. Fill other fields correctly
+4. Click Register","Email: test@example.com
+Password: password123
+Confirm: password456
+CCCD: 123456789012",❌ Error: Passwords do not match,BR-05,Not Tested,,
+TC-REG-009,Form Validation,P1,Empty CCCD,User is Guest,"1. Fill email and password correctly
+2. Leave CCCD empty
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: (empty)",❌ Error: Please fill in all required fields,BR-05,Not Tested,,
+TC-REG-010,Form Validation,P0,Invalid CCCD (Not 12 digits),User is Guest,"1. Enter CCCD: 12345 (5 digits)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 12345",❌ Error: CCCD must be 12 digits,BR-02,Not Tested,,
+TC-REG-011,Form Validation,P1,Invalid CCCD (Contains letters),User is Guest,"1. Enter CCCD: 12345678901A
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 12345678901A",❌ Error: CCCD must be 12 digits,BR-02,Not Tested,,
+TC-REG-012,Form Validation,P1,Invalid Phone Format (9 digits),User is Guest,"1. Enter phone: 123456789 (9 digits)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 123456789012
+Phone: 123456789",❌ Error: Phone number is invalid (must be 10 digits starting with 0),BR-02,Not Tested,,
+TC-REG-013,Form Validation,P1,Phone Not Starting with 0,User is Guest,"1. Enter phone: 1234567890
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 123456789012
+Phone: 1234567890",❌ Error: Phone number is invalid (must be 10 digits starting with 0),BR-02,Not Tested,,
+TC-REG-014,Duplicate Detection,P0,Duplicate Email,Email test@example.com already exists,"1. Enter email: test@example.com
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com (exists)
+Password: password123
+CCCD: 123456789012","❌ Error: Email already exists. Please use another email or login.
+❌ No user created",BR-07,Not Tested,,
+TC-REG-015,Duplicate Detection,P1,Duplicate Phone,Phone 0123456789 already exists,"1. Enter phone: 0123456789
+2. Fill other fields correctly
+3. Click Register","Email: newuser@example.com
+Password: password123
+CCCD: 123456789012
+Phone: 0123456789 (exists)","❌ Error: Phone number already exists. Please use another number.
+❌ No user created",BR-07,Not Tested,,
+TC-REG-016,Route Protection,P0,Authenticated User Access,User is logged in,"1. Login first
+2. Navigate to /register",N/A,"✅ Redirect to / (home page)
+✅ Cannot access register page",BR-01,Not Tested,,
+TC-REG-017,Route Protection,P1,Guest User Access,User is NOT logged in,1. Navigate to /register,N/A,"✅ Register page displayed
+✅ Form is accessible",BR-01,Not Tested,,
+TC-VER-001,OTP Verification,P0,Valid OTP Verification,User just registered with newuser@example.com,"1. On verify email page
+2. Check console for OTP (mock mode)
+3. Enter correct OTP
+4. Click Verify Email",OTP: (from console),"✅ Success: Email verified successfully!
+✅ Redirect to /login after 2 seconds
+✅ User is_verified = TRUE","BR-12, BR-14",Not Tested,,
+TC-VER-002,OTP Verification,P0,Invalid OTP,User on verify email page,"1. Enter wrong OTP: 999999
+2. Click Verify Email",OTP: 999999,"❌ Error: Invalid or expired OTP code
+❌ User remains unverified",BR-12,Not Tested,,
+TC-VER-003,OTP Verification,P1,OTP Less Than 6 Digits,User on verify email page,"1. Enter OTP: 12345 (5 digits)
+2. Click Verify Email",OTP: 12345,"❌ Error: OTP must be 6 digits
+❌ No API call made",BR-12,Not Tested,,
+TC-VER-004,OTP Verification,P1,Empty OTP,User on verify email page,"1. Leave OTP field empty
+2. Click Verify Email",OTP: (empty),❌ Error: OTP code is required,BR-12,Not Tested,,
+TC-VER-005,OTP Verification,P1,Expired OTP,OTP has expired (> 5 minutes),"1. Wait for OTP to expire (timer shows 0:00)
+2. Try to verify",OTP: (any),"❌ Verify button disabled
+❌ Message: OTP has expired. Please request a new one.",BR-12,Not Tested,,
+TC-RESEND-001,Resend OTP,P0,Resend OTP Successfully,User on verify email page,1. Click Resend OTP,N/A,"✅ Success: OTP has been resent to your email
+✅ New OTP in console
+✅ Cooldown timer starts (60s)
+✅ Expiration timer resets to 5:00
+✅ Old OTP invalidated",BR-13,Not Tested,,
+TC-RESEND-002,Resend OTP,P1,Resend During Cooldown,Just clicked resend (cooldown active),1. Click Resend OTP again immediately,N/A,"❌ Button disabled
+❌ Shows countdown: Resend (59s), Resend (58s), etc.",BR-13,Not Tested,,
+TC-RESEND-003,Resend OTP,P1,Resend After Cooldown,Cooldown finished (60 seconds passed),"1. Wait for cooldown to finish
+2. Click Resend OTP",N/A,"✅ New OTP sent
+✅ Cooldown restarts",BR-13,Not Tested,,
+TC-RESEND-004,Resend OTP,P2,Empty Email for Resend,User on verify email page,"1. Clear email field
+2. Click Resend OTP",Email: (empty),❌ Error: Email is required,BR-13,Not Tested,,
+TC-UI-001,UI/UX,P2,Loading State,User on register page,"1. Fill form correctly
+2. Click Register
+3. Observe UI during API call",Valid data,"✅ Button shows loading state
+✅ All inputs disabled
+✅ Cannot submit again",N/A,Not Tested,,
+TC-UI-002,UI/UX,P2,Email Pre-filled from URL,Redirected from register with email param,"1. Register with test@example.com
+2. Check verify email page",Email: test@example.com,"✅ Email field pre-filled
+✅ Email field disabled",N/A,Not Tested,,
+TC-UI-003,UI/UX,P2,OTP Timer Countdown,User on verify email page,"1. Observe timer on verify email page
+2. Watch countdown",N/A,"✅ Timer shows 5:00 initially
+✅ Counts down: 4:59, 4:58, ...
+✅ Format: MM:SS",BR-12,Not Tested,,
+TC-UI-004,UI/UX,P2,Resend Cooldown Display,User on verify email page,"1. Click Resend OTP
+2. Observe button text",N/A,"✅ Button text: Resend (60s)
+✅ Counts down to Resend (1s)
+✅ Then becomes Resend OTP",BR-13,Not Tested,,
+TC-UI-005,UI/UX,P2,Error Message Display,User on register page,"1. Enter invalid data
+2. Click Register
+3. Correct the error",Invalid data,"✅ Error message displayed in red box
+✅ Error clears when corrected",N/A,Not Tested,,
+TC-FLOW-001,Integration Flow,P0,Complete Happy Path,User is Guest,"1. Navigate to /register
+2. Fill valid data
+3. Click Register
+4. Redirected to verify email
+5. Enter correct OTP
+6. Click Verify Email
+7. Redirected to login",Valid registration data,"✅ Complete flow works end-to-end
+✅ User can login after verification",BR-17,Not Tested,,
+TC-FLOW-002,Integration Flow,P0,Register → Verify → Login,User is Guest,"1. Register new user
+2. Verify email with OTP
+3. Go to login page
+4. Login with registered credentials",Valid credentials,"✅ Login successful
+✅ Token saved
+✅ Redirect to home","BR-14, BR-17",Not Tested,,
+TC-FLOW-003,Integration Flow,P1,Register → Skip Verify → Try Login,User just registered but not verified,"1. Register new user
+2. Skip verification (go to login)
+3. Try to login",Unverified user credentials,"❌ Login blocked
+❌ Error: Please verify your email before logging in","BR-11, BR-15",Not Tested,,
+TC-MOCK-001,Mock Mode,P2,Mock Mode Enabled,NEXT_PUBLIC_MOCK_API=true,"1. Register new user
+2. Check browser console",Valid data,"✅ OTP displayed in console
+✅ No real API call
+✅ Mock response returned",N/A,Not Tested,,Mock mode only
+TC-MOCK-002,Mock Mode,P2,Pre-registered User Login,Mock mode enabled,1. Login with test@example.com / password123,"Email: test@example.com
+Password: password123","✅ Login successful
+✅ Mock token generated",N/A,Not Tested,,Mock mode only
+TC-MOCK-003,Mock Mode,P2,Duplicate Email in Mock,Mock mode enabled,1. Register with test@example.com (already in mock DB),Email: test@example.com,❌ Error: Email already exists,N/A,Not Tested,,Mock mode only
