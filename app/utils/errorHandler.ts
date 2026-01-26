@@ -22,8 +22,18 @@ export const handleAuthError = (err: any): string => {
                 return 'Email or password is incorrect';
 
             case 403:
-                // Forbidden - account locked or not verified
-                return 'Your account has been locked';
+                // Forbidden - could be not verified, suspended, or inactive
+                if (err.message?.toLowerCase().includes('not verified') ||
+                    err.message?.toLowerCase().includes('verify')) {
+                    return 'Please verify your email before logging in';
+                }
+                if (err.message?.toLowerCase().includes('suspended')) {
+                    return 'Your account has been suspended. Please contact Admin or Inspector.';
+                }
+                if (err.message?.toLowerCase().includes('inactive')) {
+                    return 'Your account is inactive. Please verify your email.';
+                }
+                return err.message || 'Your account has been locked';
 
             case 404:
                 // Not found - account doesn't exist

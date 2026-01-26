@@ -25,7 +25,7 @@ export interface User {
     phone: string;
     role: 'USER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // ⚠️ API uses uppercase 'USER', not 'buyer'
     isVerify: boolean;                 // ⚠️ API uses 'isVerify', not 'is_verified'
-    status: 'ACTIVE' | 'INACTIVE';     // ⚠️ Required, not optional
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';  // ⚠️ BR-L04: Support all statuses
     cccd: string;                      // ⚠️ CCCD field from API
     avatarUrl: string | null;          // ⚠️ Can be null
     createdAt: string;                 // ⚠️ ISO string, not Date object

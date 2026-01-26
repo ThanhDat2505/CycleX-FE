@@ -73,6 +73,36 @@ export const mockUsers: Record<string, User & { password: string }> = {
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
     },
+    'suspended@example.com': {
+        userId: 5,
+        email: 'suspended@example.com',
+        fullName: 'Suspended User',
+        phone: '0777666555',
+        password: 'suspended123',
+        role: 'USER',
+        isVerify: true,
+        status: 'SUSPENDED', // Account suspended
+        cccd: '001234567894',
+        avatarUrl: null,
+        createdAt: '2026-01-25T16:38:24.814248',
+        updatedAt: '2026-01-25T16:38:24.814248',
+        lastLogin: null,
+    },
+    'inactive@example.com': {
+        userId: 6,
+        email: 'inactive@example.com',
+        fullName: 'Inactive User',
+        phone: '0666555444',
+        password: 'inactive123',
+        role: 'USER',
+        isVerify: false,
+        status: 'INACTIVE', // Account inactive
+        cccd: '001234567895',
+        avatarUrl: null,
+        createdAt: '2026-01-25T16:38:24.814248',
+        updatedAt: '2026-01-25T16:38:24.814248',
+        lastLogin: null,
+    },
 };
 
 /**

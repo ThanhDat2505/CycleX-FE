@@ -46,16 +46,48 @@ export function LoginForm() {
         setIsLoading(true);
 
         try {
-            // TODO: Replace with actual API call when backend is ready
             const response = await authService.login(email, password, rememberMe);
-            // router.push('/home');
 
-            // Temporary mock for testing
-            // đợi tạo promise để imitate API call sau 1 giây
-            await new Promise((resolve) => setTimeout(resolve, 1000));
+            // BR-L07: Check isVerify first
+            if (!response.user.isVerify) {
+                setError('Please verify your email first');
+                setIsLoading(false);
+                // Redirect to verify email page
+                router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+                return;
+            }
+
+            // BR-L05, BR-L06: Check status
+            switch (response.user.status) {
+                case 'INACTIVE':
+                    // BR-L05: INACTIVE → redirect verify email
+                    setError('Account inactive. Please verify your email');
+                    setIsLoading(false);
+                    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+                    return;
+
+                case 'SUSPENDED':
+                    // BR-L05: SUSPENDED → show error, contact admin
+                    setError('Your account has been suspended. Please contact Admin or Inspector for assistance.');
+                    setIsLoading(false);
+                    return;
+
+                case 'ACTIVE':
+                    // BR-L05: ACTIVE → allow login
+                    break;
+
+                default:
+                    // Unknown status
+                    setError('Invalid account status. Please contact support.');
+                    setIsLoading(false);
+                    return;
+            }
+
+            // BR-L03: Login successful - token already saved by authService
+            // BR-L08: Redirect to Home (not by role)
             router.push('/');
         } catch (err: any) {
-            // Use centralized error handler
+            // BR-L11: Use centralized error handler
             setError(handleAuthError(err));
         } finally {
             setIsLoading(false);
