@@ -40,6 +40,9 @@ services:
     build:
       context: ./CycleX-FE
       dockerfile: Dockerfile
+      args:
+        API_PROXY_TARGET: "http://api:4491"
+        DOCKER: "true"
     container_name: cyclexfe
     depends_on:
       - api
