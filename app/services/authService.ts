@@ -19,7 +19,30 @@ import {
     storeMockOtp,
 } from './mockData';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4491';
+// All API calls now use /backend/api prefix (handled by next.config.ts proxy)
+
+/**
+ * Helper function to make API calls with consistent error handling
+ * @param endpoint - API endpoint (e.g., '/auth/login')
+ * @param body - Request body object
+ * @returns Promise with parsed JSON response
+ */
+async function apiCall<T>(endpoint: string, body: object): Promise<T> {
+    const response = await fetch(`/backend/api${endpoint}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+        const error: AuthError = await response.json();
+        throw error;
+    }
+
+    return await response.json();
+}
 
 /**
  * Authentication Service
@@ -69,21 +92,8 @@ export const authService = {
 
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {
-            // chờ việc gọi API
-            const response = await fetch(`/backend/api/auth/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json', // báo cho sever biết gửi data kiểu json
-                },
-                body: JSON.stringify({ email, password, rememberMe } as LoginRequest),
-                // chuyển object thành json rồi ép kiểu loginRequest
-            });
-            if (!response.ok) {
-                const error: AuthError = await response.json(); // đợi parse JSON body thành kiểu AuthError
-                throw error; // ném lỗi, nhảy và catch
-            }
-
-            const data: LoginResponse = await response.json(); // đợi parse JSON body thành kiểu LoginResponse
+            // sử dụng helper function apiCall để gọi API
+            const data = await apiCall<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
 
             // Save token if login successful
             if (data.accessToken) {
@@ -137,26 +147,13 @@ export const authService = {
         }
 
         try {
-            const response = await fetch(`${API_URL}/auth/register`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                    phone,
-                    cccd,
-                    fullName
-                } as RegisterRequest),
-            });
-
-            if (!response.ok) {
-                const error: AuthError = await response.json();
-                throw error;
-            }
-
-            const data: RegisterResponse = await response.json();
+            const data = await apiCall<RegisterResponse>('/auth/register', {
+                email,
+                password,
+                phone,
+                cccd,
+                fullName
+            } as RegisterRequest);
 
             // ❌ DO NOT save token - register doesn't return token
             // ❌ DO NOT auto-login
@@ -199,20 +196,7 @@ export const authService = {
         }
 
         try {
-            const response = await fetch(`${API_URL}/auth/verify-otp`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, otp } as VerifyOtpRequest),
-            });
-
-            if (!response.ok) {
-                const error: AuthError = await response.json();
-                throw error;
-            }
-
-            const data: VerifyOtpResponse = await response.json();
+            const data = await apiCall<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
 
             // ❌ DO NOT save token - verification doesn't return token
             // ❌ DO NOT auto-login
@@ -246,20 +230,7 @@ export const authService = {
         }
 
         try {
-            const response = await fetch(`${API_URL}/auth/resend-otp`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email } as ResendOtpRequest),
-            });
-
-            if (!response.ok) {
-                const error: AuthError = await response.json();
-                throw error;
-            }
-
-            const data: ResendOtpResponse = await response.json();
+            const data = await apiCall<ResendOtpResponse>('/auth/resend-otp', { email } as ResendOtpRequest);
             return data;
         } catch (error) {
             throw error;
