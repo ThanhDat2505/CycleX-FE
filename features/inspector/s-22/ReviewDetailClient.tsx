@@ -3,11 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import styles from "./review-detail.module.css";
-import {
-  STATUS_LABEL,
-  type Listing,
-  type ListingStatus,
-} from "@/data/inspectorListings";
+import { STATUS_LABEL, type Listing, type ListingStatus } from "@/data/inspectorListings";
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
@@ -17,8 +13,7 @@ const formatDate = (iso: string) => {
   return `${dd}/${mm}/${yyyy}`;
 };
 
-const formatVnd = (n: number) =>
-  `${new Intl.NumberFormat("vi-VN").format(n)} đ`;
+const formatVnd = (n: number) => `${new Intl.NumberFormat("vi-VN").format(n)} đ`;
 
 const chipVariant = (s: ListingStatus) => {
   switch (s) {
@@ -36,9 +31,7 @@ const chipVariant = (s: ListingStatus) => {
   }
 };
 
-const historyTagVariant = (
-  v: "neutral" | "warning" | "info" | "danger" | "success",
-) => {
+const historyTagVariant = (v: "neutral" | "warning" | "info" | "danger" | "success") => {
   if (v === "warning") return styles.warn;
   if (v === "info") return styles.info;
   if (v === "danger") return styles.danger;
@@ -87,11 +80,7 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
         </div>
 
         <div className={styles.rightActions}>
-          <button
-            className={styles.btnOutline}
-            type="button"
-            onClick={() => showToast("Đã đánh dấu flag")}
-          >
+          <button className={styles.btnOutline} type="button" onClick={() => showToast("Đã đánh dấu flag")}>
             Đánh dấu flag
           </button>
 
@@ -103,18 +92,9 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
 
       <div className={styles.layout}>
         <section className={styles.left}>
-          <section
-            className={styles.gallery}
-            aria-label="Khu vực ảnh (placeholder)"
-          >
-            <div
-              className={styles.mainBox}
-              aria-label="Ảnh chính (placeholder)"
-            />
-            <div
-              className={styles.thumbGrid}
-              aria-label="Ảnh phụ (placeholder)"
-            >
+          <section className={styles.gallery} aria-label="Khu vực ảnh (placeholder)">
+            <div className={styles.mainBox} aria-label="Ảnh chính (placeholder)" />
+            <div className={styles.thumbGrid} aria-label="Ảnh phụ (placeholder)">
               <div className={styles.thumbBox} />
               <div className={styles.thumbBox} />
               <div className={styles.thumbBox} />
@@ -135,8 +115,7 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                 <span>Khung:</span> <strong>{listing.specs.frame}</strong>
               </div>
               <div>
-                <span>Trọng lượng:</span>{" "}
-                <strong>{listing.specs.weight}</strong>
+                <span>Trọng lượng:</span> <strong>{listing.specs.weight}</strong>
               </div>
             </div>
           </section>
@@ -148,9 +127,7 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                 <li key={`${h.at}-${idx}`}>
                   <div className={styles.historyRow}>
                     <span className={styles.hTime}>{h.at}</span>
-                    <span
-                      className={`${styles.tag} ${historyTagVariant(h.variant)}`}
-                    >
+                    <span className={`${styles.tag} ${historyTagVariant(h.variant)}`}>
                       {h.tag}
                     </span>
                     <div>{h.desc}</div>
@@ -168,9 +145,7 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
             <div className={styles.avatar} />
             <div>
               <div className={styles.sellerName}>{listing.sellerName}</div>
-              <div
-                style={{ color: "var(--muted)", fontWeight: 800, fontSize: 13 }}
-              >
+              <div style={{ color: "var(--muted)", fontWeight: 800, fontSize: 13 }}>
                 {listing.productName}
               </div>
             </div>
@@ -178,10 +153,7 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
 
           <div className={styles.note}>
             <div className={styles.noteTitle}>Ghi chú đánh giá (nội bộ)</div>
-            <textarea
-              className={styles.textarea}
-              placeholder="VD: xe đúng mô tả..."
-            />
+            <textarea className={styles.textarea} placeholder="VD: xe đúng mô tả..." />
           </div>
 
           <button
@@ -210,10 +182,7 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
         </aside>
       </div>
 
-      <div
-        className={`${styles.toast} ${toast ? styles.toastShow : ""}`}
-        aria-live="polite"
-      >
+      <div className={`${styles.toast} ${toast ? styles.toastShow : ""}`} aria-live="polite">
         {toast ?? ""}
       </div>
     </div>
