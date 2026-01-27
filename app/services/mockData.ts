@@ -229,14 +229,17 @@ export const getMockUser = (email: string): User | null => {
 
 /**
  * Validate mock login credentials
+ * IMPORTANT: Only validates email/password
+ * Does NOT check isVerify or status - let LoginForm handle that!
  */
 export const validateMockLogin = (email: string, password: string): User | null => {
     const user = mockUsers[email];
 
     if (!user) return null; // User not found
     if (user.password !== password) return null; // Wrong password
-    if (!user.isVerify) return null; // Not verified (use correct field name)
 
+    // Return user object regardless of isVerify/status
+    // LoginForm will handle business logic (BR-L05, BR-L06, BR-L07)
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
 };

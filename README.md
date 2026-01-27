@@ -1,5 +1,9 @@
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Design Resources
+
+- **Figma Mockup:** [https://mock-branch-01543539.figma.site](https://mock-branch-01543539.figma.site)
+
 ## Getting Started
 
 First, run the development server:

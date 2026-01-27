@@ -75,14 +75,8 @@ export const authService = {
                     message: 'Login successful!'
                 };
             } else {
-                // Check if user exists but not verified
-                if (mockEmailExists(email)) {
-                    throw {
-                        status: 403,
-                        message: 'Please verify your email before logging in',
-                    };
-                }
-                // Wrong credentials
+                // User not found OR wrong password
+                // BR-L11: Generic error message for security
                 throw {
                     status: 401,
                     message: 'Email or password is incorrect',

@@ -1,7 +1,7 @@
 'use client'; //Báo cho Next.js biết: "File này chạy ở phía client (browser), không phải server"
 // bởi vì dùng useState (chỉ chạy được ở browser)
 import { useState } from 'react'; // giống như biến, nhưng khi thay đổi, react sẽ tự động render lại
-import { useRouter } from 'next/navigation'; // hook của nextjs để điều hướng 
+import { useRouter, useSearchParams } from 'next/navigation'; // hook của nextjs để điều hướng 
 import Link from 'next/link'; // component để tạo link thay cho a
 import { Input, Button, ErrorMessage, Checkbox } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
@@ -11,6 +11,9 @@ import { handleAuthError } from '@/app/utils/errorHandler';
 export function LoginForm() {
     // mục đích là lưu email, password, rememberMe, error, isLoading
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const returnUrl = searchParams.get('returnUrl') || '/';
+
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
@@ -50,10 +53,10 @@ export function LoginForm() {
 
             // BR-L07: Check isVerify first
             if (!response.user.isVerify) {
+                // Redirect FIRST before setting state to avoid timing issues
+                router.push(`/verify-email?email=${encodeURIComponent(email)}`);
                 setError('Please verify your email first');
                 setIsLoading(false);
-                // Redirect to verify email page
-                router.push(`/verify-email?email=${encodeURIComponent(email)}`);
                 return;
             }
 
@@ -61,14 +64,15 @@ export function LoginForm() {
             switch (response.user.status) {
                 case 'INACTIVE':
                     // BR-L05: INACTIVE → redirect verify email
+                    // Redirect FIRST before setting state to avoid timing issues
+                    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
                     setError('Account inactive. Please verify your email');
                     setIsLoading(false);
-                    router.push(`/verify-email?email=${encodeURIComponent(email)}`);
                     return;
 
                 case 'SUSPENDED':
                     // BR-L05: SUSPENDED → show error, contact admin
-                    setError('Your account has been suspended. Please contact Admin or Inspector for assistance.');
+                    setError('Your account has been suspended. Please contact Admin for assistance.');
                     setIsLoading(false);
                     return;
 
@@ -84,8 +88,8 @@ export function LoginForm() {
             }
 
             // BR-L03: Login successful - token already saved by authService
-            // BR-L08: Redirect to Home (not by role)
-            router.push('/');
+            // BR-L08: Redirect to returnUrl (or Home if not specified)
+            router.push(returnUrl);
         } catch (err: any) {
             // BR-L11: Use centralized error handler
             setError(handleAuthError(err));

@@ -1,65 +1,167 @@
-import Image from "next/image";
+/**
+ * ===========================================
+ * S-01 HOME PAGE (Trang Chủ)
+ * ===========================================
+ * Route: / (root)
+ * File: app/page.tsx (Next.js App Router convention)
+ * 
+ * Public page displaying approved bike listings with pagination.
+ * Business Rules: BR-H01 through BR-H05
+ * 
+ * Sections included:
+ * - Header (navigation, auth)
+ * - HeroSection (search, stats)
+ * - FeaturesSection (why choose us)
+ * - Listings (bike cards with pagination)
+ * - CategorySection (browse by category)
+ * - Footer (links, contact)
+ */
+
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Listing, PaginationInfo } from './types/listing';
+import { getHomeListings } from './services/listingService';
+import { scrollToElement } from './utils/scroll';
+import { PAGINATION } from './constants/pagination';
+import Header from './components/Header';
+import HeroSection from './components/HeroSection';
+import FeaturesSection from './components/FeaturesSection';
+import CategorySection from './components/CategorySection';
+import Footer from './components/Footer';
+import ListingGrid from './components/ListingGrid';
+import Pagination from './components/Pagination';
+import Badge from './components/ui/Badge';
 
 export default function Home() {
+  const router = useRouter();
+  const listingsSectionRef = React.useRef<HTMLDivElement>(null);
+
+  // State management
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    pageSize: PAGINATION.DEFAULT_PAGE_SIZE,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch listings on mount and when page changes
+  useEffect(() => {
+    fetchListings(pagination.page);
+  }, [pagination.page]);
+
+  /**
+   * Fetch listings from API
+   * BR-H01: Only APPROVED listings are returned (BE filters)
+   * BR-H02: FE does NOT filter client-side
+   * BR-H03: FE trusts API data without modification
+   */
+  const fetchListings = async (page: number) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await getHomeListings(page, PAGINATION.DEFAULT_PAGE_SIZE);
+      setListings(response.items);
+      setPagination(response.pagination);
+    } catch (err) {
+      setError('Failed to load listings. Please try again later.');
+      console.error('Error fetching listings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * Handle page change
+   */
+  const handlePageChange = (newPage: number) => {
+    setPagination((prev) => ({ ...prev, page: newPage }));
+
+    // Scroll to listings section when changing pages for better UX
+    scrollToElement(listingsSectionRef.current, {
+      offset: PAGINATION.SCROLL_OFFSET,
+      delay: PAGINATION.SCROLL_DELAY
+    });
+  };
+
+  /**
+   * Navigate to listing detail page
+   * BR-H04: views_count only increments on detail page, not here
+   */
+  const handleListingClick = (listingId: number) => {
+    router.push(`/listing/${listingId}`);
+  };
+
+  // Calculate total pages
+  const totalPages = Math.ceil(pagination.total / pagination.pageSize);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <div className="min-h-screen bg-white">
+      {/* Header with auth state */}
+      <Header />
+
+      {/* Hero Section */}
+      <HeroSection />
+
+      {/* Features Section */}
+      <FeaturesSection />
+
+      {/* Main Content */}
+      <main className="container mx-auto px-4 py-12">
+        {/* Page Title */}
+        <div ref={listingsSectionRef} className="text-center mb-12">
+          <Badge icon="🔥" text="Nổi Bật" className="mb-4" />
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
+            Xe Đạp Đang Hot
+          </h2>
+          <p className="text-gray-600">
+            Những chiếc xe đạp được quan tâm nhiều nhất với chất lượng đã được kiểm định
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="flex justify-center items-center py-20">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+
+        {/* Listings Grid */}
+        {!loading && !error && (
+          <>
+            <ListingGrid
+              listings={listings}
+              onListingClick={handleListingClick}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={pagination.page}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
       </main>
+
+      {/* Category Section */}
+      <CategorySection />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
