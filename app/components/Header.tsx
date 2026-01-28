@@ -14,6 +14,8 @@ export default function Header() {
     const router = useRouter();
     const { isLoggedIn, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [searchKeyword, setSearchKeyword] = useState('');
 
     const handleSellClick = () => {
         if (!isLoggedIn) {
@@ -42,7 +44,7 @@ export default function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-8">
                         <button
-                            onClick={() => router.push('/search')}
+                            onClick={() => router.push('/listings')}
                             className="text-white hover:text-brand-primary transition-colors"
                         >
                             Mua Xe
@@ -63,16 +65,48 @@ export default function Header() {
 
                     {/* Right Side Actions */}
                     <div className="flex items-center gap-4">
-                        {/* Search Icon - Global */}
-                        <button
-                            onClick={() => router.push('/search')}
-                            className="text-white hover:text-brand-primary transition-colors"
-                            aria-label="Search"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
+                        {/* Search - Expandable Input */}
+                        <div className="relative">
+                            {searchOpen ? (
+                                <form
+                                    onSubmit={(e) => {
+                                        e.preventDefault();
+                                        if (searchKeyword.trim()) {
+                                            router.push(`/listings?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+                                            setSearchOpen(false);
+                                            setSearchKeyword('');
+                                        }
+                                    }}
+                                    className="flex items-center"
+                                >
+                                    <input
+                                        type="text"
+                                        placeholder="Tìm kiếm xe..."
+                                        value={searchKeyword}
+                                        onChange={(e) => setSearchKeyword(e.target.value)}
+                                        className="w-48 md:w-64 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                                        autoFocus
+                                        onBlur={() => {
+                                            // Delay to allow form submission
+                                            setTimeout(() => {
+                                                setSearchOpen(false);
+                                                setSearchKeyword('');
+                                            }, 200);
+                                        }}
+                                    />
+                                </form>
+                            ) : (
+                                <button
+                                    onClick={() => setSearchOpen(true)}
+                                    className="text-white hover:text-brand-primary transition-colors"
+                                    aria-label="Search"
+                                >
+                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
 
                         {isLoggedIn ? (
                             <>
@@ -154,7 +188,7 @@ export default function Header() {
                     <nav className="md:hidden mt-4 pb-4 border-t border-gray-700 pt-4">
                         <div className="flex flex-col gap-4">
                             <button
-                                onClick={() => { router.push('/search'); setMobileMenuOpen(false); }}
+                                onClick={() => { router.push('/listings'); setMobileMenuOpen(false); }}
                                 className="text-white hover:text-brand-primary transition-colors text-left"
                             >
                                 Mua Xe

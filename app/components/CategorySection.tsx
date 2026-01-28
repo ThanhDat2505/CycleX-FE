@@ -15,7 +15,7 @@ export default function CategorySection() {
     const router = useRouter();
 
     const handleCategoryClick = (slug: string) => {
-        router.push(`/search?category=${slug}`);
+        router.push(`/listings?category=${slug}`);
     };
 
     return (

@@ -36,6 +36,30 @@ export interface PaginationInfo {
 }
 
 /**
+ * Simplified bike data from /api/home endpoint
+ * Used for Home page "Xe Đạp Đang Hot" section preview
+ */
+export interface HomeBike {
+    listingId: number;
+    title: string;
+    price: number;
+    imageUrl: string;
+    locationCity: string | null;
+}
+
+/**
+ * Search parameters for filtering listings
+ * Used by search form to navigate to Listing List (S-31)
+ */
+export interface SearchParams {
+    keyword?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    qualifiedOnly?: boolean;
+}
+
+/**
  * API response structure for home listings endpoint
  * Endpoint: GET /api/home/listings
  */
