@@ -5,8 +5,8 @@ import {
     RegisterResponse,
     VerifyOtpRequest,
     VerifyOtpResponse,
-    ResendOtpRequest,
-    ResendOtpResponse,
+    SendOtpRequest,
+    SendOtpResponse,
     AuthError
 } from '@/app/types/auth';
 import {
@@ -17,6 +17,7 @@ import {
     verifyMockOtp,
     verifyMockUserEmail,
     storeMockOtp,
+    getMockUser,
 } from './mockData';
 
 // All API calls now use /backend/api prefix (handled by next.config.ts proxy)
@@ -102,15 +103,14 @@ export const authService = {
 
     /**
      * Register new user
-     * Per API Document: /api/auth/register
+     * Per Official API: POST /api/auth/register
      * @param email - User email
      * @param password - User password (6-20 chars)
      * @param phone - User phone (required, 10 digits starting with 0)
-     * @param cccd - User CCCD (12 digits)
-     * @param fullName - User full name
-     * @returns Promise with register response (no token)
+     * @param cccd - User CCCD (12 characters)
+     * @returns Promise with register response (no token, fullName will be null)
      */
-    register: async (email: string, password: string, phone: string, cccd: string, fullName: string): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
@@ -132,7 +132,8 @@ export const authService = {
             }
 
             // Register new user and generate OTP
-            const user = registerMockUser(email, password, phone, cccd, fullName);
+            // Default role is BUYER per user requirement
+            const user = registerMockUser(email, password, phone, cccd, 'BUYER');
 
             return {
                 message: 'Registration successful! Please check your email for OTP.',
@@ -146,7 +147,7 @@ export const authService = {
                 password,
                 phone,
                 cccd,
-                fullName
+                role: 'BUYER'  // Default role per user requirement
             } as RegisterRequest);
 
             // ❌ DO NOT save token - register doesn't return token
@@ -172,20 +173,36 @@ export const authService = {
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
-            // Verify OTP using mock data system
-            if (verifyMockOtp(email, otp)) {
-                // Mark user as verified
-                verifyMockUserEmail(email);
+            try {
+                // Verify OTP using mock data system
+                // verifyMockOtp throws errors for locked (423) and expired (400)
+                if (verifyMockOtp(email, otp)) {
+                    // Mark user as verified
+                    verifyMockUserEmail(email);
 
-                return {
-                    success: true,
-                    message: 'Email verified successfully!',
-                };
-            } else {
-                throw {
-                    status: 400,
-                    message: 'Invalid or expired OTP code',
-                };
+                    // Get updated user object
+                    const user = getMockUser(email);
+                    if (!user) {
+                        throw {
+                            status: 404,
+                            message: 'User not found',
+                        };
+                    }
+
+                    return {
+                        message: 'Email verified successfully!',
+                        user: user,
+                    };
+                } else {
+                    // Invalid OTP
+                    throw {
+                        status: 400,
+                        message: 'Invalid OTP',
+                    };
+                }
+            } catch (err: any) {
+                // Re-throw errors from verifyMockOtp (423 locked, 400 expired)
+                throw err;
             }
         }
 
@@ -203,12 +220,12 @@ export const authService = {
     },
 
     /**
-     * Resend OTP for email verification
-     * BR-13: User can resend OTP, old OTP becomes invalid
+     * Send OTP for email verification
+     * Official API: POST /api/auth/send-otp
      * @param email - User email
-     * @returns Promise with resend response
+     * @returns Promise with send response
      */
-    resendOtp: async (email: string): Promise<ResendOtpResponse> => {
+    sendOtp: async (email: string): Promise<SendOtpResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate network delay
@@ -217,14 +234,12 @@ export const authService = {
             storeMockOtp(email);
 
             return {
-                success: true,
                 message: 'OTP has been resent to your email',
-                expiresIn: 300, // 5 minutes
             };
         }
 
         try {
-            const data = await apiCall<ResendOtpResponse>('/auth/resend-otp', { email } as ResendOtpRequest);
+            const data = await apiCall<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
             return data;
         } catch (error) {
             throw error;

@@ -21,12 +21,12 @@ export interface LoginResponse {
 export interface User {
     userId: number;                    // ⚠️ API returns number, not string
     email: string;
-    fullName: string;
+    fullName: string | null;           // ⚠️ Can be null per official API
     phone: string;
-    role: 'USER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // ⚠️ API uses uppercase 'USER', not 'buyer'
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // ✅ Official API roles
     isVerify: boolean;                 // ⚠️ API uses 'isVerify', not 'is_verified'
-    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';  // ⚠️ BR-L04: Support all statuses
-    cccd: string;                      // ⚠️ CCCD field from API
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null;  // ⚠️ Can be null per official API
+    cccd: string;                      // ⚠️ CCCD field from API (12 characters)
     avatarUrl: string | null;          // ⚠️ Can be null
     createdAt: string;                 // ⚠️ ISO string, not Date object
     updatedAt: string;                 // ⚠️ ISO string, not Date object
@@ -43,8 +43,8 @@ export interface RegisterRequest {
     email: string;
     password: string;
     phone: string;        // Required per API doc
-    cccd: string;
-    fullName: string;     // New field per API doc
+    cccd: string;         // 12 characters
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // Required per official API
 }
 
 /**
@@ -70,20 +70,22 @@ export interface VerifyOtpRequest {
 }
 
 export interface VerifyOtpResponse {
-    success: boolean;
-    message: string;
+    message: string;      // "Email verified successfully"
+    user: User;           // User object with isVerify: true
     // BR-14: Verify thành công → BE set is_verified = TRUE
     // User vẫn chưa login, không có token
 }
 
-export interface ResendOtpRequest {
+/**
+ * Send OTP Interfaces
+ * Official API: POST /api/auth/send-otp
+ */
+export interface SendOtpRequest {
     email: string;
 }
 
-export interface ResendOtpResponse {
-    success: boolean;
-    message: string;
-    expiresIn?: number; // OTP expiration time in seconds (optional)
+export interface SendOtpResponse {
+    message: string;      // "OTP sent successfully"
 }
 
 /**

@@ -20,7 +20,6 @@ export function RegisterForm() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [fullName, setFullName] = useState('');
     const [phone, setPhone] = useState('');
     const [cccd, setCccd] = useState('');
 
@@ -34,7 +33,7 @@ export function RegisterForm() {
         setError('');
 
         // Client-side validation - all fields required per API doc
-        if (!email || !password || !confirmPassword || !fullName || !phone || !cccd) {
+        if (!email || !password || !confirmPassword || !phone || !cccd) {
             setError('Please fill in all required fields');
             return;
         }
@@ -54,11 +53,6 @@ export function RegisterForm() {
             return;
         }
 
-        if (!fullName.trim()) {
-            setError('Full name is required');
-            return;
-        }
-
         if (!validatePhone(phone)) {
             setError('Phone number is invalid (must be 10 digits starting with 0)');
             return;
@@ -72,8 +66,8 @@ export function RegisterForm() {
         setIsLoading(true);
 
         try {
-            // Call register API with all required fields per API doc
-            const response = await authService.register(email, password, phone, cccd, fullName);
+            // Call register API - role defaults to BUYER per official API
+            const response = await authService.register(email, password, phone, cccd);
 
             // Redirect to verify email screen with email parameter
             router.push(`/verify-email?email=${encodeURIComponent(email)}`);
@@ -130,15 +124,6 @@ export function RegisterForm() {
                 disabled={isLoading}
             />
 
-            <Input
-                label="Full Name"
-                id="fullName"
-                type="text"
-                value={fullName}
-                onChange={setFullName}
-                placeholder="Your full name"
-                disabled={isLoading}
-            />
 
             <Input
                 label="Phone"

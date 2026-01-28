@@ -16,12 +16,12 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'test@example.com': {
         userId: 1,
         email: 'test@example.com',
-        fullName: 'Test User',
-        phone: '0123456789',
+        fullName: null,  // API returns null for fullName
+        phone: '+84123456789',
         password: 'password123',
-        role: 'USER',
+        role: 'BUYER',
         isVerify: true,
-        status: 'ACTIVE',
+        status: null,  // API returns null for status initially
         cccd: '001234567890',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -31,12 +31,12 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'buyer@example.com': {
         userId: 2,
         email: 'buyer@example.com',
-        fullName: 'Buyer User',
-        phone: '0987654321',
+        fullName: null,
+        phone: '+84987654321',
         password: 'buyer123',
-        role: 'USER',
+        role: 'BUYER',
         isVerify: true,
-        status: 'ACTIVE',
+        status: null,
         cccd: '001234567891',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -46,12 +46,12 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'seller@example.com': {
         userId: 3,
         email: 'seller@example.com',
-        fullName: 'Seller User',
-        phone: '0999888777',
+        fullName: null,
+        phone: '+84999888777',
         password: 'seller123',
-        role: 'ADMIN',
+        role: 'SELLER',
         isVerify: true,
-        status: 'ACTIVE',
+        status: null,
         cccd: '001234567892',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -61,12 +61,12 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'unverified@example.com': {
         userId: 4,
         email: 'unverified@example.com',
-        fullName: 'Unverified User',
-        phone: '0888777666',
+        fullName: null,
+        phone: '+84888777666',
         password: 'unverified123',
-        role: 'USER',
+        role: 'BUYER',
         isVerify: false, // Not verified yet
-        status: 'ACTIVE',
+        status: null,
         cccd: '001234567893',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -76,10 +76,10 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'suspended@example.com': {
         userId: 5,
         email: 'suspended@example.com',
-        fullName: 'Suspended User',
-        phone: '0777666555',
+        fullName: null,
+        phone: '+84777666555',
         password: 'suspended123',
-        role: 'USER',
+        role: 'BUYER',
         isVerify: true,
         status: 'SUSPENDED', // Account suspended
         cccd: '001234567894',
@@ -91,10 +91,10 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'inactive@example.com': {
         userId: 6,
         email: 'inactive@example.com',
-        fullName: 'Inactive User',
-        phone: '0666555444',
+        fullName: null,
+        phone: '+84666555444',
         password: 'inactive123',
-        role: 'USER',
+        role: 'BUYER',
         isVerify: false,
         status: 'INACTIVE', // Account inactive
         cccd: '001234567895',
@@ -112,6 +112,13 @@ export const mockUsers: Record<string, User & { password: string }> = {
 export const mockOtpStorage: Record<string, { otp: string; expiresAt: number }> = {};
 
 /**
+ * Mock OTP Attempt Tracking
+ * Tracks failed OTP verification attempts
+ * After 3 failed attempts, OTP is locked (423 error)
+ */
+export const mockOtpAttempts: Record<string, number> = {};
+
+/**
  * Check if email exists in mock database
  */
 export const mockEmailExists = (email: string): boolean => {
@@ -124,7 +131,7 @@ export const mockEmailExists = (email: string): boolean => {
 export const mockPhoneExists = (phone: string): boolean => {
     // In real app, check against database
     // For mock, just simulate some existing phones
-    const existingPhones = ['0123456789', '0987654321'];
+    const existingPhones = ['+84123456789', '+84987654321'];
     return existingPhones.includes(phone);
 };
 
@@ -137,12 +144,16 @@ export const generateMockOtp = (): string => {
 
 /**
  * Store OTP for email
+ * Also resets attempt counter when new OTP is generated
  */
 export const storeMockOtp = (email: string): string => {
     const otp = generateMockOtp();
-    const expiresAt = Date.now() + 5 * 60 * 1000; // 5 minutes from now
+    const expiresAt = Date.now() + 2 * 60 * 1000; // 2 minutes from now
 
     mockOtpStorage[email] = { otp, expiresAt };
+
+    // Reset attempt counter when new OTP is generated
+    mockOtpAttempts[email] = 0;
 
     // Log to console for testing (in real app, this would be sent via email)
     console.log('📧 Mock OTP for', email, ':', otp);
@@ -153,42 +164,78 @@ export const storeMockOtp = (email: string): string => {
 
 /**
  * Verify OTP for email
+ * Official API behavior:
+ * - Returns 423 if locked (3+ failed attempts)
+ * - Returns 400 "OTP expired" if past expiresAt
+ * - Returns 400 "Invalid OTP" if code doesn't match
+ * - Increments attempt counter on failure
+ * - Resets attempt counter on success
  */
 export const verifyMockOtp = (email: string, otp: string): boolean => {
     const stored = mockOtpStorage[email];
 
     if (!stored) {
-        return false; // No OTP found
+        return false; // No OTP found (400 error handled in service)
     }
 
+    // Check if OTP is locked (3+ failed attempts)
+    const attempts = mockOtpAttempts[email] || 0;
+    if (attempts >= 3) {
+        throw {
+            status: 423,
+            message: 'OTP is locked. Please request a new OTP.',
+        };
+    }
+
+    // Check if OTP expired
     if (Date.now() > stored.expiresAt) {
         delete mockOtpStorage[email]; // Clean up expired OTP
-        return false; // OTP expired
+        throw {
+            status: 400,
+            message: 'OTP expired. Please request a new OTP.',
+        };
     }
 
-    return stored.otp === otp;
+    // Check if OTP matches
+    if (stored.otp === otp) {
+        // Success: reset attempts and clean up
+        delete mockOtpAttempts[email];
+        delete mockOtpStorage[email];
+        return true;
+    } else {
+        // Failed: increment attempts
+        mockOtpAttempts[email] = attempts + 1;
+
+        if (mockOtpAttempts[email] >= 3) {
+            console.log(`🔒 OTP locked for ${email} after 3 failed attempts`);
+        } else {
+            console.log(`❌ Invalid OTP for ${email}. Attempt ${mockOtpAttempts[email]}/3`);
+        }
+
+        return false;
+    }
 };
 
 /**
  * Register new mock user
- * Per API Document: all fields required
+ * Per Official API: all fields required, role defaults to BUYER
  */
 export const registerMockUser = (
     email: string,
     password: string,
     phone: string,      // Required per API doc
-    cccd: string,
-    fullName: string    // Required per API doc
+    cccd: string,       // 12 characters
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'  // Role from official API
 ): User => {
     const newUser: User & { password: string } = {
         userId: Date.now(), // Use timestamp as number ID
         email: email,
-        fullName: fullName,  // Use provided fullName
+        fullName: null,      // API returns null per official spec
         phone: phone,        // Required
         password: password,
-        role: 'USER',
-        isVerify: false, // Needs email verification
-        status: 'ACTIVE',
+        role: role,          // Use provided role
+        isVerify: false,     // Needs email verification
+        status: null,        // API returns null per official spec
         cccd: cccd,
         avatarUrl: null,
         createdAt: new Date().toISOString(),
@@ -208,11 +255,12 @@ export const registerMockUser = (
 
 /**
  * Verify user email
+ * Called after successful OTP verification
  */
 export const verifyMockUserEmail = (email: string): void => {
     if (mockUsers[email]) {
         mockUsers[email].isVerify = true; // Use correct field name from API
-        delete mockOtpStorage[email]; // Clean up OTP
+        // Cleanup is done in verifyMockOtp after successful verification
     }
 };
 
