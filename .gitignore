@@ -40,5 +40,22 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# docker
 /docker-compose.yml
 
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Temporary documentation (keep in artifacts only)
+*_COMPLIANCE_REPORT.md
+*_REPORT.md
+
+# Test results (personal)
+test-results/
+*_RESULTS_*.csv
+*_REPORT_*.xlsx
+screenshots/

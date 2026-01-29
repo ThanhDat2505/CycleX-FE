@@ -1,0 +1,112 @@
+Test Data Type,Field,Value,Description,Valid/Invalid
+Valid Data,Email,test@example.com,ACTIVE + verified user,Valid
+Valid Data,Email,buyer@example.com,ACTIVE + verified buyer,Valid
+Valid Data,Email,seller@example.com,ACTIVE + verified seller,Valid
+Valid Data,Password,password123,Valid password (8-20 chars),Valid
+Valid Data,Password,buyer123,Valid password for buyer,Valid
+Valid Data,Password,seller123,Valid password for seller,Valid
+Valid Data,Password,pass12,Minimum valid length (6 chars),Valid
+Valid Data,Password,12345678901234567890,Maximum valid length (20 chars),Valid
+,,,,
+Invalid Data,Email,notanemail,Missing @ and domain,Invalid
+Invalid Data,Email,test@,Missing domain,Invalid
+Invalid Data,Email,@example.com,Missing local part,Invalid
+Invalid Data,Email,(empty),Required field,Invalid
+Invalid Data,Password,pass,Too short (4 chars),Invalid
+Invalid Data,Password,12345,Too short (5 chars),Invalid
+Invalid Data,Password,(empty),Required field,Invalid
+Invalid Data,Password,wrongpassword,Incorrect password,Invalid
+,,,,
+Status Test Users,Email,test@example.com,ACTIVE + verified,Valid
+Status Test Users,Password,password123,Correct password,Valid
+Status Test Users,Status,ACTIVE,Active status,Valid
+Status Test Users,isVerify,TRUE,Email verified,Valid
+Status Test Users,Expected,Login Success,Should login successfully,Valid
+,,,,
+Status Test Users,Email,unverified@example.com,ACTIVE + unverified,Invalid
+Status Test Users,Password,unverified123,Correct password,Valid
+Status Test Users,Status,ACTIVE,Active status,Valid
+Status Test Users,isVerify,FALSE,Email NOT verified,Invalid
+Status Test Users,Expected,Redirect Verify,Should redirect to verify email,Invalid
+,,,,
+Status Test Users,Email,inactive@example.com,INACTIVE + unverified,Invalid
+Status Test Users,Password,inactive123,Correct password,Valid
+Status Test Users,Status,INACTIVE,Inactive status,Invalid
+Status Test Users,isVerify,FALSE,Email NOT verified,Invalid
+Status Test Users,Expected,Redirect Verify,Should redirect to verify email,Invalid
+,,,,
+Status Test Users,Email,suspended@example.com,SUSPENDED + verified,Invalid
+Status Test Users,Password,suspended123,Correct password,Valid
+Status Test Users,Status,SUSPENDED,Suspended status,Invalid
+Status Test Users,isVerify,TRUE,Email verified,Valid
+Status Test Users,Expected,Error Message,Should show suspended error,Invalid
+,,,,
+Non-existent Users,Email,notexist@example.com,User does not exist,Invalid
+Non-existent Users,Password,anything,Any password,Invalid
+Non-existent Users,Expected,Error: Account not found,Should show error,Invalid
+,,,,
+Error Scenarios,Scenario,Wrong Password,Correct email but wrong password,Invalid
+Error Scenarios,Email,test@example.com,Existing user,Valid
+Error Scenarios,Password,wrongpassword,Incorrect password,Invalid
+Error Scenarios,Expected,Error: Email or password is incorrect,Should show error,Invalid
+,,,,
+Error Scenarios,Scenario,Empty Fields,Both fields empty,Invalid
+Error Scenarios,Email,(empty),No email,Invalid
+Error Scenarios,Password,(empty),No password,Invalid
+Error Scenarios,Expected,Error: Email and password are required,Should show error,Invalid
+,,,,
+Error Scenarios,Scenario,Invalid Email Format,Wrong email format,Invalid
+Error Scenarios,Email,notanemail,Invalid format,Invalid
+Error Scenarios,Password,password123,Valid password,Valid
+Error Scenarios,Expected,Error: Email is invalid,Should show error,Invalid
+,,,,
+State Transitions,State,L1 - ACTIVE + Verified,Login allowed,Valid
+State Transitions,Status,ACTIVE,Active status,Valid
+State Transitions,isVerify,TRUE,Verified,Valid
+State Transitions,Action,Login Success,Allow login → Home,Valid
+,,,,
+State Transitions,State,L2 - INACTIVE + Unverified,Login forbidden,Invalid
+State Transitions,Status,INACTIVE,Inactive status,Invalid
+State Transitions,isVerify,FALSE,Not verified,Invalid
+State Transitions,Action,Redirect Verify,Redirect to verify email,Invalid
+,,,,
+State Transitions,State,L3 - SUSPENDED,Login forbidden,Invalid
+State Transitions,Status,SUSPENDED,Suspended status,Invalid
+State Transitions,isVerify,TRUE,Verified (but suspended),Invalid
+State Transitions,Action,Error Message,Show suspended error,Invalid
+,,,,
+Business Rules,Rule,BR-L02,Login API & Response,Valid
+Business Rules,Test Cases,TC-LOGIN-001,Happy path login,Valid
+Business Rules,Validation,User object returned,Check all fields,Valid
+,,,,
+Business Rules,Rule,BR-L03,Set auth state,Valid
+Business Rules,Test Cases,TC-LOGIN-001 TC-LOGIN-023,Token saved,Valid
+Business Rules,Validation,localStorage has token,Check persistence,Valid
+,,,,
+Business Rules,Rule,BR-L05,Status handling,Valid
+Business Rules,Test Cases,TC-LOGIN-001 TC-LOGIN-003 TC-LOGIN-004,All statuses,Valid
+Business Rules,Validation,Correct behavior per status,Check redirects/errors,Valid
+,,,,
+Business Rules,Rule,BR-L06,Status != ACTIVE,Valid
+Business Rules,Test Cases,TC-LOGIN-003 TC-LOGIN-004,INACTIVE SUSPENDED,Valid
+Business Rules,Validation,Login blocked,No token saved,Valid
+,,,,
+Business Rules,Rule,BR-L07,isVerify = false,Valid
+Business Rules,Test Cases,TC-LOGIN-002 TC-LOGIN-003,Unverified users,Valid
+Business Rules,Validation,Redirect to verify email,Check redirect,Valid
+,,,,
+Business Rules,Rule,BR-L08,Redirect Home,Valid
+Business Rules,Test Cases,TC-LOGIN-022,Always redirect /,Valid
+Business Rules,Validation,Not by role,Same for all roles,Valid
+,,,,
+Business Rules,Rule,BR-L09,Password rule,Valid
+Business Rules,Test Cases,TC-LOGIN-010 TC-LOGIN-011 TC-LOGIN-012,6-20 chars,Valid
+Business Rules,Validation,Length validation,Check min/max,Valid
+,,,,
+Business Rules,Rule,BR-L10,Email rule,Valid
+Business Rules,Test Cases,TC-LOGIN-009,Format validation,Valid
+Business Rules,Validation,Email format check,Standard format,Valid
+,,,,
+Business Rules,Rule,BR-L11,Error handling,Valid
+Business Rules,Test Cases,TC-LOGIN-005 TC-LOGIN-006,Wrong credentials,Valid
+Business Rules,Validation,Error messages,User-friendly messages,Valid

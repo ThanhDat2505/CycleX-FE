@@ -1,0 +1,229 @@
+Test Case ID,Category,Priority,Test Case Name,Precondition,Test Steps,Test Data,Expected Result,Business Rule,Status,Actual Result,Notes
+TC-REG-001,Form Validation,P0,Valid Registration (Happy Path),User is Guest (not logged in),"1. Navigate to /register
+2. Enter valid email: newuser@example.com
+3. Enter password: password123
+4. Enter confirm password: password123
+5. Enter CCCD: 123456789012
+6. Enter phone: 0987654321
+7. Click Register","Email: newuser@example.com
+Password: password123
+Confirm: password123
+CCCD: 123456789012
+Phone: 0987654321","✁ENo validation errors
+✁ELoading state shown
+✁ERedirect to /verify-email?email=newuser@example.com
+✁ESuccess message
+✁EBackend receives role: BUYER","BR-02, BR-05, BR-10, BR-17",Not Tested,,Updated: role BUYER sent automatically
+TC-REG-002,Form Validation,P1,Empty Email,User is Guest,"1. Navigate to /register
+2. Leave email empty
+3. Fill other fields correctly
+4. Click Register","Email: (empty)
+Password: password123
+CCCD: 123456789012
+Phone: 0987654321","❁EError: Please fill in all required fields
+❁ENo API call made",BR-05,Not Tested,,
+TC-REG-003,Form Validation,P1,Invalid Email Format,User is Guest,"1. Enter invalid email: notanemail
+2. Fill other fields correctly
+3. Click Register","Email: notanemail
+Password: password123
+CCCD: 123456789012
+Phone: 0987654321","❁EError: Email is invalid
+❁ENo API call made","BR-02, BR-05",Not Tested,,
+TC-REG-004,Form Validation,P1,Empty Password,User is Guest,"1. Fill email correctly
+2. Leave password empty
+3. Fill other fields
+4. Click Register","Email: test@example.com
+Password: (empty)
+CCCD: 123456789012
+Phone: 0987654321",❁EError: Please fill in all required fields,BR-05,Not Tested,,
+TC-REG-005,Form Validation,P0,Password Too Short (< 6 chars),User is Guest,"1. Enter password: pass1 (5 chars)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: pass1 (5 chars)
+CCCD: 123456789012
+Phone: 0987654321",❁EError: Password must be 6-20 characters long,BR-06,Not Tested,,Updated: 6-20 chars
+TC-REG-006,Form Validation,P0,Password Too Long (> 20 chars),User is Guest,"1. Enter password: thispasswordiswaytoolong123 (27 chars)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: thispasswordiswaytoolong123
+CCCD: 123456789012
+Phone: 0987654321",❁EError: Password must be 6-20 characters long,BR-06,Not Tested,,Updated: 6-20 chars
+TC-REG-007,Form Validation,P1,Password Mismatch,User is Guest,"1. Enter password: password123
+2. Enter confirm password: password456
+3. Fill other fields correctly
+4. Click Register","Email: test@example.com
+Password: password123
+Confirm: password456
+CCCD: 123456789012
+Phone: 0987654321",❁EError: Passwords do not match,BR-05,Not Tested,,
+TC-REG-008,Form Validation,P1,Empty CCCD,User is Guest,"1. Fill email and password correctly
+2. Leave CCCD empty
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: (empty)
+Phone: 0987654321",❁EError: Please fill in all required fields,BR-05,Not Tested,,
+TC-REG-009,Form Validation,P0,Invalid CCCD (Not 12 digits),User is Guest,"1. Enter CCCD: 12345 (5 digits)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 12345
+Phone: 0987654321",❁EError: CCCD must be 12 digits,BR-02,Not Tested,,
+TC-REG-010,Form Validation,P1,Invalid CCCD (Contains letters),User is Guest,"1. Enter CCCD: 12345678901A
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 12345678901A
+Phone: 0987654321",❁EError: CCCD must be 12 digits,BR-02,Not Tested,,
+TC-REG-011,Form Validation,P1,Empty Phone,User is Guest,"1. Fill email, password, CCCD correctly
+2. Leave phone empty
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 123456789012
+Phone: (empty)",❁EError: Please fill in all required fields,BR-05,Not Tested,,
+TC-REG-012,Form Validation,P1,Invalid Phone Format (9 digits),User is Guest,"1. Enter phone: 123456789 (9 digits)
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 123456789012
+Phone: 123456789",❁EError: Phone number is invalid (must be 10 digits starting with 0),BR-02,Not Tested,,
+TC-REG-013,Form Validation,P1,Phone Not Starting with 0,User is Guest,"1. Enter phone: 1234567890
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com
+Password: password123
+CCCD: 123456789012
+Phone: 1234567890",❁EError: Phone number is invalid (must be 10 digits starting with 0),BR-02,Not Tested,,
+TC-REG-014,Duplicate Detection,P0,Duplicate Email,Email test@example.com already exists,"1. Enter email: test@example.com
+2. Fill other fields correctly
+3. Click Register","Email: test@example.com (exists)
+Password: password123
+CCCD: 123456789012
+Phone: 0912345678","❁EError: Email already exists
+❁ENo user created",BR-07,Not Tested,,
+TC-REG-015,Duplicate Detection,P1,Duplicate Phone,Phone +84123456789 already exists,"1. Enter phone: 0123456789
+2. Fill other fields correctly
+3. Click Register","Email: newuser@example.com
+Password: password123
+CCCD: 123456789012
+Phone: 0123456789 (exists)","❁EError: Phone number already exists
+❁ENo user created",BR-07,Not Tested,,Updated: phone format
+TC-REG-016,Route Protection,P0,Authenticated User Access,User is logged in,"1. Login first
+2. Navigate to /register",N/A,"✁ERedirect to / (home page)
+✁ECannot access register page",BR-01,Not Tested,,
+TC-REG-017,Route Protection,P1,Guest User Access,User is NOT logged in,1. Navigate to /register,N/A,"✁ERegister page displayed
+✁EForm is accessible",BR-01,Not Tested,,
+TC-VER-001,OTP Verification,P0,Valid OTP Verification,User just registered with newuser@example.com,"1. On verify email page
+2. Check console for OTP (mock mode)
+3. Enter correct OTP
+4. Click Verify Email",OTP: (from console),"✁ESuccess: Email verified successfully!
+✁ERedirect to /login after 2 seconds
+✁EUser isVerify = TRUE
+✁EResponse includes user object","BR-12, BR-14",Not Tested,,Updated: response format
+TC-VER-002,OTP Verification,P0,Invalid OTP (First Attempt),User on verify email page,"1. Enter wrong OTP: 111111
+2. Click Verify Email",OTP: 111111,"❁EError: Invalid OTP. Please try again.
+❁EConsole shows: Attempt 1/3
+❁EUser remains unverified",BR-12,Not Tested,,NEW: Shows attempt count
+TC-VER-003,OTP Verification,P0,Invalid OTP (Second Attempt),User already tried once,"1. Enter wrong OTP: 222222
+2. Click Verify Email",OTP: 222222,"❁EError: Invalid OTP. Please try again.
+❁EConsole shows: Attempt 2/3",BR-12,Not Tested,,NEW: Shows attempt count
+TC-VER-004,OTP Verification,P0,Invalid OTP (Third Attempt),User already tried twice,"1. Enter wrong OTP: 333333
+2. Click Verify Email",OTP: 333333,"❁EError: Invalid OTP. Please try again.
+❁EConsole shows: 🔒 OTP locked after 3 failed attempts",BR-12,Not Tested,,NEW: OTP locked
+TC-VER-005,OTP Verification,P0,OTP Locked After 3 Failures,User failed 3 times,"1. Enter ANY OTP (even correct one)
+2. Click Verify Email",OTP: (any),"❁EError: OTP is locked. Please request a new OTP.
+❁ECannot verify even with correct OTP",BR-12,Not Tested,,NEW: 423 error
+TC-VER-006,OTP Verification,P1,OTP Less Than 6 Digits,User on verify email page,"1. Enter OTP: 12345 (5 digits)
+2. Click Verify Email",OTP: 12345,"❁EError: OTP must be 6 digits
+❁ENo API call made",BR-12,Not Tested,,
+TC-VER-007,OTP Verification,P1,Empty OTP,User on verify email page,"1. Leave OTP field empty
+2. Click Verify Email",OTP: (empty),❁EError: OTP code is required,BR-12,Not Tested,,
+TC-VER-008,OTP Verification,P0,Expired OTP,OTP has expired (> 2 minutes),"1. Wait for OTP to expire (timer shows 0:00)
+2. Enter OTP
+3. Click Verify Email",OTP: (any),"❁EError: OTP expired. Please request a new OTP.
+❁EVerify button disabled when timer = 0:00",BR-12,Not Tested,,Updated: 2 minutes
+TC-RESEND-001,Send OTP,P0,Send OTP Successfully,User on verify email page,1. Click Resend OTP,N/A,"✁ESuccess: OTP has been resent to your email
+✁ENew OTP in console
+✁ECooldown timer starts (60s)
+✁EExpiration timer resets to 2:00
+✁EOld OTP invalidated
+✁EAttempt counter reset to 0",BR-13,Not Tested,,Updated: 2 min + attempt reset
+TC-RESEND-002,Send OTP,P1,Send During Cooldown,Just clicked resend (cooldown active),1. Click Resend OTP again immediately,N/A,"❁EButton disabled
+❁EShows countdown: Resend (59s), Resend (58s), etc.",BR-13,Not Tested,,
+TC-RESEND-003,Send OTP,P1,Send After Cooldown,Cooldown finished (60 seconds passed),"1. Wait for cooldown to finish
+2. Click Resend OTP",N/A,"✁ENew OTP sent
+✁ECooldown restarts
+✁EAttempt counter reset",BR-13,Not Tested,,Updated: attempt reset
+TC-RESEND-004,Send OTP,P2,Empty Email for Send,User on verify email page,"1. Clear email field
+2. Click Resend OTP",Email: (empty),❁EError: Email is required,BR-13,Not Tested,,
+TC-RESEND-005,Send OTP,P0,Send OTP Unlocks Locked OTP,OTP is locked (423),"1. OTP locked after 3 failures
+2. Click Resend OTP
+3. Enter new OTP from console
+4. Click Verify Email",New OTP from console,"✁ENew OTP generated
+✁EAttempt counter reset to 0
+✁ECan verify with new OTP
+✁ESuccess",BR-13,Not Tested,,NEW: Unlock mechanism
+TC-UI-001,UI/UX,P2,Loading State,User on register page,"1. Fill form correctly
+2. Click Register
+3. Observe UI during API call",Valid data,"✁EButton shows loading state
+✁EAll inputs disabled
+✁ECannot submit again",N/A,Not Tested,,
+TC-UI-002,UI/UX,P2,Email Pre-filled from URL,Redirected from register with email param,"1. Register with test@example.com
+2. Check verify email page",Email: test@example.com,"✁EEmail field pre-filled
+✁EEmail field disabled",N/A,Not Tested,,
+TC-UI-003,UI/UX,P2,OTP Timer Countdown,User on verify email page,"1. Observe timer on verify email page
+2. Watch countdown",N/A,"✁ETimer shows 2:00 initially
+✁ECounts down: 1:59, 1:58, ...
+✁EFormat: MM:SS",BR-12,Not Tested,,Updated: 2 minutes
+TC-UI-004,UI/UX,P2,Resend Cooldown Display,User on verify email page,"1. Click Resend OTP
+2. Observe button text",N/A,"✁EButton text: Resend (60s)
+✁ECounts down to Resend (1s)
+✁EThen becomes Resend OTP",BR-13,Not Tested,,
+TC-UI-005,UI/UX,P2,Error Message Display,User on register page,"1. Enter invalid data
+2. Click Register
+3. Correct the error",Invalid data,"✁EError message displayed in red box
+✁EError clears when corrected",N/A,Not Tested,,
+TC-UI-006,UI/UX,P2,No Full Name Field,User on register page,1. Navigate to /register,N/A,"✁EForm shows: Email, Password, Confirm Password, Phone, CCCD
+✁ENO Full Name field
+✁ENO Role selection field",N/A,Not Tested,,NEW: Verify form structure
+TC-FLOW-001,Integration Flow,P0,Complete Happy Path,User is Guest,"1. Navigate to /register
+2. Fill valid data
+3. Click Register
+4. Redirected to verify email
+5. Enter correct OTP
+6. Click Verify Email
+7. Redirected to login","Valid data, role=BUYER sent","✁EComplete flow works end-to-end
+✁EUser can login after verification
+✁Erole BUYER in backend",BR-17,Not Tested,,Updated: role BUYER
+TC-FLOW-002,Integration Flow,P0,Register ↁEVerify ↁELogin,User is Guest,"1. Register new user
+2. Verify email with OTP
+3. Go to login page
+4. Login with registered credentials",Valid credentials,"✁ELogin successful
+✁EToken saved
+✁ERedirect to home","BR-14, BR-17",Not Tested,,
+TC-FLOW-003,Integration Flow,P1,Register ↁESkip Verify ↁETry Login,User just registered but not verified,"1. Register new user
+2. Skip verification (go to login)
+3. Try to login",Unverified user credentials,"❁ELogin blocked
+❁EError: Please verify your email before logging in","BR-11, BR-15",Not Tested,,
+TC-FLOW-004,Integration Flow,P0,Register ↁEOTP Locked ↁEResend ↁESuccess,User is Guest,"1. Register new user
+2. Enter wrong OTP 3 times
+3. Try correct OTP (locked)
+4. Click Resend OTP
+5. Enter new OTP
+6. Verify successfully",3 wrong OTPs then correct,"✁EOTP locks after 3 failures
+✁EResend unlocks
+✁EVerification succeeds with new OTP",BR-12,Not Tested,,NEW: Full locking flow
+TC-MOCK-001,Mock Mode,P2,Mock Mode Enabled,NEXT_PUBLIC_MOCK_API=true,"1. Register new user
+2. Check browser console",Valid data,"✁EOTP displayed in console
+✁ENo real API call
+✁EMock response returned",N/A,Not Tested,,Mock mode only
+TC-MOCK-002,Mock Mode,P2,Pre-registered User Login,Mock mode enabled,1. Login with test@example.com / password123,"Email: test@example.com
+Password: password123","✁ELogin successful
+✁EMock token generated",N/A,Not Tested,,Mock mode only
+TC-MOCK-003,Mock Mode,P2,Duplicate Email in Mock,Mock mode enabled,1. Register with test@example.com (already in mock DB),Email: test@example.com,❁EError: Email already exists,N/A,Not Tested,,Mock mode only
+TC-MOCK-004,Mock Mode,P2,OTP Attempt Tracking,Mock mode enabled,"1. Register user
+2. Enter wrong OTP
+3. Check console",Wrong OTP,"✁EConsole shows: ❁EInvalid OTP. Attempt 1/3
+✁EAttempt counter increments",N/A,Not Tested,,NEW: Mock attempt tracking
+TC-MOCK-005,Mock Mode,P2,OTP Expiration After 2 Minutes,Mock mode enabled,"1. Register user
+2. Wait 2 minutes
+3. Enter OTP",Expired OTP,"✁EError: OTP expired
+✁EConsole shows cleanup",N/A,Not Tested,,NEW: 2-minute expiration
