@@ -1,0 +1,54 @@
+services:
+  db:
+    image: postgres:16
+    container_name: dbcyclex
+    environment:
+      POSTGRES_DB: dbcyclex
+      POSTGRES_USER: cyclex
+      POSTGRES_PASSWORD: cyclex
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cyclex -d dbcyclex"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  api:
+    build:
+      context: ./CycleX-BE
+      dockerfile: Dockerfile
+    container_name: cyclexbe
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/dbcyclex
+      SPRING_DATASOURCE_USERNAME: cyclex
+      SPRING_DATASOURCE_PASSWORD: cyclex
+      SERVER_PORT: 4491
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      TZ: Asia/Ho_Chi_Minh
+      JAVA_OPTS: -XX:MaxRAMPercentage=75.0
+    expose:
+      - "4491"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./CycleX-FE
+      dockerfile: Dockerfile
+    container_name: cyclexfe
+    depends_on:
+      - api
+    environment:
+      NODE_ENV: production
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "4495:3000"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
