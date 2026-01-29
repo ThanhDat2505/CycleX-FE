@@ -9,6 +9,7 @@ import {
     SendOtpResponse,
     AuthError
 } from '@/app/types/auth';
+import { apiCallPOST } from '@/app/utils/apiHelpers';
 import {
     validateMockLogin,
     mockEmailExists,
@@ -22,50 +23,8 @@ import {
 
 // All API calls now use /backend/api prefix (handled by next.config.ts proxy)
 
-/**
- * Helper function to make API calls with consistent error handling
- * @param endpoint - API endpoint (e.g., '/auth/login')
- * @param body - Request body object
- * @returns Promise with parsed JSON response
- */
-async function apiCall<T>(endpoint: string, body: object): Promise<T> {
-    try {
-        const response = await fetch(`/backend/api${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-
-        if (!response.ok) {
-            // Try to parse error from backend
-            try {
-                const error: AuthError = await response.json();
-                throw error;
-            } catch (parseError) {
-                // If can't parse JSON, throw generic error with status code
-                throw {
-                    status: response.status,
-                    message: `Server error: ${response.statusText}`,
-                };
-            }
-        }
-
-        return await response.json();
-    } catch (error: any) {
-        // Handle network errors (server down, no internet, CORS, etc.)
-        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-            throw {
-                status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
-            };
-        }
-
-        // Re-throw other errors (from backend or parsing)
-        throw error;
-    }
-}
+// Note: apiCall function moved to shared utils/apiHelpers.ts
+// Using apiCallPOST from there instead
 
 /**
  * Authentication Service
@@ -108,24 +67,29 @@ export const authService = {
         // }
 
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
-        try {
-            // sử dụng helper function apiCall để gọi API
-            const data = await apiCall<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
-            if (!data.user.status || data.user.status !== 'ACTIVE') {
-                throw {
-                    status: 401,
-                    message: 'Please verify your email',
-                }
-            }
-            // Save token if login successful
-            if (data.accessToken) {
-                authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
-            }
+        const data = await apiCallPOST<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
 
-            return data;
-        } catch (error) {
-            throw error;
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.user || !data.accessToken) {
+            throw {
+                status: 500,
+                message: 'Invalid login response from server',
+            };
         }
+
+        if (!data.user.status || data.user.status !== 'ACTIVE') {
+            throw {
+                status: 401,
+                message: 'Please verify your email',
+            }
+        }
+
+        // Save token if login successful
+        if (data.accessToken) {
+            authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
+        }
+
+        return data;
     },
 
     /**
@@ -168,23 +132,27 @@ export const authService = {
             };
         }
 
-        try {
-            const data = await apiCall<RegisterResponse>('/auth/register', {
-                email,
-                password,
-                phone,
-                cccd,
-                role: 'BUYER'  // Default role per user requirement
-            } as RegisterRequest);
+        const data = await apiCallPOST<RegisterResponse>('/auth/register', {
+            email,
+            password,
+            phone,
+            cccd,
+            role: 'BUYER'  // Default role per user requirement
+        } as RegisterRequest);
 
-            // ❌ DO NOT save token - register doesn't return token
-            // ❌ DO NOT auto-login
-            // ✅ Just return data for redirect to verify email
-
-            return data;
-        } catch (error) {
-            throw error;
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.user || !data.message) {
+            throw {
+                status: 500,
+                message: 'Invalid register response from server',
+            };
         }
+
+        // ❌ DO NOT save token - register doesn't return token
+        // ❌ DO NOT auto-login
+        // ✅ Just return data for redirect to verify email
+
+        return data;
     },
 
     /**
@@ -233,17 +201,21 @@ export const authService = {
             }
         }
 
-        try {
-            const data = await apiCall<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
+        const data = await apiCallPOST<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
 
-            // ❌ DO NOT save token - verification doesn't return token
-            // ❌ DO NOT auto-login
-            // ✅ User must login after verification (BR-14)
-
-            return data;
-        } catch (error) {
-            throw error;
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.user || !data.message) {
+            throw {
+                status: 500,
+                message: 'Invalid verify OTP response from server',
+            };
         }
+
+        // ❌ DO NOT save token - verification doesn't return token
+        // ❌ DO NOT auto-login
+        // ✅ User must login after verification (BR-14)
+
+        return data;
     },
 
     /**
@@ -265,12 +237,17 @@ export const authService = {
             };
         }
 
-        try {
-            const data = await apiCall<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
-            return data;
-        } catch (error) {
-            throw error;
+        const data = await apiCallPOST<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
+
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.message) {
+            throw {
+                status: 500,
+                message: 'Invalid send OTP response from server',
+            };
         }
+
+        return data;
     },
 
     /**

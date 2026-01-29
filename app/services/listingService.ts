@@ -5,6 +5,7 @@
  */
 
 import { HomeBike } from '../types/listing';
+import { apiCallGET } from '../utils/apiHelpers';
 
 // Check if we should use mock API (for development)
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
@@ -79,40 +80,35 @@ export async function getHomeListings(): Promise<HomeBike[]> {
         return MOCK_HOME_BIKES;
     }
 
-    // Real API call
-    try {
-        const response = await fetch('/backend/api/home', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
+    // Real API call using shared helper
+    const data = await apiCallGET<HomeBike[]>('/home');
 
-        if (!response.ok) {
-            // Try to parse error from backend
-            try {
-                const error = await response.json();
-                throw error;
-            } catch (parseError) {
-                throw {
-                    status: response.status,
-                    message: `Failed to fetch home listings: ${response.statusText}`,
-                };
-            }
-        }
+    // ✅ VALIDATION: Check null/undefined
+    if (!data) {
+        throw {
+            status: 500,
+            message: 'Invalid response from server: data is null or undefined',
+        };
+    }
 
-        const data: HomeBike[] = await response.json();
-        return data;
-    } catch (error: any) {
-        // Handle network errors (server down, no internet, etc.)
-        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+    // ✅ VALIDATION: Check is array
+    if (!Array.isArray(data)) {
+        throw {
+            status: 500,
+            message: 'Invalid response format: expected array of bikes',
+        };
+    }
+
+    // ✅ VALIDATION: Check required fields in each bike
+    for (const bike of data) {
+        if (!bike.listingId || !bike.title || bike.price === undefined || !bike.imageUrl) {
+            console.error('❌ Invalid bike data:', bike);
             throw {
-                status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+                status: 500,
+                message: 'Invalid bike data structure from server',
             };
         }
-
-        // Re-throw other errors
-        throw error;
     }
+
+    return data;
 }
