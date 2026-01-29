@@ -16,12 +16,9 @@ import { useRouter } from 'next/navigation';
 import { HomeBike } from '../types/listing';
 import FeaturedBikeCard from './FeaturedBikeCard';
 import Badge from './ui/Badge';
-import { generateMockHomeBikes } from '../mocks';
+import { getHomeListings } from '../services/listingService';
 
 const MAX_FEATURED_BIKES = 6;
-
-// Check if we should use mock API (for development)
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 export default function FeaturedBikesSection() {
     const router = useRouter();
@@ -35,34 +32,18 @@ export default function FeaturedBikesSection() {
 
     /**
      * Fetch featured bikes from /backend/api/home
-     * Falls back to mock data if USE_MOCK_API is enabled
+     * Uses listingService for centralized API logic
      */
     const fetchFeaturedBikes = async () => {
         setLoading(true);
         setError(null);
 
-        // Use mock data in development
-        if (USE_MOCK_API) {
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setBikes(generateMockHomeBikes());
-            setLoading(false);
-            return;
-        }
-
-        // Real API call
         try {
-            const response = await fetch('/backend/api/home');
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch featured bikes');
-            }
-
-            const data: HomeBike[] = await response.json();
+            const data = await getHomeListings();
 
             // Limit to 6 bikes for Home preview
             setBikes(data.slice(0, MAX_FEATURED_BIKES));
-        } catch (err) {
+        } catch (err: any) {
             setError('Không thể tải danh sách xe. Vui lòng thử lại sau.');
             console.error('Error fetching featured bikes:', err);
         } finally {
