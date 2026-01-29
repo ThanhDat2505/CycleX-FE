@@ -1,5 +1,6 @@
-import { AuthLayout } from '@/app/components/layout';
-import { VerifyEmailForm } from './VerifyEmailForm';
+import {AuthLayout} from '@/app/components/layout';
+import {VerifyEmailForm} from './VerifyEmailForm';
+import {Suspense} from "react";
 
 /**
  * Verify Email Page
@@ -9,7 +10,9 @@ import { VerifyEmailForm } from './VerifyEmailForm';
 export default function VerifyEmailPage() {
     return (
         <AuthLayout title="Verify Your Email">
-            <VerifyEmailForm />
+            <Suspense fallback={<div>Đang xác thực...</div>}>
+                <VerifyEmailForm/>
+            </Suspense>
         </AuthLayout>
     );
 }
