@@ -10,6 +10,11 @@ FROM node:20-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+ARG API_PROXY_TARGET
+ARG DOCKER
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
+ENV DOCKER=$DOCKER
+
 RUN npm run build
 
 FROM node:20-alpine AS runner

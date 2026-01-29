@@ -1,0 +1,67 @@
+Test Data Type,Field,Value,Description,Valid/Invalid
+Valid Data,Email,newuser@example.com,New user email for registration,Valid
+Valid Data,Email,user2@example.com,Alternative new user email,Valid
+Valid Data,Password,password123,Valid password (8-20 chars),Valid
+Valid Data,Confirm Password,password123,Matching password,Valid
+Valid Data,CCCD,123456789012,Valid 12-digit CCCD,Valid
+Valid Data,Phone,0987654321,Valid phone (10 digits starting with 0),Valid
+Valid Data,Phone,0123456789,Alternative valid phone,Valid
+Valid Data,Phone,(empty),Phone is optional,Valid
+,,,,
+Invalid Data,Email,notanemail,Missing @ and domain,Invalid
+Invalid Data,Email,test@,Missing domain,Invalid
+Invalid Data,Email,@example.com,Missing local part,Invalid
+Invalid Data,Email,(empty),Required field,Invalid
+Invalid Data,Password,pass123,Too short (7 chars),Invalid
+Invalid Data,Password,pass,Too short (4 chars),Invalid
+Invalid Data,Password,thispasswordiswaytoolong123,Too long (27 chars),Invalid
+Invalid Data,Password,(empty),Required field,Invalid
+Invalid Data,Confirm Password,password456,Does not match password123,Invalid
+Invalid Data,Confirm Password,(empty),Required field,Invalid
+Invalid Data,CCCD,12345,Too short (5 digits),Invalid
+Invalid Data,CCCD,123,Too short (3 digits),Invalid
+Invalid Data,CCCD,12345678901A,Contains letters,Invalid
+Invalid Data,CCCD,abcdefghijkl,All letters,Invalid
+Invalid Data,CCCD,(empty),Required field,Invalid
+Invalid Data,Phone,123456789,Too short (9 digits),Invalid
+Invalid Data,Phone,1234567890,Does not start with 0,Invalid
+Invalid Data,Phone,012345678,Too short (9 digits),Invalid
+Invalid Data,Phone,01234567890,Too long (11 digits),Invalid
+Invalid Data,Phone,098765432a,Contains letters,Invalid
+,,,,
+Duplicate Data,Email,test@example.com,Already exists in database,Invalid
+Duplicate Data,Email,buyer@example.com,Already exists in database,Invalid
+Duplicate Data,Phone,0123456789,Already exists in database,Invalid
+,,,,
+Mock Users,Email,test@example.com,Pre-registered verified user,Existing
+Mock Users,Password,password123,Password for test@example.com,N/A
+Mock Users,Role,BUYER,User role,N/A
+Mock Users,Status,ACTIVE,User status,N/A
+Mock Users,Verified,TRUE,Email verified,N/A
+,,,,
+Mock Users,Email,buyer@example.com,Pre-registered verified buyer,Existing
+Mock Users,Password,buyer123,Password for buyer@example.com,N/A
+Mock Users,Role,BUYER,User role,N/A
+Mock Users,Status,ACTIVE,User status,N/A
+Mock Users,Verified,TRUE,Email verified,N/A
+,,,,
+Mock Users,Email,seller@example.com,Pre-registered verified seller,Existing
+Mock Users,Password,seller123,Password for seller@example.com,N/A
+Mock Users,Role,SELLER,User role,N/A
+Mock Users,Status,ACTIVE,User status,N/A
+Mock Users,Verified,TRUE,Email verified,N/A
+,,,,
+Mock Users,Email,unverified@example.com,Pre-registered unverified user,Existing
+Mock Users,Password,unverified123,Password for unverified@example.com,N/A
+Mock Users,Role,BUYER,User role,N/A
+Mock Users,Status,ACTIVE,User status,N/A
+Mock Users,Verified,FALSE,Email NOT verified,N/A
+,,,,
+OTP Data,OTP,(check console),6-digit code from console in mock mode,Valid
+OTP Data,OTP,123456,Example valid OTP format,Valid
+OTP Data,OTP,999999,Invalid/wrong OTP,Invalid
+OTP Data,OTP,12345,Too short (5 digits),Invalid
+OTP Data,OTP,1234567,Too long (7 digits),Invalid
+OTP Data,OTP,(empty),Required field,Invalid
+OTP Data,Expiration,5 minutes,OTP expires after 5 minutes,N/A
+OTP Data,Resend Cooldown,60 seconds,Must wait 60s before resending,N/A
