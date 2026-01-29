@@ -89,7 +89,12 @@ export const authService = {
         try {
             // sử dụng helper function apiCall để gọi API
             const data = await apiCall<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
-
+            if (!data.user.status || data.user.status !== 'ACTIVE') {
+                throw {
+                    status: 401,
+                    message: 'Please verify your email',
+                }
+            }
             // Save token if login successful
             if (data.accessToken) {
                 authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage

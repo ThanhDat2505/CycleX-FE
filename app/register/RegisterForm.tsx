@@ -68,6 +68,13 @@ export function RegisterForm() {
         try {
             // Call register API - role defaults to BUYER per official API
             const response = await authService.register(email, password, phone, cccd);
+            const sendOtpResponse = await authService.sendOtp(email);
+            if (sendOtpResponse.message !== 'OTP sent successfully') {
+                throw new Error('OTP not sent successfully');
+            }
+            if (response.message !== 'Registration successful') {
+                throw new Error('Registration failed');
+            }
 
             // Redirect to verify email screen with email parameter
             router.push(`/verify-email?email=${encodeURIComponent(email)}`);
