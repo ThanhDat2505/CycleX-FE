@@ -60,30 +60,30 @@ export const authService = {
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
         // Mock mode for testing UI without backend
-        if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-
-            const user = validateMockLogin(email, password);
-
-            if (user) {
-                const mockToken = 'mock-jwt-token-' + Date.now();
-                authService.saveToken(mockToken);
-
-                return {
-                    accessToken: mockToken,
-                    tokenType: 'Bearer',
-                    user: user,
-                    message: 'Login successful!'
-                };
-            } else {
-                // User not found OR wrong password
-                // BR-L11: Generic error message for security
-                throw {
-                    status: 401,
-                    message: 'Email or password is incorrect',
-                };
-            }
-        }
+        // if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
+        //     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+        //
+        //     const user = validateMockLogin(email, password);
+        //
+        //     if (user) {
+        //         const mockToken = 'mock-jwt-token-' + Date.now();
+        //         authService.saveToken(mockToken);
+        //
+        //         return {
+        //             accessToken: mockToken,
+        //             tokenType: 'Bearer',
+        //             user: user,
+        //             message: 'Login successful!'
+        //         };
+        //     } else {
+        //         // User not found OR wrong password
+        //         // BR-L11: Generic error message for security
+        //         throw {
+        //             status: 401,
+        //             message: 'Email or password is incorrect',
+        //         };
+        //     }
+        // }
 
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {

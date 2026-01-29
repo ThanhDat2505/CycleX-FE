@@ -18,8 +18,8 @@ export const handleAuthError = (err: any): string => {
                 return err.message || 'Invalid request';
 
             case 401:
-                // Unauthorized - wrong credentials
-                return 'Email or password is incorrect';
+
+                return err.message;
 
             case 403:
                 // Forbidden - could be not verified, suspended, or inactive
