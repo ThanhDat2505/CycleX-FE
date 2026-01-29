@@ -29,20 +29,42 @@ import {
  * @returns Promise with parsed JSON response
  */
 async function apiCall<T>(endpoint: string, body: object): Promise<T> {
-    const response = await fetch(`/backend/api${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    });
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
 
-    if (!response.ok) {
-        const error: AuthError = await response.json();
+        if (!response.ok) {
+            // Try to parse error from backend
+            try {
+                const error: AuthError = await response.json();
+                throw error;
+            } catch (parseError) {
+                // If can't parse JSON, throw generic error with status code
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        // Handle network errors (server down, no internet, CORS, etc.)
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+
+        // Re-throw other errors (from backend or parsing)
         throw error;
     }
-
-    return await response.json();
 }
 
 /**
