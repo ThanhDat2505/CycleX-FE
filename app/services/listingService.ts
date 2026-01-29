@@ -112,3 +112,59 @@ export async function getHomeListings(): Promise<HomeBike[]> {
 
     return data;
 }
+
+/**
+ * Search listings by keyword
+ * Calls GET /api/listings/search?keyword={keyword}
+ * 
+ * @param keyword - Search keyword (minimum 3 characters)
+ * @returns Promise<HomeBike[]> - Array of matching bike listings
+ */
+export async function searchListings(keyword: string): Promise<HomeBike[]> {
+    console.log('🔍 Searching listings with keyword:', keyword);
+
+    // Mock data for development
+    if (USE_MOCK_API) {
+        console.log('📦 Using MOCK search data');
+        // Filter mock data by keyword
+        const filtered = MOCK_HOME_BIKES.filter(bike =>
+            bike.title.toLowerCase().includes(keyword.toLowerCase())
+        );
+        return new Promise((resolve) => {
+            setTimeout(() => resolve(filtered), 500); // Simulate network delay
+        });
+    }
+
+    // Real API call using shared helper
+    const data = await apiCallGET<HomeBike[]>(`/listings/search?keyword=${encodeURIComponent(keyword)}`);
+
+    // ✅ VALIDATION: Check null/undefined
+    if (!data) {
+        throw {
+            status: 500,
+            message: 'Invalid response from server: data is null or undefined',
+        };
+    }
+
+    // ✅ VALIDATION: Check is array
+    if (!Array.isArray(data)) {
+        throw {
+            status: 500,
+            message: 'Invalid response format: expected array of bikes',
+        };
+    }
+
+    // ✅ VALIDATION: Check required fields in each bike
+    for (const bike of data) {
+        if (!bike.listingId || !bike.title || bike.price === undefined || !bike.imageUrl) {
+            console.error('❌ Invalid bike data:', bike);
+            throw {
+                status: 500,
+                message: 'Invalid bike data structure from server',
+            };
+        }
+    }
+
+    console.log(`✅ Search successful: ${data.length} results found`);
+    return data;
+}

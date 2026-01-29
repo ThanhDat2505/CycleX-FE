@@ -16,6 +16,8 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState('');
 
     const handleSellClick = () => {
         if (!isLoggedIn) {
@@ -71,29 +73,70 @@ export default function Header() {
                                 <form
                                     onSubmit={(e) => {
                                         e.preventDefault();
-                                        if (searchKeyword.trim()) {
-                                            router.push(`/listings?keyword=${encodeURIComponent(searchKeyword.trim())}`);
-                                            setSearchOpen(false);
-                                            setSearchKeyword('');
+                                        const keyword = searchKeyword.trim();
+
+                                        // ✅ Validation: Minimum 3 characters
+                                        if (keyword.length < 3) {
+                                            setSearchError('Vui lòng nhập ít nhất 3 ký tự');
+                                            return;
                                         }
+
+                                        // Clear error and set loading
+                                        setSearchError('');
+                                        setSearchLoading(true);
+
+                                        // Navigate to search results
+                                        router.push(`/listings?keyword=${encodeURIComponent(keyword)}`);
+
+                                        // Reset states (loading will be cleared by navigation)
+                                        setSearchOpen(false);
+                                        setSearchKeyword('');
+
+                                        // Clear loading after navigation starts
+                                        setTimeout(() => setSearchLoading(false), 1000);
                                     }}
-                                    className="flex items-center"
+                                    className="flex flex-col gap-1"
                                 >
-                                    <input
-                                        type="text"
-                                        placeholder="Tìm kiếm xe..."
-                                        value={searchKeyword}
-                                        onChange={(e) => setSearchKeyword(e.target.value)}
-                                        className="w-48 md:w-64 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                                        autoFocus
-                                        onBlur={() => {
-                                            // Delay to allow form submission
-                                            setTimeout(() => {
-                                                setSearchOpen(false);
-                                                setSearchKeyword('');
-                                            }, 200);
-                                        }}
-                                    />
+                                    <div className="relative flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm xe... (3 ký tự trở lên)"
+                                            value={searchKeyword}
+                                            onChange={(e) => {
+                                                setSearchKeyword(e.target.value);
+                                                setSearchError(''); // Clear error on type
+                                            }}
+                                            className={`w-48 md:w-64 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 ${searchError
+                                                    ? 'ring-2 ring-red-500 focus:ring-red-500'
+                                                    : 'focus:ring-brand-primary'
+                                                }`}
+                                            autoFocus
+                                            disabled={searchLoading}
+                                            onBlur={() => {
+                                                // Delay to allow form submission
+                                                setTimeout(() => {
+                                                    if (!searchLoading) {
+                                                        setSearchOpen(false);
+                                                        setSearchKeyword('');
+                                                        setSearchError('');
+                                                    }
+                                                }, 200);
+                                            }}
+                                        />
+                                        {searchLoading && (
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                <svg className="animate-spin h-5 w-5 text-brand-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {searchError && (
+                                        <p className="text-red-400 text-sm px-1 absolute -bottom-6 left-0 whitespace-nowrap">
+                                            {searchError}
+                                        </p>
+                                    )}
                                 </form>
                             ) : (
                                 <button
