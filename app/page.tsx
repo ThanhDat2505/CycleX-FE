@@ -4,10 +4,10 @@
  * ===========================================
  * Route: / (root)
  * File: app/page.tsx (Next.js App Router convention)
- * 
+ *
  * Public page displaying featured bikes preview with "Xem thêm xe" CTA.
  * Business Rules: BR-H01 through BR-H05
- * 
+ *
  * Sections included:
  * - Header (navigation, auth)
  * - HeroSection (search, stats)
@@ -28,25 +28,22 @@ import CategorySection from './components/CategorySection';
 import Footer from './components/Footer';
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-white">
-      {/* Header with auth state */}
-      <Header />
+    return (
+        <div className="min-h-screen bg-white">
 
-      {/* Hero Section */}
-      <HeroSection />
+            {/* Hero Section */}
+            <HeroSection/>
 
-      {/* Features Section */}
-      <FeaturesSection />
+            {/* Features Section */}
+            <FeaturesSection/>
 
-      {/* Featured Bikes - "Xe Đạp Đang Hot" */}
-      <FeaturedBikesSection />
+            {/* Featured Bikes - "Xe Đạp Đang Hot" */}
+            <FeaturedBikesSection/>
 
-      {/* Category Section */}
-      <CategorySection />
+            {/* Category Section */}
+            <CategorySection/>
 
-      {/* Footer */}
-      <Footer />
-    </div>
-  );
+
+        </div>
+    );
 }
