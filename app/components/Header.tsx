@@ -12,7 +12,7 @@ import { useAuth } from '../hooks/useAuth';
 
 export default function Header() {
     const router = useRouter();
-    const { isLoggedIn, logout } = useAuth();
+    const { isLoggedIn, logout, user } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
@@ -42,10 +42,15 @@ export default function Header() {
         if (!isLoggedIn) {
             // Redirect to login with return URL
             router.push('/login?returnUrl=/create-listing');
+        } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
+            // Do nothing or show notification (optional) - for now just prevent navigation
+            return;
         } else {
             router.push('/create-listing');
         }
     };
+
+    const isRestrictedRole = user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role);
 
     return (
         <header className="bg-brand-bg text-white sticky top-0 z-50 shadow-lg">
@@ -70,12 +75,14 @@ export default function Header() {
                         >
                             Mua Xe
                         </button>
-                        <button
-                            onClick={handleSellClick}
-                            className="text-white hover:text-brand-primary transition-colors"
-                        >
-                            Bán Xe
-                        </button>
+                        {!isRestrictedRole && (
+                            <button
+                                onClick={handleSellClick}
+                                className="text-white hover:text-brand-primary transition-colors"
+                            >
+                                Bán Xe
+                            </button>
+                        )}
                         <button
                             onClick={() => router.push('/guide')}
                             className="text-white hover:text-brand-primary transition-colors"
@@ -198,34 +205,38 @@ export default function Header() {
                                     {/* Dropdown Menu */}
                                     {userMenuOpen && (
                                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
-                                            <button
-                                                onClick={() => {
-                                                    router.push('/dashboard');
-                                                    setUserMenuOpen(false);
-                                                }}
-                                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
-                                            >
-                                                📊 Dashboard
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    router.push('/my-listings');
-                                                    setUserMenuOpen(false);
-                                                }}
-                                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
-                                            >
-                                                📋 My Listings
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    router.push('/draft-listings');
-                                                    setUserMenuOpen(false);
-                                                }}
-                                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
-                                            >
-                                                📝 Draft Listings
-                                            </button>
-                                            <hr className="my-2" />
+                                            {!isRestrictedRole && (
+                                                <>
+                                                    <button
+                                                        onClick={() => {
+                                                            router.push('/dashboard');
+                                                            setUserMenuOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        📊 Dashboard
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            router.push('/my-listings');
+                                                            setUserMenuOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        📋 My Listings
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            router.push('/draft-listings');
+                                                            setUserMenuOpen(false);
+                                                        }}
+                                                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                                    >
+                                                        📝 Draft Listings
+                                                    </button>
+                                                    <hr className="my-2" />
+                                                </>
+                                            )}
                                             <button
                                                 onClick={() => {
                                                     logout();
@@ -240,12 +251,14 @@ export default function Header() {
                                 </div>
 
                                 {/* Đăng Tin Button */}
-                                <button
-                                    onClick={() => router.push('/create-listing')}
-                                    className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
-                                >
-                                    Đăng Tin
-                                </button>
+                                {!isRestrictedRole && (
+                                    <button
+                                        onClick={() => router.push('/create-listing')}
+                                        className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                                    >
+                                        Đăng Tin
+                                    </button>
+                                )}
 
                                 {/* Logout (mobile only) */}
                                 <button
@@ -300,12 +313,14 @@ export default function Header() {
                             >
                                 Mua Xe
                             </button>
-                            <button
-                                onClick={() => { handleSellClick(); setMobileMenuOpen(false); }}
-                                className="text-white hover:text-brand-primary transition-colors text-left"
-                            >
-                                Bán Xe
-                            </button>
+                            {!isRestrictedRole && (
+                                <button
+                                    onClick={() => { handleSellClick(); setMobileMenuOpen(false); }}
+                                    className="text-white hover:text-brand-primary transition-colors text-left"
+                                >
+                                    Bán Xe
+                                </button>
+                            )}
                             <button
                                 onClick={() => { router.push('/guide'); setMobileMenuOpen(false); }}
                                 className="text-white hover:text-brand-primary transition-colors text-left"

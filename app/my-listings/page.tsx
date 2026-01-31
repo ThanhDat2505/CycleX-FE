@@ -3,7 +3,8 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
 import { formatPrice } from '../utils/format';
 import { ErrorBanner } from "@/app/components/ErrorBanner";
@@ -11,6 +12,19 @@ import { ITEMS_PER_PAGE } from "@/app/constants";
 
 const ListingsPage: React.FC = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const { user, isLoggedIn, isLoading: authLoading } = useAuth();
+
+  // BR-S11: Restrict access to BUYER and SELLER only
+  useEffect(() => {
+    if (!authLoading) {
+      if (!isLoggedIn) {
+        router.push('/login?returnUrl=/my-listings');
+      } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
+        router.push('/');
+      }
+    }
+  }, [isLoggedIn, authLoading, router, user]);
 
   // Initialize filter from URL params with mapping
   const rawStatus = searchParams.get('status');
@@ -49,6 +63,10 @@ const ListingsPage: React.FC = () => {
 
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  if (authLoading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
 
   return (
     <div className="p-8 max-w-7xl mx-auto">

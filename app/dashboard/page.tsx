@@ -21,12 +21,16 @@ const DashboardPage: React.FC = () => {
 
 
   // ✅ AUTH PROTECTION: Redirect to login if not authenticated
+  // BR-S10: Restrict access to BUYER and SELLER only
   useEffect(() => {
-    if (!authLoading && !isLoggedIn) {
-      router.push('/login?returnUrl=/dashboard');
+    if (!authLoading) {
+      if (!isLoggedIn) {
+        router.push('/login?returnUrl=/dashboard');
+      } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
+        router.push('/'); // Redirect restricted roles to Home
+      }
     }
-    // Note: No role check - BUYER can access after becoming SELLER
-  }, [isLoggedIn, authLoading, router]);
+  }, [isLoggedIn, authLoading, router, user]);
 
   // Show loading while checking auth
   if (authLoading) {

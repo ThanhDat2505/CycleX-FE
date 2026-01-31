@@ -21,7 +21,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         password: 'password123',
         role: 'BUYER',
         isVerify: true,
-        status: null,  // API returns null for status initially
+        status: 'ACTIVE',  // API returns null for status initially
         cccd: '001234567890',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
