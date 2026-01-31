@@ -21,16 +21,12 @@ import {
     getMockUser,
 } from './mockData';
 
-// All API calls now use /backend/api prefix (handled by next.config.ts proxy)
-
-// Note: apiCall function moved to shared utils/apiHelpers.ts
-// Using apiCallPOST from there instead
-
 /**
  * Authentication Service
  * Handles all authentication-related API calls
  */
 export const authService = {
+    // là cầu nối giữa API và UI
     /**
      * Login user with email and password
      * @param email - User email
@@ -40,31 +36,6 @@ export const authService = {
      * async báo hiệu có thể dùng await, gọi APi mất thời gian, không block code khác, đợi kết quả rồi mới chạy
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
-        // Mock mode for testing UI without backend
-        // if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-        //     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-        //
-        //     const user = validateMockLogin(email, password);
-        //
-        //     if (user) {
-        //         const mockToken = 'mock-jwt-token-' + Date.now();
-        //         authService.saveToken(mockToken);
-        //
-        //         return {
-        //             accessToken: mockToken,
-        //             tokenType: 'Bearer',
-        //             user: user,
-        //             message: 'Login successful!'
-        //         };
-        //     } else {
-        //         // User not found OR wrong password
-        //         // BR-L11: Generic error message for security
-        //         throw {
-        //             status: 401,
-        //             message: 'Email or password is incorrect',
-        //         };
-        //     }
-        // }
 
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         const data = await apiCallPOST<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
@@ -103,34 +74,34 @@ export const authService = {
      */
     register: async (email: string, password: string, phone: string, cccd: string): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
-        if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+        // if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
+        //     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
-            // Check for duplicate email
-            if (mockEmailExists(email)) {
-                throw {
-                    status: 409,
-                    message: 'Email already exists',
-                };
-            }
+        //     // Check for duplicate email
+        //     if (mockEmailExists(email)) {
+        //         throw {
+        //             status: 409,
+        //             message: 'Email already exists',
+        //         };
+        //     }
 
-            // Check for duplicate phone
-            if (mockPhoneExists(phone)) {
-                throw {
-                    status: 409,
-                    message: 'Phone number already exists',
-                };
-            }
+        //     // Check for duplicate phone
+        //     if (mockPhoneExists(phone)) {
+        //         throw {
+        //             status: 409,
+        //             message: 'Phone number already exists',
+        //         };
+        //     }
 
-            // Register new user and generate OTP
-            // Default role is BUYER per user requirement
-            const user = registerMockUser(email, password, phone, cccd, 'BUYER');
+        //     // Register new user and generate OTP
+        //     // Default role is BUYER per user requirement
+        //     const user = registerMockUser(email, password, phone, cccd, 'BUYER');
 
-            return {
-                message: 'Registration successful! Please check your email for OTP.',
-                user: user
-            };
-        }
+        //     return {
+        //         message: 'Registration successful! Please check your email for OTP.',
+        //         user: user
+        //     };
+        // }
 
         const data = await apiCallPOST<RegisterResponse>('/auth/register', {
             email,

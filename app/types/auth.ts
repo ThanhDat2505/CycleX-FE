@@ -1,11 +1,14 @@
 // TypeScript types for authentication
 // interface định nghĩa cấu trúc
+
+// Dữ liệu gửi lên server khi login
 export interface LoginRequest {
     email: string;
     password: string;
     rememberMe?: boolean; // optional
 }
 
+// Dữ liệu trả về từ server khi login
 export interface LoginResponse {
     accessToken: string;
     tokenType: string;
@@ -18,19 +21,19 @@ export interface LoginResponse {
  * Updated to match ACTUAL API response from backend
  * API Document: /backend/api/auth/login
  */
+// Thông tin người dùng khi login
 export interface User {
-    userId: number;                    // ⚠️ API returns number, not string
-    email: string;
-    fullName: string | null;           // ⚠️ Can be null per official API
+    userId: number;
+    fullName: string | null;
     phone: string;
-    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // ✅ Official API roles
-    isVerify: boolean;                 // ⚠️ API uses 'isVerify', not 'is_verified'
-    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null;  // ⚠️ Can be null per official API
-    cccd: string;                      // ⚠️ CCCD field from API (12 characters)
-    avatarUrl: string | null;          // ⚠️ Can be null
-    createdAt: string;                 // ⚠️ ISO string, not Date object
-    updatedAt: string;                 // ⚠️ ISO string, not Date object
-    lastLogin: string | null;          // ⚠️ ISO string or null
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';
+    isVerify: boolean;
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null;
+    cccd: string;
+    avatarUrl: string | null;
+    createdAt: string;
+    updatedAt: string;
+    lastLogin: string | null;
 }
 
 export interface AuthError {

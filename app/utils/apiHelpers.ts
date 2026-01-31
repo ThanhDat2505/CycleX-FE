@@ -16,6 +16,9 @@ export interface ApiError {
  * @param body - Request body object
  * @returns Promise with parsed JSON response
  */
+// Ví dụ: apiCallPOST('/auth/login', {email, password}) đường dẫn API và dữ liệu gửi lên
+// → Gửi đến: /backend/api/auth/login
+// → Trả về: LoginResponse
 export async function apiCallPOST<T>(
     endpoint: string,
     body: object
@@ -24,16 +27,16 @@ export async function apiCallPOST<T>(
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'application/json', // báo server biết dữ liệu gửi lên là JSON
             },
-            body: JSON.stringify(body),
+            body: JSON.stringify(body), // chuyển dữ liệu sang JSON
         });
 
         if (!response.ok) {
             // Try to parse error from backend
             try {
-                const error: ApiError = await response.json();
-                throw error;
+                const error: ApiError = await response.json(); // parse lỗi từ server thành json
+                throw error; // ném lỗi ra ngoài
             } catch (parseError) {
                 // If can't parse JSON, throw generic error with status code
                 throw {
@@ -44,7 +47,7 @@ export async function apiCallPOST<T>(
         }
 
         return await response.json();
-    } catch (error: any) {
+    } catch (error: any) { // ở đây là bắt lỗi mạng khi server không chạy hoặc không kết nối được
         // Handle network errors (server down, no internet, CORS, etc.)
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
