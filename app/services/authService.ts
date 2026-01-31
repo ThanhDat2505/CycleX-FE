@@ -7,6 +7,7 @@ import {
     VerifyOtpResponse,
     SendOtpRequest,
     SendOtpResponse,
+    User,
     AuthError
 } from '@/app/types/auth';
 import {
@@ -19,31 +20,9 @@ import {
     storeMockOtp,
     getMockUser,
 } from './mockData';
+import { apiCallPOST } from '@/app/utils/apiHelpers';
 
 // All API calls now use /backend/api prefix (handled by next.config.ts proxy)
-
-/**
- * Helper function to make API calls with consistent error handling
- * @param endpoint - API endpoint (e.g., '/auth/login')
- * @param body - Request body object
- * @returns Promise with parsed JSON response
- */
-async function apiCall<T>(endpoint: string, body: object): Promise<T> {
-    const response = await fetch(`/backend/api${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-        const error: AuthError = await response.json();
-        throw error;
-    }
-
-    return await response.json();
-}
 
 /**
  * Authentication Service
@@ -60,35 +39,36 @@ export const authService = {
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
         // Mock mode for testing UI without backend
-        // if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-        //     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-        //
-        //     const user = validateMockLogin(email, password);
-        //
-        //     if (user) {
-        //         const mockToken = 'mock-jwt-token-' + Date.now();
-        //         authService.saveToken(mockToken);
-        //
-        //         return {
-        //             accessToken: mockToken,
-        //             tokenType: 'Bearer',
-        //             user: user,
-        //             message: 'Login successful!'
-        //         };
-        //     } else {
-        //         // User not found OR wrong password
-        //         // BR-L11: Generic error message for security
-        //         throw {
-        //             status: 401,
-        //             message: 'Email or password is incorrect',
-        //         };
-        //     }
-        // }
+        if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
+            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+
+            const user = validateMockLogin(email, password);
+
+            if (user) {
+                const mockToken = 'mock-jwt-token-' + Date.now();
+                authService.saveToken(mockToken);
+                authService.saveUser(user); // ✅ Save user data for role check
+
+                return {
+                    accessToken: mockToken,
+                    tokenType: 'Bearer',
+                    user: user,
+                    message: 'Login successful!'
+                };
+            } else {
+                // User not found OR wrong password
+                // BR-L11: Generic error message for security
+                throw {
+                    status: 401,
+                    message: 'Email or password is incorrect',
+                };
+            }
+        }
 
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {
-            // sử dụng helper function apiCall để gọi API
-            const data = await apiCall<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
+            // sử dụng helper function apiCallPOST từ apiHelpers để gọi API
+            const data = await apiCallPOST<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
             if (!data.user.status || data.user.status !== 'ACTIVE') {
                 throw {
                     status: 401,
@@ -147,7 +127,7 @@ export const authService = {
         }
 
         try {
-            const data = await apiCall<RegisterResponse>('/auth/register', {
+            const data = await apiCallPOST<RegisterResponse>('/auth/register', {
                 email,
                 password,
                 phone,
@@ -212,7 +192,7 @@ export const authService = {
         }
 
         try {
-            const data = await apiCall<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
+            const data = await apiCallPOST<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
 
             // ❌ DO NOT save token - verification doesn't return token
             // ❌ DO NOT auto-login
@@ -244,7 +224,7 @@ export const authService = {
         }
 
         try {
-            const data = await apiCall<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
+            const data = await apiCallPOST<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
             return data;
         } catch (error) {
             throw error;
@@ -260,6 +240,29 @@ export const authService = {
             console.log(`Saving token to localStorage: ${token}`);
             localStorage.setItem('authToken', token);
         }
+    },
+
+    /**
+     * Save user data to localStorage
+     * @param user - User object from login response
+     */
+    saveUser: (user: User): void => {
+        if (typeof window !== 'undefined') {
+            console.log(`Saving user data to localStorage:`, user);
+            localStorage.setItem('userData', JSON.stringify(user));
+        }
+    },
+
+    /**
+     * Get user data from localStorage
+     * @returns User object or null
+     */
+    getUser: (): User | null => {
+        if (typeof window !== 'undefined') {
+            const userData = localStorage.getItem('userData');
+            return userData ? JSON.parse(userData) : null;
+        }
+        return null;
     },
 
     /**

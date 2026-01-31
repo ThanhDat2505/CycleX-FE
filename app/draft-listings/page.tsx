@@ -1,10 +1,41 @@
 // app/draft-listings/page.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hooks/useAuth";
 
 const DraftListingsPage: React.FC = () => {
+  const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth(); // Removed role check
+
+  // ✅ AUTH PROTECTION: Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/login?returnUrl=/draft-listings');
+    }
+    // Note: Users can view their own drafts (backend checks ownership)
+  }, [isLoggedIn, isLoading, router]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  // Redirect message if not logged in
+  if (!isLoggedIn) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <p className="text-gray-600">Redirecting to login...</p>
+      </div>
+    );
+  }
+
   // Mock data
   const draftListings = [
     {

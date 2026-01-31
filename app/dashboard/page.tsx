@@ -1,18 +1,44 @@
 // app/dashboard/page.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
-import {MetricCard} from "@/app/components/MetricCard";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hooks/useAuth";
+import { MetricCard } from "@/app/components/MetricCard";
 
 const DashboardPage: React.FC = () => {
-  // Mock data
-  const currentUser = {
-    name: "John Seller",
-    rating: 4.8,
-    reviews: 42,
-  };
+  const router = useRouter();
+  const { isLoggedIn, isLoading, user } = useAuth(); // Get user data
 
+  // ✅ AUTH PROTECTION: Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/login?returnUrl=/dashboard');
+    }
+    // Note: No role check - BUYER can access after becoming SELLER
+  }, [isLoggedIn, isLoading, router]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  // Redirect message if not logged in
+  if (!isLoggedIn) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <p className="text-gray-600">Redirecting to login...</p>
+      </div>
+    );
+  }
+
+  // Mock data - will be replaced with real data from API
+  // Removed hardcoded currentUser, using real user from auth
   const mockListings = [
     {
       id: 1,
@@ -35,31 +61,37 @@ const DashboardPage: React.FC = () => {
       status: "PENDING",
       price: 15500000,
     },
+    {
+      id: 4,
+      brand: "Cannondale",
+      model: "Trail 5",
+      status: "REJECTED",
+      price: 9500000,
+    },
   ];
 
   const userListings = mockListings;
   const activeListings = userListings.filter(
     (l) => l.status === "ACTIVE",
   ).length;
+  const pendingListings = userListings.filter(
+    (l) => l.status === "PENDING",
+  ).length;
+  const rejectedListings = userListings.filter(
+    (l) => l.status === "REJECTED",
+  ).length;
+  const totalTransactions = 5; // Mock: số giao dịch thành công
   const totalViews = 1245;
   const newInquiries = 3;
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex justify-between items-start mb-8 gap-4 flex-wrap">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
-          <p className="text-gray-600 mt-2">
-            Welcome back, {currentUser.name}. Here&apos;s your selling overview.
-          </p>
-        </div>
-        <Link
-          href="/create-listing"
-          className="px-6 py-3 bg-[#FF8A00] text-white rounded-lg font-semibold hover:bg-[#FF7A00] transition"
-        >
-          Create New Listing
-        </Link>
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-2">
+          Welcome back, {user?.fullName || 'User'}. Here&apos;s your selling overview.
+        </p>
       </div>
 
       {/* Metrics Grid */}
@@ -69,32 +101,58 @@ const DashboardPage: React.FC = () => {
           value={activeListings}
           icon="📋"
           change="↑ 2 from last month"
-          href="/listings"
+          href="/my-listings?status=active"
           isPositive={true}
         />
+        {/* BR-S10-F01: PENDING listings */}
         <MetricCard
+          label="Pending Listings"
+          value={pendingListings}
+          icon="⏳"
+          change="Waiting for approval"
+          href="/my-listings?status=pending"
+        />
+        {/* BR-S10-F01: REJECTED listings */}
+        <MetricCard
+          label="Rejected Listings"
+          value={rejectedListings}
+          icon="❌"
+          change="Need attention"
+          href="/my-listings?status=rejected"
+        />
+        {/* BR-S10-F02: Transactions count */}
+        <MetricCard
+          label="Transactions"
+          value={totalTransactions}
+          icon="💰"
+          change="View not available yet"
+        />
+        {/* ⚠️ NOT IN SPRINT 1 BR - Optional metric */}
+        {/* <MetricCard
           label="Total Views"
           value={totalViews.toLocaleString()}
           icon="👁️"
           change="↑ 245 this week"
           href="/views"
           isPositive={true}
-        />
-        <MetricCard
+        /> */}
+        {/* ⚠️ NOT IN SPRINT 1 - Commented out */}
+        {/* <MetricCard
           label="Inquiries"
           value={3}
           icon="💬"
           change={`${newInquiries} pending responses`}
           href="/inquiries"
-        />
-        <MetricCard
+        /> */}
+        {/* ⚠️ NOT IN SPRINT 1 - Commented out */}
+        {/* <MetricCard
           label="Seller Rating"
           value={currentUser.rating}
           icon="⭐"
           change={`Based on ${currentUser.reviews} reviews`}
           href="/ratings"
           isPositive={true}
-        />
+        /> */}
       </div>
 
       {/* Recent Activity & Quick Actions Grid */}
@@ -141,7 +199,7 @@ const DashboardPage: React.FC = () => {
               Create Listing
             </Link>
             <Link
-              href="/listings"
+              href="/my-listings"
               className="block px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition text-center"
             >
               View Listings
@@ -152,12 +210,13 @@ const DashboardPage: React.FC = () => {
             >
               Draft Listings
             </Link>
-            <Link
+            {/* ⚠️ NOT IN SPRINT 1 - Commented out */}
+            {/* <Link
               href="/listing-status"
               className="block px-4 py-3 bg-gray-100 text-gray-900 rounded-lg font-medium hover:bg-gray-200 transition text-center"
             >
               Check Status
-            </Link>
+            </Link> */}
           </div>
         </div>
       </div>
@@ -212,13 +271,12 @@ const DashboardPage: React.FC = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                          listing.status === "ACTIVE"
-                            ? "bg-green-100 text-green-800"
-                            : listing.status === "PENDING"
-                              ? "bg-yellow-100 text-yellow-800"
-                              : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${listing.status === "ACTIVE"
+                          ? "bg-green-100 text-green-800"
+                          : listing.status === "PENDING"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {listing.status}
                       </span>

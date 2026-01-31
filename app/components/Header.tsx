@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
@@ -16,6 +16,27 @@ export default function Header() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
     const [searchKeyword, setSearchKeyword] = useState('');
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [searchError, setSearchError] = useState('');
+    const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const userMenuRef = useRef<HTMLDivElement>(null);
+
+    // Close user menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+                setUserMenuOpen(false);
+            }
+        };
+
+        if (userMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [userMenuOpen]);
 
     const handleSellClick = () => {
         if (!isLoggedIn) {
@@ -71,29 +92,70 @@ export default function Header() {
                                 <form
                                     onSubmit={(e) => {
                                         e.preventDefault();
-                                        if (searchKeyword.trim()) {
-                                            router.push(`/listings?keyword=${encodeURIComponent(searchKeyword.trim())}`);
-                                            setSearchOpen(false);
-                                            setSearchKeyword('');
+                                        const keyword = searchKeyword.trim();
+
+                                        // ✅ Validation: Minimum 3 characters
+                                        if (keyword.length < 3) {
+                                            setSearchError('Vui lòng nhập ít nhất 3 ký tự');
+                                            return;
                                         }
+
+                                        // Clear error and set loading
+                                        setSearchError('');
+                                        setSearchLoading(true);
+
+                                        // Navigate to search results
+                                        router.push(`/listings?keyword=${encodeURIComponent(keyword)}`);
+
+                                        // Reset states
+                                        setSearchOpen(false);
+                                        setSearchKeyword('');
+
+                                        // Clear loading after navigation starts
+                                        setTimeout(() => setSearchLoading(false), 1000);
                                     }}
-                                    className="flex items-center"
+                                    className="flex flex-col gap-1"
                                 >
-                                    <input
-                                        type="text"
-                                        placeholder="Tìm kiếm xe..."
-                                        value={searchKeyword}
-                                        onChange={(e) => setSearchKeyword(e.target.value)}
-                                        className="w-48 md:w-64 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                                        autoFocus
-                                        onBlur={() => {
-                                            // Delay to allow form submission
-                                            setTimeout(() => {
-                                                setSearchOpen(false);
-                                                setSearchKeyword('');
-                                            }, 200);
-                                        }}
-                                    />
+                                    <div className="relative flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Tìm kiếm xe... (3 ký tự trở lên)"
+                                            value={searchKeyword}
+                                            onChange={(e) => {
+                                                setSearchKeyword(e.target.value);
+                                                setSearchError(''); // Clear error on type
+                                            }}
+                                            className={`w-48 md:w-64 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 ${searchError
+                                                ? 'ring-2 ring-red-500 focus:ring-red-500'
+                                                : 'focus:ring-brand-primary'
+                                                }`}
+                                            autoFocus
+                                            disabled={searchLoading}
+                                            onBlur={() => {
+                                                // Delay to allow form submission
+                                                setTimeout(() => {
+                                                    if (!searchLoading) {
+                                                        setSearchOpen(false);
+                                                        setSearchKeyword('');
+                                                        setSearchError('');
+                                                    }
+                                                }, 200);
+                                            }}
+                                        />
+                                        {searchLoading && (
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                <svg className="animate-spin h-5 w-5 text-brand-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                    {searchError && (
+                                        <p className="text-red-400 text-sm px-1 absolute -bottom-6 left-0 whitespace-nowrap">
+                                            {searchError}
+                                        </p>
+                                    )}
                                 </form>
                             ) : (
                                 <button
@@ -121,16 +183,61 @@ export default function Header() {
                                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
                                 </button>
 
-                                {/* User Icon */}
-                                <button
-                                    onClick={() => router.push('/profile')}
-                                    className="hidden md:block text-white hover:text-brand-primary transition-colors"
-                                    aria-label="Profile"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </button>
+                                {/* User Icon with Dropdown */}
+                                <div className="relative" ref={userMenuRef}>
+                                    <button
+                                        onClick={() => setUserMenuOpen(!userMenuOpen)}
+                                        className="hidden md:block text-white hover:text-brand-primary transition-colors"
+                                        aria-label="User Menu"
+                                    >
+                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                        </svg>
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {userMenuOpen && (
+                                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
+                                            <button
+                                                onClick={() => {
+                                                    router.push('/dashboard');
+                                                    setUserMenuOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                            >
+                                                📊 Dashboard
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    router.push('/my-listings');
+                                                    setUserMenuOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                            >
+                                                📋 My Listings
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    router.push('/draft-listings');
+                                                    setUserMenuOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                            >
+                                                📝 Draft Listings
+                                            </button>
+                                            <hr className="my-2" />
+                                            <button
+                                                onClick={() => {
+                                                    logout();
+                                                    setUserMenuOpen(false);
+                                                }}
+                                                className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 transition-colors"
+                                            >
+                                                🚪 Logout
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
 
                                 {/* Đăng Tin Button */}
                                 <button

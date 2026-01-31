@@ -89,7 +89,8 @@ export function LoginForm() {
 
             // BR-L03: Login successful - token already saved by authService
             // BR-L08: Redirect to returnUrl (or Home if not specified)
-            router.push(returnUrl);
+            // ✅ Force reload to update Header UI
+            window.location.href = returnUrl;
         } catch (err: any) {
             // BR-L11: Use centralized error handler
             setError(handleAuthError(err));

@@ -51,7 +51,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         password: 'seller123',
         role: 'SELLER',
         isVerify: true,
-        status: null,
+        status: 'ACTIVE',  // ✅ ACTIVE status for seller testing
         cccd: '001234567892',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',

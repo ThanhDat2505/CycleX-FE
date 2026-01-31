@@ -63,3 +63,63 @@ export async function getHomeListings(
         throw error;
     }
 }
+
+/**
+ * Search listings by keyword
+ * Calls GET /api/listings/search?keyword={keyword}  
+ * 
+ * @param keyword - Search keyword (minimum 3 characters recommended)
+ * @returns Promise<HomeBike[]> - Array of matching bike listings
+ */
+export async function searchListings(keyword: string): Promise<Listing[]> {
+    console.log('🔍 Searching listings with keyword:', keyword);
+
+    // Mock data for development
+    if (USE_MOCK_API) {
+        console.log('📦 Using MOCK search data');
+        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+
+        // Filter mock data by keyword (case-insensitive)
+        const filtered = MOCK_LISTINGS.filter(listing =>
+            listing.title.toLowerCase().includes(keyword.toLowerCase()) ||
+            listing.brand.toLowerCase().includes(keyword.toLowerCase()) ||
+            listing.model.toLowerCase().includes(keyword.toLowerCase())
+        );
+        return filtered;
+    }
+
+    // Real API call
+    try {
+        const response = await fetch(
+            `/backend/api/listings/search?keyword=${encodeURIComponent(keyword)}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`Failed to search listings: ${response.statusText}`);
+        }
+
+        const data: Listing[] = await response.json();
+
+        // ✅ VALIDATION: Check response
+        if (!data) {
+            throw new Error('Invalid response from server: data is null or undefined');
+        }
+
+        if (!Array.isArray(data)) {
+            throw new Error('Invalid response format: expected array of listings');
+        }
+
+        console.log(`✅ Search successful: ${data.length} results found`);
+        return data;
+    } catch (error) {
+        console.error('Error searching listings:', error);
+        throw error;
+    }
+}
+

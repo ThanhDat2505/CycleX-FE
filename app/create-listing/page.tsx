@@ -1,10 +1,14 @@
 // app/create-listing/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hooks/useAuth";
 import { Listing } from "@/app/types/listing";
 
 const CreateListingPage: React.FC = () => {
+  const router = useRouter();
+  const { isLoggedIn, isLoading } = useAuth(); // Removed role check
   const [step, setStep] = useState(1);
   const [mockListings] = useState<Listing[]>([
     {
@@ -39,6 +43,32 @@ const CreateListingPage: React.FC = () => {
     description: "",
     shipping: false,
   });
+
+  // ✅ AUTH PROTECTION: Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isLoggedIn) {
+      router.push('/login?returnUrl=/create-listing');
+    }
+    // Note: BUYER can create listings (becomes SELLER on first submit)
+  }, [isLoggedIn, isLoading, router]);
+
+  // Show loading while checking auth
+  if (isLoading) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  // Redirect message if not logged in
+  if (!isLoggedIn) {
+    return (
+      <div className="p-8 max-w-4xl mx-auto text-center">
+        <p className="text-gray-600">Redirecting to login...</p>
+      </div>
+    );
+  }
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -78,19 +108,17 @@ const CreateListingPage: React.FC = () => {
         {[1, 2, 3].map((s) => (
           <React.Fragment key={s}>
             <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${
-                s <= step
-                  ? "bg-[#FF8A00] text-white"
-                  : "bg-gray-200 text-gray-600"
-              }`}
+              className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${s <= step
+                ? "bg-[#FF8A00] text-white"
+                : "bg-gray-200 text-gray-600"
+                }`}
             >
               {s}
             </div>
             {s < 3 && (
               <div
-                className={`h-1 flex-1 mx-2 transition ${
-                  s < step ? "bg-[#FF8A00]" : "bg-gray-200"
-                }`}
+                className={`h-1 flex-1 mx-2 transition ${s < step ? "bg-[#FF8A00]" : "bg-gray-200"
+                  }`}
               />
             )}
           </React.Fragment>
@@ -237,9 +265,9 @@ const CreateListingPage: React.FC = () => {
                 <p className="font-semibold text-gray-900">
                   {formData.listing_id
                     ? mockListings.find(
-                        (b: Listing) =>
-                          b.listing_id === parseInt(formData.listing_id),
-                      )?.brand
+                      (b: Listing) =>
+                        b.listing_id === parseInt(formData.listing_id),
+                    )?.brand
                     : "Not selected"}
                 </p>
               </div>

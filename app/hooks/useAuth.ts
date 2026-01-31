@@ -7,10 +7,13 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { User } from '@/app/types/auth';
 
 interface AuthState {
     isLoggedIn: boolean;
     isLoading: boolean;
+    user: User | null;
+    role: string | null;
 }
 
 interface UseAuthReturn extends AuthState {
@@ -22,16 +25,29 @@ export const useAuth = (): UseAuthReturn => {
     const router = useRouter();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [user, setUser] = useState<User | null>(null);
+    const [role, setRole] = useState<string | null>(null);
 
     useEffect(() => {
-        // Check for auth token on mount
+        // Check for auth token and user data on mount
         const token = localStorage.getItem('authToken');
-        setIsLoggedIn(!!token);
+        const userData = localStorage.getItem('userData');
+
+        if (token && userData) {
+            const parsedUser: User = JSON.parse(userData);
+            setUser(parsedUser);
+            setRole(parsedUser.role);
+            setIsLoggedIn(true);
+        }
+
         setIsLoading(false);
     }, []);
 
     const logout = () => {
         localStorage.removeItem('authToken');
+        localStorage.removeItem('userData');
+        setUser(null);
+        setRole(null);
         setIsLoggedIn(false);
         router.push('/');
     };
@@ -55,6 +71,8 @@ export const useAuth = (): UseAuthReturn => {
     return {
         isLoggedIn,
         isLoading,
+        user,
+        role,
         logout,
         requireAuth,
     };

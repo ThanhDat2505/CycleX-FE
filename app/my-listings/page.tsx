@@ -1,10 +1,13 @@
-// app/listings/page.tsx
+// app/my-listings/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
 
 const ListingsPage: React.FC = () => {
+  const searchParams = useSearchParams();
+
   // Move Date calls outside to avoid impure function warnings
   const sevenDaysAgo = new Date(Date.now() - 86400000 * 7).toISOString();
   const yesterday = new Date(Date.now() - 86400000).toISOString();
@@ -62,7 +65,9 @@ const ListingsPage: React.FC = () => {
     },
   ];
 
-  const [filterStatus, setFilterStatus] = useState("");
+  // Initialize filter from URL params
+  const initialStatus = searchParams.get('status') || '';
+  const [filterStatus, setFilterStatus] = useState(initialStatus);
   const [sortBy, setSortBy] = useState("recent");
 
   // Filter listings
@@ -162,15 +167,14 @@ const ListingsPage: React.FC = () => {
                   />
                 </svg>
                 <span
-                  className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${
-                    listing.status === "ACTIVE"
-                      ? "bg-green-100 text-green-800"
-                      : listing.status === "PENDING"
-                        ? "bg-yellow-100 text-yellow-800"
-                        : listing.status === "SOLD"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
-                  }`}
+                  className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${listing.status === "ACTIVE"
+                    ? "bg-green-100 text-green-800"
+                    : listing.status === "PENDING"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : listing.status === "SOLD"
+                        ? "bg-red-100 text-red-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
                 >
                   {listing.status}
                 </span>
