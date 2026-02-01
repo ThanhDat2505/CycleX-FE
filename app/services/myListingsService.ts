@@ -180,6 +180,7 @@ export async function getMyListings(
 
     // Client-side filtering (server will do this)
     let filtered = mockListings;
+
     if (status) {
         filtered = filtered.filter(l => l.status.toLowerCase() === status.toLowerCase());
     }

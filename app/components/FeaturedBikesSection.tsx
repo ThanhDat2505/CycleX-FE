@@ -16,12 +16,8 @@ import { useRouter } from 'next/navigation';
 import { HomeBike } from '../types/listing';
 import FeaturedBikeCard from './FeaturedBikeCard';
 import Badge from './ui/Badge';
-import { generateMockHomeBikes } from '../mocks';
 
 const MAX_FEATURED_BIKES = 6;
-
-// Check if we should use mock API (for development)
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 export default function FeaturedBikesSection() {
     const router = useRouter();
@@ -74,7 +70,7 @@ export default function FeaturedBikesSection() {
      * Navigate to listing detail page
      */
     const handleBikeClick = (listingId: number) => {
-        router.push(`/listing/${listingId}`);
+        router.push(`/listings/${listingId}`);
     };
 
     /**
