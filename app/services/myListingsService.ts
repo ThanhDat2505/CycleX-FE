@@ -42,6 +42,101 @@ export interface GetMyListingsResponse {
     currentPage: number;
 }
 
+export interface CreateListingPayload {
+    title: string;
+    brand: string;
+    model: string;
+    type: string; // Maps to category
+    condition: string;
+    year: number;
+    price: number;
+    location: string;
+    description: string;
+    shipping: boolean;
+    // Images will be handled in S-13, but payload might include URLs later
+    imageUrls?: string[];
+}
+
+// ⚠️ MOCK DATA STORE (In-memory, resets on reload)
+export const mockListings: Listing[] = [
+    {
+        id: 1,
+        brand: "Giant",
+        model: "Escape 3",
+        type: "Road Bike",
+        condition: "Used",
+        price: 8500000,
+        location: "Hà Nội",
+        status: "APPROVE",
+        shipping: true,
+        views: 120,
+        inquiries: 2,
+        createdDate: new Date(Date.now() - 86400000 * 7).toISOString(),
+        updatedDate: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+        id: 2,
+        brand: "Trek",
+        model: "FX 2",
+        type: "Mountain Bike",
+        condition: "New",
+        price: 12000000,
+        location: "Hồ Chí Minh",
+        status: "APPROVE",
+        shipping: false,
+        views: 85,
+        inquiries: 1,
+        createdDate: new Date(Date.now() - 86400000 * 5).toISOString(),
+        updatedDate: new Date(Date.now() - 86400000 * 2).toISOString(),
+    },
+    {
+        id: 3,
+        brand: "Specialized",
+        model: "Sirrus X",
+        type: "Hybrid Bike",
+        condition: "Used",
+        price: 15500000,
+        location: "Đà Nẵng",
+        status: "PENDING",
+        shipping: true,
+        views: 45,
+        inquiries: 0,
+        createdDate: new Date(Date.now() - 86400000 * 3).toISOString(),
+        updatedDate: new Date().toISOString(),
+    },
+    {
+        id: 4,
+        brand: "Cannondale",
+        model: "Trail 5",
+        type: "Mountain Bike",
+        condition: "Used",
+        price: 9500000,
+        location: "Hà Nội",
+        status: "REJECT",
+        rejectionReason: "Images are blurry and bike condition is unclear. Please provide clearer photos showing frame details and components.",
+        shipping: true,
+        views: 12,
+        inquiries: 0,
+        createdDate: new Date(Date.now() - 86400000 * 2).toISOString(),
+        updatedDate: new Date(Date.now() - 86400000).toISOString(),
+    },
+    {
+        id: 5,
+        brand: "Merida",
+        model: "Scultura 400",
+        type: "Road Bike",
+        condition: "New",
+        price: 18000000,
+        location: "Đà Nẵng",
+        status: "DRAFT",
+        shipping: true,
+        views: 0,
+        inquiries: 0,
+        createdDate: new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+    },
+];
+
 /**
  * Get seller's listings with pagination and filters
  * 
@@ -83,85 +178,6 @@ export async function getMyListings(
     // 
     // return response;
 
-    const mockListings: Listing[] = [
-        {
-            id: 1,
-            brand: "Giant",
-            model: "Escape 3",
-            type: "Road Bike",
-            condition: "Used",
-            price: 8500000,
-            location: "Hà Nội",
-            status: "APPROVE",
-            shipping: true,
-            views: 120,
-            inquiries: 2,
-            createdDate: new Date(Date.now() - 86400000 * 7).toISOString(),
-            updatedDate: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-            id: 2,
-            brand: "Trek",
-            model: "FX 2",
-            type: "Mountain Bike",
-            condition: "New",
-            price: 12000000,
-            location: "Hồ Chí Minh",
-            status: "APPROVE",
-            shipping: false,
-            views: 85,
-            inquiries: 1,
-            createdDate: new Date(Date.now() - 86400000 * 5).toISOString(),
-            updatedDate: new Date(Date.now() - 86400000 * 2).toISOString(),
-        },
-        {
-            id: 3,
-            brand: "Specialized",
-            model: "Sirrus X",
-            type: "Hybrid Bike",
-            condition: "Used",
-            price: 15500000,
-            location: "Đà Nẵng",
-            status: "PENDING",
-            shipping: true,
-            views: 45,
-            inquiries: 0,
-            createdDate: new Date(Date.now() - 86400000 * 3).toISOString(),
-            updatedDate: new Date().toISOString(),
-        },
-        {
-            id: 4,
-            brand: "Cannondale",
-            model: "Trail 5",
-            type: "Mountain Bike",
-            condition: "Used",
-            price: 9500000,
-            location: "Hà Nội",
-            status: "REJECT",
-            rejectionReason: "Images are blurry and bike condition is unclear. Please provide clearer photos showing frame details and components.",
-            shipping: true,
-            views: 12,
-            inquiries: 0,
-            createdDate: new Date(Date.now() - 86400000 * 2).toISOString(),
-            updatedDate: new Date(Date.now() - 86400000).toISOString(),
-        },
-        {
-            id: 5,
-            brand: "Merida",
-            model: "Scultura 400",
-            type: "Road Bike",
-            condition: "New",
-            price: 18000000,
-            location: "Đà Nẵng",
-            status: "DRAFT",
-            shipping: true,
-            views: 0,
-            inquiries: 0,
-            createdDate: new Date().toISOString(),
-            updatedDate: new Date().toISOString(),
-        },
-    ];
-
     // Client-side filtering (server will do this)
     let filtered = mockListings;
     if (status) {
@@ -198,4 +214,74 @@ export async function getMyListings(
         currentPage: page,
     };
     // ⚠️ END MOCK IMPLEMENTATION
+}
+
+/**
+ * Create a new listing
+ * 
+ * TODO: Replace mock implementation with actual API call
+ * API Endpoint: POST /seller/listings
+ */
+export async function createListing(payload: CreateListingPayload): Promise<Listing> {
+    console.log('🚀 Creating listing with payload:', payload);
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+    // ⚠️ MOCK RESPONSE
+    const mockResponse = {
+        id: Math.floor(Math.random() * 10000),
+        ...payload,
+        status: 'PENDING' as ListingStatus, // Default status after creation
+        views: 0,
+        inquiries: 0,
+        createdDate: new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+    } as Listing;
+
+    // ✅ VALIDATION: Validate mock response to ensure system safety
+    validateResponse(mockResponse, 'createListing response');
+    validateNumber(mockResponse.id, 'id');
+    validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
+    // Ensure payload data is correctly reflected/returned if API returns it
+    validateString(mockResponse.brand, 'brand');
+
+    // ⚠️ UPDATE MOCK STORE
+    mockListings.unshift(mockResponse); // Add to beginning
+
+    return mockResponse;
+}
+
+/**
+ * Save listing as draft
+ * 
+ * TODO: Replace mock implementation with actual API call
+ * API Endpoint: POST /seller/listings/draft
+ */
+export async function saveDraft(payload: CreateListingPayload): Promise<Listing> {
+    console.log('💾 Saving draft with payload:', payload);
+
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+    // ⚠️ MOCK RESPONSE
+    const mockResponse = {
+        id: Math.floor(Math.random() * 10000),
+        ...payload,
+        status: 'DRAFT' as ListingStatus,
+        views: 0,
+        inquiries: 0,
+        createdDate: new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+    } as Listing;
+
+    // ✅ VALIDATION: Validate response
+    validateResponse(mockResponse, 'saveDraft response');
+    validateNumber(mockResponse.id, 'id');
+    validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
+
+    // ⚠️ UPDATE MOCK STORE
+    mockListings.unshift(mockResponse); // Add to beginning
+
+    return mockResponse;
 }
