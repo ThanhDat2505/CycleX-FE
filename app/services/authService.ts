@@ -94,9 +94,10 @@ export const authService = {
      * @param password - User password (6-20 chars)
      * @param phone - User phone (required, 10 digits starting with 0)
      * @param cccd - User CCCD (12 characters)
+     * @param role - User role (BUYER or SELLER)
      * @returns Promise with register response (no token, fullName will be null)
      */
-    register: async (email: string, password: string, phone: string, cccd: string): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER'): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
@@ -118,8 +119,8 @@ export const authService = {
             }
 
             // Register new user and generate OTP
-            // Default role is BUYER per user requirement
-            const user = registerMockUser(email, password, phone, cccd, 'BUYER');
+            // Use selected role (BUYER or SELLER)
+            const user = registerMockUser(email, password, phone, cccd, role);
 
             return {
                 message: 'Registration successful! Please check your email for OTP.',
@@ -133,7 +134,7 @@ export const authService = {
                 password,
                 phone,
                 cccd,
-                role: 'BUYER'  // Default role per user requirement
+                role
             } as RegisterRequest);
 
             // ❌ DO NOT save token - register doesn't return token

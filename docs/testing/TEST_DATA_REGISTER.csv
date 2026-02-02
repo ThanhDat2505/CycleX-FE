@@ -7,6 +7,8 @@ Valid Data,CCCD,123456789012,Valid 12-digit CCCD,Valid
 Valid Data,Phone,0987654321,Valid phone (10 digits starting with 0),Valid
 Valid Data,Phone,0123456789,Alternative valid phone,Valid
 Valid Data,Phone,(empty),Phone is optional,Valid
+Valid Data,Role,BUYER,Target role for buyers,Valid
+Valid Data,Role,SELLER,Target role for sellers,Valid
 ,,,,
 Invalid Data,Email,notanemail,Missing @ and domain,Invalid
 Invalid Data,Email,test@,Missing domain,Invalid

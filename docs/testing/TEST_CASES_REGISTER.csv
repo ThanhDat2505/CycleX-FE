@@ -5,15 +5,21 @@ TC-REG-001,Form Validation,P0,Valid Registration (Happy Path),User is Guest (not
 4. Enter confirm password: password123
 5. Enter CCCD: 123456789012
 6. Enter phone: 0987654321
-7. Click Register","Email: newuser@example.com
+7. Select role: BUYER
+8. Click Register","Email: newuser@example.com
 Password: password123
 Confirm: password123
 CCCD: 123456789012
-Phone: 0987654321","✁ENo validation errors
+Phone: 0987654321
+Role: BUYER","✁ENo validation errors
 ✁ELoading state shown
 ✁ERedirect to /verify-email?email=newuser@example.com
 ✁ESuccess message
-✁EBackend receives role: BUYER","BR-02, BR-05, BR-10, BR-17",Not Tested,,Updated: role BUYER sent automatically
+✁EBackend receives role: BUYER","BR-02, BR-05, BR-10, BR-17",Not Tested,,Updated: user selects role BUYER
+TC-REG-018,Form Validation,P0,Register as SELLER,User is Guest,"1. Fill valid data
+2. Select role: SELLER
+3. Click Register",Role: SELLER,"✁ESuccess message
+✁EBackend receives role: SELLER",BR-17,Not Tested,,NEW: Register as SELLER
 TC-REG-002,Form Validation,P1,Empty Email,User is Guest,"1. Navigate to /register
 2. Leave email empty
 3. Fill other fields correctly
@@ -181,9 +187,8 @@ TC-UI-005,UI/UX,P2,Error Message Display,User on register page,"1. Enter invalid
 2. Click Register
 3. Correct the error",Invalid data,"✁EError message displayed in red box
 ✁EError clears when corrected",N/A,Not Tested,,
-TC-UI-006,UI/UX,P2,No Full Name Field,User on register page,1. Navigate to /register,N/A,"✁EForm shows: Email, Password, Confirm Password, Phone, CCCD
-✁ENO Full Name field
-✁ENO Role selection field",N/A,Not Tested,,NEW: Verify form structure
+TC-UI-006,UI/UX,P2,Role Selection Present,User on register page,1. Navigate to /register,N/A,"✁EForm shows: Email, Password, Confirm Password, Phone, CCCD
+✁EForm shows Role Selection (BUYER/SELLER)",N/A,Not Tested,,Updated: Role selection is now required
 TC-FLOW-001,Integration Flow,P0,Complete Happy Path,User is Guest,"1. Navigate to /register
 2. Fill valid data
 3. Click Register

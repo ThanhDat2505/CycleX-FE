@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Input, Button, ErrorMessage } from '@/app/components/ui';
+import { Input, Button, ErrorMessage, RadioGroup } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
 import {
     validateEmail,
@@ -22,6 +22,7 @@ export function RegisterForm() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [phone, setPhone] = useState('');
     const [cccd, setCccd] = useState('');
+    const [role, setRole] = useState<'BUYER' | 'SELLER'>('BUYER');
 
     // UI state
     const [error, setError] = useState('');
@@ -66,8 +67,8 @@ export function RegisterForm() {
         setIsLoading(true);
 
         try {
-            // Call register API - role defaults to BUYER per official API
-            const response = await authService.register(email, password, phone, cccd);
+            // Call register API - use user-selected role
+            const response = await authService.register(email, password, phone, cccd, role);
             const sendOtpResponse = await authService.sendOtp(email);
             if (sendOtpResponse.message !== 'OTP sent successfully') {
                 throw new Error('OTP not sent successfully');
@@ -149,6 +150,18 @@ export function RegisterForm() {
                 value={cccd}
                 onChange={setCccd}
                 placeholder="12 digits"
+                disabled={isLoading}
+            />
+
+            <RadioGroup
+                label="I want to:"
+                name="role"
+                options={[
+                    { label: 'Buy Bikes', value: 'BUYER' },
+                    { label: 'Sell Bikes', value: 'SELLER' }
+                ]}
+                selectedValue={role}
+                onChange={setRole}
                 disabled={isLoading}
             />
 
