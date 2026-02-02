@@ -19,7 +19,7 @@ import {
     verifyMockUserEmail,
     storeMockOtp,
     getMockUser,
-} from './mockData';
+} from '../mocks';
 import { apiCallPOST } from '@/app/utils/apiHelpers';
 
 // All API calls now use /backend/api prefix (handled by next.config.ts proxy)

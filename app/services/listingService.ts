@@ -256,20 +256,18 @@ export async function searchListings(
 
 /**
  * Get detailed information for a single listing
- * Endpoint: POST /api/listings/detail
- * Request: { sellerId, listingId }
- * Response: SellerListingResponse (listing details)
+ * Endpoint: GET /api/listings/{id} (Public) or POST /api/seller/listings/detail (Seller)
  *
  * Business Rules:
  * - BR-S32-01: Only APPROVED listings are accessible to Guest/Buyer
  * - BR-S32-04: Backend auto-increments views_count on GET (FE does nothing)
  * 
- * @param sellerId - ID of the seller/user making the request
  * @param listingId - ID of the listing to fetch
+ * @param sellerId - Optional ID of the seller/user making the request (for private view)
  * @returns Promise<ListingDetail> - Full listing details
  * @throws Error if listing not found, not APPROVED, or validation fails
  */
-export async function getListingDetail(sellerId: number, listingId: number): Promise<ListingDetail> {
+export async function getListingDetail(listingId: number, sellerId?: number): Promise<ListingDetail> {
     if (USE_MOCK_API) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -294,18 +292,25 @@ export async function getListingDetail(sellerId: number, listingId: number): Pro
         return validated;
     }
 
-    // Real API call to POST /api/listings/detail
+    // Real API call
     try {
+        const isSellerView = sellerId !== undefined;
+        const endpoint = isSellerView
+            ? '/backend/api/seller/listings/detail'
+            : `/backend/api/listings/${listingId}`;
+
         const response = await fetch(
-            `/backend/api/seller/listings/detail`,
+            endpoint,
             {
-                method: 'POST',
+                method: isSellerView ? 'POST' : 'GET',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    sellerId,
-                    listingId,
+                ...(isSellerView && {
+                    body: JSON.stringify({
+                        sellerId,
+                        listingId,
+                    }),
                 }),
             }
         );

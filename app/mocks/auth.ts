@@ -1,8 +1,7 @@
 /**
- * Mock Data for Testing UI without Backend
- * 
- * This file contains mock data and helper functions for simulating
- * backend responses when NEXT_PUBLIC_MOCK_API=true
+ * Mock Data - Authentication
+ * Mock users, OTP storage, and auth helper functions
+ * Used when NEXT_PUBLIC_MOCK_API=true
  */
 
 import { User } from '@/app/types/auth';
@@ -16,12 +15,12 @@ export const mockUsers: Record<string, User & { password: string }> = {
     'test@example.com': {
         userId: 1,
         email: 'test@example.com',
-        fullName: null,  // API returns null for fullName
+        fullName: null,
         phone: '+84123456789',
         password: 'password123',
         role: 'BUYER',
         isVerify: true,
-        status: 'ACTIVE',  // API returns null for status initially
+        status: 'ACTIVE',
         cccd: '001234567890',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -51,7 +50,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         password: 'seller123',
         role: 'SELLER',
         isVerify: true,
-        status: 'ACTIVE',  // ✅ ACTIVE status for seller testing
+        status: 'ACTIVE',
         cccd: '001234567892',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -65,7 +64,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         phone: '+84888777666',
         password: 'unverified123',
         role: 'BUYER',
-        isVerify: false, // Not verified yet
+        isVerify: false,
         status: null,
         cccd: '001234567893',
         avatarUrl: null,
@@ -81,7 +80,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         password: 'suspended123',
         role: 'BUYER',
         isVerify: true,
-        status: 'SUSPENDED', // Account suspended
+        status: 'SUSPENDED',
         cccd: '001234567894',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -96,7 +95,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         password: 'inactive123',
         role: 'BUYER',
         isVerify: false,
-        status: 'INACTIVE', // Account inactive
+        status: 'INACTIVE',
         cccd: '001234567895',
         avatarUrl: null,
         createdAt: '2026-01-25T16:38:24.814248',
@@ -129,8 +128,6 @@ export const mockEmailExists = (email: string): boolean => {
  * Check if phone exists in mock database
  */
 export const mockPhoneExists = (phone: string): boolean => {
-    // In real app, check against database
-    // For mock, just simulate some existing phones
     const existingPhones = ['+84123456789', '+84987654321'];
     return existingPhones.includes(phone);
 };
@@ -148,14 +145,11 @@ export const generateMockOtp = (): string => {
  */
 export const storeMockOtp = (email: string): string => {
     const otp = generateMockOtp();
-    const expiresAt = Date.now() + 2 * 60 * 1000; // 2 minutes from now
+    const expiresAt = Date.now() + 2 * 60 * 1000; // 2 minutes
 
     mockOtpStorage[email] = { otp, expiresAt };
-
-    // Reset attempt counter when new OTP is generated
     mockOtpAttempts[email] = 0;
 
-    // Log to console for testing (in real app, this would be sent via email)
     console.log('📧 Mock OTP for', email, ':', otp);
     console.log('⏰ Expires at:', new Date(expiresAt).toLocaleTimeString());
 
@@ -164,21 +158,15 @@ export const storeMockOtp = (email: string): string => {
 
 /**
  * Verify OTP for email
- * Official API behavior:
- * - Returns 423 if locked (3+ failed attempts)
- * - Returns 400 "OTP expired" if past expiresAt
- * - Returns 400 "Invalid OTP" if code doesn't match
- * - Increments attempt counter on failure
- * - Resets attempt counter on success
+ * Returns 423 if locked, 400 if expired/invalid
  */
 export const verifyMockOtp = (email: string, otp: string): boolean => {
     const stored = mockOtpStorage[email];
 
     if (!stored) {
-        return false; // No OTP found (400 error handled in service)
+        return false;
     }
 
-    // Check if OTP is locked (3+ failed attempts)
     const attempts = mockOtpAttempts[email] || 0;
     if (attempts >= 3) {
         throw {
@@ -187,55 +175,46 @@ export const verifyMockOtp = (email: string, otp: string): boolean => {
         };
     }
 
-    // Check if OTP expired
     if (Date.now() > stored.expiresAt) {
-        delete mockOtpStorage[email]; // Clean up expired OTP
+        delete mockOtpStorage[email];
         throw {
             status: 400,
             message: 'OTP expired. Please request a new OTP.',
         };
     }
 
-    // Check if OTP matches
     if (stored.otp === otp) {
-        // Success: reset attempts and clean up
         delete mockOtpAttempts[email];
         delete mockOtpStorage[email];
         return true;
     } else {
-        // Failed: increment attempts
         mockOtpAttempts[email] = attempts + 1;
-
         if (mockOtpAttempts[email] >= 3) {
             console.log(`🔒 OTP locked for ${email} after 3 failed attempts`);
-        } else {
-            console.log(`❌ Invalid OTP for ${email}. Attempt ${mockOtpAttempts[email]}/3`);
         }
-
         return false;
     }
 };
 
 /**
  * Register new mock user
- * Per Official API: all fields required, role defaults to BUYER
  */
 export const registerMockUser = (
     email: string,
     password: string,
-    phone: string,      // Required per API doc
-    cccd: string,       // 12 characters
-    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'  // Role from official API
+    phone: string,
+    cccd: string,
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'
 ): User => {
     const newUser: User & { password: string } = {
-        userId: Date.now(), // Use timestamp as number ID
+        userId: Date.now(),
         email: email,
-        fullName: null,      // API returns null per official spec
-        phone: phone,        // Required
+        fullName: null,
+        phone: phone,
         password: password,
-        role: role,          // Use provided role
-        isVerify: false,     // Needs email verification
-        status: null,        // API returns null per official spec
+        role: role,
+        isVerify: false,
+        status: null,
         cccd: cccd,
         avatarUrl: null,
         createdAt: new Date().toISOString(),
@@ -244,23 +223,18 @@ export const registerMockUser = (
     };
 
     mockUsers[email] = newUser;
-
-    // Generate and store OTP
     storeMockOtp(email);
 
-    // Return user without password
     const { password: _, ...userWithoutPassword } = newUser;
     return userWithoutPassword;
 };
 
 /**
- * Verify user email
- * Called after successful OTP verification
+ * Verify user email after OTP success
  */
 export const verifyMockUserEmail = (email: string): void => {
     if (mockUsers[email]) {
-        mockUsers[email].isVerify = true; // Use correct field name from API
-        // Cleanup is done in verifyMockOtp after successful verification
+        mockUsers[email].isVerify = true;
     }
 };
 
@@ -277,71 +251,14 @@ export const getMockUser = (email: string): User | null => {
 
 /**
  * Validate mock login credentials
- * IMPORTANT: Only validates email/password
- * Does NOT check isVerify or status - let LoginForm handle that!
+ * Only checks email/password, NOT status/isVerify
  */
 export const validateMockLogin = (email: string, password: string): User | null => {
     const user = mockUsers[email];
 
-    if (!user) return null; // User not found
-    if (user.password !== password) return null; // Wrong password
+    if (!user) return null;
+    if (user.password !== password) return null;
 
-    // Return user object regardless of isVerify/status
-    // LoginForm will handle business logic (BR-L05, BR-L06, BR-L07)
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
 };
-
-/**
- * Generate mock home bikes for preview section
- * Used by FeaturedBikesSection (S-01 Home)
- */
-import { HomeBike } from '@/app/types/listing';
-
-export const generateMockHomeBikes = (): HomeBike[] => {
-    return [
-        {
-            listingId: 101,
-            title: 'Xe Đạp Địa Hình Giant ATX 2024',
-            price: 7500000,
-            imageUrl: 'https://giant.vn/wp-content/uploads/2023/10/2024-atx-830-1.jpg',
-            locationCity: 'Hà Nội'
-        },
-        {
-            listingId: 102,
-            title: 'Xe Đạp Đường Phố Trek FX 2',
-            price: 12500000,
-            imageUrl: 'https://trek.vn/wp-content/uploads/2022/06/FX2Disc_22_35003_A_Primary.jpg',
-            locationCity: 'TP. Hồ Chí Minh'
-        },
-        {
-            listingId: 103,
-            title: 'Xe Đạp Thể Thao Specialized Sirrus',
-            price: 15900000,
-            imageUrl: 'https://specialized.vn/wp-content/uploads/2022/05/92122-70_SIRRUS-1.0_CSTWHT-BLK-RFL_HERO.jpg',
-            locationCity: 'Đà Nẵng'
-        },
-        {
-            listingId: 104,
-            title: 'Xe Đạp Mini Nhật Maruishi',
-            price: 4200000,
-            imageUrl: 'https://maruishi-cycle.vn/wp-content/uploads/2021/04/xe-dap-mini-nhat-maruishi-wata-2673-1.jpg',
-            locationCity: 'Hải Phòng'
-        },
-        {
-            listingId: 105,
-            title: 'Xe Đạp Trẻ Em RoyalBaby',
-            price: 2800000,
-            imageUrl: 'https://royalbaby.com.vn/wp-content/uploads/2020/06/xe-dap-tre-em-royalbaby-freestyle-12-14-16-18-inch.jpg',
-            locationCity: 'Cần Thơ'
-        },
-        {
-            listingId: 106,
-            title: 'Xe Đạp Điện Asama EB-02',
-            price: 9500000,
-            imageUrl: 'https://asama-bike.com/wp-content/uploads/2019/12/EB-02-Blue.jpg',
-            locationCity: 'Bình Dương'
-        }
-    ];
-};
-
