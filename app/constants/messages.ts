@@ -10,6 +10,7 @@ export const MESSAGES = {
 
     // Errors
     ERROR_LOADING_LISTINGS: 'Không thể tải danh sách sản phẩm. Vui lòng thử lại.',
+    ERROR_LOADING: 'Không thể tải thông tin. Vui lòng thử lại.',
     ERROR_RETRY: 'Thử lại',
 
     // Page Titles

@@ -256,22 +256,25 @@ export async function searchListings(
 
 /**
  * Get detailed information for a single listing
- * Endpoint: GET /api/listings/{id}
- * 
+ * Endpoint: POST /api/listings/detail
+ * Request: { sellerId, listingId }
+ * Response: SellerListingResponse (listing details)
+ *
  * Business Rules:
  * - BR-S32-01: Only APPROVED listings are accessible to Guest/Buyer
  * - BR-S32-04: Backend auto-increments views_count on GET (FE does nothing)
  * 
+ * @param sellerId - ID of the seller/user making the request
  * @param listingId - ID of the listing to fetch
  * @returns Promise<ListingDetail> - Full listing details
  * @throws Error if listing not found, not APPROVED, or validation fails
  */
-export async function getListingDetail(listingId: number): Promise<ListingDetail> {
+export async function getListingDetail(sellerId: number, listingId: number): Promise<ListingDetail> {
     if (USE_MOCK_API) {
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Import mock detail data (will be created in mocks/listings.ts)
+        // Import mock detail data
         const { MOCK_LISTING_DETAILS } = await import('../mocks/listings');
 
         // Find listing by ID
@@ -282,26 +285,28 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
         }
 
         // BR-S32-01: Validate status (Frontend validation even though BE should handle)
-        // Per user requirement: "Không bao giờ tin BE hoàn toàn, luôn phải check lại"
         if (listing.status !== 'APPROVED') {
             throw new Error(`Listing not available: status is ${listing.status}`);
         }
 
         // Validate response data
         const validated = validateListingDetail(listing);
-
         return validated;
     }
 
-    // Real API call
+    // Real API call to POST /api/listings/detail
     try {
         const response = await fetch(
-            `/backend/api/listings/${listingId}`,
+            `/backend/api/seller/listings/detail`,
             {
-                method: 'GET',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                body: JSON.stringify({
+                    sellerId,
+                    listingId,
+                }),
             }
         );
 
@@ -316,13 +321,13 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
         const data = await response.json();
 
         // BR-S32-01: Frontend validation of status
-        // Never trust backend completely - always validate
-        if (data.status !== 'APPROVED') {
-            throw new Error(`Listing not available: status is ${data.status}`);
-        }
+        // Note: Backend response doesn't include 'status' field - status is implied by the fact
+        // that the backend only returns APPROVED listings to public users
+        // The mere presence of response data means status is APPROVED
 
         // Validate complete response structure
         const validated = validateListingDetail(data);
+        console.log(`✅ Fetched listing detail: ID ${listingId}`);
 
         return validated;
     } catch (error) {

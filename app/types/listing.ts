@@ -168,7 +168,7 @@ export function validateListingDetail(data: any): ListingDetail {
     }
 
     // Only validate fields that backend actually returns
-    const required = ['listingId', 'title', 'price', 'brand', 'images', 'viewsCount'];
+    const required = ['listingId', 'title', 'price', 'brand', 'viewsCount'];
     for (const field of required) {
         if (data[field] === undefined) {
             throw new Error(`Invalid listing data: missing field '${field}'`);
@@ -184,9 +184,8 @@ export function validateListingDetail(data: any): ListingDetail {
         throw new Error('Invalid listing data: price must be non-negative number');
     }
 
-    if (!Array.isArray(data.images)) {
-        throw new Error('Invalid listing data: images must be array');
-    }
+    // Handle images field: use provided value or default to empty array
+    const images = Array.isArray(data.images) ? data.images : [];
 
     // Optional field validations (only if present)
     if (data.condition && data.condition !== 'new' && data.condition !== 'used') {
@@ -203,5 +202,8 @@ export function validateListingDetail(data: any): ListingDetail {
         }
     }
 
-    return data as ListingDetail;
+    return {
+        ...data,
+        images
+    } as ListingDetail;
 }

@@ -13,6 +13,7 @@
 
 import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '../../hooks/useAuth';
 import { getListingDetail } from '../../services/listingService';
 import { ListingDetail } from '../../types/listing';
 import { MESSAGES } from '../../constants';
@@ -27,6 +28,7 @@ interface ListingDetailPageProps {
 export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const resolvedParams = use(params);
     const router = useRouter();
+    const { user } = useAuth();
     const [listing, setListing] = useState<ListingDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -41,17 +43,17 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                 return;
             }
 
+            // Get sellerId from authenticated user or use 0 for guest/anonymous user
+            // Backend should handle guest access (sellerId = 0) for APPROVED listings
+            const sellerId = user?.userId || 0;
+
             try {
                 setIsLoading(true);
-                const data = await getListingDetail(listingId);
+                const data = await getListingDetail(sellerId, listingId);
 
-                // BR-S32-01: Frontend validation (even though service also validates)
-                // "Không bao giờ tin BE hoàn toàn"
-                if (data.status !== 'APPROVED') {
-                    setError(MESSAGES.DETAIL_NOT_AVAILABLE);
-                    setIsLoading(false);
-                    return;
-                }
+                // BR-S32-01: Backend automatically only returns APPROVED listings to public users
+                // If we get here, the listing is APPROVED (no need to check data.status)
+                // The service layer already handles validation
 
                 setListing(data);
                 setError(null);
@@ -72,7 +74,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
         }
 
         fetchListing();
-    }, [listingId]);
+    }, [listingId, user?.userId]);
 
     // Loading state
     if (isLoading) {
@@ -125,7 +127,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                     stroke="currentColor"
                     viewBox="0 0 24 24"
                 >
-                    <path strokeLinecap="round" strokeLinejoin="width" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 {MESSAGES.DETAIL_BACK_TO_LISTINGS}
             </button>

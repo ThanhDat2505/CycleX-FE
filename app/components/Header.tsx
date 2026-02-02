@@ -20,7 +20,6 @@ export default function Header() {
     const [searchError, setSearchError] = useState('');
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const userMenuRef = useRef<HTMLDivElement>(null);
-
     // Close user menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -43,14 +42,16 @@ export default function Header() {
             // Redirect to login with return URL
             router.push('/login?returnUrl=/create-listing');
         } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
-            // Do nothing or show notification (optional) - for now just prevent navigation
+            // Admin/system roles cannot create listings
             return;
         } else {
             router.push('/create-listing');
         }
     };
-
+    console.log('User role: ' + (user && user.role) + '');
+    // Only ADMIN, SHIPPER, INSPECTOR roles are restricted from selling
     const isRestrictedRole = user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role);
+
 
     return (
         <header className="bg-brand-bg text-white sticky top-0 z-50 shadow-lg">

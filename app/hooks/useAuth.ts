@@ -27,11 +27,12 @@ export const useAuth = (): UseAuthReturn => {
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<string | null>(null);
-
     useEffect(() => {
+        console.log("hi");
+        const userData = localStorage.getItem('userData')
+        console.log(userData);
         // Check for auth token and user data on mount
         const token = localStorage.getItem('authToken');
-        const userData = localStorage.getItem('userData');
 
         if (token && userData) {
             const parsedUser: User = JSON.parse(userData);

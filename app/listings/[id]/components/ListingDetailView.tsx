@@ -46,16 +46,18 @@ export default function ListingDetailView({ listing }: ListingDetailViewProps) {
 
                     {/* Metadata Row */}
                     <div className="flex flex-wrap gap-3 items-center">
-                        {/* Condition Badge */}
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${listing.condition === 'new'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                            {listing.condition === 'new'
-                                ? MESSAGES.DETAIL_CONDITION_NEW
-                                : MESSAGES.DETAIL_CONDITION_USED
-                            }
-                        </span>
+                        {/* Condition Badge (only show if exists) */}
+                        {listing.condition && (
+                            <span className={`px-3 py-1 rounded-full text-sm font-medium ${listing.condition === 'new'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                {listing.condition === 'new'
+                                    ? MESSAGES.DETAIL_CONDITION_NEW
+                                    : MESSAGES.DETAIL_CONDITION_USED
+                                }
+                            </span>
+                        )}
 
                         {/* Bike Type Badge (if exists) */}
                         {listing.bikeType && (
@@ -101,15 +103,17 @@ export default function ListingDetailView({ listing }: ListingDetailViewProps) {
                                     <dd className="font-semibold">{listing.model}</dd>
                                 </div>
                             )}
-                            <div className="flex justify-between">
-                                <dt className="text-gray-600">Tình trạng:</dt>
-                                <dd className="font-semibold">
-                                    {listing.condition === 'new'
-                                        ? MESSAGES.DETAIL_CONDITION_NEW
-                                        : MESSAGES.DETAIL_CONDITION_USED
-                                    }
-                                </dd>
-                            </div>
+                            {listing.condition && (
+                                <div className="flex justify-between">
+                                    <dt className="text-gray-600">Tình trạng:</dt>
+                                    <dd className="font-semibold">
+                                        {listing.condition === 'new'
+                                            ? MESSAGES.DETAIL_CONDITION_NEW
+                                            : MESSAGES.DETAIL_CONDITION_USED
+                                        }
+                                    </dd>
+                                </div>
+                            )}
                         </dl>
                     </div>
                 </div>
