@@ -208,33 +208,27 @@ export default function Header() {
                                         <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50">
                                             {!isRestrictedRole && (
                                                 <>
-                                                    <button
-                                                        onClick={() => {
-                                                            router.push('/dashboard');
-                                                            setUserMenuOpen(false);
-                                                        }}
-                                                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                                    <Link
+                                                        href="/dashboard"
+                                                        onClick={() => setUserMenuOpen(false)}
+                                                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
                                                     >
                                                         📊 Dashboard
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            router.push('/my-listings');
-                                                            setUserMenuOpen(false);
-                                                        }}
-                                                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                                    </Link>
+                                                    <Link
+                                                        href="/my-listings"
+                                                        onClick={() => setUserMenuOpen(false)}
+                                                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
                                                     >
                                                         📋 My Listings
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            router.push('/draft-listings');
-                                                            setUserMenuOpen(false);
-                                                        }}
-                                                        className="w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
+                                                    </Link>
+                                                    <Link
+                                                        href="/draft-listings"
+                                                        onClick={() => setUserMenuOpen(false)}
+                                                        className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-gray-100 transition-colors"
                                                     >
                                                         📝 Draft Listings
-                                                    </button>
+                                                    </Link>
                                                     <hr className="my-2" />
                                                 </>
                                             )}
@@ -253,12 +247,12 @@ export default function Header() {
 
                                 {/* Đăng Tin Button */}
                                 {!isRestrictedRole && (
-                                    <button
-                                        onClick={() => router.push('/create-listing')}
+                                    <Link
+                                        href="/create-listing"
                                         className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
                                     >
                                         Đăng Tin
-                                    </button>
+                                    </Link>
                                 )}
 
                                 {/* Logout (mobile only) */}
@@ -272,18 +266,18 @@ export default function Header() {
                         ) : (
                             <>
                                 {/* Login/Register for guests */}
-                                <button
-                                    onClick={() => router.push('/login')}
+                                <Link
+                                    href="/login"
                                     className="hidden md:block text-white hover:text-brand-primary transition-colors font-medium"
                                 >
                                     Login
-                                </button>
-                                <button
-                                    onClick={() => router.push('/register')}
+                                </Link>
+                                <Link
+                                    href="/register"
                                     className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
                                 >
                                     Register
-                                </button>
+                                </Link>
                             </>
                         )}
 
@@ -308,12 +302,13 @@ export default function Header() {
                 {mobileMenuOpen && (
                     <nav className="md:hidden mt-4 pb-4 border-t border-gray-700 pt-4">
                         <div className="flex flex-col gap-4">
-                            <button
-                                onClick={() => { router.push('/listings'); setMobileMenuOpen(false); }}
+                            <Link
+                                href="/listings"
+                                onClick={() => setMobileMenuOpen(false)}
                                 className="text-white hover:text-brand-primary transition-colors text-left"
                             >
                                 Mua Xe
-                            </button>
+                            </Link>
                             {!isRestrictedRole && (
                                 <button
                                     onClick={() => { handleSellClick(); setMobileMenuOpen(false); }}
@@ -322,26 +317,29 @@ export default function Header() {
                                     Bán Xe
                                 </button>
                             )}
-                            <button
-                                onClick={() => { router.push('/guide'); setMobileMenuOpen(false); }}
+                            <Link
+                                href="/guide"
+                                onClick={() => setMobileMenuOpen(false)}
                                 className="text-white hover:text-brand-primary transition-colors text-left"
                             >
                                 Cẩm Nang
-                            </button>
+                            </Link>
                             {isLoggedIn && (
                                 <>
-                                    <button
-                                        onClick={() => { router.push('/profile'); setMobileMenuOpen(false); }}
+                                    <Link
+                                        href="/profile"
+                                        onClick={() => setMobileMenuOpen(false)}
                                         className="text-white hover:text-brand-primary transition-colors text-left"
                                     >
                                         Profile
-                                    </button>
-                                    <button
-                                        onClick={() => { router.push('/notifications'); setMobileMenuOpen(false); }}
+                                    </Link>
+                                    <Link
+                                        href="/notifications"
+                                        onClick={() => setMobileMenuOpen(false)}
                                         className="text-white hover:text-brand-primary transition-colors text-left"
                                     >
                                         Notifications
-                                    </button>
+                                    </Link>
                                 </>
                             )}
                         </div>

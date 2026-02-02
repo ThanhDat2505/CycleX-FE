@@ -6,11 +6,11 @@
 
 'use client';
 
+import Link from 'next/link';
 import React from 'react';
 import { HomeBike } from '../../types/listing';
 import FeaturedBikeCard from '../../components/FeaturedBikeCard';
 import { MESSAGES } from '../../constants';
-import { useRouter } from 'next/navigation';
 
 interface ListingGridProps {
     listings: HomeBike[];
@@ -18,7 +18,6 @@ interface ListingGridProps {
 }
 
 export default function ListingGrid({ listings, isLoading }: ListingGridProps) {
-    const router = useRouter();
 
     if (isLoading) {
         return (
@@ -54,11 +53,12 @@ export default function ListingGrid({ listings, isLoading }: ListingGridProps) {
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.map((listing) => (
-                    <FeaturedBikeCard
+                    <Link
                         key={listing.listingId}
-                        bike={listing}
-                        onClick={() => router.push(`/listings/${listing.listingId}`)}
-                    />
+                        href={`/listings/${listing.listingId}`}
+                    >
+                        <FeaturedBikeCard bike={listing} />
+                    </Link>
                 ))}
             </div>
         </div>

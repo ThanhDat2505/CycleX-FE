@@ -12,7 +12,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { HomeBike } from '../types/listing';
 import FeaturedBikeCard from './FeaturedBikeCard';
 import Badge from './ui/Badge';
@@ -21,7 +21,6 @@ import { generateMockHomeBikes } from '../services/mockData';
 const MAX_FEATURED_BIKES = 6;
 
 export default function FeaturedBikesSection() {
-    const router = useRouter();
     const [bikes, setBikes] = useState<HomeBike[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -67,20 +66,6 @@ export default function FeaturedBikesSection() {
         }
     };
 
-    /**
-     * Navigate to listing detail page
-     */
-    const handleBikeClick = (listingId: number) => {
-        router.push(`/listings/${listingId}`);
-    };
-
-    /**
-     * Navigate to full listing page
-     */
-    const handleViewAll = () => {
-        router.push('/listings');
-    };
-
     return (
         <section className="container mx-auto px-4 py-12">
             {/* Section Header */}
@@ -113,25 +98,26 @@ export default function FeaturedBikesSection() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         {bikes.map((bike) => (
-                            <FeaturedBikeCard
+                            <Link
                                 key={bike.listingId}
-                                bike={bike}
-                                onClick={() => handleBikeClick(bike.listingId)}
-                            />
+                                href={`/listings/${bike.listingId}`}
+                            >
+                                <FeaturedBikeCard bike={bike} />
+                            </Link>
                         ))}
                     </div>
 
                     {/* CTA Button */}
                     <div className="text-center">
-                        <button
-                            onClick={handleViewAll}
+                        <Link
+                            href="/listings"
                             className="inline-flex items-center gap-2 bg-brand-primary hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
                         >
                             Xem thêm xe
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                             </svg>
-                        </button>
+                        </Link>
                     </div>
                 </>
             )}
