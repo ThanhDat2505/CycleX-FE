@@ -1,5 +1,5 @@
 // Service layer for Dashboard (S-10)
-// API endpoints will be provided by backend team
+// API endpoint: GET /api/seller/dashboard/stats
 
 import {
     validateResponse,
@@ -9,6 +9,7 @@ import {
     validateString,
     validatePositiveNumber
 } from '../utils/apiValidation';
+import { apiCallGET } from '../utils/apiHelpers';
 import { API_DELAY_MS, TOP_LISTINGS_LIMIT } from '../constants';
 
 export interface DashboardStats {
@@ -141,54 +142,32 @@ export async function getDashboardData(): Promise<DashboardData> {
         };
     }
 
-    // ✅ REAL API CALL (when backend is ready)
-    try {
-        const authToken = localStorage.getItem('authToken');
-        if (!authToken) {
-            throw new Error('No authentication token found');
-        }
+    // ✅ REAL API: GET /api/seller/dashboard/stats
+    const data = await apiCallGET<DashboardData>('/seller/dashboard/stats');
 
-        const response = await fetch('/backend/api/seller/dashboard', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${authToken}`,
-            },
-        });
+    // ✅ VALIDATION: Validate response structure
+    validateResponse(data);
+    validateObject(data.stats, 'stats');
+    validateNumber(data.stats.activeListings, 'stats.activeListings');
+    validateNumber(data.stats.pendingListings, 'stats.pendingListings');
+    validateNumber(data.stats.rejectedListings, 'stats.rejectedListings');
+    validateNumber(data.stats.totalTransactions, 'stats.totalTransactions');
+    validateNumber(data.stats.totalViews, 'stats.totalViews');
+    validateNumber(data.stats.newInquiries, 'stats.newInquiries');
+    validateArray(data.topListings, 'topListings');
 
-        if (!response.ok) {
-            throw new Error(`Failed to fetch dashboard: ${response.statusText}`);
-        }
+    // Validate each listing
+    data.topListings.forEach((listing, index) => {
+        const context = `topListings[${index}]`;
+        validateNumber(listing.id, `${context}.id`);
+        validateString(listing.brand, `${context}.brand`);
+        validateString(listing.model, `${context}.model`);
+        validatePositiveNumber(listing.price, `${context}.price`);
+        validateNumber(listing.views, `${context}.views`);
+        validateNumber(listing.inquiries, `${context}.inquiries`);
+        validateString(listing.status, `${context}.status`);
+    });
 
-        const data: DashboardData = await response.json();
-
-        // ✅ VALIDATION: Validate response structure
-        validateResponse(data);
-        validateObject(data.stats, 'stats');
-        validateNumber(data.stats.activeListings, 'stats.activeListings');
-        validateNumber(data.stats.pendingListings, 'stats.pendingListings');
-        validateNumber(data.stats.rejectedListings, 'stats.rejectedListings');
-        validateNumber(data.stats.totalTransactions, 'stats.totalTransactions');
-        validateNumber(data.stats.totalViews, 'stats.totalViews');
-        validateNumber(data.stats.newInquiries, 'stats.newInquiries');
-        validateArray(data.topListings, 'topListings');
-
-        // Validate each listing
-        data.topListings.forEach((listing, index) => {
-            const context = `topListings[${index}]`;
-            validateNumber(listing.id, `${context}.id`);
-            validateString(listing.brand, `${context}.brand`);
-            validateString(listing.model, `${context}.model`);
-            validatePositiveNumber(listing.price, `${context}.price`);
-            validateNumber(listing.views, `${context}.views`);
-            validateNumber(listing.inquiries, `${context}.inquiries`);
-            validateString(listing.status, `${context}.status`);
-        });
-
-        console.log('✅ Fetched dashboard data from API');
-        return data;
-    } catch (error) {
-        console.error('Error fetching dashboard:', error);
-        throw error;
-    }
+    console.log('✅ Fetched dashboard data from API');
+    return data;
 }

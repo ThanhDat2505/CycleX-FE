@@ -7,6 +7,7 @@
 import { Listing, HomeBike, PaginationInfo, ListingDetail, validateListingDetail } from '../types/listing';
 import { PAGINATION } from '../constants/pagination';
 import { MOCK_LISTINGS } from '../mocks';
+import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
 
 // Check if we should use mock API (for development)
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
@@ -35,21 +36,9 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
         return featured;
     }
 
-    try {
-        const response = await fetch('/backend/api/home', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch featured bikes: ${response.statusText}`);
-        }
-        const bikes: HomeBike[] = await response.json();
-        console.log(`✅ Fetched ${bikes.length} featured bikes from /api/home`);
-        return bikes;
-    } catch (error) {
-        console.error('Error fetching featured bikes:', error);
-        throw error;
-    }
+    const bikes = await apiCallGET<HomeBike[]>('/home');
+    console.log(`✅ Fetched ${bikes.length} featured bikes from /api/home`);
+    return bikes;
 }
 
 /**
@@ -69,37 +58,28 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
         return MOCK_LISTINGS.slice(startIndex, endIndex);
     }
 
-    try {
-        const response = await fetch('/backend/api/listings/pagination', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
-        if (!response.ok) {
-            throw new Error(`Failed to fetch listings: ${response.statusText}`);
-        }
-        const bikes: HomeBike[] = await response.json();
-        console.log(`✅ Fetched ${bikes.length} listings from /api/listings/pagination`);
-        return bikes;
-    } catch (error) {
-        console.error('Error fetching listings:', error);
-        throw error;
-    }
+    const bikes = await apiCallGET<HomeBike[]>('/listings/pagination');
+    console.log(`✅ Fetched ${bikes.length} listings from /api/listings/pagination`);
+    return bikes;
 }
 
 /**
- * Search listings by keyword with filters, pagination, and sorting
+ * Search listings by keyword (PUBLIC/BUYER VIEW)
+ * Endpoint: GET /api/listings/search
  * 
- * BR-S30-01: Keyword search ONLY matches `title` field (not brand/model/description)
+ * Use this for: Browse page, Home search - returns products (APPROVED only)
+ * 
+ * BR-S30-01: Keyword search ONLY matches `title` field
  * BR-S30-02: Supports filters: price range, bike type, brand, condition
  * BR-S30-04: Supports page-based pagination
  * BR-S30-05: Supports sorting: newest, price ↑/↓, most viewed
  * 
- * @param keyword - Search keyword (minimum 3 characters recommended)
- * @param filters - Filter options (price, bike type, brand, condition)
- * @param page - Page number (1-indexed, default: 1)
- * @param pageSize - Items per page (default: 12)
- * @param sortBy - Sort option (default: 'newest')
- * @returns Promise<SearchResponse> - Paginated search results with HomeBike format
+ * @param keyword - Search keyword
+ * @param filters - Filter options
+ * @param page - Page number (1-indexed)
+ * @param pageSize - Items per page
+ * @param sortBy - Sort option
+ * @returns Promise<SearchResponse> - Paginated products (HomeBike format)
  */
 export async function searchListings(
     keyword?: string,
@@ -255,84 +235,153 @@ export async function searchListings(
 }
 
 /**
- * Get detailed information for a single listing
- * Endpoint: GET /api/listings/{id} (Public) or POST /api/seller/listings/detail (Seller)
+ * Search seller's own listings (SELLER VIEW)
+ * Endpoint: POST /api/seller/listings/search
+ * 
+ * Use this for: My Listings page search - returns seller's listings (all statuses)
+ * Requires authentication
+ * 
+ * @param sellerId - Seller's user ID (required)
+ * @param keyword - Search keyword (title)
+ * @param filters - Filter options including status, price, brand
+ * @param page - Page number (0-indexed per API spec)
+ * @param pageSize - Items per page
+ * @returns Promise<SearchResponse> - Paginated seller listings
+ */
+export async function searchSellerListings(
+    sellerId: number,
+    keyword?: string,
+    filters?: {
+        status?: string;      // DRAFT, PENDING, APPROVED, REJECTED, etc.
+        minPrice?: number;
+        maxPrice?: number;
+        brand?: string;
+        title?: string;
+    },
+    page: number = 0,
+    pageSize: number = 10
+): Promise<{ items: HomeBike[]; pagination: PaginationInfo }> {
+    console.log('🔍 Searching seller listings:', { sellerId, keyword, filters, page, pageSize });
+
+    if (USE_MOCK_API) {
+        console.log('📦 Using MOCK seller search data');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        let results = [...MOCK_LISTINGS];
+
+        // Keyword search on title
+        if (keyword && keyword.trim().length > 0) {
+            const keywordLower = keyword.toLowerCase();
+            results = results.filter(listing =>
+                listing.title.toLowerCase().includes(keywordLower)
+            );
+        }
+
+        // Filter by price
+        if (filters?.minPrice !== undefined) {
+            results = results.filter(listing => listing.price >= filters.minPrice!);
+        }
+        if (filters?.maxPrice !== undefined) {
+            results = results.filter(listing => listing.price <= filters.maxPrice!);
+        }
+
+        // Pagination
+        const startIndex = page * pageSize;
+        const paginatedItems = results.slice(startIndex, startIndex + pageSize);
+
+        const homeBikes: HomeBike[] = paginatedItems.map(listing => ({
+            listingId: listing.listingId,
+            title: listing.title,
+            price: listing.price,
+            imageUrl: listing.imageUrl,
+            locationCity: listing.locationCity,
+        }));
+
+        return {
+            items: homeBikes,
+            pagination: { page, pageSize, total: results.length },
+        };
+    }
+
+    // Real API: POST /api/seller/listings/search
+    const requestBody: Record<string, unknown> = {
+        sellerId,
+        page,
+        pageSize,
+    };
+
+    // Add optional filters
+    if (keyword) requestBody.title = keyword;
+    if (filters?.status) requestBody.status = filters.status;
+    if (filters?.title) requestBody.title = filters.title;
+    if (filters?.brand) requestBody.brand = filters.brand;
+    if (filters?.minPrice) requestBody.minPrice = filters.minPrice;
+    if (filters?.maxPrice) requestBody.maxPrice = filters.maxPrice;
+
+    const data = await apiCallPOST<{ items: HomeBike[]; pagination: PaginationInfo }>(
+        '/seller/listings/search',
+        requestBody
+    );
+
+    if (!data.items || !Array.isArray(data.items)) {
+        throw new Error('Invalid response format from seller search');
+    }
+
+    console.log(`✅ Seller search successful: ${data.items.length} results`);
+    return data;
+}
+
+/**
+ * Get detailed information for a single listing (PUBLIC VIEW)
+ * Endpoint: GET /api/listings/{id}
+ * 
+ * Use this for: Home page → click hot products, Browse listings → view detail
  *
  * Business Rules:
  * - BR-S32-01: Only APPROVED listings are accessible to Guest/Buyer
- * - BR-S32-04: Backend auto-increments views_count on GET (FE does nothing)
+ * - BR-S32-04: Backend auto-increments views_count on GET
  * 
  * @param listingId - ID of the listing to fetch
- * @param sellerId - Optional ID of the seller/user making the request (for private view)
  * @returns Promise<ListingDetail> - Full listing details
- * @throws Error if listing not found, not APPROVED, or validation fails
+ * @throws Error if listing not found or not APPROVED
  */
-export async function getListingDetail(listingId: number, sellerId?: number): Promise<ListingDetail> {
+export async function getListingDetail(listingId: number): Promise<ListingDetail> {
     if (USE_MOCK_API) {
-        // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Import mock detail data
         const { MOCK_LISTING_DETAILS } = await import('../mocks/listings');
-
-        // Find listing by ID
         const listing = MOCK_LISTING_DETAILS.find(l => l.listingId === listingId);
 
         if (!listing) {
             throw new Error('Listing not found');
         }
 
-        // BR-S32-01: Validate status (Frontend validation even though BE should handle)
+        // BR-S32-01: Only APPROVED listings for public
         if (listing.status !== 'APPROVED') {
             throw new Error(`Listing not available: status is ${listing.status}`);
         }
 
-        // Validate response data
-        const validated = validateListingDetail(listing);
-        return validated;
+        return validateListingDetail(listing);
     }
 
-    // Real API call
+    // Real API: GET /api/listings/{id}
     try {
-        const isSellerView = sellerId !== undefined;
-        const endpoint = isSellerView
-            ? '/backend/api/seller/listings/detail'
-            : `/backend/api/listings/${listingId}`;
-
-        const response = await fetch(
-            endpoint,
-            {
-                method: isSellerView ? 'POST' : 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                ...(isSellerView && {
-                    body: JSON.stringify({
-                        sellerId,
-                        listingId,
-                    }),
-                }),
-            }
-        );
+        const response = await fetch(`/backend/api/listings/${listingId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+        });
 
         if (response.status === 404) {
             throw new Error('Listing not found');
         }
 
         if (!response.ok) {
-            throw new Error(`Failed to fetch listing detail: ${response.statusText}`);
+            throw new Error(`Failed to fetch listing: ${response.statusText}`);
         }
 
         const data = await response.json();
-
-        // BR-S32-01: Frontend validation of status
-        // Note: Backend response doesn't include 'status' field - status is implied by the fact
-        // that the backend only returns APPROVED listings to public users
-        // The mere presence of response data means status is APPROVED
-
-        // Validate complete response structure
         const validated = validateListingDetail(data);
-        console.log(`✅ Fetched listing detail: ID ${listingId}`);
+        console.log(`✅ Fetched public listing detail: ID ${listingId}`);
 
         return validated;
     } catch (error) {
@@ -340,3 +389,38 @@ export async function getListingDetail(listingId: number, sellerId?: number): Pr
         throw error;
     }
 }
+
+/**
+ * Get detailed information for seller's own listing (SELLER VIEW)
+ * Endpoint: POST /api/seller/listings/detail
+ * 
+ * Use this for: My Listings page → seller clicks their own listing
+ * Requires authentication (seller must be logged in)
+ *
+ * @param sellerId - Seller's user ID (required)
+ * @param listingId - ID of the listing
+ * @returns Promise<ListingDetail> - Full listing details including all statuses
+ * @throws Error if listing not found or not owned by seller
+ */
+export async function getSellerListingDetail(sellerId: number, listingId: number): Promise<ListingDetail> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        const { MOCK_LISTING_DETAILS } = await import('../mocks/listings');
+        const listing = MOCK_LISTING_DETAILS.find(l => l.listingId === listingId);
+
+        if (!listing) {
+            throw new Error('Listing not found');
+        }
+
+        // Seller can view their own listing regardless of status
+        return validateListingDetail(listing);
+    }
+
+    // Real API: POST /api/seller/listings/detail
+    const data = await apiCallPOST<ListingDetail>('/seller/listings/detail', { sellerId, listingId });
+    const validated = validateListingDetail(data);
+    console.log(`✅ Fetched seller listing detail: ID ${listingId}`);
+    return validated;
+}
+

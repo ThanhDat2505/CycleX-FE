@@ -9,8 +9,12 @@ import {
     validateEnum,
     validatePositiveNumber
 } from '../utils/apiValidation';
+import { apiCallPOST } from '../utils/apiHelpers';
 import { ITEMS_PER_PAGE, API_DELAY_MS, VALID_LISTING_STATUSES, type ListingStatus } from '../constants';
 import { MOCK_MY_LISTINGS, type MyListing } from '../mocks';
+
+// Check if we should use mock API
+const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 // Re-export Listing type from mocks for backward compatibility
 export type Listing = MyListing;
@@ -30,17 +34,19 @@ export interface GetMyListingsResponse {
 }
 
 export interface CreateListingPayload {
+    sellerId: number;
     title: string;
+    description?: string;
+    bikeType: string;
     brand: string;
     model: string;
-    type: string; // Maps to category
-    condition: string;
-    year: number;
+    manufactureYear?: number;
+    condition?: string;
+    usageTime?: string;
+    reasonForSale?: string;
     price: number;
-    location: string;
-    description: string;
-    shipping: boolean;
-    // Images will be handled in S-13, but payload might include URLs later
+    locationCity: string;
+    pickupAddress?: string;
     imageUrls?: string[];
 }
 
@@ -129,71 +135,226 @@ export async function getMyListings(
 }
 
 /**
- * Create a new listing
+ * Create a new listing and submit for approval
+ * Endpoint: POST /api/seller/listings (saveDraft: false)
  * 
- * TODO: Replace mock implementation with actual API call
- * API Endpoint: POST /seller/listings
+ * @param payload - Listing data
+ * @returns Promise<Listing> - Created listing with PENDING status
  */
 export async function createListing(payload: CreateListingPayload): Promise<Listing> {
     console.log('🚀 Creating listing with payload:', payload);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
 
-    // ⚠️ MOCK RESPONSE
-    const mockResponse = {
-        id: Math.floor(Math.random() * 10000),
-        ...payload,
-        status: 'PENDING' as ListingStatus, // Default status after creation
-        views: 0,
-        inquiries: 0,
-        createdDate: new Date().toISOString(),
-        updatedDate: new Date().toISOString(),
-    } as Listing;
+        const mockResponse: Listing = {
+            id: Math.floor(Math.random() * 10000),
+            brand: payload.brand,
+            model: payload.model,
+            type: payload.bikeType,
+            condition: payload.condition || 'Used',
+            price: payload.price,
+            location: payload.locationCity,
+            status: 'PENDING' as ListingStatus,
+            shipping: false,
+            views: 0,
+            inquiries: 0,
+            createdDate: new Date().toISOString(),
+            updatedDate: new Date().toISOString(),
+        };
 
-    // ✅ VALIDATION: Validate mock response to ensure system safety
-    validateResponse(mockResponse, 'createListing response');
-    validateNumber(mockResponse.id, 'id');
-    validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
-    // Ensure payload data is correctly reflected/returned if API returns it
-    validateString(mockResponse.brand, 'brand');
+        validateResponse(mockResponse, 'createListing response');
+        validateNumber(mockResponse.id, 'id');
+        validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
 
-    // ⚠️ UPDATE MOCK STORE
-    mockListings.unshift(mockResponse); // Add to beginning
+        mockListings.unshift(mockResponse);
+        return mockResponse;
+    }
 
-    return mockResponse;
+    // Real API: POST /api/seller/listings with saveDraft: false
+    const requestBody = { ...payload, saveDraft: false };
+    const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
+
+    validateResponse(response, 'createListing response');
+    console.log('✅ Listing created and submitted for approval');
+    return response;
 }
 
 /**
- * Save listing as draft
+ * Save listing as draft (not submitted for approval)
+ * Endpoint: POST /api/seller/listings (saveDraft: true)
  * 
- * TODO: Replace mock implementation with actual API call
- * API Endpoint: POST /seller/listings/draft
+ * @param payload - Listing data
+ * @returns Promise<Listing> - Created listing with DRAFT status
  */
 export async function saveDraft(payload: CreateListingPayload): Promise<Listing> {
     console.log('💾 Saving draft with payload:', payload);
 
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
 
-    // ⚠️ MOCK RESPONSE
-    const mockResponse = {
-        id: Math.floor(Math.random() * 10000),
-        ...payload,
-        status: 'DRAFT' as ListingStatus,
-        views: 0,
-        inquiries: 0,
-        createdDate: new Date().toISOString(),
-        updatedDate: new Date().toISOString(),
-    } as Listing;
+        const mockResponse: Listing = {
+            id: Math.floor(Math.random() * 10000),
+            brand: payload.brand,
+            model: payload.model,
+            type: payload.bikeType,
+            condition: payload.condition || 'Used',
+            price: payload.price,
+            location: payload.locationCity,
+            status: 'DRAFT' as ListingStatus,
+            shipping: false,
+            views: 0,
+            inquiries: 0,
+            createdDate: new Date().toISOString(),
+            updatedDate: new Date().toISOString(),
+        };
 
-    // ✅ VALIDATION: Validate response
-    validateResponse(mockResponse, 'saveDraft response');
-    validateNumber(mockResponse.id, 'id');
-    validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
+        validateResponse(mockResponse, 'saveDraft response');
+        validateNumber(mockResponse.id, 'id');
+        validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
 
-    // ⚠️ UPDATE MOCK STORE
-    mockListings.unshift(mockResponse); // Add to beginning
+        mockListings.unshift(mockResponse);
+        return mockResponse;
+    }
 
-    return mockResponse;
+    // Real API: POST /api/seller/listings with saveDraft: true
+    const requestBody = { ...payload, saveDraft: true };
+    const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
+
+    validateResponse(response, 'saveDraft response');
+    console.log('✅ Listing saved as draft');
+    return response;
+}
+
+/**
+ * Preview a listing before submitting
+ * Endpoint: POST /api/seller/listings/preview
+ * 
+ * @param sellerId - Seller ID
+ * @param listingId - Listing ID to preview
+ * @returns Promise<Listing> - Preview data
+ */
+export async function previewListing(sellerId: number, listingId: number): Promise<Listing> {
+    console.log(`🔍 Previewing listing ${listingId} for seller ${sellerId}`);
+
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+        // Find in mock listings
+        const listing = mockListings.find(l => l.id === listingId);
+        if (!listing) {
+            throw new Error(`Listing ${listingId} not found`);
+        }
+
+        return listing;
+    }
+
+    const response = await apiCallPOST<Listing>('/seller/listings/preview', { sellerId, listingId });
+    validateResponse(response, 'previewListing response');
+    console.log('✅ Preview data fetched');
+    return response;
+}
+
+/**
+ * Submit a DRAFT listing for approval (DRAFT → PENDING)
+ * Endpoint: POST /api/seller/listings/{id}/submit
+ * 
+ * @param sellerId - Seller ID
+ * @param listingId - Listing ID to submit
+ * @returns Promise<Listing> - Updated listing with PENDING status
+ */
+export async function submitListing(sellerId: number, listingId: number): Promise<Listing> {
+    console.log(`📤 Submitting listing ${listingId} for approval`);
+
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+        // Find and update in mock listings
+        const listingIndex = mockListings.findIndex(l => l.id === listingId);
+        if (listingIndex === -1) {
+            throw new Error(`Listing ${listingId} not found`);
+        }
+
+        // Update status to PENDING
+        mockListings[listingIndex] = {
+            ...mockListings[listingIndex],
+            status: 'PENDING' as ListingStatus,
+            updatedDate: new Date().toISOString(),
+        };
+
+        return mockListings[listingIndex];
+    }
+
+    const response = await apiCallPOST<Listing>(`/seller/listings/${listingId}/submit`, { sellerId, listingId });
+    validateResponse(response, 'submitListing response');
+    console.log('✅ Listing submitted for approval');
+    return response;
+}
+
+export interface GetDraftsParams {
+    sellerId: number;
+    sort?: 'newest' | 'oldest';
+    page?: number;
+    pageSize?: number;
+}
+
+export interface GetDraftsResponse {
+    items: Listing[];
+    pagination: {
+        totalItems: number;
+        totalPages: number;
+        currentPage: number;
+        pageSize: number;
+    };
+}
+
+/**
+ * Get all draft listings
+ * Endpoint: POST /api/seller/drafts
+ * 
+ * @param params - Query parameters
+ * @returns Promise<GetDraftsResponse> - Paginated draft listings
+ */
+export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsResponse> {
+    const { sellerId, sort = 'newest', page = 0, pageSize = 10 } = params;
+    console.log(`📋 Fetching drafts for seller ${sellerId}, page ${page}`);
+
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+        // Filter drafts from mock listings
+        const drafts = mockListings.filter(l => l.status === 'DRAFT');
+
+        // Sort
+        const sorted = [...drafts].sort((a, b) => {
+            if (sort === 'newest') {
+                return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
+            }
+            return new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime();
+        });
+
+        // Paginate
+        const start = page * pageSize;
+        const items = sorted.slice(start, start + pageSize);
+
+        return {
+            items,
+            pagination: {
+                totalItems: drafts.length,
+                totalPages: Math.ceil(drafts.length / pageSize),
+                currentPage: page,
+                pageSize,
+            },
+        };
+    }
+
+    const response = await apiCallPOST<GetDraftsResponse>('/seller/drafts', {
+        sellerId,
+        sort,
+        page,
+        pageSize,
+    });
+    validateResponse(response, 'getDrafts response');
+    console.log(`✅ Fetched ${response.items.length} drafts`);
+    return response;
 }

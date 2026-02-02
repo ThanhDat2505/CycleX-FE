@@ -169,16 +169,16 @@ const CreateListingPage: React.FC = () => {
   };
 
   const getPayload = (): CreateListingPayload => ({
+    sellerId: 1, // TODO: Get from auth context
     title: formData.title,
+    description: formData.description,
+    bikeType: formData.category,
     brand: formData.brand,
     model: formData.model,
-    type: formData.category,
+    manufactureYear: Number(formData.year),
     condition: formData.condition,
-    year: Number(formData.year),
     price: Number(formData.price),
-    location: formData.location,
-    description: formData.description,
-    shipping: formData.shipping,
+    locationCity: formData.location,
     imageUrls: imageUrls,
   });
 
@@ -205,7 +205,7 @@ const CreateListingPage: React.FC = () => {
       // In a real flow, this might happen at Step 3
       // For now, we just simulate the call
       await createListing(payload);
-      alert("Listing created successfully!");
+      console.log('✅ Listing created successfully!');
       router.push('/my-listings'); // Redirect to listing management
     } catch (error) {
       console.error("Failed to create listing:", error);
@@ -265,6 +265,12 @@ const CreateListingPage: React.FC = () => {
       {/* Form */}
       <form
         onSubmit={handleSubmit}
+        onKeyDown={(e) => {
+          // Prevent Enter key from submitting form unless on final step
+          if (e.key === 'Enter' && step !== CREATE_LISTING_STEPS.PREVIEW) {
+            e.preventDefault();
+          }
+        }}
         className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm"
       >
         {step === CREATE_LISTING_STEPS.VEHICLE_INFO && (
@@ -322,10 +328,12 @@ const CreateListingPage: React.FC = () => {
               </button>
             ) : (
               <button
-                type="submit"
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                type="button"
+                onClick={handleSubmit}
+                disabled={isSaving}
+                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Publish Listing
+                {isSaving ? "Publishing..." : "Publish Listing"}
               </button>
             )}
           </div>

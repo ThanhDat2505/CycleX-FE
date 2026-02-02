@@ -13,6 +13,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { formatPrice } from '../../utils/format';
+import { StatusBadge } from '@/app/components/ui/StatusBadge';
 
 export interface MyListingCardProps {
     listing: {
@@ -49,20 +50,9 @@ export function MyListingCard({ listing }: MyListingCardProps) {
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                 </svg>
-                <span
-                    className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-bold ${listing.status === "DRAFT"
-                            ? "bg-gray-100 text-gray-800"
-                            : listing.status === "PENDING"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : listing.status === "APPROVE"
-                                    ? "bg-green-100 text-green-800"
-                                    : listing.status === "REJECT"
-                                        ? "bg-red-100 text-red-800"
-                                        : "bg-gray-100 text-gray-800"
-                        }`}
-                >
-                    {listing.status === "APPROVE" ? "ACTIVE" : listing.status}
-                </span>
+                <div className="absolute top-3 right-3">
+                    <StatusBadge status={listing.status} />
+                </div>
             </div>
 
             {/* Content */}

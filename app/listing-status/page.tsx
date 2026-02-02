@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { StatusBadge } from "@/app/components/ui/StatusBadge";
 
 const ListingStatusPage: React.FC = () => {
   // Move Date calls outside to avoid impure function warnings
@@ -67,12 +68,7 @@ const ListingStatusPage: React.FC = () => {
     draft: userListings.filter((l) => l.status === "DRAFT").length,
   };
 
-  const statusColors: Record<string, { bg: string; text: string }> = {
-    ACTIVE: { bg: "bg-green-100", text: "text-green-800" },
-    PENDING: { bg: "bg-yellow-100", text: "text-yellow-800" },
-    SOLD: { bg: "bg-red-100", text: "text-red-800" },
-    DRAFT: { bg: "bg-gray-100", text: "text-gray-800" },
-  };
+  // Status colors now handled by StatusBadge component
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
@@ -125,36 +121,28 @@ const ListingStatusPage: React.FC = () => {
               </tr>
             </thead>
             <tbody>
-              {userListings.map((listing) => {
-                const colors = statusColors[listing.status];
-
-                return (
-                  <tr
-                    key={listing.id}
-                    className="border-b border-gray-100 hover:bg-gray-50"
-                  >
-                    <td className="px-6 py-4 font-medium text-gray-900">
-                      {listing.brand} {listing.model}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      ${listing.price}
-                    </td>
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold ${colors.bg} ${colors.text}`}
-                      >
-                        {listing.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {listing.views}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {new Date(listing.createdDate).toLocaleDateString()}
-                    </td>
-                  </tr>
-                );
-              })}
+              {userListings.map((listing) => (
+                <tr
+                  key={listing.id}
+                  className="border-b border-gray-100 hover:bg-gray-50"
+                >
+                  <td className="px-6 py-4 font-medium text-gray-900">
+                    {listing.brand} {listing.model}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    ${listing.price}
+                  </td>
+                  <td className="px-6 py-4">
+                    <StatusBadge status={listing.status} />
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {listing.views}
+                  </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {new Date(listing.createdDate).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
