@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { HomeBike } from '../types/listing';
 import FeaturedBikeCard from './FeaturedBikeCard';
 import Badge from './ui/Badge';
-import { generateMockHomeBikes } from '../mocks';
+import { getFeaturedBikes } from '../services/listingService';
 
 const MAX_FEATURED_BIKES = 6;
 
@@ -30,31 +30,16 @@ export default function FeaturedBikesSection() {
     }, []);
 
     /**
-     * Fetch featured bikes from /backend/api/home
-     * Falls back to mock data if USE_MOCK_API is enabled
+     * Fetch featured bikes using service layer
+     * Service handles validation and mock/real API switching
      */
     const fetchFeaturedBikes = async () => {
         setLoading(true);
         setError(null);
 
-        // Use mock data in development
-        if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setBikes(generateMockHomeBikes());
-            setLoading(false);
-            return;
-        }
-
-        // Real API call
         try {
-            const response = await fetch('/backend/api/home');
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch featured bikes');
-            }
-
-            const data: HomeBike[] = await response.json();
+            // Use service layer - already validated and handles mock/real API
+            const data = await getFeaturedBikes();
 
             // Limit to 6 bikes for Home preview
             setBikes(data.slice(0, MAX_FEATURED_BIKES));
