@@ -16,6 +16,11 @@ export const PAGINATION = {
 export const ITEMS_PER_PAGE = 12;
 
 /**
+ * Maximum number of top listings to display in dashboard
+ */
+export const TOP_LISTINGS_LIMIT = 5;
+
+/**
  * Mock API delay for development
  */
 export const API_DELAY_MS = 800;
