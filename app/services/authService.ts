@@ -75,9 +75,10 @@ export const authService = {
                     message: 'Please verify your email',
                 }
             }
-            // Save token if login successful
+            // Save token and user data if login successful
             if (data.accessToken) {
-                authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
+                authService.saveToken(data.accessToken); // lưu token vào localStorage
+                authService.saveUser(data.user); // ✅ lưu user data vào localStorage để giữ session khi reload
             }
 
             return data;
@@ -277,11 +278,12 @@ export const authService = {
     },
 
     /**
-     * Remove authentication token (logout)
+     * Remove authentication token and user data (logout)
      */
     logout: (): void => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('authToken');
+            localStorage.removeItem('userData'); // ✅ Also remove user data
         }
     },
 
