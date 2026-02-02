@@ -6,7 +6,7 @@
 
 'use client';
 
-import React from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { scrollToElementById } from '../utils/scroll';
 import { ELEMENT_IDS } from '../constants/navigation';
@@ -70,19 +70,19 @@ export default function Footer() {
                                 </button>
                             </li>
                             <li>
-                                <button onClick={() => router.push('/search')} className="text-gray-400 hover:text-brand-primary transition-colors">
+                                <Link href="/listings" className="text-gray-400 hover:text-brand-primary transition-colors">
                                     Mua Xe
-                                </button>
+                                </Link>
                             </li>
                             <li>
-                                <button onClick={() => router.push('/sell')} className="text-gray-400 hover:text-brand-primary transition-colors">
+                                <Link href="/sell" className="text-gray-400 hover:text-brand-primary transition-colors">
                                     Bán Xe
-                                </button>
+                                </Link>
                             </li>
                             <li>
-                                <button onClick={() => router.push('/guide')} className="text-gray-400 hover:text-brand-primary transition-colors">
+                                <Link href="/guide" className="text-gray-400 hover:text-brand-primary transition-colors">
                                     Cẩm Nang
-                                </button>
+                                </Link>
                             </li>
                         </ul>
                     </div>

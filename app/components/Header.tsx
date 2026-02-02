@@ -7,6 +7,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
@@ -57,24 +58,24 @@ export default function Header() {
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <div
-                        onClick={() => router.push('/')}
-                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                     >
                         <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
                             <span className="text-white font-bold text-xl">C</span>
                         </div>
                         <span className="text-2xl font-bold">CycleX</span>
-                    </div>
+                    </Link>
 
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-8">
-                        <button
-                            onClick={() => router.push('/listings')}
+                        <Link
+                            href="/listings"
                             className="text-white hover:text-brand-primary transition-colors"
                         >
                             Mua Xe
-                        </button>
+                        </Link>
                         {!isRestrictedRole && (
                             <button
                                 onClick={handleSellClick}
@@ -83,12 +84,12 @@ export default function Header() {
                                 Bán Xe
                             </button>
                         )}
-                        <button
-                            onClick={() => router.push('/guide')}
+                        <Link
+                            href="/guide"
                             className="text-white hover:text-brand-primary transition-colors"
                         >
                             Cẩm Nang
-                        </button>
+                        </Link>
                     </nav>
 
                     {/* Right Side Actions */}

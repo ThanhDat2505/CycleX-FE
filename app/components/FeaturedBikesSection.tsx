@@ -16,6 +16,7 @@ import { useRouter } from 'next/navigation';
 import { HomeBike } from '../types/listing';
 import FeaturedBikeCard from './FeaturedBikeCard';
 import Badge from './ui/Badge';
+import { generateMockHomeBikes } from '../services/mockData';
 
 const MAX_FEATURED_BIKES = 6;
 
@@ -38,7 +39,7 @@ export default function FeaturedBikesSection() {
         setError(null);
 
         // Use mock data in development
-        if (USE_MOCK_API) {
+        if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             // Simulate network delay
             await new Promise(resolve => setTimeout(resolve, 500));
             setBikes(generateMockHomeBikes());
