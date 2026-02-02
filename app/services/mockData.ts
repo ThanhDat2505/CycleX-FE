@@ -291,3 +291,57 @@ export const validateMockLogin = (email: string, password: string): User | null 
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
 };
+
+/**
+ * Generate mock home bikes for preview section
+ * Used by FeaturedBikesSection (S-01 Home)
+ */
+import { HomeBike } from '@/app/types/listing';
+
+export const generateMockHomeBikes = (): HomeBike[] => {
+    return [
+        {
+            listingId: 101,
+            title: 'Xe Đạp Địa Hình Giant ATX 2024',
+            price: 7500000,
+            imageUrl: 'https://giant.vn/wp-content/uploads/2023/10/2024-atx-830-1.jpg',
+            locationCity: 'Hà Nội'
+        },
+        {
+            listingId: 102,
+            title: 'Xe Đạp Đường Phố Trek FX 2',
+            price: 12500000,
+            imageUrl: 'https://trek.vn/wp-content/uploads/2022/06/FX2Disc_22_35003_A_Primary.jpg',
+            locationCity: 'TP. Hồ Chí Minh'
+        },
+        {
+            listingId: 103,
+            title: 'Xe Đạp Thể Thao Specialized Sirrus',
+            price: 15900000,
+            imageUrl: 'https://specialized.vn/wp-content/uploads/2022/05/92122-70_SIRRUS-1.0_CSTWHT-BLK-RFL_HERO.jpg',
+            locationCity: 'Đà Nẵng'
+        },
+        {
+            listingId: 104,
+            title: 'Xe Đạp Mini Nhật Maruishi',
+            price: 4200000,
+            imageUrl: 'https://maruishi-cycle.vn/wp-content/uploads/2021/04/xe-dap-mini-nhat-maruishi-wata-2673-1.jpg',
+            locationCity: 'Hải Phòng'
+        },
+        {
+            listingId: 105,
+            title: 'Xe Đạp Trẻ Em RoyalBaby',
+            price: 2800000,
+            imageUrl: 'https://royalbaby.com.vn/wp-content/uploads/2020/06/xe-dap-tre-em-royalbaby-freestyle-12-14-16-18-inch.jpg',
+            locationCity: 'Cần Thơ'
+        },
+        {
+            listingId: 106,
+            title: 'Xe Đạp Điện Asama EB-02',
+            price: 9500000,
+            imageUrl: 'https://asama-bike.com/wp-content/uploads/2019/12/EB-02-Blue.jpg',
+            locationCity: 'Bình Dương'
+        }
+    ];
+};
+

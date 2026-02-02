@@ -12,8 +12,7 @@
 'use client';
 
 import { use, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../hooks/useAuth';
+import Link from 'next/link';
 import { getListingDetail } from '../../services/listingService';
 import { ListingDetail } from '../../types/listing';
 import { MESSAGES } from '../../constants';
@@ -27,8 +26,6 @@ interface ListingDetailPageProps {
 
 export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const resolvedParams = use(params);
-    const router = useRouter();
-    const { user } = useAuth();
     const [listing, setListing] = useState<ListingDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -43,17 +40,17 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                 return;
             }
 
-            // Get sellerId from authenticated user or use 0 for guest/anonymous user
-            // Backend should handle guest access (sellerId = 0) for APPROVED listings
-            const sellerId = user?.userId || 0;
-
             try {
                 setIsLoading(true);
-                const data = await getListingDetail(sellerId, listingId);
+                const data = await getListingDetail(listingId);
 
-                // BR-S32-01: Backend automatically only returns APPROVED listings to public users
-                // If we get here, the listing is APPROVED (no need to check data.status)
-                // The service layer already handles validation
+                // BR-S32-01: Frontend validation (even though service also validates)
+                // "Không bao giờ tin BE hoàn toàn"
+                if (data.status !== 'APPROVED') {
+                    setError(MESSAGES.DETAIL_NOT_AVAILABLE);
+                    setIsLoading(false);
+                    return;
+                }
 
                 setListing(data);
                 setError(null);
@@ -66,7 +63,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                 } else if (message.includes('not available')) {
                     setError(MESSAGES.DETAIL_NOT_AVAILABLE);
                 } else {
-                    setError(MESSAGES.ERROR_LOADING);
+                    setError(MESSAGES.ERROR_LOADING_LISTINGS);
                 }
             } finally {
                 setIsLoading(false);
@@ -74,7 +71,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
         }
 
         fetchListing();
-    }, [listingId, user?.userId]);
+    }, [listingId]);
 
     // Loading state
     if (isLoading) {
@@ -103,12 +100,12 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                 <h1 className="text-2xl font-semibold text-gray-800 mb-4">
                     {error || MESSAGES.DETAIL_NOT_FOUND}
                 </h1>
-                <button
-                    onClick={() => router.push('/listings')}
-                    className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                <Link
+                    href="/listings"
+                    className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-block"
                 >
                     {MESSAGES.DETAIL_BACK_TO_LISTINGS}
-                </button>
+                </Link>
             </div>
         );
     }
@@ -117,8 +114,8 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     return (
         <div className="max-w-7xl mx-auto px-4 py-6">
             {/* Back button */}
-            <button
-                onClick={() => router.push('/listings')}
+            <Link
+                href="/listings"
                 className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
             >
                 <svg
@@ -130,7 +127,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
                 {MESSAGES.DETAIL_BACK_TO_LISTINGS}
-            </button>
+            </Link>
 
             {/* Main content */}
             <ListingDetailView listing={listing} />

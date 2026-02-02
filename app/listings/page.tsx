@@ -14,7 +14,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import SearchFilters from './components/SearchFilters';
 import ListingGrid from './components/ListingGrid';
@@ -23,7 +23,43 @@ import { searchListings } from '../services/listingService';
 import { HomeBike, SearchFilters as SearchFiltersType, SortOption, PaginationInfo } from '../types/listing';
 import { SORT_OPTIONS, DEFAULT_PAGE_SIZE, DEFAULT_PAGE, MESSAGES } from '../constants';
 
+// Force dynamic rendering to avoid prerender errors with useSearchParams
+export const dynamic = 'force-dynamic';
+
 export default function ListingsPage() {
+    return (
+        <Suspense fallback={<ListingsPageSkeleton />}>
+            <ListingsContent />
+        </Suspense>
+    );
+}
+
+function ListingsPageSkeleton() {
+    return (
+        <div className="min-h-screen bg-gray-50 flex flex-col">
+            <main className="flex-grow container mx-auto px-4 py-8">
+                <div className="animate-pulse">
+                    <div className="h-8 bg-gray-200 rounded w-64 mb-8"></div>
+                    <div className="flex gap-8">
+                        <div className="w-1/4 space-y-4">
+                            <div className="h-32 bg-gray-200 rounded"></div>
+                            <div className="h-32 bg-gray-200 rounded"></div>
+                        </div>
+                        <div className="w-3/4">
+                            <div className="grid grid-cols-3 gap-6">
+                                {[...Array(6)].map((_, i) => (
+                                    <div key={i} className="h-64 bg-gray-200 rounded"></div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    );
+}
+
+function ListingsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
 
@@ -258,4 +294,5 @@ export default function ListingsPage() {
         </div>
     );
 }
+
 

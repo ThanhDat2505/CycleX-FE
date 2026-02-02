@@ -7,16 +7,11 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { BIKE_CATEGORIES } from '../constants/categories';
 import SectionHeader from './ui/SectionHeader';
 
 export default function CategorySection() {
-    const router = useRouter();
-
-    const handleCategoryClick = (slug: string) => {
-        router.push(`/listings?category=${slug}`);
-    };
 
     return (
         <section className="py-16 bg-white">
@@ -31,9 +26,9 @@ export default function CategorySection() {
                 {/* Categories Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                     {BIKE_CATEGORIES.map((category, index) => (
-                        <button
+                        <Link
                             key={index}
-                            onClick={() => handleCategoryClick(category.slug)}
+                            href={`/listings?category=${category.slug}`}
                             className="bg-gray-50 hover:bg-brand-primary hover:text-white rounded-lg p-6 text-center transition-all group border border-transparent hover:border-brand-primary"
                         >
                             {/* Icon */}
@@ -50,7 +45,7 @@ export default function CategorySection() {
                             <p className="text-sm text-gray-500 group-hover:text-white group-hover:text-opacity-90">
                                 {category.count} xe
                             </p>
-                        </button>
+                        </Link>
                     ))}
                 </div>
             </div>

@@ -1,7 +1,7 @@
 // app/my-listings/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from "@/app/hooks/useAuth";
@@ -12,7 +12,33 @@ import { MyListingCard } from "./components/MyListingCard";
 import Pagination from '../listings/components/Pagination';
 import { ITEMS_PER_PAGE } from "@/app/constants";
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 const ListingsPage: React.FC = () => {
+  return (
+    <Suspense fallback={<MyListingsSkeleton />}>
+      <MyListingsContent />
+    </Suspense>
+  );
+};
+
+function MyListingsSkeleton() {
+  return (
+    <div className="p-8 max-w-7xl mx-auto">
+      <div className="animate-pulse">
+        <div className="h-10 bg-gray-200 rounded w-64 mb-8"></div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="h-80 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MyListingsContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { user, isLoggedIn, isLoading: authLoading } = useAuth();
@@ -161,6 +187,6 @@ const ListingsPage: React.FC = () => {
       )}
     </div>
   );
-};
+}
 
 export default ListingsPage;
