@@ -75,3 +75,27 @@ export function validatePositiveNumber(data: unknown, fieldName: string): void {
         throw new Error(`Invalid response: ${fieldName} must be a positive number`);
     }
 }
+
+/**
+ * Validates that a field is a boolean
+ */
+export function validateBoolean(data: unknown, fieldName: string): void {
+    if (typeof data !== 'boolean') {
+        throw new Error(`Invalid response: ${fieldName} must be a boolean`);
+    }
+}
+
+/**
+ * Validates a User object from auth API
+ */
+export function validateUser(user: any): void {
+    validateObject(user, 'user');
+    validateNumber(user.userId, 'user.userId');
+    validateString(user.email, 'user.email');
+    validateString(user.phone, 'user.phone');
+    // Role validation is already handled by TS but good to verify at runtime
+    const validRoles = ['BUYER', 'SELLER', 'ADMIN', 'INSPECTOR', 'SHIPPER'];
+    validateEnum(user.role, validRoles, 'user.role');
+}
+
+

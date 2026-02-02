@@ -8,6 +8,15 @@ import { Listing, HomeBike, PaginationInfo, ListingDetail, validateListingDetail
 import { PAGINATION } from '../constants/pagination';
 import { MOCK_LISTINGS } from '../mocks';
 import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
+import {
+    validateResponse,
+    validateArray,
+    validateNumber,
+    validateObject,
+    validateString,
+    validatePositiveNumber
+} from '../utils/apiValidation';
+
 
 // Check if we should use mock API (for development)
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
@@ -37,7 +46,19 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
     }
 
     const bikes = await apiCallGET<HomeBike[]>('/home');
-    console.log(`✅ Fetched ${bikes.length} featured bikes from /api/home`);
+
+    // ✅ VALIDATION: Ensure bikes is an array and each bike has required fields
+    validateResponse(bikes, 'featured bikes');
+    validateArray(bikes, 'featured bikes');
+
+    bikes.forEach((bike, index) => {
+        const ctx = `featuredBikes[${index}]`;
+        validateNumber(bike.listingId, `${ctx}.listingId`);
+        validateString(bike.title, `${ctx}.title`);
+        validateNumber(bike.price, `${ctx}.price`);
+    });
+
+    console.log(`✅ Fetched and validated ${bikes.length} featured bikes from /api/home`);
     return bikes;
 }
 
@@ -59,7 +80,19 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
     }
 
     const bikes = await apiCallGET<HomeBike[]>('/listings/pagination');
-    console.log(`✅ Fetched ${bikes.length} listings from /api/listings/pagination`);
+
+    // ✅ VALIDATION: Ensure bikes is an array and each bike has required fields
+    validateResponse(bikes, 'all listings');
+    validateArray(bikes, 'all listings');
+
+    bikes.forEach((bike, index) => {
+        const ctx = `allListings[${index}]`;
+        validateNumber(bike.listingId, `${ctx}.listingId`);
+        validateString(bike.title, `${ctx}.title`);
+        validateNumber(bike.price, `${ctx}.price`);
+    });
+
+    console.log(`✅ Fetched and validated ${bikes.length} listings from /api/listings/pagination`);
     return bikes;
 }
 
@@ -213,20 +246,20 @@ export async function searchListings(
 
         const data = await response.json();
 
-        // ✅ VALIDATION: Check response
-        if (!data) {
-            throw new Error('Invalid response from server: data is null or undefined');
-        }
+        // ✅ VALIDATION: Strict check of public search response
+        validateResponse(data, 'search response');
+        validateArray(data.items, 'items');
+        validateObject(data.pagination, 'pagination');
+        validateNumber(data.pagination.total, 'pagination.total');
 
-        if (!data.items || !Array.isArray(data.items)) {
-            throw new Error('Invalid response format: expected items array');
-        }
+        data.items.forEach((item: any, index: number) => {
+            const ctx = `items[${index}]`;
+            validateNumber(item.listingId, `${ctx}.listingId`);
+            validateString(item.title, `${ctx}.title`);
+            validateNumber(item.price, `${ctx}.price`);
+        });
 
-        if (!data.pagination) {
-            throw new Error('Invalid response format: missing pagination info');
-        }
-
-        console.log(`✅ Search successful: ${data.items.length} results on page ${page}`);
+        console.log(`✅ Search successful and validated: ${data.items.length} results on page ${page}`);
         return data;
     } catch (error) {
         console.error('Error searching listings:', error);
@@ -323,11 +356,20 @@ export async function searchSellerListings(
         requestBody
     );
 
-    if (!data.items || !Array.isArray(data.items)) {
-        throw new Error('Invalid response format from seller search');
-    }
+    // ✅ VALIDATION: Strict check of seller search response
+    validateResponse(data, 'seller search response');
+    validateArray(data.items, 'sellerItems');
+    validateObject(data.pagination, 'pagination');
+    validateNumber(data.pagination.total, 'pagination.total');
 
-    console.log(`✅ Seller search successful: ${data.items.length} results`);
+    data.items.forEach((item, index) => {
+        const ctx = `sellerItems[${index}]`;
+        validateNumber(item.listingId, `${ctx}.listingId`);
+        validateString(item.title, `${ctx}.title`);
+        validateNumber(item.price, `${ctx}.price`);
+    });
+
+    console.log(`✅ Seller search successful and validated: ${data.items.length} results`);
     return data;
 }
 

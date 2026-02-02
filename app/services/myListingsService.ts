@@ -4,6 +4,7 @@
 import {
     validateResponse,
     validateArray,
+    validateObject,
     validateNumber,
     validateString,
     validateEnum,
@@ -176,6 +177,11 @@ export async function createListing(payload: CreateListingPayload): Promise<List
     const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
 
     validateResponse(response, 'createListing response');
+    validateNumber(response.id, 'id');
+    validateString(response.brand, 'brand');
+    validateString(response.model, 'model');
+    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+
     console.log('✅ Listing created and submitted for approval');
     return response;
 }
@@ -222,6 +228,11 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
     const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
 
     validateResponse(response, 'saveDraft response');
+    validateNumber(response.id, 'id');
+    validateString(response.brand, 'brand');
+    validateString(response.model, 'model');
+    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+
     console.log('✅ Listing saved as draft');
     return response;
 }
@@ -251,7 +262,11 @@ export async function previewListing(sellerId: number, listingId: number): Promi
 
     const response = await apiCallPOST<Listing>('/seller/listings/preview', { sellerId, listingId });
     validateResponse(response, 'previewListing response');
-    console.log('✅ Preview data fetched');
+    validateNumber(response.id, 'id');
+    validateString(response.brand, 'brand');
+    validateString(response.model, 'model');
+
+    console.log('✅ Preview data fetched and validated');
     return response;
 }
 
@@ -287,7 +302,10 @@ export async function submitListing(sellerId: number, listingId: number): Promis
 
     const response = await apiCallPOST<Listing>(`/seller/listings/${listingId}/submit`, { sellerId, listingId });
     validateResponse(response, 'submitListing response');
-    console.log('✅ Listing submitted for approval');
+    validateNumber(response.id, 'id');
+    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+
+    console.log('✅ Listing submitted and validated');
     return response;
 }
 
@@ -354,7 +372,19 @@ export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsRespo
         page,
         pageSize,
     });
+
     validateResponse(response, 'getDrafts response');
-    console.log(`✅ Fetched ${response.items.length} drafts`);
+    validateArray(response.items, 'items');
+    validateObject(response.pagination, 'pagination');
+    validateNumber(response.pagination.totalItems, 'pagination.totalItems');
+
+    response.items.forEach((item, index) => {
+        const ctx = `drafts[${index}]`;
+        validateNumber(item.id, `${ctx}.id`);
+        validateString(item.brand, `${ctx}.brand`);
+        validateEnum(item.status, VALID_LISTING_STATUSES, `${ctx}.status`);
+    });
+
+    console.log(`✅ Fetched and validated ${response.items.length} drafts`);
     return response;
 }

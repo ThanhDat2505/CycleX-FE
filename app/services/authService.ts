@@ -21,6 +21,11 @@ import {
     getMockUser,
 } from '../mocks';
 import { apiCallPOST } from '@/app/utils/apiHelpers';
+import {
+    validateResponse,
+    validateString,
+    validateUser
+} from '../utils/apiValidation';
 
 // All API calls now use /backend/api prefix (handled by next.config.ts proxy)
 
@@ -35,7 +40,6 @@ export const authService = {
      * @param password - User password
      * @param rememberMe - Whether to remember the user
      * @returns Promise with login response
-     * async báo hiệu có thể dùng await, gọi APi mất thời gian, không block code khác, đợi kết quả rồi mới chạy
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
         // Mock mode for testing UI without backend
@@ -65,10 +69,15 @@ export const authService = {
             }
         }
 
-        // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {
             // sử dụng helper function apiCallPOST từ apiHelpers để gọi API
             const data = await apiCallPOST<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
+
+            // ✅ VALIDATION: Strict check of login response
+            validateResponse(data, 'login response');
+            validateString(data.accessToken, 'accessToken');
+            validateUser(data.user);
+
             if (!data.user.status || data.user.status !== 'ACTIVE') {
                 throw {
                     status: 401,
@@ -97,7 +106,7 @@ export const authService = {
      * @param role - User role (BUYER or SELLER)
      * @returns Promise with register response (no token, fullName will be null)
      */
-    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER'): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
@@ -120,7 +129,7 @@ export const authService = {
 
             // Register new user and generate OTP
             // Use selected role (BUYER or SELLER)
-            const user = registerMockUser(email, password, phone, cccd, role);
+            const user = registerMockUser(email, password, phone, cccd, role as any);
 
             return {
                 message: 'Registration successful! Please check your email for OTP.',
@@ -136,6 +145,11 @@ export const authService = {
                 cccd,
                 role
             } as RegisterRequest);
+
+            // ✅ VALIDATION: Strict check of register response
+            validateResponse(data, 'register response');
+            validateString(data.message, 'message');
+            validateUser(data.user);
 
             // ❌ DO NOT save token - register doesn't return token
             // ❌ DO NOT auto-login
@@ -196,6 +210,11 @@ export const authService = {
         try {
             const data = await apiCallPOST<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
 
+            // ✅ VALIDATION: Strict check of verification response
+            validateResponse(data, 'verifyOtp response');
+            validateString(data.message, 'message');
+            validateUser(data.user);
+
             // ❌ DO NOT save token - verification doesn't return token
             // ❌ DO NOT auto-login
             // ✅ User must login after verification (BR-14)
@@ -227,6 +246,11 @@ export const authService = {
 
         try {
             const data = await apiCallPOST<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
+
+            // ✅ VALIDATION: Strict check of sendOtp response
+            validateResponse(data, 'sendOtp response');
+            validateString(data.message, 'message');
+
             return data;
         } catch (error) {
             throw error;
@@ -237,8 +261,8 @@ export const authService = {
      * Save authentication token to localStorage
      * @param token - JWT token from backend
      */
-    saveToken: (token: string): void => { // hàm không return
-        if (typeof window !== 'undefined') { //next render code ở server nên không có window, chỉ browser mới có window
+    saveToken: (token: string): void => {
+        if (typeof window !== 'undefined') {
             console.log(`Saving token to localStorage: ${token}`);
             localStorage.setItem('authToken', token);
         }
@@ -271,7 +295,7 @@ export const authService = {
      * Get authentication token from localStorage
      * @returns Token string or null
      */
-    getToken: (): string | null => { // return string or null
+    getToken: (): string | null => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('authToken');
         }
@@ -284,7 +308,7 @@ export const authService = {
     logout: (): void => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('authToken');
-            localStorage.removeItem('userData'); // ✅ Also remove user data
+            localStorage.removeItem('userData');
         }
     },
 
@@ -293,6 +317,6 @@ export const authService = {
      * @returns boolean
      */
     isAuthenticated: (): boolean => {
-        return !!authService.getToken(); // nếu có token thì return true, không có thì return false
+        return !!authService.getToken();
     },
 };
