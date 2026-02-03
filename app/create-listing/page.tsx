@@ -1,52 +1,17 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/hooks/useAuth";
-import { saveDraft, createListing } from "@/app/services/myListingsService";
-import type { CreateListingPayload } from "@/app/services/myListingsService";
-import { uploadImage } from "@/app/services/imageUploadService";
-import { CREATE_LISTING_STEPS, LISTING_CONFIG } from "./constants";
-import { ListingFormData } from "./types";
+import React from "react";
+import { CREATE_LISTING_STEPS } from "./constants";
+import { useCreateListing } from "./hooks/useCreateListing";
 
 // Components
 import Step1VehicleInfo from "./components/Step1VehicleInfo";
 import Step2ImageUpload from "./components/Step2ImageUpload";
 import Step3Preview from "./components/Step3Preview";
 
-const currentYear = new Date().getFullYear();
-
 const CreateListingPage: React.FC = () => {
-  const router = useRouter();
-  const { isLoggedIn, isLoading } = useAuth();
-  const [step, setStep] = useState<number>(CREATE_LISTING_STEPS.VEHICLE_INFO);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-
-  // Form State
-  const [formData, setFormData] = useState<ListingFormData>({
-    title: "",
-    brand: "",
-    model: "",
-    category: "",
-    condition: "used", // default
-    year: currentYear.toString(),
-    price: "",
-    location: "",
-    description: "",
-    shipping: false,
-  });
-
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  // Auth Protection
-  useEffect(() => {
-    if (!isLoading && !isLoggedIn) {
-      router.push("/login?returnUrl=/create-listing");
-    }
-  }, [isLoggedIn, isLoading, router]);
-
+  const { state, actions } = useCreateListing();
+  const { step, formData, errors, isSaving, isUploading, imageUrls, uploadError, isLoggedIn, isLoading } = state;
 
   if (isLoading) {
     return (
@@ -57,163 +22,8 @@ const CreateListingPage: React.FC = () => {
   }
 
   if (!isLoggedIn) {
-    return null; // Redirecting...
+    return null; // Redirecting handled in hook
   }
-
-  const validateStep1 = () => {
-    const newErrors: Record<string, string> = {};
-    if (!formData.title.trim()) newErrors.title = "Title is required";
-    if (!formData.brand.trim()) newErrors.brand = "Brand is required";
-    if (!formData.model.trim()) newErrors.model = "Model is required";
-    if (!formData.category) newErrors.category = "Category is required";
-    if (!formData.price) {
-      newErrors.price = "Price is required";
-    } else if (Number(formData.price) <= 0) {
-      newErrors.price = "Price must be greater than 0";
-    }
-    if (!formData.location.trim()) newErrors.location = "Location is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
-  ) => {
-    const { name, value, type } = e.target;
-    // Handle checkbox separately
-    const checked = (e.target as HTMLInputElement).checked;
-
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
-
-  const validateStep2 = () => {
-    if (imageUrls.length < LISTING_CONFIG.MIN_IMAGES) {
-      alert(`Please upload at least ${LISTING_CONFIG.MIN_IMAGES} images.`);
-      return false;
-    }
-    return true;
-  };
-
-  const handleNext = () => {
-    if (step === CREATE_LISTING_STEPS.VEHICLE_INFO) {
-      if (validateStep1()) {
-        setStep(step + 1);
-        window.scrollTo(0, 0);
-      } else {
-        window.scrollTo(0, 0);
-      }
-    } else if (step === CREATE_LISTING_STEPS.UPLOAD_IMAGES) {
-      if (validateStep2()) {
-        setStep(step + 1);
-        window.scrollTo(0, 0);
-      }
-    } else {
-      setStep(step + 1);
-    }
-  };
-
-  // Image Upload Handlers
-  const handleFileUpload = async (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-
-    // Limit total images (e.g., max 10)
-    if (imageUrls.length + files.length > LISTING_CONFIG.MAX_IMAGES) {
-      alert(`You can only upload a maximum of ${LISTING_CONFIG.MAX_IMAGES} images.`);
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const uploadPromises = Array.from(files).map(file => uploadImage(file));
-      const newUrls = await Promise.all(uploadPromises);
-      setImageUrls(prev => [...prev, ...newUrls]);
-    } catch (error) {
-      console.error("Upload failed", error);
-      alert("Failed to upload some images. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFileUpload(e.target.files);
-  };
-
-  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    handleFileUpload(e.dataTransfer.files);
-  };
-
-  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-  };
-
-  const removeImage = (indexToRemove: number) => {
-    setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
-  };
-
-  const getPayload = (): CreateListingPayload => ({
-    sellerId: 1, // TODO: Get from auth context
-    title: formData.title,
-    description: formData.description,
-    bikeType: formData.category,
-    brand: formData.brand,
-    model: formData.model,
-    manufactureYear: Number(formData.year),
-    condition: formData.condition,
-    price: Number(formData.price),
-    locationCity: formData.location,
-    imageUrls: imageUrls,
-  });
-
-  const handleSaveDraft = async () => {
-    setIsSaving(true);
-    try {
-      const payload = getPayload();
-      await saveDraft(payload);
-      alert("Draft saved successfully!");
-    } catch (error) {
-      console.error("Failed to save draft:", error);
-      alert("Failed to save draft. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // This is mainly for the final step, but we prepare the logic here
-    setIsSaving(true);
-    try {
-      const payload = getPayload();
-      // In a real flow, this might happen at Step 3
-      // For now, we just simulate the call
-      await createListing(payload);
-      console.log('✅ Listing created successfully!');
-      router.push('/my-listings'); // Redirect to listing management
-    } catch (error) {
-      console.error("Failed to create listing:", error);
-      alert("Failed to create listing. Please try again.");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   return (
     <div className="p-8 max-w-4xl mx-auto">
@@ -231,7 +41,7 @@ const CreateListingPage: React.FC = () => {
           <React.Fragment key={s}>
             <div
               className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${s <= step
-                ? "bg-[#FF8A00] text-white"
+                ? "bg-brand-primary text-white"
                 : "bg-gray-200 text-gray-600"
                 }`}
             >
@@ -239,7 +49,7 @@ const CreateListingPage: React.FC = () => {
             </div>
             {s < CREATE_LISTING_STEPS.PREVIEW && (
               <div
-                className={`h-1 flex-1 mx-2 transition ${s < step ? "bg-[#FF8A00]" : "bg-gray-200"
+                className={`h-1 flex-1 mx-2 transition ${s < step ? "bg-brand-primary" : "bg-gray-200"
                   }`}
               />
             )}
@@ -264,9 +74,8 @@ const CreateListingPage: React.FC = () => {
 
       {/* Form */}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={actions.handleSubmit}
         onKeyDown={(e) => {
-          // Prevent Enter key from submitting form unless on final step
           if (e.key === 'Enter' && step !== CREATE_LISTING_STEPS.PREVIEW) {
             e.preventDefault();
           }
@@ -277,7 +86,7 @@ const CreateListingPage: React.FC = () => {
           <Step1VehicleInfo
             formData={formData}
             errors={errors}
-            onChange={handleInputChange}
+            onChange={actions.handleInputChange}
           />
         )}
 
@@ -285,10 +94,12 @@ const CreateListingPage: React.FC = () => {
           <Step2ImageUpload
             imageUrls={imageUrls}
             isUploading={isUploading}
-            onFileChange={onFileChange}
-            onDrop={onDrop}
-            onDragOver={onDragOver}
-            onRemoveImage={removeImage}
+            onFileChange={actions.onFileChange}
+            onDrop={actions.onDrop}
+            onDragOver={actions.onDragOver}
+            onRemoveImage={actions.removeImage}
+            onSetPrimary={actions.handleSetPrimary}
+            error={uploadError}
           />
         )}
 
@@ -300,7 +111,7 @@ const CreateListingPage: React.FC = () => {
         <div className="flex gap-4 mt-8 justify-between">
           <button
             type="button"
-            onClick={handleSaveDraft}
+            onClick={actions.handleSaveDraft}
             disabled={isSaving}
             className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
@@ -311,7 +122,7 @@ const CreateListingPage: React.FC = () => {
             {step > CREATE_LISTING_STEPS.VEHICLE_INFO && (
               <button
                 type="button"
-                onClick={() => setStep(step - 1)}
+                onClick={actions.handleBack}
                 className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
               >
                 Back
@@ -321,15 +132,15 @@ const CreateListingPage: React.FC = () => {
             {step < CREATE_LISTING_STEPS.PREVIEW ? (
               <button
                 type="button"
-                onClick={handleNext}
-                className="px-6 py-3 bg-[#FF8A00] text-white rounded-lg font-semibold hover:bg-[#FF7A00] transition"
+                onClick={actions.handleNext}
+                className="px-6 py-3 bg-brand-primary text-white rounded-lg font-semibold hover:bg-brand-primary-hover transition"
               >
                 Continue to {step === CREATE_LISTING_STEPS.VEHICLE_INFO ? "Images" : "Preview"}
               </button>
             ) : (
               <button
                 type="button"
-                onClick={handleSubmit}
+                onClick={actions.handleSubmit}
                 disabled={isSaving}
                 className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -343,5 +154,4 @@ const CreateListingPage: React.FC = () => {
   );
 };
 
-// Export to fix fast refresh issues (sometimes needed)
 export default CreateListingPage;

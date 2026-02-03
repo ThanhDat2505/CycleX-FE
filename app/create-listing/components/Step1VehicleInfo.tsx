@@ -1,9 +1,7 @@
 import React from "react";
 import { BIKE_CATEGORIES } from "@/app/constants/categories";
+import { YEAR_OPTIONS } from "../constants";
 import { ListingFormData } from "../types";
-
-const currentYear = new Date().getFullYear();
-const YEAR_OPTIONS = Array.from({ length: 30 }, (_, i) => currentYear - i);
 
 interface Step1VehicleInfoProps {
     formData: ListingFormData;
@@ -37,7 +35,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                     value={formData.title}
                     onChange={onChange}
                     placeholder="e.g., Giant Escape 3 2023 - Like New"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.title ? "border-red-500" : "border-gray-300"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.title ? "border-red-500" : "border-gray-300"
                         }`}
                 />
                 {errors.title && (
@@ -57,7 +55,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         value={formData.brand}
                         onChange={onChange}
                         placeholder="e.g., Giant"
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.brand ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.brand ? "border-red-500" : "border-gray-300"
                             }`}
                     />
                     {errors.brand && (
@@ -76,7 +74,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         value={formData.model}
                         onChange={onChange}
                         placeholder="e.g., Escape 3"
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.model ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.model ? "border-red-500" : "border-gray-300"
                             }`}
                     />
                     {errors.model && (
@@ -95,7 +93,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         name="category"
                         value={formData.category}
                         onChange={onChange}
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.category ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.category ? "border-red-500" : "border-gray-300"
                             }`}
                     >
                         <option value="">Select Category</option>
@@ -119,7 +117,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         name="condition"
                         value={formData.condition}
                         onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                     >
                         <option value="new">New (Mới 100%)</option>
                         <option value="used">Used (Đã sử dụng)</option>
@@ -137,7 +135,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         name="year"
                         value={formData.year}
                         onChange={onChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                     >
                         {YEAR_OPTIONS.map((year) => (
                             <option key={year} value={year}>
@@ -158,7 +156,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         value={formData.price}
                         onChange={onChange}
                         placeholder="e.g., 5000000"
-                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.price ? "border-red-500" : "border-gray-300"
+                        className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.price ? "border-red-500" : "border-gray-300"
                             }`}
                     />
                     {errors.price && (
@@ -178,7 +176,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                     value={formData.location}
                     onChange={onChange}
                     placeholder="e.g., Quận 1, TP.HCM"
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.location ? "border-red-500" : "border-gray-300"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.location ? "border-red-500" : "border-gray-300"
                         }`}
                 />
                 {errors.location && (
@@ -197,7 +195,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                     onChange={onChange}
                     placeholder="Describe the condition, modifications, and reasons for selling..."
                     rows={6}
-                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00] ${errors.description ? "border-red-500" : "border-gray-300"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.description ? "border-red-500" : "border-gray-300"
                         }`}
                 />
                 {errors.description && (
@@ -212,7 +210,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                     name="shipping"
                     checked={formData.shipping}
                     onChange={onChange}
-                    className="w-5 h-5 rounded border-gray-300 accent-[#FF8A00]"
+                    className="w-5 h-5 rounded border-gray-300 accent-brand-primary"
                 />
                 <div>
                     <span className="text-gray-900 font-medium block">

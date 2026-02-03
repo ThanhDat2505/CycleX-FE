@@ -18,7 +18,7 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
                     </div>
                     <div>
                         <p className="text-sm text-gray-500">Price</p>
-                        <p className="font-semibold text-[#FF8A00]">
+                        <p className="font-semibold text-brand-primary">
                             {new Intl.NumberFormat("vi-VN", {
                                 style: "currency",
                                 currency: "VND",
@@ -36,9 +36,9 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
                         </p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500">Brand / Model</p>
+                        <p className="text-sm text-gray-500">Brand / Model / Year</p>
                         <p className="font-semibold text-gray-900">
-                            {formData.brand} / {formData.model}
+                            {formData.brand} / {formData.model} / {formData.year}
                         </p>
                     </div>
                     <div>
