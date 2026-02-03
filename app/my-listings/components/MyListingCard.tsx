@@ -27,7 +27,7 @@ export interface MyListingCardProps {
         views: number;
         inquiries: number;
         shipping: boolean;
-        status: 'DRAFT' | 'PENDING' | 'APPROVE' | 'REJECT';
+        status: 'DRAFT' | 'PENDING' | 'APPROVE' | 'REJECT' | 'NEED_MORE_INFO';
         rejectionReason?: string;
     };
 }
@@ -97,8 +97,8 @@ export function MyListingCard({ listing }: MyListingCardProps) {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                    {/* BR-S11-F05: Edit button only for DRAFT status */}
-                    {listing.status === 'DRAFT' && (
+                    {/* BR-S11-F05: Edit button only for DRAFT and NEED_MORE_INFO status */}
+                    {(listing.status === 'DRAFT' || listing.status === 'NEED_MORE_INFO') && (
                         <Link
                             href={`/edit-listing/${listing.id}`}
                             className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center"
