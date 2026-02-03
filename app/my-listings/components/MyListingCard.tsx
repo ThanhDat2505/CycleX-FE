@@ -97,8 +97,8 @@ export function MyListingCard({ listing }: MyListingCardProps) {
 
                 {/* Actions */}
                 <div className="flex gap-2">
-                    {/* BR-S11-F05: Conditional Edit button */}
-                    {(listing.status === 'DRAFT' || listing.status === 'PENDING') && (
+                    {/* BR-S11-F05: Edit button only for DRAFT status */}
+                    {listing.status === 'DRAFT' && (
                         <Link
                             href={`/edit-listing/${listing.id}`}
                             className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center"
