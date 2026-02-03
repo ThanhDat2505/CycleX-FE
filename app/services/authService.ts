@@ -9,6 +9,7 @@ import {
     SendOtpResponse,
     AuthError
 } from '@/app/types/auth';
+import { apiCallPOST } from '@/app/utils/apiHelpers';
 import {
     validateMockLogin,
     mockEmailExists,
@@ -20,36 +21,12 @@ import {
     getMockUser,
 } from './mockData';
 
-// All API calls now use /backend/api prefix (handled by next.config.ts proxy)
-
-/**
- * Helper function to make API calls with consistent error handling
- * @param endpoint - API endpoint (e.g., '/auth/login')
- * @param body - Request body object
- * @returns Promise with parsed JSON response
- */
-async function apiCall<T>(endpoint: string, body: object): Promise<T> {
-    const response = await fetch(`/backend/api${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-        const error: AuthError = await response.json();
-        throw error;
-    }
-
-    return await response.json();
-}
-
 /**
  * Authentication Service
  * Handles all authentication-related API calls
  */
 export const authService = {
+    // là cầu nối giữa API và UI
     /**
      * Login user with email and password
      * @param email - User email
@@ -59,51 +36,31 @@ export const authService = {
      * async báo hiệu có thể dùng await, gọi APi mất thời gian, không block code khác, đợi kết quả rồi mới chạy
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
-        // Mock mode for testing UI without backend
-        // if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-        //     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
-        //
-        //     const user = validateMockLogin(email, password);
-        //
-        //     if (user) {
-        //         const mockToken = 'mock-jwt-token-' + Date.now();
-        //         authService.saveToken(mockToken);
-        //
-        //         return {
-        //             accessToken: mockToken,
-        //             tokenType: 'Bearer',
-        //             user: user,
-        //             message: 'Login successful!'
-        //         };
-        //     } else {
-        //         // User not found OR wrong password
-        //         // BR-L11: Generic error message for security
-        //         throw {
-        //             status: 401,
-        //             message: 'Email or password is incorrect',
-        //         };
-        //     }
-        // }
 
         // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
-        try {
-            // sử dụng helper function apiCall để gọi API
-            const data = await apiCall<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
-            if (!data.user.status || data.user.status !== 'ACTIVE') {
-                throw {
-                    status: 401,
-                    message: 'Please verify your email',
-                }
-            }
-            // Save token if login successful
-            if (data.accessToken) {
-                authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
-            }
+        const data = await apiCallPOST<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
 
-            return data;
-        } catch (error) {
-            throw error;
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.user || !data.accessToken) {
+            throw {
+                status: 500,
+                message: 'Invalid login response from server',
+            };
         }
+
+        if (!data.user.status || data.user.status !== 'ACTIVE') {
+            throw {
+                status: 401,
+                message: 'Please verify your email',
+            }
+        }
+
+        // Save token if login successful
+        if (data.accessToken) {
+            authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
+        }
+
+        return data;
     },
 
     /**
@@ -117,52 +74,56 @@ export const authService = {
      */
     register: async (email: string, password: string, phone: string, cccd: string): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
-        if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
-            await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
+        // if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
+        //     await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
-            // Check for duplicate email
-            if (mockEmailExists(email)) {
-                throw {
-                    status: 409,
-                    message: 'Email already exists',
-                };
-            }
+        //     // Check for duplicate email
+        //     if (mockEmailExists(email)) {
+        //         throw {
+        //             status: 409,
+        //             message: 'Email already exists',
+        //         };
+        //     }
 
-            // Check for duplicate phone
-            if (mockPhoneExists(phone)) {
-                throw {
-                    status: 409,
-                    message: 'Phone number already exists',
-                };
-            }
+        //     // Check for duplicate phone
+        //     if (mockPhoneExists(phone)) {
+        //         throw {
+        //             status: 409,
+        //             message: 'Phone number already exists',
+        //         };
+        //     }
 
-            // Register new user and generate OTP
-            // Default role is BUYER per user requirement
-            const user = registerMockUser(email, password, phone, cccd, 'BUYER');
+        //     // Register new user and generate OTP
+        //     // Default role is BUYER per user requirement
+        //     const user = registerMockUser(email, password, phone, cccd, 'BUYER');
 
-            return {
-                message: 'Registration successful! Please check your email for OTP.',
-                user: user
+        //     return {
+        //         message: 'Registration successful! Please check your email for OTP.',
+        //         user: user
+        //     };
+        // }
+
+        const data = await apiCallPOST<RegisterResponse>('/auth/register', {
+            email,
+            password,
+            phone,
+            cccd,
+            role: 'BUYER'  // Default role per user requirement
+        } as RegisterRequest);
+
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.user || !data.message) {
+            throw {
+                status: 500,
+                message: 'Invalid register response from server',
             };
         }
 
-        try {
-            const data = await apiCall<RegisterResponse>('/auth/register', {
-                email,
-                password,
-                phone,
-                cccd,
-                role: 'BUYER'  // Default role per user requirement
-            } as RegisterRequest);
+        // ❌ DO NOT save token - register doesn't return token
+        // ❌ DO NOT auto-login
+        // ✅ Just return data for redirect to verify email
 
-            // ❌ DO NOT save token - register doesn't return token
-            // ❌ DO NOT auto-login
-            // ✅ Just return data for redirect to verify email
-
-            return data;
-        } catch (error) {
-            throw error;
-        }
+        return data;
     },
 
     /**
@@ -211,17 +172,21 @@ export const authService = {
             }
         }
 
-        try {
-            const data = await apiCall<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
+        const data = await apiCallPOST<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
 
-            // ❌ DO NOT save token - verification doesn't return token
-            // ❌ DO NOT auto-login
-            // ✅ User must login after verification (BR-14)
-
-            return data;
-        } catch (error) {
-            throw error;
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.user || !data.message) {
+            throw {
+                status: 500,
+                message: 'Invalid verify OTP response from server',
+            };
         }
+
+        // ❌ DO NOT save token - verification doesn't return token
+        // ❌ DO NOT auto-login
+        // ✅ User must login after verification (BR-14)
+
+        return data;
     },
 
     /**
@@ -243,12 +208,17 @@ export const authService = {
             };
         }
 
-        try {
-            const data = await apiCall<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
-            return data;
-        } catch (error) {
-            throw error;
+        const data = await apiCallPOST<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
+
+        // ✅ VALIDATION: Check response structure
+        if (!data || !data.message) {
+            throw {
+                status: 500,
+                message: 'Invalid send OTP response from server',
+            };
         }
+
+        return data;
     },
 
     /**

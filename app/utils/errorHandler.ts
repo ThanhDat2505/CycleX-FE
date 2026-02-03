@@ -4,8 +4,10 @@ import { AuthError } from '@/app/types/auth';
  * Handle authentication errors and return user-friendly messages
  * Centralized error handling to avoid duplication across forms
  */
+// chuyển đổi lỗi kỹ thuật thành thông báo cho user
 export const handleAuthError = (err: any): string => {
-    // Handle null/undefined errors
+    // Input: error object từ API
+    // Output: user-friendly error message
     if (!err) {
         return 'An error occurred. Please try again.';
     }
@@ -46,7 +48,7 @@ export const handleAuthError = (err: any): string => {
             case 422:
                 // Validation errors from backend
                 if (err.errors?.email) {
-                    return err.errors.email[0];
+                    return err.errors.email[0]; // lấy lỗi đầu tiên
                 }
                 if (err.errors?.password) {
                     return err.errors.password[0];

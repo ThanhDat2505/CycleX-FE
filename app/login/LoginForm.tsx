@@ -1,8 +1,11 @@
-'use client'; //Báo cho Next.js biết: "File này chạy ở phía client (browser), không phải server"
+'use client';
+//Báo cho Next.js biết: "File này chạy ở phía client (browser), không phải server"
 // bởi vì dùng useState (chỉ chạy được ở browser)
-import { useState } from 'react'; // giống như biến, nhưng khi thay đổi, react sẽ tự động render lại
-import { useRouter, useSearchParams } from 'next/navigation'; // hook của nextjs để điều hướng 
-import Link from 'next/link'; // component để tạo link thay cho a
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+// hook của nextjs để điều hướng 
+import Link from 'next/link';
+// component để tạo link thay cho a
 import { Input, Button, ErrorMessage, Checkbox } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
 import { validateEmail, validatePasswordLogin } from '@/app/utils/validation';
@@ -11,8 +14,8 @@ import { handleAuthError } from '@/app/utils/errorHandler';
 export function LoginForm() {
     // mục đích là lưu email, password, rememberMe, error, isLoading
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const returnUrl = searchParams.get('returnUrl') || '/';
+    const searchParams = useSearchParams(); // đọc query từ URL
+    const returnUrl = searchParams.get('returnUrl') || '/'; // quay về trang trước đó
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

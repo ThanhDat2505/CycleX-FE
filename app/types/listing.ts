@@ -38,6 +38,7 @@ export interface PaginationInfo {
 /**
  * Simplified bike data from /api/home endpoint
  * Used for Home page "Xe Đạp Đang Hot" section preview
+ * Official API: GET /api/home
  */
 export interface HomeBike {
     listingId: number;
@@ -45,6 +46,7 @@ export interface HomeBike {
     price: number;
     imageUrl: string;
     locationCity: string | null;
+    viewCount: number;  // Used to display hot bikes (sorted by view count descending)
 }
 
 /**

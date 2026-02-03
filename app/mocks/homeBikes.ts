@@ -20,11 +20,12 @@ export function generateMockHomeBikes(): HomeBike[] {
         { id: 20, title: 'Merida Scultura 100 2023', price: 14200000 },
     ];
 
-    return bikes.map(bike => ({
+    return bikes.map((bike, index) => ({
         listingId: bike.id,
         title: bike.title,
         price: bike.price,
         imageUrl: `https://images.unsplash.com/photo-148596512018${bike.id}?w=400&h=300&fit=crop`,
         locationCity: bike.id % 2 === 0 ? 'Hà Nội' : null,
+        viewCount: 150 - (index * 10),  // Descending view counts: 150, 140, 130, ...
     }));
 }
