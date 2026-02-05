@@ -83,4 +83,4 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
     );
 };
 
-export default Step3Preview;
+export default React.memo(Step3Preview);

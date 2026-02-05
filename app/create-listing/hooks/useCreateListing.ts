@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { saveDraft, createListing } from "@/app/services/myListingsService";
@@ -18,6 +18,17 @@ export const useCreateListing = () => {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+
+    // Ref to track if component is mounted (prevents memory leaks)
+    const isMountedRef = useRef(true);
+
+    // Cleanup on unmount
+    useEffect(() => {
+        isMountedRef.current = true;
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
 
     const [formData, setFormData] = useState<ListingFormData>({
         title: "",
@@ -74,8 +85,8 @@ export const useCreateListing = () => {
         return true;
     };
 
-    // Handlers
-    const handleInputChange = (
+    // Handlers (wrapped with useCallback for performance)
+    const handleInputChange = useCallback((
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
         const { name, value, type } = e.target;
@@ -86,14 +97,15 @@ export const useCreateListing = () => {
             [name]: type === "checkbox" ? checked : value,
         }));
 
-        if (errors[name]) {
-            setErrors((prev) => {
+        setErrors((prev) => {
+            if (prev[name]) {
                 const newErrors = { ...prev };
                 delete newErrors[name];
                 return newErrors;
-            });
-        }
-    };
+            }
+            return prev;
+        });
+    }, []);
 
     const handleNext = () => {
         if (step === CREATE_LISTING_STEPS.VEHICLE_INFO) {
@@ -113,9 +125,9 @@ export const useCreateListing = () => {
         }
     };
 
-    const handleBack = () => {
-        setStep(step - 1);
-    };
+    const handleBack = useCallback(() => {
+        setStep(prev => prev - 1);
+    }, []);
 
     // Image Logic
     const validateFile = (file: File): string | null => {
@@ -158,12 +170,19 @@ export const useCreateListing = () => {
         try {
             const uploadPromises = filesToUpload.map(file => uploadImage(file));
             const newUrls = await Promise.all(uploadPromises);
-            setImageUrls(prev => [...prev, ...newUrls]);
+            // Only update state if component is still mounted
+            if (isMountedRef.current) {
+                setImageUrls(prev => [...prev, ...newUrls]);
+            }
         } catch (error) {
             console.error("Upload failed", error);
-            setUploadError("Failed to upload some images. Please try again.");
+            if (isMountedRef.current) {
+                setUploadError("Failed to upload some images. Please try again.");
+            }
         } finally {
-            setIsUploading(false);
+            if (isMountedRef.current) {
+                setIsUploading(false);
+            }
         }
     };
 
@@ -176,18 +195,18 @@ export const useCreateListing = () => {
 
     const onDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
 
-    const removeImage = (indexToRemove: number) => {
+    const removeImage = useCallback((indexToRemove: number) => {
         setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
+    }, []);
 
-    const handleSetPrimary = (index: number) => {
+    const handleSetPrimary = useCallback((index: number) => {
         if (index === 0) return;
         setImageUrls(prev => {
             const newUrls = [...prev];
             [newUrls[0], newUrls[index]] = [newUrls[index], newUrls[0]];
             return newUrls;
         });
-    };
+    }, []);
 
     // Submission Logic
     const getPayload = (): CreateListingPayload => {

@@ -162,4 +162,4 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
     );
 };
 
-export default Step2ImageUpload;
+export default React.memo(Step2ImageUpload);

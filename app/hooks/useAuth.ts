@@ -28,17 +28,20 @@ export const useAuth = (): UseAuthReturn => {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<string | null>(null);
     useEffect(() => {
-        console.log("hi");
-        const userData = localStorage.getItem('userData')
-        console.log(userData);
-        // Check for auth token and user data on mount
+        const userData = localStorage.getItem('userData');
         const token = localStorage.getItem('authToken');
 
         if (token && userData) {
-            const parsedUser: User = JSON.parse(userData);
-            setUser(parsedUser);
-            setRole(parsedUser.role);
-            setIsLoggedIn(true);
+            try {
+                const parsedUser: User = JSON.parse(userData);
+                setUser(parsedUser);
+                setRole(parsedUser.role);
+                setIsLoggedIn(true);
+            } catch {
+                // Corrupted data - clear and force re-login
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('userData');
+            }
         }
 
         setIsLoading(false);

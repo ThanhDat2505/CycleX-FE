@@ -225,4 +225,4 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
     );
 };
 
-export default Step1VehicleInfo;
+export default React.memo(Step1VehicleInfo);
