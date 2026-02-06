@@ -168,6 +168,6 @@ export async function getDashboardData(): Promise<DashboardData> {
         validateString(listing.status, `${context}.status`);
     });
 
-    console.log('✅ Fetched dashboard data from API');
+
     return data;
 }

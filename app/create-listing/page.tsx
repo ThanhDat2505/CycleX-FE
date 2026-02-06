@@ -11,7 +11,7 @@ import Step3Preview from "./components/Step3Preview";
 
 const CreateListingPage: React.FC = () => {
   const { state, actions } = useCreateListing();
-  const { step, formData, errors, isSaving, isUploading, imageUrls, uploadError, isLoggedIn, isLoading } = state;
+  const { step, formData, errors, isSaving, isUploading, imageUrls, uploadError, isLoggedIn, isLoading, isCreatingDraft, submitError } = state;
 
   if (isLoading) {
     return (
@@ -107,6 +107,16 @@ const CreateListingPage: React.FC = () => {
           <Step3Preview formData={formData} imageUrls={imageUrls} />
         )}
 
+        {/* Submit Error Banner */}
+        {submitError && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+            <svg className="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+            </svg>
+            <span>{submitError}</span>
+          </div>
+        )}
+
         {/* Buttons */}
         <div className="flex gap-4 mt-8 justify-between">
           <button
@@ -133,9 +143,19 @@ const CreateListingPage: React.FC = () => {
               <button
                 type="button"
                 onClick={actions.handleNext}
-                className="px-6 py-3 bg-brand-primary text-white rounded-lg font-semibold hover:bg-brand-primary-hover transition"
+                disabled={isCreatingDraft}
+                className="px-6 py-3 bg-brand-primary text-white rounded-lg font-semibold hover:bg-brand-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                Continue to {step === CREATE_LISTING_STEPS.VEHICLE_INFO ? "Images" : "Preview"}
+                {isCreatingDraft && (
+                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                  </svg>
+                )}
+                {isCreatingDraft
+                  ? "Creating Draft..."
+                  : `Continue to ${step === CREATE_LISTING_STEPS.VEHICLE_INFO ? "Images" : "Preview"}`
+                }
               </button>
             ) : (
               <button

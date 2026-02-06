@@ -58,7 +58,7 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
         validateNumber(bike.price, `${ctx}.price`);
     });
 
-    console.log(`✅ Fetched and validated ${bikes.length} featured bikes from /api/home`);
+
     return bikes;
 }
 
@@ -92,7 +92,7 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
         validateNumber(bike.price, `${ctx}.price`);
     });
 
-    console.log(`✅ Fetched and validated ${bikes.length} listings from /api/listings/pagination`);
+
     return bikes;
 }
 
@@ -127,11 +127,11 @@ export async function searchListings(
     pageSize: number = 12,
     sortBy: 'newest' | 'priceAsc' | 'priceDesc' | 'mostViewed' = 'newest'
 ): Promise<{ items: HomeBike[]; pagination: PaginationInfo }> {
-    console.log('🔍 Searching listings:', { keyword, filters, page, pageSize, sortBy });
+
 
     // Mock data for development
     if (USE_MOCK_API) {
-        console.log('📦 Using MOCK search data');
+
         await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
 
         let results = MOCK_LISTINGS;
@@ -204,7 +204,7 @@ export async function searchListings(
             locationCity: listing.locationCity,
         }));
 
-        console.log(`✅ Search complete: ${results.length} total results, page ${page}/${Math.ceil(results.length / pageSize)}`);
+
 
         return {
             items: homeBikes,
@@ -259,7 +259,7 @@ export async function searchListings(
             validateNumber(item.price, `${ctx}.price`);
         });
 
-        console.log(`✅ Search successful and validated: ${data.items.length} results on page ${page}`);
+
         return data;
     } catch (error) {
         console.error('Error searching listings:', error);
@@ -294,10 +294,10 @@ export async function searchSellerListings(
     page: number = 0,
     pageSize: number = 10
 ): Promise<{ items: HomeBike[]; pagination: PaginationInfo }> {
-    console.log('🔍 Searching seller listings:', { sellerId, keyword, filters, page, pageSize });
+
 
     if (USE_MOCK_API) {
-        console.log('📦 Using MOCK seller search data');
+
         await new Promise(resolve => setTimeout(resolve, 500));
 
         let results = [...MOCK_LISTINGS];
@@ -369,7 +369,7 @@ export async function searchSellerListings(
         validateNumber(item.price, `${ctx}.price`);
     });
 
-    console.log(`✅ Seller search successful and validated: ${data.items.length} results`);
+
     return data;
 }
 
@@ -423,7 +423,7 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
 
         const data = await response.json();
         const validated = validateListingDetail(data);
-        console.log(`✅ Fetched public listing detail: ID ${listingId}`);
+
 
         return validated;
     } catch (error) {
@@ -462,7 +462,7 @@ export async function getSellerListingDetail(sellerId: number, listingId: number
     // Real API: POST /api/seller/listings/detail
     const data = await apiCallPOST<ListingDetail>('/seller/listings/detail', { sellerId, listingId });
     const validated = validateListingDetail(data);
-    console.log(`✅ Fetched seller listing detail: ID ${listingId}`);
+
     return validated;
 }
 

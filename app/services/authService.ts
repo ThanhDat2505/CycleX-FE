@@ -263,7 +263,7 @@ export const authService = {
      */
     saveToken: (token: string): void => {
         if (typeof window !== 'undefined') {
-            console.log(`Saving token to localStorage: ${token}`);
+
             localStorage.setItem('authToken', token);
         }
     },
@@ -274,7 +274,7 @@ export const authService = {
      */
     saveUser: (user: User): void => {
         if (typeof window !== 'undefined') {
-            console.log(`Saving user data to localStorage:`, user);
+
             localStorage.setItem('userData', JSON.stringify(user));
         }
     },

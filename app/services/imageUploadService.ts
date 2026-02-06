@@ -57,7 +57,7 @@ async function realUploadImage(file: File, listingId?: number | string): Promise
  * Used when NEXT_PUBLIC_MOCK_API=true
  */
 async function mockUploadImage(file: File): Promise<string> {
-    console.log(`⬆️ [MOCK] Uploading file: ${file.name} (${file.size} bytes)`);
+
 
     // Simulate network delay
     await new Promise(resolve => setTimeout(resolve, API_DELAY_MS * 2));
@@ -65,7 +65,7 @@ async function mockUploadImage(file: File): Promise<string> {
     // Return placeholder URL for visual preview
     const mockUrl = `https://placehold.co/600x400?text=${encodeURIComponent(file.name)}`;
 
-    console.log(`✅ [MOCK] Uploaded: ${mockUrl}`);
+
     return mockUrl;
 }
 

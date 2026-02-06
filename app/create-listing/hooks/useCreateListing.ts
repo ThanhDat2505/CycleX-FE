@@ -21,6 +21,8 @@ export const useCreateListing = () => {
     // Draft-First: Store listingId after draft creation
     const [listingId, setListingId] = useState<number | null>(null);
     const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+    // Submit/Save errors for inline display
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Ref to track if component is mounted (prevents memory leaks)
     const isMountedRef = useRef(true);
@@ -60,6 +62,14 @@ export const useCreateListing = () => {
             return () => clearTimeout(timer);
         }
     }, [uploadError, imageUrls]);
+
+    // Auto clear submit error after 5 seconds
+    useEffect(() => {
+        if (submitError) {
+            const timer = setTimeout(() => setSubmitError(null), 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [submitError]);
 
     // Validation
     const validateStep1 = () => {
@@ -124,10 +134,10 @@ export const useCreateListing = () => {
                     const payload = getPayload();
                     const draft = await saveDraft(payload);
                     setListingId(draft.id);
-                    console.log(`✅ Draft created with ID: ${draft.id}`);
+
                 } catch (error) {
-                    console.error('Failed to create draft:', error);
-                    alert('Failed to save draft. Please try again.');
+
+                    setSubmitError('Failed to save draft. Please try again.');
                     setIsCreatingDraft(false);
                     return;
                 } finally {
@@ -138,9 +148,9 @@ export const useCreateListing = () => {
                 try {
                     const payload = getPayload();
                     await updateDraft(listingId, payload);
-                    console.log(`📝 Draft ${listingId} updated`);
+
                 } catch (error) {
-                    console.error('Failed to update draft:', error);
+
                 }
             }
 
@@ -153,7 +163,7 @@ export const useCreateListing = () => {
                     try {
                         await updateDraft(listingId, { imageUrls });
                     } catch (error) {
-                        console.error('Failed to update draft images:', error);
+
                     }
                 }
                 setStep(step + 1);
@@ -215,7 +225,7 @@ export const useCreateListing = () => {
                 setImageUrls(prev => [...prev, ...newUrls]);
             }
         } catch (error) {
-            console.error("Upload failed", error);
+
             if (isMountedRef.current) {
                 setUploadError("Failed to upload some images. Please try again.");
             }
@@ -271,12 +281,12 @@ export const useCreateListing = () => {
 
     const handleSaveDraft = async () => {
         if (!user) {
-            alert("You must be logged in to save a draft.");
+            setSubmitError("You must be logged in to save a draft.");
             return;
         }
 
         if (!formData.title.trim()) {
-            alert("Please enter a Listing Title to save as draft.");
+            setSubmitError("Please enter a Listing Title to save as draft.");
             setErrors(prev => ({ ...prev, title: "Title is required for drafts" }));
             if (step !== CREATE_LISTING_STEPS.VEHICLE_INFO) {
                 setStep(CREATE_LISTING_STEPS.VEHICLE_INFO);
@@ -290,8 +300,8 @@ export const useCreateListing = () => {
             await saveDraft(payload);
             router.push('/my-listings');
         } catch (error) {
-            console.error("Failed to save draft:", error);
-            alert("Failed to save draft. Please try again.");
+
+            setSubmitError("Failed to save draft. Please try again.");
         } finally {
             setIsSaving(false);
         }
@@ -300,12 +310,12 @@ export const useCreateListing = () => {
     const handleSubmit = async (e?: React.SyntheticEvent) => {
         if (e) e.preventDefault();
         if (!user) {
-            alert("You must be logged in to create a listing.");
+            setSubmitError("You must be logged in to create a listing.");
             return;
         }
 
         if (!listingId) {
-            alert("No draft found. Please start from the beginning.");
+            setSubmitError("No draft found. Please start from the beginning.");
             return;
         }
 
@@ -313,11 +323,11 @@ export const useCreateListing = () => {
         try {
             // Draft-First: Submit existing draft instead of creating new
             await submitDraft(listingId);
-            console.log(`✅ Listing ${listingId} submitted for approval!`);
+
             router.push('/my-listings');
         } catch (error) {
-            console.error("Failed to submit listing:", error);
-            alert("Failed to submit listing. Please try again.");
+
+            setSubmitError("Failed to submit listing. Please try again.");
         } finally {
             setIsSaving(false);
         }
@@ -335,7 +345,8 @@ export const useCreateListing = () => {
             isLoggedIn,
             isLoading,
             listingId,
-            isCreatingDraft
+            isCreatingDraft,
+            submitError
         },
         actions: {
             setStep,

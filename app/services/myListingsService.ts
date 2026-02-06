@@ -143,7 +143,7 @@ export async function getMyListings(
  * @returns Promise<Listing> - Created listing with PENDING status
  */
 export async function createListing(payload: CreateListingPayload): Promise<Listing> {
-    console.log('🚀 Creating listing with payload:', payload);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -182,7 +182,7 @@ export async function createListing(payload: CreateListingPayload): Promise<List
     validateString(response.model, 'model');
     validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
 
-    console.log('✅ Listing created and submitted for approval');
+
     return response;
 }
 
@@ -194,7 +194,7 @@ export async function createListing(payload: CreateListingPayload): Promise<List
  * @returns Promise<Listing> - Created listing with DRAFT status
  */
 export async function saveDraft(payload: CreateListingPayload): Promise<Listing> {
-    console.log('💾 Saving draft with payload:', payload);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -233,7 +233,7 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
     validateString(response.model, 'model');
     validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
 
-    console.log('✅ Listing saved as draft');
+
     return response;
 }
 
@@ -246,7 +246,7 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
  * @returns Promise<Listing> - Updated listing with DRAFT status
  */
 export async function updateDraft(listingId: number, payload: Partial<CreateListingPayload>): Promise<Listing> {
-    console.log(`📝 Updating draft ${listingId} with payload:`, payload);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -278,7 +278,7 @@ export async function updateDraft(listingId: number, payload: Partial<CreateList
     validateResponse(response, 'updateDraft response');
     validateNumber(response.id, 'id');
 
-    console.log('✅ Draft updated');
+
     return response;
 }
 
@@ -290,7 +290,7 @@ export async function updateDraft(listingId: number, payload: Partial<CreateList
  * @returns Promise<Listing> - Listing with PENDING status
  */
 export async function submitDraft(listingId: number): Promise<Listing> {
-    console.log(`🚀 Submitting draft ${listingId} for approval`);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -308,7 +308,7 @@ export async function submitDraft(listingId: number): Promise<Listing> {
         };
 
         mockListings[existingIndex] = submitted;
-        console.log('✅ Draft submitted for approval');
+
         return submitted;
     }
 
@@ -319,7 +319,7 @@ export async function submitDraft(listingId: number): Promise<Listing> {
     validateNumber(response.id, 'id');
     validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
 
-    console.log('✅ Draft submitted for approval');
+
     return response;
 }
 
@@ -332,7 +332,7 @@ export async function submitDraft(listingId: number): Promise<Listing> {
  * @returns Promise<Listing> - Preview data
  */
 export async function previewListing(sellerId: number, listingId: number): Promise<Listing> {
-    console.log(`🔍 Previewing listing ${listingId} for seller ${sellerId}`);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -352,7 +352,7 @@ export async function previewListing(sellerId: number, listingId: number): Promi
     validateString(response.brand, 'brand');
     validateString(response.model, 'model');
 
-    console.log('✅ Preview data fetched and validated');
+
     return response;
 }
 
@@ -365,7 +365,7 @@ export async function previewListing(sellerId: number, listingId: number): Promi
  * @returns Promise<Listing> - Updated listing with PENDING status
  */
 export async function submitListing(sellerId: number, listingId: number): Promise<Listing> {
-    console.log(`📤 Submitting listing ${listingId} for approval`);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -391,7 +391,7 @@ export async function submitListing(sellerId: number, listingId: number): Promis
     validateNumber(response.id, 'id');
     validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
 
-    console.log('✅ Listing submitted and validated');
+
     return response;
 }
 
@@ -421,7 +421,7 @@ export interface GetDraftsResponse {
  */
 export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsResponse> {
     const { sellerId, sort = 'newest', page = 0, pageSize = 10 } = params;
-    console.log(`📋 Fetching drafts for seller ${sellerId}, page ${page}`);
+
 
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
@@ -471,6 +471,6 @@ export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsRespo
         validateEnum(item.status, VALID_LISTING_STATUSES, `${ctx}.status`);
     });
 
-    console.log(`✅ Fetched and validated ${response.items.length} drafts`);
+
     return response;
 }

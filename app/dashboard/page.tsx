@@ -76,11 +76,35 @@ const DashboardPage: React.FC = () => {
       {/* Error Banner */}
       {error && <ErrorBanner message={error} onRetry={retry} />}
 
-      {/* Show loading state for dashboard data */}
+      {/* Show loading skeleton for dashboard data */}
       {dashboardLoading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8A00]"></div>
-          <p className="text-gray-600 mt-4">Loading dashboard...</p>
+        <div className="animate-pulse">
+          {/* Skeleton Metrics Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+                <div className="h-4 bg-gray-200 rounded w-24 mb-4"></div>
+                <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                <div className="h-3 bg-gray-100 rounded w-32"></div>
+              </div>
+            ))}
+          </div>
+          {/* Skeleton Top Listings */}
+          <div className="bg-white rounded-lg p-6 shadow-sm border border-gray-200">
+            <div className="h-6 bg-gray-200 rounded w-32 mb-6"></div>
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="flex items-center gap-4 p-4 border border-gray-100 rounded-lg">
+                  <div className="w-16 h-16 bg-gray-200 rounded-lg"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-48 mb-2"></div>
+                    <div className="h-3 bg-gray-100 rounded w-24"></div>
+                  </div>
+                  <div className="h-5 bg-gray-200 rounded w-20"></div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <>
