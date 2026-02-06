@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
-import { saveDraft, createListing } from "@/app/services/myListingsService";
+import { saveDraft, updateDraft, submitDraft } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import { CREATE_LISTING_STEPS, LISTING_CONFIG, CURRENT_YEAR } from "../constants";
 import { ListingFormData } from "../types";
@@ -18,6 +18,9 @@ export const useCreateListing = () => {
     const [imageUrls, setImageUrls] = useState<string[]>([]);
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
+    // Draft-First: Store listingId after draft creation
+    const [listingId, setListingId] = useState<number | null>(null);
+    const [isCreatingDraft, setIsCreatingDraft] = useState(false);
 
     // Ref to track if component is mounted (prevents memory leaks)
     const isMountedRef = useRef(true);
@@ -107,16 +110,52 @@ export const useCreateListing = () => {
         });
     }, []);
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (step === CREATE_LISTING_STEPS.VEHICLE_INFO) {
-            if (validateStep1()) {
-                setStep(step + 1);
+            if (!validateStep1()) {
                 window.scrollTo(0, 0);
-            } else {
-                window.scrollTo(0, 0);
+                return;
             }
+
+            // Draft-First: Create draft at Step 1 to get listingId
+            if (!listingId) {
+                setIsCreatingDraft(true);
+                try {
+                    const payload = getPayload();
+                    const draft = await saveDraft(payload);
+                    setListingId(draft.id);
+                    console.log(`✅ Draft created with ID: ${draft.id}`);
+                } catch (error) {
+                    console.error('Failed to create draft:', error);
+                    alert('Failed to save draft. Please try again.');
+                    setIsCreatingDraft(false);
+                    return;
+                } finally {
+                    setIsCreatingDraft(false);
+                }
+            } else {
+                // Update existing draft with latest data
+                try {
+                    const payload = getPayload();
+                    await updateDraft(listingId, payload);
+                    console.log(`📝 Draft ${listingId} updated`);
+                } catch (error) {
+                    console.error('Failed to update draft:', error);
+                }
+            }
+
+            setStep(step + 1);
+            window.scrollTo(0, 0);
         } else if (step === CREATE_LISTING_STEPS.UPLOAD_IMAGES) {
             if (validateStep2()) {
+                // Update draft with image URLs before proceeding
+                if (listingId) {
+                    try {
+                        await updateDraft(listingId, { imageUrls });
+                    } catch (error) {
+                        console.error('Failed to update draft images:', error);
+                    }
+                }
                 setStep(step + 1);
                 window.scrollTo(0, 0);
             }
@@ -168,7 +207,8 @@ export const useCreateListing = () => {
 
         setIsUploading(true);
         try {
-            const uploadPromises = filesToUpload.map(file => uploadImage(file));
+            // Draft-First: Pass listingId to uploadImage for correct folder structure
+            const uploadPromises = filesToUpload.map(file => uploadImage(file, listingId ?? undefined));
             const newUrls = await Promise.all(uploadPromises);
             // Only update state if component is still mounted
             if (isMountedRef.current) {
@@ -264,15 +304,20 @@ export const useCreateListing = () => {
             return;
         }
 
+        if (!listingId) {
+            alert("No draft found. Please start from the beginning.");
+            return;
+        }
+
         setIsSaving(true);
         try {
-            const payload = getPayload();
-            await createListing(payload);
-            console.log('✅ Listing created successfully!');
+            // Draft-First: Submit existing draft instead of creating new
+            await submitDraft(listingId);
+            console.log(`✅ Listing ${listingId} submitted for approval!`);
             router.push('/my-listings');
         } catch (error) {
-            console.error("Failed to create listing:", error);
-            alert("Failed to create listing. Please try again.");
+            console.error("Failed to submit listing:", error);
+            alert("Failed to submit listing. Please try again.");
         } finally {
             setIsSaving(false);
         }
@@ -288,7 +333,9 @@ export const useCreateListing = () => {
             imageUrls,
             uploadError,
             isLoggedIn,
-            isLoading
+            isLoading,
+            listingId,
+            isCreatingDraft
         },
         actions: {
             setStep,

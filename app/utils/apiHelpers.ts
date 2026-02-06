@@ -103,3 +103,46 @@ export async function apiCallGET<T>(endpoint: string): Promise<T> {
         throw error;
     }
 }
+
+/**
+ * Helper for PUT requests with body
+ * @param endpoint - API endpoint (e.g., '/seller/listings/123')
+ * @param body - Request body object
+ * @returns Promise with parsed JSON response
+ */
+export async function apiCallPUT<T>(
+    endpoint: string,
+    body: object
+): Promise<T> {
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
+}

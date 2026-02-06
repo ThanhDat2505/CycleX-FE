@@ -10,7 +10,7 @@ import {
     validateEnum,
     validatePositiveNumber
 } from '../utils/apiValidation';
-import { apiCallPOST } from '../utils/apiHelpers';
+import { apiCallPOST, apiCallPUT } from '../utils/apiHelpers';
 import { ITEMS_PER_PAGE, API_DELAY_MS, VALID_LISTING_STATUSES, type ListingStatus } from '../constants';
 import { MOCK_MY_LISTINGS, type MyListing } from '../mocks';
 
@@ -234,6 +234,92 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
     validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
 
     console.log('✅ Listing saved as draft');
+    return response;
+}
+
+/**
+ * Update an existing draft listing
+ * Endpoint: PUT /api/seller/listings/:id
+ * 
+ * @param listingId - ID of the draft to update
+ * @param payload - Updated listing data
+ * @returns Promise<Listing> - Updated listing with DRAFT status
+ */
+export async function updateDraft(listingId: number, payload: Partial<CreateListingPayload>): Promise<Listing> {
+    console.log(`📝 Updating draft ${listingId} with payload:`, payload);
+
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+        // Find and update mock listing
+        const existingIndex = mockListings.findIndex(l => l.id === listingId);
+        if (existingIndex === -1) {
+            throw new Error(`Draft listing ${listingId} not found`);
+        }
+
+        const updated: Listing = {
+            ...mockListings[existingIndex],
+            brand: payload.brand || mockListings[existingIndex].brand,
+            model: payload.model || mockListings[existingIndex].model,
+            type: payload.bikeType || mockListings[existingIndex].type,
+            condition: payload.condition || mockListings[existingIndex].condition,
+            price: payload.price ?? mockListings[existingIndex].price,
+            location: payload.locationCity || mockListings[existingIndex].location,
+            updatedDate: new Date().toISOString(),
+        };
+
+        mockListings[existingIndex] = updated;
+        return updated;
+    }
+
+    // Real API: PUT /seller/listings/:id
+    const response = await apiCallPUT<Listing>(`/seller/listings/${listingId}`, payload);
+
+    validateResponse(response, 'updateDraft response');
+    validateNumber(response.id, 'id');
+
+    console.log('✅ Draft updated');
+    return response;
+}
+
+/**
+ * Submit a draft listing for approval (DRAFT → PENDING)
+ * Endpoint: POST /api/seller/listings/:id/submit
+ * 
+ * @param listingId - ID of the draft to submit
+ * @returns Promise<Listing> - Listing with PENDING status
+ */
+export async function submitDraft(listingId: number): Promise<Listing> {
+    console.log(`🚀 Submitting draft ${listingId} for approval`);
+
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+
+        // Find and update mock listing status
+        const existingIndex = mockListings.findIndex(l => l.id === listingId);
+        if (existingIndex === -1) {
+            throw new Error(`Draft listing ${listingId} not found`);
+        }
+
+        const submitted: Listing = {
+            ...mockListings[existingIndex],
+            status: 'PENDING' as ListingStatus,
+            updatedDate: new Date().toISOString(),
+        };
+
+        mockListings[existingIndex] = submitted;
+        console.log('✅ Draft submitted for approval');
+        return submitted;
+    }
+
+    // Real API: POST /seller/listings/:id/submit
+    const response = await apiCallPOST<Listing>(`/seller/listings/${listingId}/submit`, {});
+
+    validateResponse(response, 'submitDraft response');
+    validateNumber(response.id, 'id');
+    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+
+    console.log('✅ Draft submitted for approval');
     return response;
 }
 
