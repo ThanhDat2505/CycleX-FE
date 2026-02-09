@@ -64,7 +64,7 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
 
 /**
  * Fetch ALL listings for listings page (browse/search)
- * Uses /api/listings/pagination - Returns 10 items per page
+ * Uses /api/bikelistings - Returns 10 items per page
  * Response does NOT include viewCount field
  * 
  * @param page - Page number (currently not supported by backend)
@@ -79,7 +79,7 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
         return MOCK_LISTINGS.slice(startIndex, endIndex);
     }
 
-    const bikes = await apiCallGET<HomeBike[]>('/listings/pagination');
+    const bikes = await apiCallGET<HomeBike[]>('/bikelistings');
 
     // ✅ VALIDATION: Ensure bikes is an array and each bike has required fields
     validateResponse(bikes, 'all listings');
@@ -98,7 +98,7 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
 
 /**
  * Search listings by keyword (PUBLIC/BUYER VIEW)
- * Endpoint: GET /api/listings/search
+ * Endpoint: GET /api/bikelistings
  * 
  * Use this for: Browse page, Home search - returns products (APPROVED only)
  * 
@@ -231,7 +231,7 @@ export async function searchListings(
         params.append('sortBy', sortBy);
 
         const response = await fetch(
-            `/backend/api/listings/search?${params.toString()}`,
+            `/backend/api/bikelistings?${params.toString()}`,
             {
                 method: 'GET',
                 headers: {
@@ -406,9 +406,9 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
         return validateListingDetail(listing);
     }
 
-    // Real API: GET /api/listings/{id}
+    // Real API: GET /api/bikelistings/{id}
     try {
-        const response = await fetch(`/backend/api/listings/${listingId}`, {
+        const response = await fetch(`/backend/api/bikelistings/${listingId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });

@@ -83,12 +83,10 @@ export default function FeaturedBikesSection() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                         {bikes.map((bike) => (
-                            <Link
+                            <FeaturedBikeCard
                                 key={bike.listingId}
-                                href={`/listings/${bike.listingId}`}
-                            >
-                                <FeaturedBikeCard bike={bike} />
-                            </Link>
+                                bike={bike}
+                            />
                         ))}
                     </div>
 

@@ -6,7 +6,6 @@
 
 'use client';
 
-import Link from 'next/link';
 import React from 'react';
 import { HomeBike } from '../../types/listing';
 import FeaturedBikeCard from '../../components/FeaturedBikeCard';
@@ -53,12 +52,10 @@ export default function ListingGrid({ listings, isLoading }: ListingGridProps) {
             {/* Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.map((listing) => (
-                    <Link
+                    <FeaturedBikeCard
                         key={listing.listingId}
-                        href={`/listings/${listing.listingId}`}
-                    >
-                        <FeaturedBikeCard bike={listing} />
-                    </Link>
+                        bike={listing}
+                    />
                 ))}
             </div>
         </div>

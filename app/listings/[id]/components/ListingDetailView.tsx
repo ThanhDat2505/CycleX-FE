@@ -6,10 +6,12 @@
  * Business Rules:
  * - BR-S32-02: Display full detail data
  * - BR-S32-03: Show inspection info if available
- * - BR-S32-05: NO CTAs in Sprint 1
+ * - BR-S32-05: Sprint 1 - NO CTAs, Sprint 2 - Purchase button enabled
  */
 
 'use client';
+
+import Link from 'next/link';
 
 import { ListingDetail } from '../../../types/listing';
 import { MESSAGES } from '../../../constants';
@@ -115,6 +117,19 @@ export default function ListingDetailView({ listing }: ListingDetailViewProps) {
                                 </div>
                             )}
                         </dl>
+                    </div>
+
+                    {/* Purchase Button - Sprint 2 */}
+                    <div className="border-t pt-6">
+                        <Link
+                            href={`/purchase-request?listingId=${listing.listingId}`}
+                            className="block w-full px-6 py-4 bg-blue-600 text-white text-center font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                            Đặt mua ngay
+                        </Link>
+                        <p className="text-sm text-gray-500 text-center mt-2">
+                            Bạn có thể chọn mua ngay hoặc đặt cọc ở bước tiếp theo
+                        </p>
                     </div>
                 </div>
             </div>

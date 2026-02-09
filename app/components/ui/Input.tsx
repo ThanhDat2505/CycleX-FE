@@ -13,6 +13,9 @@ interface InputProps { // interface là định dạng kiểu dữ liệu
     error?: string;
     className?: string;
     maxLength?: number; // Maximum length for input
+    min?: number | string;
+    max?: number | string;
+    step?: number | string;
 }
 
 export function Input({
@@ -25,7 +28,10 @@ export function Input({
     placeholder,
     error,
     className = '',
-    maxLength
+    maxLength,
+    min,
+    max,
+    step
 }: InputProps) { //objec truyền vào bắt buộc phải tuân thủ interface InputProps
     const [showPassword, setShowPassword] = useState(false);
     const isPasswordField = type === 'password'; //Kiểm tra có phải password field không
@@ -49,6 +55,9 @@ export function Input({
                     disabled={disabled} // nếu là isloading = true thì không được nhập
                     placeholder={placeholder}
                     maxLength={maxLength} // Maximum input length
+                    min={min}
+                    max={max}
+                    step={step}
                     className={`
                         w-full px-4 py-3 border rounded-lg 
                         focus:ring-2 focus:ring-orange-500 focus:border-orange-500 
@@ -56,6 +65,7 @@ export function Input({
                         ${isPasswordField ? 'pr-12' : ''}
                         ${error ? 'border-red-500' : 'border-gray-300'}
                         ${disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'}
+                        [&::-webkit-calendar-picker-indicator]:cursor-pointer
                     `} // tailwindcss
                 /** 
                  *  w-full - Width 100% (chiếm hết chiều rộng)

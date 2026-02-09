@@ -1,5 +1,6 @@
-Screen,Function,Level,Person in charge,Sprint,Note,BR,JOB
-"S-01 – Home / Landing Page (Guest, Buyer) – BP3","Hiển thị danh sách listing nổi bật (ACTIVE) nổi bật xác định thế nào (view count để xuât hiện các xe nổi bật)
+FE,Function,Level,Person in charge,Sprint,Note,BR,JOB
+"S-01 – Home / Landing Page (Guest, Buyer) – BP3 
+Xong FE","Hiển thị danh sách listing nổi bật (ACTIVE) nổi bật xác định thế nào (view count để xuât hiện các xe nổi bật)
 Xem danh sách xe (Điều hướng, Button, Link)
 Đăng nhập / Đăng ký (Điều hướng, Button, Link)
 Search
@@ -77,13 +78,16 @@ Xem cùng 1 dữ liệu
 ❌ Sort phức tạp
 ❌ Pagination logic phức tạp (FE chỉ consume API)
 👉 S-01 giữ đơn giản – entry đúng nghĩa",
-S-02 – Login Screen – Global,"Nhập email / password
+"S-02 – Login Screen – Global (Xong)
+Xong FE, Xong BE","Nhập email / password
 Validate credential
 Login user
 Redirect theo role (Seller / Buyer / Inspector / Admin)
 Hiển thị lỗi đăng nhập",simple,"BE: Quang
 FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,https://phanthanhdat2505.atlassian.net/jira/software/projects/SCRUM/list?jql=project%20%3D%20SCRUM%20ORDER%20BY%20created%20DESC&selectedIssue=SCRUM-37,
-S-03 – Register Screen – Global,"Nhập thông tin đăng ký
+"S-03 – Register Screen – Global (xong)
+
+Xong FE, Xong BE","Nhập thông tin đăng ký
 Validate dữ liệu
 Tạo tài khoản
 Gửi thông báo đăng ký thành công
@@ -252,7 +256,7 @@ Hiển thị banner trạng thái
 S-05 – Notification Center – Supporting (BP1–BP7),"Xem danh sách notification
 Đánh dấu đã đọc
 Điều hướng tới screen liên quan (listing / transaction / dispute) complex",medium,"BE: Đạt
-FE: Huy",Sprint 2,,"3️⃣ Notification Object (FE view model)
+FE: Huy",Sprint 3,,"3️⃣ Notification Object (FE view model)
 FE chỉ cần quan tâm các field hiển thị:
 id
 title
@@ -420,7 +424,9 @@ Thời gian dự kiến",MEDIUM,,Sprint 2,"✅ Nên gọi
 Trang này tổng hợp các đơn mua của người dùng để tiện theo dõi,
 không phải một business screen riêng biệt được định nghĩa trong hệ thống.
 FE convenience",,
-S-10 – Seller Dashboard – BP1,"Số tin ACTIVE / PENDING / REJECTED
+"S-10 – Seller Dashboard – BP1
+
+Xong BE","Số tin ACTIVE / PENDING / REJECTED
 Số giao dịch
 Shortcut tạo listing
 Điều hướng My Listings
@@ -445,7 +451,8 @@ BR-S10-F04 – Điều hướng My Listings
 •	Không thay đổi trạng thái hoặc dữ liệu listing
 
 ",
-S-11 – My Listings – BP1,"Xem danh sách listing của Seller
+"S-11 – My Listings – BP1
+Xong BE","Xem danh sách listing của Seller
 Hiển thị status (Draft / Pending / Active / Rejected)
 Filter theo status
 View detail (Điều hướng)
@@ -480,7 +487,8 @@ BR-S11-F06 – Xem lý do reject
 •        Chỉ hiển thị khi status = REJECTED
 •        Nếu không có reject reason → hiển thị message mặc định
 ",
-S-12 – Create Listing (Form) – BP1,"Nhập thông tin xe
+"S-12 – Create Listing (Form) – BP1
+Xong BE","Nhập thông tin xe
 Validate dữ liệu
 Lưu Draft
 Submit tạo listing (PENDING_APPROVAL)",medium,"BE: Đạt
@@ -507,7 +515,8 @@ BR-S12-F04 – Submit tạo listing
 o	Validate toàn bộ field bắt buộc
 o	Kiểm tra rule ảnh (S-13)
 •	Submit thành công → status = PENDING_APPROVAL",
-S-13 – Upload Images – BP1,"Upload ảnh
+"S-13 – Upload Images – BP1
+Xong BE","Upload ảnh
 Validate định dạng / kích thước
 Retry ảnh lỗi
 Xóa ảnh
@@ -539,7 +548,8 @@ o	Hệ thống đếm số ảnh hợp lệ
 •	< 3 ảnh:
 o	Disable nút Submit
 o	Hiển thị thông báo lỗi",
-S-14 – Listing Preview – BP1,"Preview listing trước khi đăng
+"S-14 – Listing Preview – BP1
+Xong BE","Preview listing trước khi đăng
 Quay lại chỉnh sửa
 Xác nhận đăng tin",simple,"BE: Đạt
 FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S14-F01 – Preview listing
@@ -557,7 +567,8 @@ o	Thực hiện submit listing
 •	Khi không xác nhận:
 o	Không thay đổi trạng thái
 ",
-S-15 – Listing Detail (Seller View) – BP1,"Xem chi tiết listing
+"S-15 – Listing Detail (Seller View) – BP1
+Xong BE","Xem chi tiết listing
 Xem trạng thái duyệt
 Xem inspection status
 Xem transaction liên quan (nếu có)",medium,"BE: Đạt
@@ -576,7 +587,8 @@ ________________________________________
 BR-S15-F04 – Xem transaction liên quan
 •	Chỉ hiển thị transaction liên quan đến listing
 •	Không có → không hiển thị block",
-S-16 – Edit Listing – BP1,"Chỉnh sửa nội dung listing
+"S-16 – Edit Listing – BP1
+Xong BE","Chỉnh sửa nội dung listing
 Update ảnh
 Submit lại duyệt
 Validate rule chỉnh sửa theo status",complex,"BE: Đạt
@@ -596,7 +608,8 @@ BR-S16-F04 – Submit lại duyệt
 •	Khi submit:
 o	Validate lại toàn bộ dữ liệu
 o	Status chuyển sang PENDING_APPROVAL",
-S-17 – Listing Status View – BP1,"Xem lifecycle listing
+"S-17 – Listing Status View – BP1
+Xong BE","Xem lifecycle listing
 Xem lịch sử duyệt
 Xem ghi chú Inspector
 CTA theo status (Resubmit / Edit)",simple,"BE: Đạt
@@ -616,11 +629,12 @@ ________________________________________
 BR-S17-F04 – CTA theo status
 •	CTA hiển thị dựa trên status hiện tại
 •	Không hiển thị action không hợp lệ",
-S-18 – Draft Listings – BP1,"Xem danh sách draft
+"S-18 – Draft Listings – BP1
+Xong BE","Xem danh sách draft
 Edit draft
 Delete draft
 Submit draft",medium,"BE: Đạt
-FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S18-F01 – Xem danh sách Draft
+FE: Quốc Anh",Sprint 2,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S18-F01 – Xem danh sách Draft
 •	Chỉ hiển thị listing status = DRAFT
 ________________________________________
 BR-S18-F02 – Edit Draft
@@ -635,7 +649,8 @@ BR-S18-F04 – Submit Draft
 •	Submit Draft:
 o	Validate đầy đủ
 o	Status = PENDING_APPROVAL",
-S-19 – Listing Need More Info – BP1 → BP4,"Xem yêu cầu bổ sung
+"S-19 – Listing Need More Info – BP1 → BP4
+Đang suy nghĩ, ghi lí do reject","Xem yêu cầu bổ sung
 Điều hướng sang Inspection Chat (S-40) (Optional)
 Cập nhật thông tin yêu cầu",medium,"BE: Đạt
 FE: Quốc Anh",Sprint 2,,"BR-S19-F01 – Xem yêu cầu bổ sung
@@ -653,19 +668,22 @@ BR-S19-F03 – Cập nhật thông tin theo yêu cầu
 •	Cập nhật xong:
 o	Cho phép submit lại listing
 ________________________________________",
-S-20 – Inspector Dashboard – BP2,"1. Xem số lượng tin chờ duyệt (PENDING)
+"S-20 – Inspector Dashboard – BP2
+Xong BE","1. Xem số lượng tin chờ duyệt (PENDING)
 2. Xem số lượng tranh chấp đang xử lý (DISPUTE)
 3. Điều hướng sang Pending Listings (S-21)
 4. Điều hướng sang Review History (S-24)",simple,"BE: Quang
 FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
-S-21 – Pending/Reviewing Listings – BP2,"1. Xem danh sách các tin ở trạng thái PENDING
+"S-21 – Pending/Reviewing Listings – BP2
+Xong BE","1. Xem danh sách các tin ở trạng thái PENDING
 2. Hiển thị trạng thái REVIEWING (Locked) khi tin đang được Inspector xử lý
 3. Không cho mở tin đang ở trạng thái REVIEWING (UI disable / locked)
 4. Click tin PENDING để điều hướng sang S-22 – Listing Review & Approval Detail
 5. Filter cơ bản: ALL / PENDING / REVIEWING
 6. Sort cơ bản: Mới nhất / Cũ nhất",medium,"BE: Quang
 FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
-S-22 – Listing Review Detail – BP2,"1. Hiển thị chi tiết listing (listing_id).
+"S-22 – Listing Review Detail – BP2
+Xong BE","1. Hiển thị chi tiết listing (listing_id).
 2. Hiển thị hình ảnh listing.
 3. Hiển thị trạng thái (PENDING / REVIEWING).
 4. Mở listing → lock sang REVIEWING.
@@ -685,25 +703,32 @@ FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
 9. Gửi thông báo cho Seller.
 10. Unlock listing (thoát REVIEWING).",medium,"BE: Quang
 FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
-S-24 – Review History – BP2,"1. Xem lịch sử duyệt tin đã xử lý
+"S-24 – Review History – BP2
+Xong BE","1. Xem lịch sử duyệt tin đã xử lý
 2. Lọc lịch sử theo khoảng thời gian (From – To)",simple,"BE: Quang
 FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
 "S-30 – Listing Search & Filter – BP3
 
-S-30 gôm lại với S-1","1. Nhập keyword
+S-30 gôm lại với S-1
+
+Xong BE (đang nằm ở seller), FE đã gắn API","1. Nhập keyword
 2. Filter theo giá / loại / kiểm định
 3. Submit search
 
 Có ý định  gộp với home",simple,"BE: Đạt
 FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
 "S-31 – Listing List – BP3
-Fitler","1. Hiển thị danh sách ACTIVE
+Fitler
+
+Xong BE (đang nằm ở seller), FE đã gắn API","1. Hiển thị danh sách ACTIVE
 2. Pagination
 3. Điều hướng detail
 
 Fitler thì để dưới đây luôn",medium,"BE: Đạt
 FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
-S-32 – Listing Detail (Public) – BP3,"1. Xem thông tin xe
+"S-32 – Listing Detail (Public) – BP3
+
+Chưa","1. Xem thông tin xe
 2. Xem ảnh
 4 CTA:
 - Đặt mua / đặt cọc
@@ -717,13 +742,14 @@ FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
 Nghi vấn chỗ này bởi DB đâu có gì liên quan đến reivew đâu, không có trong BP, nếu làm thì phải giải thích thêm, system sẽ đảm bảo là mỗi chiếc xe đều đảm bảo chất lượng của công ty
 bởi inspector là kiểm duyệt thông tin và mọi thứ. Inspector chỉ đảm bảo tính trung thực & minh bạch của thông tin",medium,"BE: Đạt
 FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
-"S-40 – Inspection Chat Thread (Inspector–Seller) – BP4
+"S-40 – Inspection Chat Thread (Inspector–Seller) – BP4 (Optional)
 ","1. Gửi / nhận message
 2. Upload ảnh bổ sung
 3. Lưu log trao đổi
 4. Lock khi listing ARCHIVED
 5. Disable message edit and delete actions at UI level",complex,Dev C ( Lâm ),Sprint 2,,,
-S-41 – Inspection Request Detail – BP4,"1. Xem yêu cầu kiểm định (yêu cầu kiểm định là gì, là cái bài đăng lên à?)
+"S-41 – Inspection Request Detail – BP4
+Xong BE","1. Xem yêu cầu kiểm định (yêu cầu kiểm định là gì, là cái bài đăng lên à?)
 2. Xem checklist thông tin cần bổ sung",medium,Dev C ( Lâm ),Sprint 2,,,
 S-42 – Inspection Response Screen (Seller) – BP4 (Optional),"Seller trả lời Inspector
 Upload tài liệu / ảnh
@@ -1003,7 +1029,7 @@ Count:
 - failed
 F2. Navigate
 CTA:
-- View Assigned Deliveries → S-61",simple,Dev D (Huy),Sprint 3,"Mục tiêu
+- View Assigned Deliveries → S-61",simple,Dev D (Huy),Sprint 2,"Mục tiêu
 Overview công việc shipper
 ",,
 S-61 – Assigned Deliveries (Detail View) – BP6,"FUNCTION GROUP A – Load deliveries
@@ -1059,7 +1085,7 @@ F8. Refresh delivery status
 Nếu status thay đổi (ví dụ đã completed):
 - disable CTA
 - show info message
-",medium,Dev D (Huy),Sprint 3,"Mục tiêu
+",medium,Dev D (Huy),Sprint 2,"Mục tiêu
 Cho Shipper:
 - xem tất cả delivery được gán
 - xem chi tiết từng delivery
@@ -1076,7 +1102,7 @@ Không thay đổi trạng thái delivery tại screen này
 Mọi thay đổi trạng thái:
 chỉ xảy ra ở S-63 / S-64",,
 S-62 – Delivery Detail – BP6,"1. Xem thông tin giao hàng
-2. Liên hệ Buyer / Seller",medium,Dev D,Sprint 3,Remove S-62,,
+2. Liên hệ Buyer / Seller",medium,Dev D,Sprint 2,Remove S-62,,
 S-63 – Delivery Confirmation – BP6,"F1. Load delivery info
 Hiển thị:
 - buyer info
@@ -1142,7 +1168,7 @@ level medium: >3 & <=8  _______
 
 level complex: >8 _______",,,,,,,
 "SPRINT 1
-S-02 / S-03 – Login / Register
+S-02 / S-03 – Login / Register (done)
 S-10 / S-11 – Seller Dashboard + My Listings
 S-12 → S-14 – Create Listing Flow
 S-20 → S-22 – Inspector duyệt
