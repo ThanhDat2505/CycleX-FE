@@ -7,6 +7,7 @@ import { TransactionWithDetails } from '@/app/types/transaction';
 import TransactionCard from '../components/TransactionCard';
 import { LoadingSpinner, EmptyState } from '@/app/components/ui';
 import { useRouter } from 'next/navigation';
+import { formatPrice } from '@/app/utils/format';
 
 export default function PendingTransactionsPage() {
     const { user, isLoggedIn, isLoading: isAuthLoading, role } = useAuth();
@@ -112,7 +113,7 @@ export default function PendingTransactionsPage() {
                         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col sm:col-span-2">
                             <span className="text-sm text-gray-500 font-medium">Tổng giá trị chờ duyệt</span>
                             <span className="text-2xl font-bold text-gray-900 mt-1">
-                                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalValue)}
+                                {formatPrice(totalValue)}
                             </span>
                         </div>
                     </div>

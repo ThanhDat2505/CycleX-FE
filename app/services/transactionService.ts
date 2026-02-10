@@ -79,16 +79,16 @@ export async function createPurchaseRequest(
  */
 export async function getTransactionDetail(
     transactionId: number
-): Promise<Transaction> {
+): Promise<import('../types/transaction').TransactionWithDetails> {
     if (USE_MOCK_API) {
         // ... existing mock logic ...
         await new Promise(resolve => setTimeout(resolve, 500));
 
-        // Return mock transaction
-        const mockTransaction: Transaction = {
+        // Return mock transaction with details
+        const mockTransaction: import('../types/transaction').TransactionWithDetails = {
             transactionId,
             listingId: 1,
-            buyerId: 1,
+            buyerId: 10,
             sellerId: 2,
             transactionType: 'PURCHASE',
             status: 'PENDING_SELLER_CONFIRM',
@@ -96,6 +96,13 @@ export async function getTransactionDetail(
             platformFee: 50000,
             inspectionFee: 100000,
             totalAmount: 5150000,
+            listingTitle: 'Trek Marlin 7 2022 (Mock Detail)',
+            listingImage: 'https://images.unsplash.com/photo-1576435728678-be95d398b646?auto=format&fit=crop&q=80&w=500',
+            buyerName: 'Nguyễn Văn A',
+            receiverName: 'Nguyễn Văn A',
+            receiverPhone: '0987654321',
+            receiverAddress: '123 Đường Láng, Hà Nội',
+            note: 'Giao hàng vào buổi sáng giúp mình nhé.',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         };
@@ -104,7 +111,7 @@ export async function getTransactionDetail(
     }
 
     // Real API call
-    return apiCallGET<Transaction>(`/transactions/${transactionId}`);
+    return apiCallGET<import('../types/transaction').TransactionWithDetails>(`/transactions/${transactionId}`);
 }
 
 /**
@@ -190,5 +197,20 @@ export async function acceptTransaction(transactionId: number): Promise<boolean>
     // Real API: usually PUT /transactions/{id}/status or similar
     // Assuming endpoint for now
     await apiCallPUT(`/transactions/${transactionId}/accept`, {});
+    return true;
+}
+
+/**
+ * Reject transaction (S-53 Action)
+ * @param transactionId - Transaction ID
+ * @param reason - Rejection reason
+ */
+export async function rejectTransaction(transactionId: number, reason: string): Promise<boolean> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        console.log(`Transaction ${transactionId} rejected. Reason: ${reason}`);
+        return true;
+    }
+    await apiCallPUT(`/transactions/${transactionId}/reject`, { reason });
     return true;
 }
