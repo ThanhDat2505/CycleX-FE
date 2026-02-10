@@ -13,7 +13,7 @@ import OrderTimeline from './components/OrderTimeline';
 export default function TransactionDetailPage() {
     const params = useParams();
     const router = useRouter();
-    const { isLoggedIn, isLoading: isAuthLoading } = useAuth(); // Removed 'user' unused var
+    const { isLoggedIn, isLoading: isAuthLoading, role, user } = useAuth();
     const { addToast } = useToast();
 
     const [transaction, setTransaction] = useState<TransactionWithDetails | null>(null);
@@ -25,21 +25,43 @@ export default function TransactionDetailPage() {
 
     useEffect(() => {
         // Auth check
-        if (!isAuthLoading && !isLoggedIn) {
-            router.push(`/login?returnUrl=/transactions/${transactionId}`);
+        if (!isAuthLoading) {
+            if (!isLoggedIn) {
+                router.push(`/login?returnUrl=/transactions/${transactionId}`);
+                return;
+            }
+            // Basic Role Check: Must be SELLER or BUYER
+            // (Ideally we check if they are THE seller/buyer of this transaction, but that requires fetching data first)
+            // For now, we allow SELLER/BUYER roles to access the route structure, 
+            // but strict data ownership check happens after data load or via backend.
+            if (role !== 'SELLER' && role !== 'BUYER') {
+                addToast('Bạn không có quyền truy cập trang này', 'error');
+                router.push('/');
+                return;
+            }
         }
-    }, [isAuthLoading, isLoggedIn, router, transactionId]);
+    }, [isAuthLoading, isLoggedIn, role, router, transactionId, addToast]);
 
     useEffect(() => {
         let isMounted = true;
 
         async function fetchDetail() {
-            if (!transactionId) return;
+            if (!transactionId || !user?.userId) return; // Wait for user to be loaded
             try {
                 setIsLoading(true);
                 const data = await getTransactionDetail(transactionId);
 
                 if (isMounted) {
+                    // Strict Data Ownership Check
+                    const isOwner = data.buyerId === user.userId || data.sellerId === user.userId;
+
+                    if (!isOwner) {
+                        setError('Bạn không có quyền truy cập giao dịch này.');
+                        addToast('Bạn không có quyền truy cập giao dịch này', 'error');
+                        setTimeout(() => router.push('/'), 2000); // Redirect after showing error
+                        return;
+                    }
+
                     setTransaction(data);
                 }
             } catch (err) {
@@ -52,10 +74,12 @@ export default function TransactionDetailPage() {
             }
         }
 
-        fetchDetail();
+        if (user?.userId) {
+            fetchDetail();
+        }
 
         return () => { isMounted = false; };
-    }, [transactionId]);
+    }, [transactionId, user?.userId, router, addToast]);
 
     const handleAccept = async () => {
         if (!transaction) return;

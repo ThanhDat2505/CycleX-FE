@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
+import { useToast } from "@/app/contexts/ToastContext";
 import { saveDraft, updateDraft, submitDraft } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import { CREATE_LISTING_STEPS, LISTING_CONFIG, CURRENT_YEAR } from "../constants";
@@ -9,7 +10,8 @@ import type { CreateListingPayload } from "@/app/services/myListingsService";
 
 export const useCreateListing = () => {
     const router = useRouter();
-    const { isLoggedIn, isLoading, user } = useAuth();
+    const { isLoggedIn, isLoading, user, role } = useAuth();
+    const { addToast } = useToast();
 
     // State
     const [step, setStep] = useState<number>(CREATE_LISTING_STEPS.VEHICLE_INFO);
@@ -48,12 +50,20 @@ export const useCreateListing = () => {
         shipping: false,
     });
 
-    // Auth Protection
+    // Auth & Role Protection
     useEffect(() => {
-        if (!isLoading && !isLoggedIn) {
-            router.push("/login?returnUrl=/create-listing");
+        if (!isLoading) {
+            if (!isLoggedIn) {
+                router.push("/login?returnUrl=/create-listing");
+                return;
+            }
+            if (role !== 'SELLER') {
+                addToast("Chỉ người bán mới có quyền đăng tin!", "error");
+                router.push("/");
+                return;
+            }
         }
-    }, [isLoggedIn, isLoading, router]);
+    }, [isLoggedIn, isLoading, router, role, addToast]);
 
     // Auto clear upload error
     useEffect(() => {

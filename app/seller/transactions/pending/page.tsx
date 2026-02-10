@@ -19,14 +19,19 @@ export default function PendingTransactionsPage() {
     const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
 
     useEffect(() => {
-        // Auth check
+        // Auth & Role check
         if (!isAuthLoading) {
             if (!isLoggedIn) {
                 router.push('/login?returnUrl=/seller/transactions/pending');
                 return;
             }
             if (role !== 'SELLER') {
-                router.push('/'); // Or unauthorized page
+                // Not authorized
+                // In a real app, might show a nice 403 page
+                // For now, redirect home with a toast (if we can use toast here)
+                // Since this component uses useAuth, we can assume it's Client Component
+                // We'll trust the user to be redirected
+                router.push('/');
                 return;
             }
         }
