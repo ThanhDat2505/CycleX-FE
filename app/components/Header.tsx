@@ -85,6 +85,7 @@ export default function Header() {
                                 {/* User Menu */}
                                 <UserMenu
                                     isRestrictedRole={!!isRestrictedRole}
+                                    userRole={user?.role}
                                     onLogout={logout}
                                 />
 

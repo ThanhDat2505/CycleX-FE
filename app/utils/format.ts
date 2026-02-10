@@ -61,3 +61,16 @@ export const normalizePhoneNumber = (phone: string): string => {
 
     return cleaned;
 };
+
+/**
+ * Format date to Vietnamese format (dd/MM/yyyy HH:mm)
+ */
+export const formatDate = (dateString: string | Date): string => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};

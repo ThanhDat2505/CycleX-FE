@@ -1,3 +1,4 @@
+
 /**
  * Transaction Service
  * Handles API calls for transaction operations (BP5)
@@ -16,10 +17,20 @@ const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
  * @param data - Transaction request data
  * @returns Promise<Transaction> - Created transaction
  */
+import { apiCallPOST, apiCallGET, apiCallPUT } from '../utils/apiHelpers';
+
+/**
+ * Create purchase or deposit request
+ * Endpoint: POST /api/transactions (future)
+ * 
+ * @param data - Transaction request data
+ * @returns Promise<Transaction> - Created transaction
+ */
 export async function createPurchaseRequest(
     data: CreateTransactionRequest
 ): Promise<Transaction> {
     if (USE_MOCK_API) {
+        // ... existing mock logic ...
         // Simulate network delay
         await new Promise(resolve => setTimeout(resolve, 1000));
 
@@ -57,20 +68,8 @@ export async function createPurchaseRequest(
         return mockTransaction;
     }
 
-    // Real API call (future implementation)
-    const response = await fetch('/backend/api/transactions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-        throw new Error('Failed to create transaction');
-    }
-
-    return response.json();
+    // Real API call
+    return apiCallPOST<Transaction>('/transactions', data);
 }
 
 /**
@@ -82,6 +81,7 @@ export async function getTransactionDetail(
     transactionId: number
 ): Promise<Transaction> {
     if (USE_MOCK_API) {
+        // ... existing mock logic ...
         await new Promise(resolve => setTimeout(resolve, 500));
 
         // Return mock transaction
@@ -103,12 +103,92 @@ export async function getTransactionDetail(
         return mockTransaction;
     }
 
-    // Real API call (future)
-    const response = await fetch(`/backend/api/transactions/${transactionId}`);
+    // Real API call
+    return apiCallGET<Transaction>(`/transactions/${transactionId}`);
+}
 
-    if (!response.ok) {
-        throw new Error('Failed to fetch transaction');
+/**
+ * Get transactions for seller (S-52)
+ * @param sellerId - Seller ID
+ * @param status - Filter by status
+ * @returns Promise<TransactionWithDetails[]>
+ */
+export async function getSellerTransactions(
+    sellerId: number,
+    status?: string
+): Promise<import('../types/transaction').TransactionWithDetails[]> {
+    if (USE_MOCK_API) {
+        // ... existing mock logic ...
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Mock data
+        const mockTransactions: import('../types/transaction').TransactionWithDetails[] = [
+            {
+                transactionId: 101,
+                listingId: 1,
+                buyerId: 10,
+                sellerId: sellerId,
+                transactionType: 'PURCHASE',
+                status: 'PENDING_SELLER_CONFIRM',
+                desiredTime: new Date(Date.now() + 86400000 * 2).toISOString(), // 2 days later
+                listingTitle: 'Trek Marlin 7 2022',
+                listingImage: 'https://images.unsplash.com/photo-1576435728678-be95d398b646?auto=format&fit=crop&q=80&w=500',
+                buyerName: 'Nguyễn Văn A',
+                platformFee: 50000,
+                inspectionFee: 100000,
+                totalAmount: 5500000,
+                receiverName: 'Nguyễn Văn A',
+                receiverPhone: '0987654321',
+                receiverAddress: '123 Đường Láng, Hà Nội',
+                createdAt: new Date(Date.now() - 3600000).toISOString(), // 1 hour ago
+                updatedAt: new Date().toISOString(),
+            },
+            {
+                transactionId: 102,
+                listingId: 2,
+                buyerId: 11,
+                sellerId: sellerId,
+                transactionType: 'DEPOSIT',
+                status: 'PENDING_SELLER_CONFIRM',
+                desiredTime: new Date(Date.now() + 86400000 * 5).toISOString(),
+                listingTitle: 'Giant Escape 3',
+                listingImage: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=500',
+                buyerName: 'Trần Thị B',
+                depositAmount: 500000,
+                platformFee: 50000,
+                inspectionFee: 0,
+                totalAmount: 550000,
+                receiverName: 'Trần Thị B',
+                receiverPhone: '0901234567',
+                receiverAddress: '456 Lê Lợi, TP.HCM',
+                createdAt: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
+                updatedAt: new Date().toISOString(),
+            },
+        ];
+
+        if (status) {
+            return mockTransactions.filter(t => t.status === status);
+        }
+
+        return mockTransactions;
     }
 
-    return response.json();
+    // Real API call
+    const queryParams = status ? `?status=${status}` : '';
+    return apiCallGET<import('../types/transaction').TransactionWithDetails[]>(`/seller/${sellerId}/transactions${queryParams}`);
+}
+
+/**
+ * Accept transaction (S-52 Action)
+ * @param transactionId - Transaction ID
+ */
+export async function acceptTransaction(transactionId: number): Promise<boolean> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return true;
+    }
+    // Real API: usually PUT /transactions/{id}/status or similar
+    // Assuming endpoint for now
+    await apiCallPUT(`/transactions/${transactionId}/accept`, {});
+    return true;
 }

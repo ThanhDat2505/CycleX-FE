@@ -1,9 +1,10 @@
-import type {Metadata} from "next";
-import {Geist, Geist_Mono} from "next/font/google";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "@/app/components/Header";
 import React from "react";
 import Footer from "@/app/components/Footer";
+import { ToastProvider } from "@/app/contexts/ToastContext";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -21,21 +22,23 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+    children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en">
-        <body
-            className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-        >
-        {/* Header with auth state */}
-        <Header/>
-        {children}
-        {/* Footer */}
-        <Footer/>
-        </body>
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            >
+                {/* Header with auth state */}
+                <ToastProvider>
+                    <Header />
+                    {children}
+                    {/* Footer */}
+                    <Footer />
+                </ToastProvider>
+            </body>
         </html>
     );
 }

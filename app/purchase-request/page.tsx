@@ -17,6 +17,7 @@ import { ListingDetail } from '../types/listing';
 import { PurchaseRequestForm } from '../types/transaction';
 import StepIndicator from './components/StepIndicator';
 import { LoadingSpinner, EmptyState } from '../components/ui';
+import { useToast } from '@/app/contexts/ToastContext';
 import Step1InputForm from './components/Step1InputForm';
 import Step2Review from './components/Step2Review';
 import { normalizePhoneNumber } from '../utils/format';
@@ -26,6 +27,7 @@ export const dynamic = 'force-dynamic';
 
 export default function PurchaseRequestPage() {
     const router = useRouter();
+    const { addToast } = useToast();
     const searchParams = useSearchParams();
     const { isLoggedIn, isLoading: isAuthLoading, user, requireAuth, role } = useAuth(); // rename isLoading to avoid conflict
 
@@ -129,7 +131,7 @@ export default function PurchaseRequestPage() {
     // Will implement after AuthContext is available
 
     // Validate Step 1 before moving to Step 2
-    const validateStep1 = useCallback((): boolean => {
+    const validateStep1 = useCallback(() => {
         const errors: Partial<Record<keyof PurchaseRequestForm, string>> = {};
 
         // Validate Payment Method (Transaction Type)
@@ -179,17 +181,20 @@ export default function PurchaseRequestPage() {
 
         setValidationErrors(errors);
 
-        // Return true if no errors
-        return Object.keys(errors).length === 0;
+        return errors; // Return errors directly
     }, [formData]);
 
     // Handle next step
     const handleNext = useCallback(() => {
-        const isValid = validateStep1();
-        if (isValid) {
+        const errors = validateStep1();
+        if (Object.keys(errors).length > 0) {
+            setValidationErrors(errors);
+            addToast('Vui lòng kiểm tra lại thông tin đã nhập.', 'error');
+        } else {
+            setValidationErrors({}); // Clear errors if valid
             setCurrentStep(2);
         }
-    }, [validateStep1]);
+    }, [validateStep1, addToast]);
 
     // Handle back to step 1
     const handleBack = useCallback(() => {
@@ -198,10 +203,23 @@ export default function PurchaseRequestPage() {
 
     // Handle form submit
     const handleSubmit = useCallback(async () => {
-        if (!listing || !user) return;
+        if (!listing || !user) {
+            addToast('Lỗi hệ thống: Không tìm thấy thông tin sản phẩm hoặc người dùng.', 'error');
+            return;
+        }
+
+        // Double-check validation for step 1 before final submission
+        const step1Errors = validateStep1();
+        if (Object.keys(step1Errors).length > 0) {
+            setValidationErrors(step1Errors);
+            setCurrentStep(1); // Go back to step 1 to show errors
+            addToast('Vui lòng kiểm tra lại thông tin ở Bước 1.', 'error');
+            return;
+        }
 
         try {
             setIsSubmitting(true);
+            setSubmitError(null); // Clear previous submit errors
 
             const transaction = await createPurchaseRequest({
                 listingId: listing.listingId,
@@ -215,14 +233,17 @@ export default function PurchaseRequestPage() {
                 note: formData.note,
             });
 
+            addToast('Yêu cầu đặt mua/đặt cọc đã được gửi thành công!', 'success');
             // Success! Redirect to S-54
             router.push(`/transactions/${transaction.transactionId}`);
         } catch (err) {
-            setSubmitError(err instanceof Error ? err.message : 'Không thể tạo yêu cầu. Vui lòng thử lại.');
+            const errorMessage = err instanceof Error ? err.message : 'Không thể tạo yêu cầu. Vui lòng thử lại.';
+            setSubmitError(errorMessage);
+            addToast(errorMessage, 'error');
         } finally {
             setIsSubmitting(false);
         }
-    }, [listing, user, formData, router]);
+    }, [listing, user, formData, router, validateStep1, addToast]);
 
     // Loading state (Auth or Listing)
     if (isAuthLoading || (isLoggedIn && isListingLoading)) {

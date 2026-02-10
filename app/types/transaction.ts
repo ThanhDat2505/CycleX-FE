@@ -61,3 +61,13 @@ export interface Transaction {
     createdAt: string;
     updatedAt: string;
 }
+
+/**
+ * Transaction with details for list view (S-52)
+ */
+export interface TransactionWithDetails extends Transaction {
+    listingTitle: string;
+    listingImage?: string;
+    buyerName: string;
+    buyerAvatar?: string;
+}

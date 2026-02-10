@@ -1,7 +1,7 @@
 import { PurchaseRequestForm } from '@/app/types/transaction';
 import { ListingDetail } from '@/app/types/listing';
 import { PLATFORM_FEE, INSPECTION_FEE, calculateTotal } from '../../constants/fees';
-import { formatPrice } from '@/app/utils/format';
+import { formatPrice, formatDate } from '@/app/utils/format';
 import { Button } from '@/app/components/ui';
 
 interface Step2ReviewProps {
@@ -29,7 +29,6 @@ export default function Step2Review({
         <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-slide-up">
             {/* Receipt Header */}
             <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 text-white relative overflow-hidden">
-                {/* The user provided an incomplete <style jsx> tag. I will assume it was meant to be a comment or a placeholder for future styling and will not include it as it would cause a syntax error. */}
                 <h2 className="text-xl font-bold flex items-center gap-2">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -60,7 +59,7 @@ export default function Step2Review({
                                 <div className="flex justify-between">
                                     <span className="text-gray-500">Ngày nhận xe:</span>
                                     <span className="font-medium text-gray-900">
-                                        {new Date(formData.desiredTime).toLocaleDateString('vi-VN')}
+                                        {formatDate(formData.desiredTime)}
                                     </span>
                                 </div>
                                 {formData.note && (
