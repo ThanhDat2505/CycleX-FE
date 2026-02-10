@@ -70,4 +70,7 @@ export interface TransactionWithDetails extends Transaction {
     listingImage?: string;
     buyerName: string;
     buyerAvatar?: string;
+    sellerName?: string;
+    sellerPhone?: string;
+    sellerAvatar?: string;
 }
