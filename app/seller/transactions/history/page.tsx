@@ -1,21 +1,16 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getSellerTransactions } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
 import { LoadingSpinner, EmptyState, Button } from '@/app/components/ui';
+import MiniTimeline from '@/app/components/ui/MiniTimeline';
 import { formatPrice, formatDate } from '@/app/utils/format';
 import { useToast } from '@/app/contexts/ToastContext';
-
-// Mock Data for Insights
-const INSIGHTS = {
-    totalRevenue: 45000000,
-    totalOrders: 12,
-    completionRate: 92,
-    thisMonth: 8500000
-};
+import { getStatusColors } from '@/app/constants/statusColors';
+import { TRANSACTION_STATUS, TRANSACTION_STATUS_LABELS, TRANSACTION_TYPE, TRANSACTION_TYPE_LABELS } from '@/app/constants/transactionStatus';
 
 export default function TransactionHistoryPage() {
     const router = useRouter();
@@ -27,6 +22,37 @@ export default function TransactionHistoryPage() {
     const [filterStatus, setFilterStatus] = useState<string>('ALL');
     const [searchTerm, setSearchTerm] = useState('');
 
+    // Compute insights from actual transaction data
+    const insights = useMemo(() => {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const completedTransactions = transactions.filter(t => t.status === TRANSACTION_STATUS.COMPLETED);
+        const cancelledTransactions = transactions.filter(t => t.status === TRANSACTION_STATUS.CANCELLED);
+        const finishedTransactions = completedTransactions.length + cancelledTransactions.length;
+
+        const thisMonthTransactions = transactions.filter(t => {
+            const d = new Date(t.createdAt);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
+
+        const totalRevenue = completedTransactions.reduce((sum, t) => sum + t.totalAmount, 0);
+        const thisMonthRevenue = thisMonthTransactions
+            .filter(t => t.status === TRANSACTION_STATUS.COMPLETED)
+            .reduce((sum, t) => sum + t.totalAmount, 0);
+        const completionRate = finishedTransactions > 0
+            ? Math.round((completedTransactions.length / finishedTransactions) * 100)
+            : 0;
+
+        return {
+            totalRevenue,
+            totalOrders: thisMonthTransactions.length,
+            completionRate,
+            thisMonthRevenue,
+        };
+    }, [transactions]);
+
     useEffect(() => {
         if (!isAuthLoading && !isLoggedIn) {
             router.push('/login');
@@ -34,53 +60,49 @@ export default function TransactionHistoryPage() {
     }, [isAuthLoading, isLoggedIn, router]);
 
     useEffect(() => {
+        let isMounted = true;
+
         async function fetchHistory() {
             if (!user?.userId) return;
             try {
                 setIsLoading(true);
-                // Fetch all transactions then filter client-side for "Smart Dashboard" feel
                 const data = await getSellerTransactions(user.userId);
-                setTransactions(data);
+                if (isMounted) setTransactions(data);
             } catch (error) {
-                console.error('Failed to fetch history:', error);
-                addToast('Không thể tải lịch sử giao dịch', 'error');
+                if (isMounted) addToast('Không thể tải lịch sử giao dịch', 'error');
             } finally {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
             }
         }
 
         if (user?.userId) {
             fetchHistory();
         }
+
+        return () => { isMounted = false; };
     }, [user, addToast]);
 
-    // Filter Logic
-    const filteredTransactions = transactions.filter(t => {
-        const matchesStatus = filterStatus === 'ALL' || t.status === filterStatus;
-        const matchesSearch = t.buyerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.listingTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            t.transactionId.toString().includes(searchTerm);
-        return matchesStatus && matchesSearch;
-    });
+    // Filter Logic — memoized to avoid re-computing on every render
+    const filteredTransactions = useMemo(() => {
+        const lowerSearch = searchTerm.toLowerCase();
+        return transactions.filter(t => {
+            const matchesStatus = filterStatus === 'ALL' || t.status === filterStatus;
+            const matchesSearch = t.buyerName.toLowerCase().includes(lowerSearch) ||
+                t.listingTitle.toLowerCase().includes(lowerSearch) ||
+                t.transactionId.toString().includes(searchTerm);
+            return matchesStatus && matchesSearch;
+        });
+    }, [transactions, filterStatus, searchTerm]);
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'CONFIRMED': return 'bg-blue-100 text-blue-700 border-blue-200';
-            case 'COMPLETED': return 'bg-green-100 text-green-700 border-green-200';
-            case 'CANCELLED': return 'bg-red-50 text-red-600 border-red-100';
-            default: return 'bg-gray-100 text-gray-600 border-gray-200';
-        }
-    };
+    // Use centralized constants instead of inline helpers
+    const getStatusBadgeClasses = useCallback((status: string) => {
+        const colors = getStatusColors(status);
+        return `${colors.bg} ${colors.text} border-current/20`;
+    }, []);
 
-    const getStatusLabel = (status: string) => {
-        switch (status) {
-            case 'PENDING_SELLER_CONFIRM': return 'Chờ xử lý';
-            case 'CONFIRMED': return 'Đã xác nhận';
-            case 'COMPLETED': return 'Hoàn thành';
-            case 'CANCELLED': return 'Đã hủy';
-            default: return status;
-        }
-    };
+    const getStatusLabel = useCallback((status: string): string => {
+        return TRANSACTION_STATUS_LABELS[status as keyof typeof TRANSACTION_STATUS_LABELS] || status;
+    }, []);
 
     if (isAuthLoading) return <div className="flex justify-center p-12"><LoadingSpinner /></div>;
 
@@ -91,24 +113,24 @@ export default function TransactionHistoryPage() {
                 <div className="max-w-7xl mx-auto">
                     <h1 className="text-2xl font-bold text-gray-900 mb-6">Lịch sử giao dịch</h1>
 
-                    {/* Insight Cards */}
+                    {/* Insight Cards — computed from real data */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-2">
                         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white shadow-lg shadow-blue-200">
                             <p className="text-blue-100 text-sm font-medium mb-1">Tổng doanh thu</p>
-                            <p className="text-2xl font-bold">{formatPrice(INSIGHTS.totalRevenue)}</p>
+                            <p className="text-2xl font-bold">{formatPrice(insights.totalRevenue)}</p>
                         </div>
                         <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                             <p className="text-gray-500 text-sm font-medium mb-1">Đơn hàng tháng này</p>
                             <div className="flex items-end gap-2">
-                                <p className="text-2xl font-bold text-gray-900">{INSIGHTS.totalOrders}</p>
-                                <span className="text-green-600 text-xs font-bold mb-1">+{INSIGHTS.thisMonth.toLocaleString()}đ</span>
+                                <p className="text-2xl font-bold text-gray-900">{insights.totalOrders}</p>
+                                <span className="text-green-600 text-xs font-bold mb-1">+{insights.thisMonthRevenue.toLocaleString()}đ</span>
                             </div>
                         </div>
                         <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
                             <p className="text-gray-500 text-sm font-medium mb-1">Tỷ lệ hoàn thành</p>
-                            <p className="text-2xl font-bold text-gray-900">{INSIGHTS.completionRate}%</p>
+                            <p className="text-2xl font-bold text-gray-900">{insights.completionRate}%</p>
                             <div className="w-full bg-gray-100 h-1.5 rounded-full mt-2 overflow-hidden">
-                                <div className="bg-green-500 h-full rounded-full" style={{ width: `${INSIGHTS.completionRate}%` }}></div>
+                                <div className="bg-green-500 h-full rounded-full" style={{ width: `${insights.completionRate}%` }}></div>
                             </div>
                         </div>
                         <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm flex flex-col justify-center items-center cursor-pointer hover:bg-gray-50 transition-colors border-dashed border-2">
@@ -126,7 +148,7 @@ export default function TransactionHistoryPage() {
                     <div className="p-4 border-b border-gray-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white">
                         {/* Tabs */}
                         <div className="flex bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
-                            {['ALL', 'CONFIRMED', 'COMPLETED', 'CANCELLED'].map((status) => (
+                            {['ALL', TRANSACTION_STATUS.CONFIRMED, TRANSACTION_STATUS.COMPLETED, TRANSACTION_STATUS.CANCELLED].map((status) => (
                                 <button
                                     key={status}
                                     onClick={() => setFilterStatus(status)}
@@ -180,7 +202,7 @@ export default function TransactionHistoryPage() {
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <p className="font-bold text-gray-900 text-sm">#{t.transactionId}</p>
-                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusColor(t.status)}`}>
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusBadgeClasses(t.status)}`}>
                                                         {getStatusLabel(t.status)}
                                                     </span>
                                                 </div>
@@ -191,18 +213,10 @@ export default function TransactionHistoryPage() {
                                                     </div>
                                                     <p className="text-sm font-bold text-blue-600">{formatPrice(t.totalAmount)}</p>
                                                 </div>
-                                                {/* Mini Timeline */}
                                                 <div className="flex items-center gap-1 mt-2">
-                                                    {[1, 2, 3].map((step) => {
-                                                        const active =
-                                                            (t.status === 'PENDING_SELLER_CONFIRM' && step <= 1) ||
-                                                            (t.status === 'CONFIRMED' && step <= 2) ||
-                                                            (t.status === 'COMPLETED' && step <= 3);
-                                                        if (t.status === 'CANCELLED') return step === 1 ? <div key={step} className="w-1.5 h-1.5 rounded-full bg-red-400"></div> : null;
-                                                        return <div key={step} className={`w-1.5 h-1.5 rounded-full ${active ? 'bg-green-500' : 'bg-gray-200'}`}></div>;
-                                                    })}
+                                                    <MiniTimeline status={t.status} size="sm" />
                                                     <span className="text-[10px] text-gray-400 ml-1">
-                                                        {t.transactionType === 'PURCHASE' ? 'Mua ngay' : 'Đặt cọc'}
+                                                        {TRANSACTION_TYPE_LABELS[t.transactionType as keyof typeof TRANSACTION_TYPE_LABELS] || t.transactionType}
                                                     </span>
                                                 </div>
                                             </div>
@@ -247,31 +261,18 @@ export default function TransactionHistoryPage() {
                                                 </td>
                                                 <td className="px-6 py-4 text-right">
                                                     <p className="text-sm font-bold text-gray-900">{formatPrice(t.totalAmount)}</p>
-                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${t.transactionType === 'PURCHASE' ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
-                                                        {t.transactionType === 'PURCHASE' ? 'Mua ngay' : 'Đặt cọc'}
+                                                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-medium ${t.transactionType === TRANSACTION_TYPE.PURCHASE ? 'bg-blue-50 text-blue-600' : 'bg-orange-50 text-orange-600'}`}>
+                                                        {TRANSACTION_TYPE_LABELS[t.transactionType as keyof typeof TRANSACTION_TYPE_LABELS] || t.transactionType}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 text-center">
-                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusColor(t.status)}`}>
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${getStatusBadgeClasses(t.status)}`}>
                                                         {getStatusLabel(t.status)}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4 w-32">
-                                                    {/* Mini Timeline */}
-                                                    <div className="flex items-center gap-1 justify-center opacity-40 group-hover:opacity-100 transition-opacity">
-                                                        {[1, 2, 3].map((step) => {
-                                                            const active =
-                                                                (t.status === 'PENDING_SELLER_CONFIRM' && step <= 1) ||
-                                                                (t.status === 'CONFIRMED' && step <= 2) ||
-                                                                (t.status === 'COMPLETED' && step <= 3);
-                                                            if (t.status === 'CANCELLED') return step === 1 ? <div key={step} className="w-2 h-2 rounded-full bg-red-400"></div> : null;
-                                                            return (
-                                                                <div
-                                                                    key={step}
-                                                                    className={`w-2 h-2 rounded-full transition-colors ${active ? 'bg-green-500' : 'bg-gray-200'}`}
-                                                                ></div>
-                                                            );
-                                                        })}
+                                                    <div className="flex justify-center opacity-40 group-hover:opacity-100 transition-opacity">
+                                                        <MiniTimeline status={t.status} />
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right">

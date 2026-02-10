@@ -9,6 +9,7 @@ import { LoadingSpinner, EmptyState, Button, StatusBadge } from '@/app/component
 import { formatPrice, formatDate } from '@/app/utils/format';
 import Link from 'next/link';
 import { useToast } from '@/app/contexts/ToastContext';
+import { TRANSACTION_STATUS } from '@/app/constants/transactionStatus';
 
 export default function BuyerTransactionsPage() {
     const router = useRouter();
@@ -49,7 +50,6 @@ export default function BuyerTransactionsPage() {
                     setTransactions(data);
                 }
             } catch (error) {
-                if (isMounted) console.error('Failed to fetch buyer transactions:', error);
             } finally {
                 if (isMounted) setIsLoading(false);
             }
@@ -77,7 +77,6 @@ export default function BuyerTransactionsPage() {
                 setTransactions(data);
             }
         } catch (error) {
-            console.error(error);
             addToast('Có lỗi xảy ra khi hủy yêu cầu.', 'error');
         } finally {
             setActionLoading(null);
@@ -146,7 +145,7 @@ export default function BuyerTransactionsPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex justify-end gap-2">
-                                                {t.status === 'PENDING_SELLER_CONFIRM' && (
+                                                {t.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM && (
                                                     <Button
                                                         variant="danger"
                                                         size="sm"

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { formatDate } from '@/app/utils/format';
+import { TRANSACTION_STATUS } from '@/app/constants/transactionStatus';
 
 interface OrderTimelineProps {
     status: string;
@@ -9,17 +10,17 @@ interface OrderTimelineProps {
 }
 
 const STEPS = [
-    { id: 'created', label: 'Đã đặt hàng', status: 'PENDING_SELLER_CONFIRM' }, // Base state
-    { id: 'pending', label: 'Chờ xác nhận', status: 'PENDING_SELLER_CONFIRM' },
-    { id: 'confirmed', label: 'Đã xác nhận', status: 'CONFIRMED' },
-    { id: 'completed', label: 'Hoàn thành', status: 'COMPLETED' },
+    { id: 'created', label: 'Đã đặt hàng', status: TRANSACTION_STATUS.PENDING_SELLER_CONFIRM },
+    { id: 'pending', label: 'Chờ xác nhận', status: TRANSACTION_STATUS.PENDING_SELLER_CONFIRM },
+    { id: 'confirmed', label: 'Đã xác nhận', status: TRANSACTION_STATUS.CONFIRMED },
+    { id: 'completed', label: 'Hoàn thành', status: TRANSACTION_STATUS.COMPLETED },
 ];
 
 export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTimelineProps) {
     // Determine current step index
     let currentStepIndex = 0;
 
-    if (status === 'CANCELLED') {
+    if (status === TRANSACTION_STATUS.CANCELLED) {
         return (
             <div className="w-full bg-red-50 border border-red-100 rounded-xl p-6 text-center">
                 <div className="flex flex-col items-center gap-2">
@@ -34,13 +35,13 @@ export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTim
     }
 
     switch (status) {
-        case 'PENDING_SELLER_CONFIRM':
-            currentStepIndex = 1; // Assuming "Created" is practically instant, so we start highlighting Pending
+        case TRANSACTION_STATUS.PENDING_SELLER_CONFIRM:
+            currentStepIndex = 1;
             break;
-        case 'CONFIRMED':
+        case TRANSACTION_STATUS.CONFIRMED:
             currentStepIndex = 2;
             break;
-        case 'COMPLETED':
+        case TRANSACTION_STATUS.COMPLETED:
             currentStepIndex = 3;
             break;
         default:

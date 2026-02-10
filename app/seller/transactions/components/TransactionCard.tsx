@@ -28,7 +28,6 @@ export default function TransactionCard({ transaction }: TransactionCardProps) {
 
             // In a real app, we might trigger a re-fetch or remove from list via prop callback
         } catch (error) {
-            console.error(error);
             addToast('Có lỗi xảy ra. Vui lòng thử lại.', 'error');
         } finally {
             setIsProcessing(false);

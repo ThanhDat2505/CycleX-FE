@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getSellerTransactions } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
@@ -54,7 +54,6 @@ export default function PendingTransactionsPage() {
             } catch (err) {
                 if (isMounted) {
                     setError('Không thể tải danh sách giao dịch');
-                    console.error(err);
                 }
             } finally {
                 if (isMounted) {
@@ -72,17 +71,20 @@ export default function PendingTransactionsPage() {
         };
     }, [user?.userId]);
 
-    // Filter and Sort Logic
-    const filteredTransactions = transactions
-        .filter(t => {
-            if (filterType === 'ALL') return true;
-            return t.transactionType === filterType;
-        })
-        .sort((a, b) => {
-            const timeA = new Date(a.createdAt).getTime();
-            const timeB = new Date(b.createdAt).getTime();
-            return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
-        });
+    // Filter and Sort Logic — memoized to avoid re-computing on every render
+    const filteredTransactions = useMemo(() =>
+        transactions
+            .filter(t => {
+                if (filterType === 'ALL') return true;
+                return t.transactionType === filterType;
+            })
+            .sort((a, b) => {
+                const timeA = new Date(a.createdAt).getTime();
+                const timeB = new Date(b.createdAt).getTime();
+                return sortOrder === 'newest' ? timeB - timeA : timeA - timeB;
+            }),
+        [transactions, filterType, sortOrder]
+    );
 
     // Calculate Stats
     const totalPending = transactions.length;

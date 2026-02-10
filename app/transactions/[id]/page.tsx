@@ -6,9 +6,13 @@ import { useAuth } from '@/app/hooks/useAuth';
 import { getTransactionDetail, acceptTransaction, cancelTransaction } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
 import { LoadingSpinner, Button, StatusBadge } from '@/app/components/ui';
-import { formatPrice, formatDate } from '@/app/utils/format';
+import { formatDate } from '@/app/utils/format';
 import { useToast } from '@/app/contexts/ToastContext';
+import { TRANSACTION_STATUS } from '@/app/constants/transactionStatus';
 import OrderTimeline from './components/OrderTimeline';
+import ContactInfoCard from './components/ContactInfoCard';
+import VehicleInfoCard from './components/VehicleInfoCard';
+import InvoiceWidget from './components/InvoiceWidget';
 
 export default function TransactionDetailPage() {
     const params = useParams();
@@ -31,16 +35,11 @@ export default function TransactionDetailPage() {
     const transactionId = Number(params.id);
 
     useEffect(() => {
-        // Auth check
         if (!isAuthLoading) {
             if (!isLoggedIn) {
                 router.push(`/login?returnUrl=/transactions/${transactionId}`);
                 return;
             }
-            // Basic Role Check: Must be SELLER or BUYER
-            // (Ideally we check if they are THE seller/buyer of this transaction, but that requires fetching data first)
-            // For now, we allow SELLER/BUYER roles to access the route structure, 
-            // but strict data ownership check happens after data load or via backend.
             if (role !== 'SELLER' && role !== 'BUYER') {
                 addToast('Bạn không có quyền truy cập trang này', 'error');
                 router.push('/');
@@ -53,19 +52,18 @@ export default function TransactionDetailPage() {
         let isMounted = true;
 
         async function fetchDetail() {
-            if (!transactionId || !user?.userId) return; // Wait for user to be loaded
+            if (!transactionId || !user?.userId) return;
             try {
                 setIsLoading(true);
                 const data = await getTransactionDetail(transactionId);
 
                 if (isMounted) {
-                    // Strict Data Ownership Check
                     const isOwner = data.buyerId === user.userId || data.sellerId === user.userId;
 
                     if (!isOwner) {
                         setError('Bạn không có quyền truy cập giao dịch này.');
                         addToast('Bạn không có quyền truy cập giao dịch này', 'error');
-                        setTimeout(() => router.push('/'), 2000); // Redirect after showing error
+                        setTimeout(() => router.push('/'), 2000);
                         return;
                     }
 
@@ -73,7 +71,6 @@ export default function TransactionDetailPage() {
                 }
             } catch (err) {
                 if (isMounted) {
-                    console.error('Failed to fetch transaction detail:', err);
                     setError('Không thể tải thông tin giao dịch.');
                 }
             } finally {
@@ -97,18 +94,15 @@ export default function TransactionDetailPage() {
 
             if (success) {
                 addToast('Đã xác nhận giao dịch thành công! 🎉', 'success');
-                // Refresh data to show new status
                 const updated = await getTransactionDetail(transaction.transactionId);
                 setTransaction(updated);
 
-                // Redirect back to pending list after delay so user can see the toast
                 const tm = setTimeout(() => {
                     router.push('/seller/transactions/pending');
                 }, 1500);
                 timeoutIds.current.push(tm);
             }
         } catch (err) {
-            console.error(err);
             addToast('Có lỗi xảy ra khi xác nhận.', 'error');
         } finally {
             setIsProcessing(false);
@@ -117,8 +111,7 @@ export default function TransactionDetailPage() {
 
     const handleCancel = async () => {
         if (!transaction) return;
-        // F3. Prevent invalid cancel
-        if (transaction.status !== 'PENDING_SELLER_CONFIRM') {
+        if (transaction.status !== TRANSACTION_STATUS.PENDING_SELLER_CONFIRM) {
             addToast('Không thể hủy giao dịch ở trạng thái này.', 'error');
             return;
         }
@@ -131,11 +124,9 @@ export default function TransactionDetailPage() {
 
             if (success) {
                 addToast('Đã hủy yêu cầu thành công.', 'success');
-                // Redirect to Buyer Transaction List as per F2 Output
                 router.push('/buyer/transactions');
             }
         } catch (err) {
-            console.error(err);
             addToast('Có lỗi xảy ra khi hủy yêu cầu.', 'error');
         } finally {
             setIsProcessing(false);
@@ -159,7 +150,7 @@ export default function TransactionDetailPage() {
         );
     }
 
-    // Removed getStatusBadge block as we use StatusBadge component now
+    const viewerRole = role as 'SELLER' | 'BUYER';
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
@@ -193,7 +184,7 @@ export default function TransactionDetailPage() {
                 </div>
             </div>
 
-            {/* Main Content - Overlapping Card Style */}
+            {/* Main Content */}
             <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
 
                 {/* Timeline */}
@@ -209,219 +200,27 @@ export default function TransactionDetailPage() {
 
                     {/* Left Column: Details */}
                     <div className="lg:col-span-2 space-y-6">
-
-                        {/* Buyer/Seller Info Card based on Role */}
-                        <div className="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up">
-                            <div className="px-6 py-4 border-b border-gray-50 bg-gray-50 flex items-center justify-between">
-                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                                    {role === 'SELLER' ? 'Thông tin người mua' : 'Thông tin người bán'}
-                                </h3>
-                                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Thông tin liên hệ</span>
-                            </div>
-                            <div className="p-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    {role === 'SELLER' ? (
-                                        // SELLER VIEW: Show Buyer Info
-                                        <>
-                                            <div className="space-y-1">
-                                                <p className="text-xs text-gray-500 font-medium uppercase">Họ và tên</p>
-                                                <p className="font-semibold text-gray-900 text-lg">{transaction.buyerName}</p>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-xs text-gray-500 font-medium uppercase">Số điện thoại</p>
-                                                <p className="font-semibold text-gray-900 text-lg flex items-center gap-2">
-                                                    {transaction.receiverPhone || '---'}
-                                                    {transaction.receiverPhone && (
-                                                        <button
-                                                            onClick={() => {
-                                                                navigator.clipboard.writeText(transaction.receiverPhone || '');
-                                                                addToast('Đã sao chép số điện thoại', 'success', 2000);
-                                                            }}
-                                                            className="text-gray-400 hover:text-blue-500 transition-colors"
-                                                            title="Sao chép"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
-                                                        </button>
-                                                    )}
-                                                </p>
-                                            </div>
-                                            <div className="md:col-span-2 space-y-1">
-                                                <p className="text-xs text-gray-500 font-medium uppercase">Địa chỉ nhận xe</p>
-                                                <p className="font-medium text-gray-900 bg-gray-50 p-3 rounded-lg border border-gray-100 border-dashed">
-                                                    {transaction.receiverAddress || 'Nhận tại cửa hàng'}
-                                                </p>
-                                            </div>
-                                            {transaction.note && (
-                                                <div className="md:col-span-2 space-y-1">
-                                                    <p className="text-xs text-gray-500 font-medium uppercase">Lời nhắn từ người mua</p>
-                                                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-100 text-yellow-800 text-sm italic">
-                                                        "{transaction.note}"
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        // BUYER VIEW: Show Seller Info
-                                        <>
-                                            <div className="space-y-1">
-                                                <p className="text-xs text-gray-500 font-medium uppercase">Người bán</p>
-                                                <p className="font-semibold text-gray-900 text-lg">{transaction.sellerName || 'CycleX Seller'}</p>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <p className="text-xs text-gray-500 font-medium uppercase">Số điện thoại</p>
-                                                <p className="font-semibold text-gray-900 text-lg">
-                                                    {transaction.sellerPhone || 'Liên hệ qua CycleX'}
-                                                </p>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Vehicle Info Card */}
-                        <div className="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="px-6 py-4 border-b border-gray-50 bg-gray-50 flex items-center justify-between">
-                                <h3 className="font-bold text-gray-800 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
-                                    Thông tin xe
-                                </h3>
-                                <a href={`/listings/${transaction.listingId}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1 group">
-                                    Xem tin đăng
-                                    <svg className="w-4 h-4 transform group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                                </a>
-                            </div>
-                            <div className="p-6">
-                                <div className="flex flex-col sm:flex-row gap-6">
-                                    <div className="w-full sm:w-40 h-40 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0 border border-gray-200 shadow-sm relative group">
-                                        {transaction.listingImage ? (
-                                            <img
-                                                src={transaction.listingImage}
-                                                alt={transaction.listingTitle}
-                                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                            />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
-                                        )}
-                                    </div>
-                                    <div className="flex-1 space-y-3">
-                                        <h3 className="font-bold text-gray-900 text-xl leading-tight">{transaction.listingTitle}</h3>
-                                        <div className="flex items-center gap-3">
-                                            <span className="px-2.5 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-mono">ID: {transaction.listingId}</span>
-                                            <span className="text-gray-300">|</span>
-                                            <span className="text-sm text-gray-500">Người bán: CycleX Verified</span>
-                                        </div>
-                                        <div className="pt-3 border-t border-gray-100 flex items-baseline gap-2">
-                                            <span className="text-xs text-gray-500 uppercase font-semibold">Giá niêm yết:</span>
-                                            <span className="text-blue-600 font-bold text-lg">
-                                                {formatPrice(transaction.totalAmount / (transaction.transactionType === 'DEPOSIT' ? 0.1 : 1))}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                        <ContactInfoCard transaction={transaction} viewerRole={viewerRole} />
+                        <VehicleInfoCard transaction={transaction} />
                     </div>
 
                     {/* Right Column: Invoice & Actions */}
                     <div className="space-y-6">
-                        <div className="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden sticky top-24 animate-slide-in-right">
-                            <div className="p-6 bg-gradient-to-br from-gray-900 to-gray-800 text-white relative overflow-hidden">
-                                <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-white opacity-5 rounded-full"></div>
-                                <h3 className="text-lg font-bold">Thanh toán</h3>
-                                <p className="text-gray-400 text-xs mt-1">Chi tiết hoá đơn giao dịch</p>
-                            </div>
-                            <div className="p-6 space-y-4">
-                                <div className="flex justify-between items-center pb-4 border-b border-gray-100">
-                                    <span className="text-gray-600 text-sm">Loại giao dịch</span>
-                                    <span className={`font-bold px-3 py-1 rounded-full text-xs ${transaction.transactionType === 'PURCHASE' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
-                                        }`}>
-                                        {transaction.transactionType === 'PURCHASE' ? 'MUA NGAY' : 'ĐẶT CỌC'}
-                                    </span>
-                                </div>
-
-                                <div className="space-y-2 text-sm">
-                                    {transaction.depositAmount && (
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-500">Tiền cọc</span>
-                                            <span className="font-medium text-gray-900">{formatPrice(transaction.depositAmount)}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Phí nền tảng</span>
-                                        <span className="font-medium text-gray-900">{formatPrice(transaction.platformFee)}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500">Phí kiểm định</span>
-                                        <span className="font-medium text-gray-900">{formatPrice(transaction.inspectionFee)}</span>
-                                    </div>
-                                </div>
-
-                                <div className="pt-4 border-t border-gray-100">
-                                    <div className="flex justify-between items-end">
-                                        <span className="text-sm font-bold text-gray-900">Tổng cộng</span>
-                                        <span className="text-2xl font-extrabold text-blue-600 leading-none">{formatPrice(transaction.totalAmount)}</span>
-                                    </div>
-                                    <p className="text-xs text-gray-400 text-right mt-1">Đã bao gồm VAT nếu có</p>
-                                </div>
-
-                                {/* Actions */}
-                                {transaction.status === 'PENDING_SELLER_CONFIRM' && (
-                                    <div className="pt-4 mt-2 h-full">
-                                        {role === 'SELLER' ? (
-                                            <>
-                                                <Button
-                                                    onClick={handleAccept}
-                                                    loading={isProcessing}
-                                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-green-200 transition-all hover:-translate-y-0.5 active:scale-95"
-                                                >
-                                                    Chấp nhận yêu cầu
-                                                </Button>
-                                                <p className="text-xs text-gray-400 text-center mt-3 leading-relaxed">
-                                                    Giao dịch sẽ được chuyển sang trạng thái "Đã xác nhận". Bạn không thể hoàn tác hành động này.
-                                                </p>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Button
-                                                    onClick={handleCancel}
-                                                    loading={isProcessing}
-                                                    className="w-full bg-red-50 hover:bg-red-100 text-red-600 border-red-200 font-bold py-3.5 rounded-xl transition-all"
-                                                >
-                                                    Hủy yêu cầu
-                                                </Button>
-                                                <p className="text-xs text-gray-400 text-center mt-3 leading-relaxed">
-                                                    Bạn có thể hủy yêu cầu khi người bán chưa xác nhận.
-                                                </p>
-                                            </>
-                                        )}
-                                    </div>
-                                )}
-
-                                {transaction.status === 'CONFIRMED' && (
-                                    <div className="pt-4 mt-2 bg-green-50 rounded-lg p-4 border border-green-100 text-center">
-                                        <div className="text-green-700 font-bold flex items-center justify-center gap-2 mb-1">
-                                            <svg className="w-5 h-5 bg-green-200 rounded-full p-0.5 text-green-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Đã xác nhận
-                                        </div>
-                                        <p className="text-xs text-green-600 opacity-80">
-                                            Vui lòng chuẩn bị xe để giao.
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <InvoiceWidget
+                            transaction={transaction}
+                            viewerRole={viewerRole}
+                            isProcessing={isProcessing}
+                            onAccept={handleAccept}
+                            onCancel={handleCancel}
+                        />
                     </div>
                 </div>
             </div>
 
             {/* Mobile Sticky Action Bar (Only if Pending) */}
-            {transaction.status === 'PENDING_SELLER_CONFIRM' && (
+            {transaction.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM && (
                 <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] lg:hidden z-50">
-                    {role === 'SELLER' ? (
+                    {viewerRole === 'SELLER' ? (
                         <Button
                             onClick={handleAccept}
                             loading={isProcessing}
@@ -443,4 +242,3 @@ export default function TransactionDetailPage() {
         </div>
     );
 }
-
