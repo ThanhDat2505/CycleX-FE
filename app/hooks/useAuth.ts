@@ -6,7 +6,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { User } from '@/app/types/auth';
 
 interface AuthState {
@@ -23,6 +23,7 @@ interface UseAuthReturn extends AuthState {
 
 export const useAuth = (): UseAuthReturn => {
     const router = useRouter();
+    const pathname = usePathname();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<User | null>(null);
@@ -41,11 +42,19 @@ export const useAuth = (): UseAuthReturn => {
                 // Corrupted data - clear and force re-login
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
+                setUser(null);
+                setRole(null);
+                setIsLoggedIn(false);
             }
+        } else {
+            // No auth data - reset state
+            setUser(null);
+            setRole(null);
+            setIsLoggedIn(false);
         }
 
         setIsLoading(false);
-    }, []);
+    }, [pathname]);
 
     const logout = () => {
         localStorage.removeItem('authToken');

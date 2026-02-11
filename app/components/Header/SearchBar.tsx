@@ -5,7 +5,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface SearchBarProps {
@@ -18,6 +18,16 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = '' }) => {
     const [keyword, setKeyword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const loadingTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+    const blurTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+    // Cleanup timers on unmount
+    useEffect(() => {
+        return () => {
+            if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+            if (blurTimerRef.current) clearTimeout(blurTimerRef.current);
+        };
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -41,12 +51,12 @@ export const SearchBar: React.FC<SearchBarProps> = ({ className = '' }) => {
         setKeyword('');
 
         // Clear loading after navigation starts
-        setTimeout(() => setIsLoading(false), 1000);
+        loadingTimerRef.current = setTimeout(() => setIsLoading(false), 1000);
     };
 
     const handleBlur = () => {
         // Delay to allow form submission
-        setTimeout(() => {
+        blurTimerRef.current = setTimeout(() => {
             if (!isLoading) {
                 setIsOpen(false);
                 setKeyword('');

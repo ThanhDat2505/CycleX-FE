@@ -14,6 +14,7 @@ interface MobileMenuProps {
     isRestrictedRole: boolean;
     onClose: () => void;
     onSellClick: () => void;
+    isLoading?: boolean;
 }
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
@@ -22,20 +23,23 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
     isRestrictedRole,
     onClose,
     onSellClick,
+    isLoading,
 }) => {
     if (!isOpen) return null;
 
     return (
         <nav className="md:hidden mt-4 pb-4 border-t border-gray-700 pt-4">
             <div className="flex flex-col gap-4">
-                <Link
-                    href="/listings"
-                    onClick={onClose}
-                    className="text-white hover:text-brand-primary transition-colors text-left"
-                >
-                    Mua Xe
-                </Link>
-                {!isRestrictedRole && (
+                {!isLoading && !isRestrictedRole && (
+                    <Link
+                        href="/listings"
+                        onClick={onClose}
+                        className="text-white hover:text-brand-primary transition-colors text-left"
+                    >
+                        Mua Xe
+                    </Link>
+                )}
+                {!isLoading && !isRestrictedRole && (
                     <button
                         onClick={() => { onSellClick(); onClose(); }}
                         className="text-white hover:text-brand-primary transition-colors text-left"

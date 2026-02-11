@@ -11,7 +11,7 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
@@ -24,22 +24,20 @@ import { MobileMenu } from './Header/MobileMenu';
 
 export default function Header() {
     const router = useRouter();
-    const { isLoggedIn, logout, user } = useAuth();
+    const { isLoggedIn, logout, user, isLoading } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Role restrictions
     const isRestrictedRole = user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role);
 
     // Handle sell button click with auth check
-    const handleSellClick = () => {
+    const handleSellClick = useCallback(() => {
         if (!isLoggedIn) {
             router.push('/login?returnUrl=/create-listing');
         } else if (!isRestrictedRole) {
             router.push('/create-listing');
         }
-    };
-
-    console.log('User role: ' + (user && user.role) + '');
+    }, [isLoggedIn, isRestrictedRole, router]);
 
     return (
         <header className="bg-brand-bg text-white sticky top-0 z-50 shadow-lg">
@@ -60,16 +58,19 @@ export default function Header() {
                     <NavLinks
                         isRestrictedRole={!!isRestrictedRole}
                         onSellClick={handleSellClick}
+                        isLoading={isLoading}
                     />
 
                     {/* Right Side Actions */}
                     <div className="flex items-center gap-4">
                         {/* Search */}
                         <div className="relative">
-                            <SearchBar />
+                            {!isRestrictedRole && <SearchBar />}
                         </div>
 
-                        {isLoggedIn ? (
+                        {isLoading ? (
+                            <div className="w-32 h-10 animate-pulse rounded-lg bg-gray-600"></div>
+                        ) : isLoggedIn ? (
                             <>
                                 {/* Notification Bell */}
                                 <button
@@ -149,6 +150,7 @@ export default function Header() {
                     isRestrictedRole={!!isRestrictedRole}
                     onClose={() => setMobileMenuOpen(false)}
                     onSellClick={handleSellClick}
+                    isLoading={isLoading}
                 />
             </div>
         </header>

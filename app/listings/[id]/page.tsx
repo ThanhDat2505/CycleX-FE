@@ -15,6 +15,8 @@ import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getListingDetail } from '../../services/listingService';
 import { ListingDetail } from '../../types/listing';
+import { useAuth } from '../../hooks/useAuth';
+import { useRouter } from 'next/navigation';
 import { MESSAGES } from '../../constants';
 import ListingDetailView from './components/ListingDetailView';
 
@@ -26,6 +28,16 @@ interface ListingDetailPageProps {
 
 export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const resolvedParams = use(params);
+    const router = useRouter();
+    const { user, isLoading: isAuthLoading } = useAuth();
+
+    // Redirect Shipper
+    useEffect(() => {
+        if (!isAuthLoading && user?.role === 'SHIPPER') {
+            router.replace('/shipper');
+        }
+    }, [user, isAuthLoading, router]);
+
     const [listing, setListing] = useState<ListingDetail | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,6 +45,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const listingId = parseInt(resolvedParams.id);
 
     useEffect(() => {
+        if (user?.role === 'SHIPPER') return; // Guard inside effect
         async function fetchListing() {
             if (isNaN(listingId)) {
                 setError(MESSAGES.DETAIL_NOT_FOUND);
@@ -72,6 +85,9 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
 
         fetchListing();
     }, [listingId]);
+
+    // Block Shipper from viewing listing detail
+    if (user?.role === 'SHIPPER') return null;
 
     // Loading state
     if (isLoading) {

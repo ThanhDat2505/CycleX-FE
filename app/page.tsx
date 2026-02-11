@@ -19,29 +19,48 @@
 
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import FeaturesSection from './components/FeaturesSection';
 import FeaturedBikesSection from './components/FeaturedBikesSection';
 import CategorySection from './components/CategorySection';
 import Footer from './components/Footer';
+import { useAuth } from './hooks/useAuth';
+import { useRouter } from 'next/navigation';
 
 export default function Home() {
+    const { user, isLoading } = useAuth();
+    const router = useRouter();
+
+    useEffect(() => {
+        if (!isLoading && user?.role === 'SHIPPER') {
+            router.replace('/shipper');
+        }
+    }, [user, isLoading, router]);
+
+    if (isLoading) {
+        return <div className="min-h-screen bg-white" />; // Prevent flash of content
+    }
+
+    if (user?.role === 'SHIPPER') {
+        return null; // Don't render home for Shipper
+    }
+
     return (
         <div className="min-h-screen bg-white">
 
             {/* Hero Section */}
-            <HeroSection/>
+            <HeroSection />
 
             {/* Features Section */}
-            <FeaturesSection/>
+            <FeaturesSection />
 
             {/* Featured Bikes - "Xe Đạp Đang Hot" */}
-            <FeaturedBikesSection/>
+            <FeaturedBikesSection />
 
             {/* Category Section */}
-            <CategorySection/>
+            <CategorySection />
 
 
         </div>

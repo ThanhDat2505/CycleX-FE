@@ -19,6 +19,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import SearchFilters from './components/SearchFilters';
 import ListingGrid from './components/ListingGrid';
 import Pagination from './components/Pagination';
+import { useAuth } from '../hooks/useAuth';
 import { searchListings } from '../services/listingService';
 import { HomeBike, SearchFilters as SearchFiltersType, SortOption, PaginationInfo } from '../types/listing';
 import { SORT_OPTIONS, DEFAULT_PAGE_SIZE, DEFAULT_PAGE, MESSAGES } from '../constants';
@@ -62,6 +63,7 @@ function ListingsPageSkeleton() {
 function ListingsContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
+    const { user, isLoading: isAuthLoading } = useAuth();
 
     // State
     const [listings, setListings] = useState<HomeBike[]>([]);
@@ -126,6 +128,21 @@ function ListingsContent() {
         setSortBy(sort || 'newest');
         setCurrentPage(page ? Number(page) : DEFAULT_PAGE);
     }, [searchParams]);
+
+    // Redirect Shipper
+    useEffect(() => {
+        if (!isAuthLoading && user?.role === 'SHIPPER') {
+            router.replace('/shipper');
+        }
+    }, [user, isAuthLoading, router]);
+
+    if (isAuthLoading) {
+        return <ListingsPageSkeleton />;
+    }
+
+    if (user?.role === 'SHIPPER') {
+        return null;
+    }
 
     // Fetch listings when applied filters/sort/page change
     useEffect(() => {
