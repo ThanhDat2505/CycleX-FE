@@ -58,8 +58,11 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
         validateNumber(bike.price, `${ctx}.price`);
     });
 
-
-    return bikes;
+    // Map imageUrl from images[] if backend returns array format
+    return bikes.map((bike: any) => ({
+        ...bike,
+        imageUrl: bike.imageUrl || (Array.isArray(bike.images) && bike.images.length > 0 ? bike.images[0] : ''),
+    }));
 }
 
 /**
@@ -259,6 +262,12 @@ export async function searchListings(
             validateNumber(item.price, `${ctx}.price`);
         });
 
+        // Map items to ensure imageUrl exists
+        // Backend may return 'images' array instead of 'imageUrl' field
+        data.items = data.items.map((item: any) => ({
+            ...item,
+            imageUrl: item.imageUrl || (Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : ''),
+        }));
 
         return data;
     } catch (error) {

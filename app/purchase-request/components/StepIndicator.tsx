@@ -1,59 +1,70 @@
 /**
  * Step Indicator Component
- * Shows current step in multi-step form
+ * Shows current step in multi-step form (S-50)
  */
+
+import { Check } from 'lucide-react';
+import { MESSAGES } from '@/app/constants';
+
+/** Step definitions — static, defined outside component to avoid re-creation */
+const STEPS = [
+    { number: 1, title: MESSAGES.S50_STEP_INFO },
+    { number: 2, title: MESSAGES.S50_STEP_CONFIRM },
+] as const;
+
+/** Style constants */
+const STYLES = {
+    wrapper: 'w-full max-w-sm mx-auto mb-12',
+    container: 'relative flex items-center justify-between',
+    lineBg: 'absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-100/80 rounded-full -z-10',
+    lineActive: 'absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-blue-400 via-brand-primary to-brand-primary rounded-full -z-10 transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(59,130,246,0.3)]',
+    stepCol: 'flex flex-col items-center relative z-10 group',
+    circle: (isActive: boolean, isCurrent: boolean) => `
+        w-12 h-12 rounded-2xl flex items-center justify-center font-black text-sm border-2 transition-all duration-700 ease-out
+        ${isActive
+            ? 'bg-brand-primary border-brand-primary text-white scale-110 shadow-lg shadow-blue-200 rotate-6'
+            : 'bg-white border-gray-100 text-gray-300'
+        }
+        ${isCurrent ? 'animate-pulse-slow shadow-[0_0_20px_rgba(59,130,246,0.5)] !rotate-0 !scale-125' : ''}
+    `,
+    label: (isActive: boolean, isCurrent: boolean) => `
+        mt-3 text-[10px] font-black uppercase tracking-[0.2em] transition-all duration-500
+        ${isActive ? 'text-blue-900 opacity-100 translate-y-0' : 'text-gray-300 opacity-50 translate-y-1'}
+        ${isCurrent ? 'scale-110 text-brand-primary' : ''}
+    `,
+} as const;
 
 interface StepIndicatorProps {
     currentStep: number;
 }
 
 export default function StepIndicator({ currentStep }: StepIndicatorProps) {
-    const steps = [
-        { number: 1, title: 'Thông tin' },
-        { number: 2, title: 'Xác nhận' }
-    ];
-
     return (
-        <div className="w-full max-w-md mx-auto mb-8">
-            <div className="relative flex items-center justify-between">
+        <div className={STYLES.wrapper}>
+            <div className={STYLES.container}>
                 {/* Connecting Line - Background */}
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-gray-200 rounded-full -z-10"></div>
+                <div className={STYLES.lineBg}></div>
 
                 {/* Connecting Line - Active */}
                 <div
-                    className="absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 rounded-full -z-10 transition-all duration-500 ease-in-out"
-                    style={{ width: `${(currentStep - 1) / (steps.length - 1) * 100}%` }}
+                    className={STYLES.lineActive}
+                    style={{ width: `${(currentStep - 1) / (STEPS.length - 1) * 100}%` }}
                 ></div>
 
-                {steps.map((step) => {
+                {STEPS.map((step) => {
                     const isActive = currentStep >= step.number;
                     const isCurrent = currentStep === step.number;
 
                     return (
-                        <div key={step.number} className="flex flex-col items-center relative z-10">
-                            <div
-                                className={`
-                                    w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm border-2 transition-all duration-500 ease-out
-                                    ${isActive
-                                        ? 'bg-blue-600 border-blue-600 text-white scale-110 shadow-glow'
-                                        : 'bg-white border-gray-300 text-gray-400'
-                                    }
-                                `}
-                            >
+                        <div key={step.number} className={STYLES.stepCol}>
+                            <div className={STYLES.circle(isActive, isCurrent)}>
                                 {isActive && !isCurrent ? (
-                                    <svg className="w-5 h-5 animate-scale-in" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                    </svg>
+                                    <Check size={20} strokeWidth={3} className="animate-scale-in" />
                                 ) : (
                                     <span className={isCurrent ? 'animate-scale-in' : ''}>{step.number}</span>
                                 )}
                             </div>
-                            <span
-                                className={`
-                                    mt-2 text-xs font-bold uppercase tracking-wider transition-colors duration-300
-                                    ${isActive ? 'text-blue-700' : 'text-gray-400'}
-                                `}
-                            >
+                            <span className={STYLES.label(isActive, isCurrent)}>
                                 {step.title}
                             </span>
                         </div>

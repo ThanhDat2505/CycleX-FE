@@ -10,6 +10,11 @@ export interface Category {
     slug: string;
 }
 
+/**
+ * Bike categories with static placeholder counts.
+ * NOTE: `count` values are UI placeholders only — NOT from backend API.
+ * If backend provides real counts in the future, replace these values.
+ */
 export const BIKE_CATEGORIES: Category[] = [
     { name: 'Xe Đạp Địa Hình', icon: '🏔️', count: 245, slug: 'dia-hinh' },
     { name: 'Xe Đạp Đường Trường', icon: '🚴', count: 189, slug: 'duong-truong' },

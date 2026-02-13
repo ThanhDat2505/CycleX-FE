@@ -13,7 +13,7 @@
 
 import React, { useState, useCallback } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
 
 // Sub-components (explicit imports to avoid circular reference)
@@ -22,22 +22,32 @@ import { SearchBar } from './Header/SearchBar';
 import { UserMenu } from './Header/UserMenu';
 import { MobileMenu } from './Header/MobileMenu';
 
+const AUTH_ROUTES = ['/login', '/register', '/verify-email'];
+
 export default function Header() {
     const router = useRouter();
+    const pathname = usePathname();
     const { isLoggedIn, logout, user, isLoading } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     // Role restrictions
     const isRestrictedRole = user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role);
+    const isBuyer = user?.role === 'BUYER';
 
-    // Handle sell button click with auth check
+    // Handle sell button click with auth check — blocks BUYER and restricted roles
     const handleSellClick = useCallback(() => {
         if (!isLoggedIn) {
             router.push('/login?returnUrl=/create-listing');
-        } else if (!isRestrictedRole) {
+        } else if (!isRestrictedRole && !isBuyer) {
             router.push('/create-listing');
         }
-    }, [isLoggedIn, isRestrictedRole, router]);
+    }, [isLoggedIn, isRestrictedRole, isBuyer, router]);
+
+    // Skip rendering on Auth pages to allow full-screen split layout
+    // Moved after hooks to follow "Rules of Hooks"
+    if (AUTH_ROUTES.includes(pathname)) {
+        return null;
+    }
 
     return (
         <header className="bg-brand-bg text-white sticky top-0 z-50 shadow-lg">
@@ -57,6 +67,7 @@ export default function Header() {
                     {/* Desktop Navigation */}
                     <NavLinks
                         isRestrictedRole={!!isRestrictedRole}
+                        userRole={user?.role}
                         onSellClick={handleSellClick}
                         isLoading={isLoading}
                     />
@@ -90,8 +101,8 @@ export default function Header() {
                                     onLogout={logout}
                                 />
 
-                                {/* Đăng Tin Button */}
-                                {!isRestrictedRole && (
+                                {/* Đăng Tin Button — only SELLER and Guest, NOT BUYER */}
+                                {!isRestrictedRole && !isBuyer && (
                                     <Link
                                         href="/create-listing"
                                         className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
@@ -148,6 +159,7 @@ export default function Header() {
                     isOpen={mobileMenuOpen}
                     isLoggedIn={isLoggedIn}
                     isRestrictedRole={!!isRestrictedRole}
+                    userRole={user?.role}
                     onClose={() => setMobileMenuOpen(false)}
                     onSellClick={handleSellClick}
                     isLoading={isLoading}

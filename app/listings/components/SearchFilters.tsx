@@ -2,7 +2,7 @@
  * SearchFilters Component
  * Filter panel for S-31 Listing Results page
  * Based on BR-S30-02: Supported filters
- * 
+ *
  * Supports:
  * ✅ Price range (min/max)
  * ✅ Bike type
@@ -24,6 +24,25 @@ interface SearchFiltersProps {
     onApply: () => void;
     onClear: () => void;
 }
+
+/** Style constants */
+const STYLES = {
+    container: 'bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-24 transition-all duration-300',
+    header: 'flex items-center justify-between mb-8 pb-4 border-b border-gray-100',
+    title: 'text-xl font-bold text-gray-900 flex items-center gap-2',
+    clearButton: 'text-xs font-semibold text-brand-primary hover:text-brand-primary-hover uppercase tracking-wider',
+    section: 'mb-8',
+    sectionTitle: 'text-sm font-bold text-gray-900 mb-4 uppercase tracking-widest',
+    inputGroup: 'grid grid-cols-2 gap-3',
+    input: 'w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary transition-all ml-0',
+    divider: 'my-8 border-gray-100',
+    checkboxGroup: 'space-y-3',
+    checkboxLabel: 'flex items-center gap-3 cursor-pointer group',
+    checkbox: 'w-5 h-5 border-gray-300 rounded-md text-brand-primary focus:ring-brand-primary/20 transition-all cursor-pointer',
+    checkboxText: 'text-sm text-gray-600 group-hover:text-gray-900 transition-colors',
+    showMoreButton: 'text-xs font-bold text-brand-primary hover:text-brand-primary-hover mt-4 flex items-center gap-1 transition-all',
+    applyButton: 'w-full bg-brand-primary text-white py-4 rounded-xl font-bold hover:bg-brand-primary-hover transition-all shadow-md shadow-brand-primary/20 active:scale-[0.98] mt-4',
+} as const;
 
 export default function SearchFilters({
     filters,
@@ -72,23 +91,20 @@ export default function SearchFilters({
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-800">{MESSAGES.FILTER_TITLE}</h3>
+        <div className={STYLES.container}>
+            <div className={STYLES.header}>
+                <h3 className={STYLES.title}>{MESSAGES.FILTER_TITLE}</h3>
                 {hasActiveFilters() && (
-                    <button
-                        onClick={onClear}
-                        className="text-sm text-brand-primary hover:underline"
-                    >
+                    <button onClick={onClear} className={STYLES.clearButton}>
                         {MESSAGES.FILTER_CLEAR_ALL}
                     </button>
                 )}
             </div>
 
             {/* Price Range */}
-            <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-3">{MESSAGES.FILTER_PRICE_RANGE}</h4>
-                <div className="space-y-3">
+            <div className={STYLES.section}>
+                <h4 className={STYLES.sectionTitle}>{MESSAGES.FILTER_PRICE_RANGE}</h4>
+                <div className={STYLES.inputGroup}>
                     <input
                         type="number"
                         min="0"
@@ -102,7 +118,7 @@ export default function SearchFilters({
                                 minPrice: validatePriceValue(e.target.value),
                             });
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                        className={STYLES.input}
                     />
                     <input
                         type="number"
@@ -117,92 +133,89 @@ export default function SearchFilters({
                                 maxPrice: validatePriceValue(e.target.value),
                             });
                         }}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                        className={STYLES.input}
                     />
                 </div>
             </div>
 
-            <hr className="my-6" />
+            <hr className={STYLES.divider} />
 
             {/* Bike Type */}
-            <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-3">{MESSAGES.FILTER_BIKE_TYPE}</h4>
-                <div className="space-y-2">
+            <div className={STYLES.section}>
+                <h4 className={STYLES.sectionTitle}>{MESSAGES.FILTER_BIKE_TYPE}</h4>
+                <div className={STYLES.checkboxGroup}>
                     {displayedTypes.map((type) => (
-                        <label key={type} className="flex items-center gap-2 cursor-pointer">
+                        <label key={type} className={STYLES.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={filters.bikeTypes?.includes(type) || false}
                                 onChange={() => handleBikeTypeToggle(type)}
-                                className="w-4 h-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary"
+                                className={STYLES.checkbox}
                             />
-                            <span className="text-sm text-gray-700">{type}</span>
+                            <span className={STYLES.checkboxText}>{type}</span>
                         </label>
                     ))}
                 </div>
                 {BIKE_TYPES.length > UI_CONFIG.INITIAL_VISIBLE_ITEMS && (
                     <button
                         onClick={() => setShowAllTypes(!showAllTypes)}
-                        className="text-sm text-brand-primary hover:underline mt-2"
+                        className={STYLES.showMoreButton}
                     >
                         {showAllTypes ? MESSAGES.FILTER_COLLAPSE : `${MESSAGES.FILTER_SHOW_MORE} (${BIKE_TYPES.length - UI_CONFIG.INITIAL_VISIBLE_ITEMS})`}
                     </button>
                 )}
             </div>
 
-            <hr className="my-6" />
+            <hr className={STYLES.divider} />
 
             {/* Brand */}
-            <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-3">{MESSAGES.FILTER_BRAND}</h4>
-                <div className="space-y-2">
+            <div className={STYLES.section}>
+                <h4 className={STYLES.sectionTitle}>{MESSAGES.FILTER_BRAND}</h4>
+                <div className={STYLES.checkboxGroup}>
                     {displayedBrands.map((brand) => (
-                        <label key={brand} className="flex items-center gap-2 cursor-pointer">
+                        <label key={brand} className={STYLES.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={filters.brands?.includes(brand) || false}
                                 onChange={() => handleBrandToggle(brand)}
-                                className="w-4 h-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary"
+                                className={STYLES.checkbox}
                             />
-                            <span className="text-sm text-gray-700">{brand}</span>
+                            <span className={STYLES.checkboxText}>{brand}</span>
                         </label>
                     ))}
                 </div>
                 {BIKE_BRANDS.length > UI_CONFIG.INITIAL_VISIBLE_ITEMS && (
                     <button
                         onClick={() => setShowAllBrands(!showAllBrands)}
-                        className="text-sm text-brand-primary hover:underline mt-2"
+                        className={STYLES.showMoreButton}
                     >
                         {showAllBrands ? MESSAGES.FILTER_COLLAPSE : `${MESSAGES.FILTER_SHOW_MORE} (${BIKE_BRANDS.length - UI_CONFIG.INITIAL_VISIBLE_ITEMS})`}
                     </button>
                 )}
             </div>
 
-            <hr className="my-6" />
+            <hr className={STYLES.divider} />
 
             {/* Condition */}
-            <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-3">{MESSAGES.FILTER_CONDITION}</h4>
-                <div className="space-y-2">
+            <div className={STYLES.section}>
+                <h4 className={STYLES.sectionTitle}>{MESSAGES.FILTER_CONDITION}</h4>
+                <div className={STYLES.checkboxGroup}>
                     {CONDITION_OPTIONS.map((option) => (
-                        <label key={option.value} className="flex items-center gap-2 cursor-pointer">
+                        <label key={option.value} className={STYLES.checkboxLabel}>
                             <input
                                 type="checkbox"
                                 checked={filters.conditions?.includes(option.value as 'new' | 'used') || false}
                                 onChange={() => handleConditionToggle(option.value as 'new' | 'used')}
-                                className="w-4 h-4 text-brand-primary border-gray-300 rounded focus:ring-brand-primary"
+                                className={STYLES.checkbox}
                             />
-                            <span className="text-sm text-gray-700">{option.label}</span>
+                            <span className={STYLES.checkboxText}>{option.label}</span>
                         </label>
                     ))}
                 </div>
             </div>
 
             {/* Apply Button */}
-            <button
-                onClick={onApply}
-                className="w-full bg-brand-primary text-white py-3 rounded-lg font-medium hover:bg-brand-primary-hover transition-colors"
-            >
+            <button onClick={onApply} className={STYLES.applyButton}>
                 {MESSAGES.FILTER_APPLY}
             </button>
         </div>

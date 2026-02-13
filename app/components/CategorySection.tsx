@@ -11,40 +11,44 @@ import Link from 'next/link';
 import { BIKE_CATEGORIES } from '../constants/categories';
 import SectionHeader from './ui/SectionHeader';
 
-export default function CategorySection() {
+/** Style constants — tách riêng để JSX gọn gàng */
+const STYLES = {
+    section: 'py-24 bg-gray-50/50',
+    container: 'container mx-auto px-6',
+    grid: 'grid grid-cols-2 md:grid-cols-4 gap-6',
+    card: 'relative group bg-white rounded-3xl p-8 text-center transition-all duration-500 border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 overflow-hidden animate-fade-in',
+    hoverGradient: 'absolute inset-0 bg-gradient-to-br from-brand-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500',
+    icon: 'relative z-10 text-5xl mb-6 transform group-hover:scale-125 group-hover:rotate-12 transition-transform duration-500',
+    title: 'relative z-10 font-bold text-gray-800 text-lg mb-2 group-hover:text-brand-primary transition-colors',
+    countBadge: 'relative z-10 inline-block px-3 py-1 rounded-full bg-gray-100 text-gray-500 text-xs font-bold group-hover:bg-brand-primary group-hover:text-white transition-all',
+    cornerDecor: 'absolute -bottom-4 -right-4 w-12 h-12 bg-brand-primary/5 rounded-full group-hover:scale-[4] transition-transform duration-700',
+} as const;
 
+export default function CategorySection() {
     return (
-        <section className="py-16 bg-white">
-            <div className="container mx-auto px-4">
+        <section className={STYLES.section}>
+            <div className={STYLES.container}>
                 {/* Section Header */}
                 <SectionHeader
-                    badge={{ icon: '📁', text: 'Danh Mục' }}
-                    title="Khám Phá Theo Loại Xe"
-                    description="Tìm kiếm xe đạp phù hợp với nhu cầu và phong cách của bạn"
+                    badge={{ icon: '🚲', text: 'Khám Phá' }}
+                    title="Danh Mục Xe Đạp"
+                    description="Tìm kiếm chiếc xe phù hợp nhất với phong cách và đam mê của bạn thông qua hệ thống danh mục đa dạng."
                 />
 
                 {/* Categories Grid */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className={STYLES.grid}>
                     {BIKE_CATEGORIES.map((category, index) => (
                         <Link
                             key={index}
                             href={`/listings?category=${category.slug}`}
-                            className="bg-gray-50 hover:bg-brand-primary hover:text-white rounded-lg p-6 text-center transition-all group border border-transparent hover:border-brand-primary"
+                            className={STYLES.card}
+                            style={{ animationDelay: `${index * 100}ms` }}
                         >
-                            {/* Icon */}
-                            <div className="text-4xl mb-3">
-                                {category.icon}
-                            </div>
-
-                            {/* Category Name */}
-                            <h3 className="font-semibold text-gray-800 group-hover:text-white mb-2">
-                                {category.name}
-                            </h3>
-
-                            {/* Count */}
-                            <p className="text-sm text-gray-500 group-hover:text-white group-hover:text-opacity-90">
-                                {category.count} xe
-                            </p>
+                            <div className={STYLES.hoverGradient} />
+                            <div className={STYLES.icon}>{category.icon}</div>
+                            <h3 className={STYLES.title}>{category.name}</h3>
+                            <div className={STYLES.countBadge}>{category.count} sản phẩm</div>
+                            <div className={STYLES.cornerDecor} />
                         </Link>
                     ))}
                 </div>

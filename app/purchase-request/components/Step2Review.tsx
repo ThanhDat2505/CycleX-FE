@@ -1,8 +1,58 @@
+/**
+ * Step2Review Component
+ * S-50 Step 2: Review and confirm purchase/deposit request
+ * Displays receipt-style summary of all form data, fees, and listing info
+ */
+
+import { CheckCircle, MapPin, User, AlertCircle, ShieldCheck, Ticket, Calendar, FileText } from 'lucide-react';
 import { PurchaseRequestForm } from '@/app/types/transaction';
 import { ListingDetail } from '@/app/types/listing';
 import { PLATFORM_FEE, INSPECTION_FEE, calculateTotal } from '../../constants/fees';
 import { formatPrice, formatDate } from '@/app/utils/format';
 import { Button } from '@/app/components/ui';
+import { MESSAGES } from '@/app/constants';
+
+/** Style constants */
+const STYLES = {
+    card: 'bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-slide-up',
+    header: 'bg-gradient-to-br from-gray-900 via-gray-800 to-brand-primary/20 p-8 text-white relative overflow-hidden',
+    headerTitle: 'text-2xl font-black flex items-center gap-3 tracking-tight',
+    headerSubtitle: 'text-blue-200/80 text-sm mt-2 font-medium max-w-md',
+    content: 'p-6 md:p-10 bg-gray-50/30',
+    grid: 'grid grid-cols-1 lg:grid-cols-5 gap-10',
+    leftCol: 'lg:col-span-3 space-y-8',
+    rightCol: 'lg:col-span-2 space-y-8',
+    sectionTitle: 'text-xl font-extrabold text-gray-900 mb-5 flex items-center gap-3',
+    transactionBox: 'bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden',
+    transactionTitle: 'text-sm font-black uppercase tracking-widest text-gray-400 mb-5 pb-3 border-b border-gray-50 flex items-center gap-2',
+    rowBetween: 'flex justify-between items-center py-1.5',
+    labelText: 'text-gray-500 font-medium',
+    valueText: 'font-bold text-gray-900',
+    typeBadge: 'px-3 py-1 bg-blue-50 text-brand-primary rounded-full text-xs font-black shadow-sm border border-blue-100',
+    noteBox: 'mt-6 pt-5 border-t border-dashed border-gray-100',
+    noteLabel: 'flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider mb-2',
+    noteValue: 'text-gray-700 italic bg-gray-50/50 p-4 rounded-xl border border-gray-100/50 leading-relaxed text-sm',
+    listingImage: 'w-28 h-28 object-cover rounded-2xl border-2 border-white shadow-md flex-shrink-0 group-hover:scale-105 transition-transform',
+    noImage: 'w-28 h-28 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400 border border-gray-100',
+    listingTitle: 'text-lg font-black text-gray-900 line-clamp-2 leading-snug',
+    locationRow: 'flex items-center gap-1.5 text-gray-400 text-xs font-bold mt-2 uppercase tracking-wide',
+    priceText: 'text-brand-primary font-black text-xl mt-3 flex items-baseline gap-1',
+    sellerCard: 'flex items-center gap-4 p-4 rounded-2xl border border-gray-100/50 bg-white shadow-sm hover:shadow-md transition-shadow',
+    sellerAvatar: 'w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center text-gray-800 font-black shadow-inner',
+    receiverBox: 'bg-white p-6 rounded-2xl border border-blue-50/50 shadow-sm relative overflow-hidden space-y-3 before:absolute before:left-0 before:top-0 before:w-1 before:h-full before:bg-blue-400',
+    feeBox: 'bg-white border-2 border-gray-100/70 border-dashed rounded-2xl p-6 shadow-sm relative',
+    feeRow: 'flex justify-between items-center text-gray-500 font-medium py-1 gap-4',
+    feeValue: 'text-gray-900 font-bold break-all text-right min-w-0 flex-1',
+    feeTotal: 'border-t-2 border-dashed border-gray-100 mt-5 pt-5 flex justify-between items-center gap-4',
+    feeTotalLabel: 'text-lg font-black text-gray-900 uppercase tracking-tighter flex-shrink-0',
+    feeTotalValue: 'text-2xl sm:text-3xl font-black text-brand-primary tracking-tight break-all text-right min-w-0 flex-1',
+    errorBanner: 'mt-8 p-5 bg-red-50 text-red-800 border-2 border-red-100/50 rounded-2xl flex items-center gap-3 animate-shake font-bold text-sm',
+    terms: 'text-[11px] text-gray-400 mt-10 text-center max-w-lg mx-auto leading-relaxed border-t border-gray-100 pt-6 font-medium',
+    termsLink: 'text-brand-primary hover:text-brand-primary-hover font-bold decoration-dotted underline underline-offset-4',
+    actions: 'flex flex-col sm:flex-row justify-between gap-5 mt-10 pt-8 border-t border-gray-100/80',
+    btnBack: '!w-full sm:!w-auto px-10 py-3.5 text-base font-bold text-gray-400 hover:text-gray-800 transition-colors',
+    btnConfirm: '!w-full sm:!w-auto px-12 py-4 text-lg font-black bg-brand-primary hover:bg-brand-primary-hover text-white shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-1 active:translate-y-0 transition-all rounded-2xl flex items-center justify-center gap-3',
+} as const;
 
 interface Step2ReviewProps {
     formData: PurchaseRequestForm;
@@ -22,51 +72,64 @@ export default function Step2Review({
     error,
 }: Step2ReviewProps) {
 
-    // Calculate total
     const totalAmount = calculateTotal(listing.price, formData.transactionType, formData.depositAmount);
 
     return (
-        <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-slide-up">
+        <div className={STYLES.card}>
             {/* Receipt Header */}
-            <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 text-white relative overflow-hidden">
-                <h2 className="text-xl font-bold flex items-center gap-2">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Xác nhận giao dịch
-                </h2>
-                <p className="text-blue-100 text-sm mt-1">
-                    Vui lòng kiểm tra kỹ thông tin trước khi gửi yêu cầu.
-                </p>
+            <div className={STYLES.header}>
+                <div className="relative z-10">
+                    <h2 className={STYLES.headerTitle}>
+                        <CheckCircle size={28} className="text-brand-primary animate-pulse-slow" />
+                        {MESSAGES.S50_STEP2_TITLE}
+                    </h2>
+                    <p className={STYLES.headerSubtitle}>
+                        {MESSAGES.S50_STEP2_SUBTITLE}
+                    </p>
+                </div>
+                {/* Decorative background element */}
+                <div className="absolute -right-20 -top-20 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
             </div>
 
-            <div className="p-6 md:p-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className={STYLES.content}>
+                <div className={STYLES.grid}>
                     {/* Left Column: Product & Transaction Info */}
-                    <div className="space-y-6">
-                        {/* Transaction Info (Receipt style) */}
-                        <div className="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                            <h3 className="font-bold text-gray-800 mb-3 border-b border-gray-200 pb-2">
-                                Giao dịch
+                    <div className={STYLES.leftCol}>
+                        {/* Transaction Info */}
+                        <div className={STYLES.transactionBox}>
+                            <h3 className={STYLES.transactionTitle}>
+                                <Ticket size={16} />
+                                {MESSAGES.S50_REVIEW_TRANSACTION_TITLE}
                             </h3>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Loại giao dịch:</span>
-                                    <span className="font-bold text-blue-700 uppercase">
-                                        {formData.transactionType === 'PURCHASE' ? 'Mua ngay (COD)' : 'Đặt cọc (COD)'}
+                            <div className="space-y-4">
+                                <div className={STYLES.rowBetween}>
+                                    <span className={STYLES.labelText}>
+                                        <FileText size={14} className="inline mr-2 opacity-50" />
+                                        {MESSAGES.S50_REVIEW_TYPE_LABEL}
+                                    </span>
+                                    <span className={STYLES.typeBadge}>
+                                        {formData.transactionType === 'PURCHASE'
+                                            ? MESSAGES.S50_REVIEW_TYPE_PURCHASE
+                                            : MESSAGES.S50_REVIEW_TYPE_DEPOSIT}
                                     </span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Ngày nhận xe:</span>
-                                    <span className="font-medium text-gray-900">
+                                <div className={STYLES.rowBetween}>
+                                    <span className={STYLES.labelText}>
+                                        <Calendar size={14} className="inline mr-2 opacity-50" />
+                                        {MESSAGES.S50_REVIEW_DATE_LABEL}
+                                    </span>
+                                    <span className={STYLES.valueText}>
                                         {formatDate(formData.desiredTime)}
                                     </span>
                                 </div>
                                 {formData.note && (
-                                    <div className="pt-2 border-t border-gray-200 mt-2">
-                                        <span className="block text-gray-500 text-xs mb-1">Ghi chú:</span>
-                                        <p className="text-gray-800 italic bg-white p-2 rounded border border-gray-100">
-                                            "{formData.note}"
+                                    <div className={STYLES.noteBox}>
+                                        <span className={STYLES.noteLabel}>
+                                            <FileText size={12} />
+                                            {MESSAGES.S50_REVIEW_NOTE_LABEL}
+                                        </span>
+                                        <p className={STYLES.noteValue}>
+                                            &ldquo;{formData.note}&rdquo;
                                         </p>
                                     </div>
                                 )}
@@ -74,103 +137,107 @@ export default function Step2Review({
                         </div>
 
                         {/* Listing Info */}
-                        <div className="flex gap-4 items-start">
+                        <div className="flex gap-6 items-center p-2 group">
                             {listing.images && listing.images[0] ? (
                                 <img
                                     src={listing.images[0]}
                                     alt={listing.title}
-                                    className="w-24 h-24 object-cover rounded-lg border border-gray-200 shadow-sm flex-shrink-0"
+                                    className={STYLES.listingImage}
                                 />
                             ) : (
-                                <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
-                                    No Image
+                                <div className={STYLES.noImage}>
+                                    <span className="text-[10px] font-black uppercase text-gray-300 tracking-widest">{MESSAGES.DETAIL_NO_IMAGE}</span>
                                 </div>
                             )}
-                            <div>
-                                <h4 className="font-bold text-gray-900 line-clamp-2">{listing.title}</h4>
-                                <div className="flex items-center gap-1 text-gray-500 text-xs mt-1">
-                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
+                            <div className="flex-1">
+                                <h4 className={STYLES.listingTitle}>{listing.title}</h4>
+                                <div className={STYLES.locationRow}>
+                                    <MapPin size={12} className="text-brand-primary" />
                                     {listing.locationCity}
                                 </div>
-                                <p className="text-blue-600 font-bold mt-2">
-                                    {formatPrice(listing.price)}
+                                <p className={STYLES.priceText}>
+                                    <span className="text-sm font-black opacity-40">đ</span>
+                                    {formatPrice(listing.price).replace('đ', '')}
                                 </p>
                             </div>
                         </div>
 
                         {/* Seller Info */}
-                        <div className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 bg-white shadow-sm">
-                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 font-bold">
+                        <div className={STYLES.sellerCard}>
+                            <div className={STYLES.sellerAvatar}>
                                 {listing.sellerName?.[0]?.toUpperCase() || 'S'}
                             </div>
                             <div>
-                                <p className="text-xs text-gray-500">Người bán</p>
-                                <p className="font-medium text-gray-900">{listing.sellerName || 'Người bán'}</p>
+                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-400 leading-none mb-1">{MESSAGES.S50_REVIEW_SELLER_LABEL}</p>
+                                <p className="font-bold text-gray-900">{listing.sellerName || MESSAGES.S50_REVIEW_SELLER_DEFAULT}</p>
                             </div>
                         </div>
                     </div>
 
                     {/* Right Column: Receiver & Fees */}
-                    <div className="space-y-6">
+                    <div className={STYLES.rightCol}>
                         {/* Receiver Info */}
                         <div>
-                            <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                </svg>
-                                Thông tin người nhận
+                            <h3 className={STYLES.sectionTitle}>
+                                <User size={22} className="text-brand-primary" />
+                                {MESSAGES.S50_REVIEW_RECEIVER_TITLE}
                             </h3>
-                            <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100 space-y-2">
-                                <p className="flex justify-between">
-                                    <span className="text-gray-500">Họ tên:</span>
-                                    <span className="font-medium text-gray-900">{formData.receiverName}</span>
+                            <div className={STYLES.receiverBox}>
+                                <p className={STYLES.rowBetween}>
+                                    <span className={STYLES.labelText}>{MESSAGES.S50_REVIEW_NAME_LABEL}</span>
+                                    <span className={STYLES.valueText}>{formData.receiverName}</span>
                                 </p>
-                                <p className="flex justify-between">
-                                    <span className="text-gray-500">Số điện thoại:</span>
-                                    <span className="font-medium text-gray-900 font-mono tracking-wide">{formData.receiverPhone}</span>
-                                </p>
-                                <p className="pt-2 border-t border-blue-100 mt-2">
-                                    <span className="block text-gray-500 text-xs mb-1">Địa chỉ:</span>
-                                    <span className="font-medium text-gray-900 text-sm block leading-relaxed">
-                                        {formData.receiverAddress}
+                                <p className={STYLES.rowBetween}>
+                                    <span className={STYLES.labelText}>{MESSAGES.S50_REVIEW_PHONE_LABEL}</span>
+                                    <span className="font-mono text-sm font-black text-gray-900 tracking-wider transition-all hover:tracking-widest cursor-default">
+                                        {formData.receiverPhone}
                                     </span>
                                 </p>
+                                <div className="pt-3 border-t border-gray-50 flex gap-3 italic">
+                                    <MapPin size={14} className="text-brand-primary flex-shrink-0 mt-1" />
+                                    <span className="text-gray-600 text-sm font-medium leading-relaxed">
+                                        {formData.receiverAddress}
+                                    </span>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Fee Breakdown (Receipt) */}
+                        {/* Fee Breakdown */}
                         <div>
-                            <h3 className="font-bold text-gray-800 mb-3">Chi tiết thanh toán</h3>
-                            <div className="bg-white border-2 border-gray-100 rounded-xl p-4 shadow-sm">
-                                <div className="space-y-3 mb-4">
-                                    <div className="flex justify-between text-gray-600">
-                                        <span>Giá trị đơn hàng (tạm tính)</span>
-                                        <span className="font-medium">
-                                            {formData.transactionType === 'PURCHASE'
-                                                ? formatPrice(listing.price)
-                                                : formatPrice(formData.depositAmount || 0)
-                                            }
+                            <h3 className={STYLES.sectionTitle}>
+                                <Ticket size={22} className="text-brand-primary" />
+                                {MESSAGES.S50_REVIEW_FEE_TITLE}
+                            </h3>
+                            <div className={STYLES.feeBox}>
+                                {/* Decorative punch holes for receipt style */}
+                                <div className="absolute -left-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gray-50 rounded-full border border-gray-100 shadow-inner"></div>
+                                <div className="absolute -right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 bg-gray-50 rounded-full border border-gray-100 shadow-inner"></div>
+
+                                <div className="space-y-4 mb-6">
+                                    <div className={STYLES.feeRow}>
+                                        <span>{MESSAGES.S50_REVIEW_ORDER_VALUE}</span>
+                                        <span className="text-gray-900 font-bold">
+                                            {formatPrice(formData.transactionType === 'PURCHASE' ? listing.price : (formData.depositAmount || 0))}
                                         </span>
                                     </div>
-                                    <div className="flex justify-between text-gray-600">
-                                        <span>Phí dịch vụ</span>
-                                        <span className="font-medium">{formatPrice(PLATFORM_FEE)}</span>
+                                    <div className={STYLES.feeRow}>
+                                        <span>{MESSAGES.S50_REVIEW_PLATFORM_FEE}</span>
+                                        <span className="text-gray-900 font-bold">{formatPrice(PLATFORM_FEE)}</span>
                                     </div>
                                     {formData.transactionType === 'PURCHASE' && (
-                                        <div className="flex justify-between text-gray-600">
-                                            <span>Phí kiểm định xe</span>
-                                            <span className="font-medium">{formatPrice(INSPECTION_FEE)}</span>
+                                        <div className={STYLES.feeRow}>
+                                            <span>{MESSAGES.S50_REVIEW_INSPECTION_FEE}</span>
+                                            <span className="text-gray-900 font-bold">{formatPrice(INSPECTION_FEE)}</span>
                                         </div>
                                     )}
                                 </div>
-                                <div className="border-t-2 border-dashed border-gray-200 pt-3 flex justify-between items-center">
-                                    <span className="font-bold text-gray-900">Tổng thanh toán</span>
-                                    <span className="text-xl font-bold text-blue-600">
-                                        {formatPrice(totalAmount)}
-                                    </span>
+                                <div className={STYLES.feeTotal}>
+                                    <div className="flex flex-col items-end w-full gap-1">
+                                        <span className={STYLES.feeTotalLabel}>{MESSAGES.S50_REVIEW_TOTAL}</span>
+                                        <span className={STYLES.feeTotalValue}>
+                                            {formatPrice(totalAmount)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -179,38 +246,38 @@ export default function Step2Review({
 
                 {/* Error Banner */}
                 {error && (
-                    <div className="mt-6 p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg flex items-center gap-2 animate-pulse">
-                        <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <span className="font-medium">{error}</span>
+                    <div className={STYLES.errorBanner}>
+                        <AlertCircle size={22} className="flex-shrink-0" />
+                        <span>{error}</span>
                     </div>
                 )}
 
                 {/* Terms */}
-                <p className="text-xs text-gray-500 mt-8 text-center max-w-2xl mx-auto">
-                    Bằng việc xác nhận, bạn đồng ý với <a href="#" className="text-blue-600 hover:underline">Điều khoản dịch vụ</a> và <a href="#" className="text-blue-600 hover:underline">Chính sách bảo mật</a> của CycleX.
-                    Yêu cầu sẽ được gửi đến người bán và cần được xác nhận trong vòng 24h.
+                <p className={STYLES.terms}>
+                    {MESSAGES.S50_REVIEW_TERMS} <a href="#" className={STYLES.termsLink}>{MESSAGES.S50_REVIEW_TOS}</a> & <a href="#" className={STYLES.termsLink}>{MESSAGES.S50_REVIEW_PRIVACY}</a>.
+                    <br />
+                    <span className="opacity-80 mt-1 inline-block font-bold">{MESSAGES.S50_REVIEW_DEADLINE}</span>
                 </p>
 
                 {/* Actions */}
-                <div className="flex justify-between gap-4 mt-8 pt-6 border-t border-gray-100">
+                <div className={STYLES.actions}>
                     <Button
                         variant="secondary"
                         onClick={onBack}
                         disabled={isSubmitting}
-                        className="!w-auto px-8"
+                        className={STYLES.btnBack}
                     >
-                        Quay lại
+                        {MESSAGES.S50_BTN_BACK}
                     </Button>
                     <Button
                         variant="primary"
                         onClick={onConfirm}
                         loading={isSubmitting}
                         disabled={isSubmitting}
-                        className="!w-auto px-10 bg-blue-600 hover:bg-blue-700 text-lg shadow-lg shadow-blue-200"
+                        className={STYLES.btnConfirm}
                     >
-                        Xác nhận đặt mua
+                        <ShieldCheck size={24} />
+                        {MESSAGES.S50_BTN_CONFIRM}
                     </Button>
                 </div>
             </div>

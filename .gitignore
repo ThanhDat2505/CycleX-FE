@@ -60,3 +60,5 @@ test-results/
 *_RESULTS_*.csv
 *_REPORT_*.xlsx
 screenshots/
+
+.gemini/

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Input, Button, ErrorMessage, RadioGroup } from '@/app/components/ui';
@@ -12,6 +12,15 @@ import {
     validatePhone
 } from '@/app/utils/validation';
 import { handleAuthError } from '@/app/utils/errorHandler';
+
+/** Style constants */
+const STYLES = {
+    form: 'space-y-6',
+    inputGrid: 'grid grid-cols-1 md:grid-cols-2 gap-5 animate-fade-in delay-100',
+    fullWidth: 'md:col-span-2',
+    loginRow: 'text-center mt-6 text-sm text-gray-500 animate-fade-in delay-300',
+    loginLink: 'text-brand-primary hover:underline font-bold ml-1',
+} as const;
 
 export function RegisterForm() {
     const router = useRouter();
@@ -28,158 +37,156 @@ export function RegisterForm() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    // Validation functions moved to utils/validation.ts
-
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
         setError('');
 
-        // Client-side validation - all fields required per API doc
         if (!email || !password || !confirmPassword || !phone || !cccd) {
-            setError('Please fill in all required fields');
+            setError('Vui lòng điền đầy đủ thông tin');
             return;
         }
 
         if (!validateEmail(email)) {
-            setError('Email is invalid');
+            setError('Email không hợp lệ');
             return;
         }
 
         if (!validatePasswordRegister(password)) {
-            setError('Password must be 6-20 characters long');
+            setError('Mật khẩu phải từ 6-20 ký tự');
             return;
         }
 
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setError('Mật khẩu xác nhận không khớp');
             return;
         }
 
         if (!validatePhone(phone)) {
-            setError('Phone number is invalid (must be 10 digits starting with 0)');
+            setError('Số điện thoại không hợp lệ (10 chữ số, bắt đầu bằng 0)');
             return;
         }
 
         if (!validateCccd(cccd)) {
-            setError('CCCD must be 12 digits');
+            setError('CCCD phải đủ 12 chữ số');
             return;
         }
 
         setIsLoading(true);
 
         try {
-            // Call register API - use user-selected role
             const response = await authService.register(email, password, phone, cccd, role);
             const sendOtpResponse = await authService.sendOtp(email);
+
             if (sendOtpResponse.message !== 'OTP sent successfully') {
-                throw new Error('OTP not sent successfully');
+                throw new Error('Không thể gửi mã OTP');
             }
             if (response.message !== 'Registration successful') {
-                throw new Error('Registration failed');
+                throw new Error('Đăng ký không thành công');
             }
 
-            // Redirect to verify email screen with email parameter
+            // Redirect with a slight delay to allow any success feedback if added later
             router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         } catch (err: any) {
-            // Handle specific error cases
-            if (err.status === 409) { // Conflict - duplicate data
+            if (err.status === 409) {
                 if (err.message.toLowerCase().includes('email')) {
-                    setError('Email already exists. Please use another email or login.');
+                    setError('Email đã tồn tại trong hệ thống.');
                 } else if (err.message.toLowerCase().includes('phone')) {
-                    setError('Phone number already exists. Please use another number.');
+                    setError('Số điện thoại đã tồn tại.');
                 } else {
-                    setError('This information already exists in the system.');
+                    setError('Thông tin đăng ký đã tồn tại.');
                 }
             } else {
-                // Use centralized error handler for other errors
                 setError(handleAuthError(err));
             }
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [email, password, confirmPassword, phone, cccd, role, router]);
 
     return (
-        <div className="space-y-4">
+        <div className={STYLES.form}>
             <ErrorMessage message={error} />
 
-            <Input
-                label="Email"
-                id="email"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                placeholder="example@email.com"
-                disabled={isLoading}
-            />
+            <div className={STYLES.inputGrid}>
+                <div className={STYLES.fullWidth}>
+                    <Input
+                        label="Email"
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={setEmail}
+                        placeholder="email@example.com"
+                        disabled={isLoading}
+                    />
+                </div>
 
-            <Input
-                label="Password"
-                id="password"
-                type="password"
-                value={password}
-                onChange={setPassword}
-                placeholder="6-20 characters"
-                disabled={isLoading}
-            />
+                <Input
+                    label="Mật khẩu"
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={setPassword}
+                    placeholder="6-20 ký tự"
+                    disabled={isLoading}
+                />
 
-            <Input
-                label="Confirm Password"
-                id="confirmPassword"
-                type="password"
-                value={confirmPassword}
-                onChange={setConfirmPassword}
-                placeholder="Re-enter password"
-                disabled={isLoading}
-            />
+                <Input
+                    label="Xác nhận mật khẩu"
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={setConfirmPassword}
+                    placeholder="Nhập lại mật khẩu"
+                    disabled={isLoading}
+                />
 
+                <Input
+                    label="Số điện thoại"
+                    id="phone"
+                    type="text"
+                    value={phone}
+                    onChange={setPhone}
+                    placeholder="0xxx xxx xxx"
+                    disabled={isLoading}
+                />
 
-            <Input
-                label="Phone"
-                id="phone"
-                type="text"
-                value={phone}
-                onChange={setPhone}
-                placeholder="0123456789"
-                disabled={isLoading}
-            />
+                <Input
+                    label="Số CCCD"
+                    id="cccd"
+                    type="text"
+                    value={cccd}
+                    onChange={setCccd}
+                    placeholder="12 chữ số"
+                    disabled={isLoading}
+                />
 
-            <Input
-                label="CCCD"
-                id="cccd"
-                type="text"
-                value={cccd}
-                onChange={setCccd}
-                placeholder="12 digits"
-                disabled={isLoading}
-            />
-
-            <RadioGroup
-                label="I want to:"
-                name="role"
-                options={[
-                    { label: 'Buy Bikes', value: 'BUYER' },
-                    { label: 'Sell Bikes', value: 'SELLER' }
-                ]}
-                selectedValue={role}
-                onChange={setRole}
-                disabled={isLoading}
-            />
+                <div className={STYLES.fullWidth}>
+                    <RadioGroup
+                        label="Tôi muốn:"
+                        name="role"
+                        options={[
+                            { label: 'Mua xe', value: 'BUYER' },
+                            { label: 'Bán xe', value: 'SELLER' }
+                        ]}
+                        selectedValue={role}
+                        onChange={setRole}
+                        disabled={isLoading}
+                    />
+                </div>
+            </div>
 
             <Button
                 type="submit"
                 loading={isLoading}
                 onClick={handleSubmit}
+                className="w-full py-4 text-lg font-bold shadow-xl shadow-brand-primary/10"
             >
-                Register
+                Đăng Ký Tài Khoản
             </Button>
 
-            <div className="text-center mt-4 text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link
-                    href="/login"
-                    className="text-brand-primary hover:underline font-semibold"
-                >
-                    Login now
+            <div className={STYLES.loginRow}>
+                Đã có tài khoản?
+                <Link href="/login" className={STYLES.loginLink}>
+                    Đăng nhập ngay
                 </Link>
             </div>
         </div>

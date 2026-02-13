@@ -7,12 +7,20 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { scrollToElementById } from '../utils/scroll';
 import { ELEMENT_IDS } from '../constants/navigation';
 
+const AUTH_ROUTES = ['/login', '/register', '/verify-email'];
+
 export default function Footer() {
     const router = useRouter();
+    const pathname = usePathname();
+
+    // Skip rendering on Auth pages to keep focus on form and allow full-screen split layout
+    if (AUTH_ROUTES.includes(pathname)) {
+        return null;
+    }
 
     const handleHomeClick = () => {
         // Check if we're already on home page

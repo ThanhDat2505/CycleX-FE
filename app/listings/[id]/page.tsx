@@ -1,7 +1,7 @@
 /**
  * S-32 Listing Detail Page (Public)
  * Dynamic route: /listings/[id]
- * 
+ *
  * Business Rules:
  * - BR-S32-01: Only show APPROVED listings to Guest/Buyer
  * - BR-S32-04: Backend auto-increments view_count
@@ -11,13 +11,11 @@
 
 'use client';
 
-import { use, useEffect, useState } from 'react';
+import { use } from 'react';
 import Link from 'next/link';
-import { getListingDetail } from '../../services/listingService';
-import { ListingDetail } from '../../types/listing';
-import { useAuth } from '../../hooks/useAuth';
-import { useRouter } from 'next/navigation';
+import { ArrowLeft } from 'lucide-react';
 import { MESSAGES } from '../../constants';
+import { useListingDetail } from './hooks/useListingDetail';
 import ListingDetailView from './components/ListingDetailView';
 
 interface ListingDetailPageProps {
@@ -26,81 +24,54 @@ interface ListingDetailPageProps {
     }>;
 }
 
+/** Style constants */
+const STYLES = {
+    container: 'max-w-7xl mx-auto px-4 py-6',
+    backLink: 'mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors',
+    // Skeleton
+    skeletonWrapper: 'max-w-7xl mx-auto px-4 py-8',
+    skeletonInner: 'animate-pulse',
+    skeletonBackBtn: 'h-8 bg-gray-200 rounded w-32 mb-8',
+    skeletonGrid: 'grid grid-cols-1 lg:grid-cols-2 gap-8',
+    skeletonImage: 'aspect-[4/3] bg-gray-200 rounded-lg',
+    skeletonInfoGroup: 'space-y-4',
+    skeletonTitle: 'h-8 bg-gray-200 rounded',
+    skeletonPrice: 'h-6 bg-gray-200 rounded w-1/3',
+    skeletonDesc: 'h-4 bg-gray-200 rounded w-2/3',
+    // Error
+    errorWrapper: 'max-w-7xl mx-auto px-4 py-12 text-center',
+    errorIcon: 'text-6xl mb-4',
+    errorTitle: 'text-2xl font-semibold text-gray-800 mb-4',
+    errorLink: 'mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-block',
+} as const;
+
 export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const resolvedParams = use(params);
-    const router = useRouter();
-    const { user, isLoading: isAuthLoading } = useAuth();
-
-    // Redirect Shipper
-    useEffect(() => {
-        if (!isAuthLoading && user?.role === 'SHIPPER') {
-            router.replace('/shipper');
-        }
-    }, [user, isAuthLoading, router]);
-
-    const [listing, setListing] = useState<ListingDetail | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
     const listingId = parseInt(resolvedParams.id);
 
-    useEffect(() => {
-        if (user?.role === 'SHIPPER') return; // Guard inside effect
-        async function fetchListing() {
-            if (isNaN(listingId)) {
-                setError(MESSAGES.DETAIL_NOT_FOUND);
-                setIsLoading(false);
-                return;
-            }
+    const {
+        listing,
+        isLoading,
+        error,
+        isAuthLoading,
+        userRole,
+    } = useListingDetail(listingId);
 
-            try {
-                setIsLoading(true);
-                const data = await getListingDetail(listingId);
-
-                // BR-S32-01: Frontend validation (even though service also validates)
-                // "Không bao giờ tin BE hoàn toàn"
-                if (data.status !== 'APPROVED') {
-                    setError(MESSAGES.DETAIL_NOT_AVAILABLE);
-                    setIsLoading(false);
-                    return;
-                }
-
-                setListing(data);
-                setError(null);
-            } catch (err) {
-                console.error('Failed to load listing detail:', err);
-                const message = err instanceof Error ? err.message : MESSAGES.DETAIL_NOT_FOUND;
-
-                if (message.includes('not found')) {
-                    setError(MESSAGES.DETAIL_NOT_FOUND);
-                } else if (message.includes('not available')) {
-                    setError(MESSAGES.DETAIL_NOT_AVAILABLE);
-                } else {
-                    setError(MESSAGES.ERROR_LOADING_LISTINGS);
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        fetchListing();
-    }, [listingId]);
-
-    // Block Shipper from viewing listing detail
-    if (user?.role === 'SHIPPER') return null;
+    // Block SHIPPER from viewing
+    if (userRole === 'SHIPPER') return null;
 
     // Loading state
-    if (isLoading) {
+    if (isLoading || isAuthLoading) {
         return (
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="animate-pulse">
-                    <div className="h-8 bg-gray-200 rounded w-32 mb-8"></div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <div className="aspect-w-4 aspect-h-3 bg-gray-200 rounded-lg"></div>
-                        <div className="space-y-4">
-                            <div className="h-8 bg-gray-200 rounded"></div>
-                            <div className="h-6 bg-gray-200 rounded w-1/3"></div>
-                            <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+            <div className={STYLES.skeletonWrapper}>
+                <div className={STYLES.skeletonInner}>
+                    <div className={STYLES.skeletonBackBtn} />
+                    <div className={STYLES.skeletonGrid}>
+                        <div className={STYLES.skeletonImage} />
+                        <div className={STYLES.skeletonInfoGroup}>
+                            <div className={STYLES.skeletonTitle} />
+                            <div className={STYLES.skeletonPrice} />
+                            <div className={STYLES.skeletonDesc} />
                         </div>
                     </div>
                 </div>
@@ -111,15 +82,12 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     // Error state
     if (error || !listing) {
         return (
-            <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-                <div className="text-6xl mb-4">😞</div>
-                <h1 className="text-2xl font-semibold text-gray-800 mb-4">
+            <div className={STYLES.errorWrapper}>
+                <div className={STYLES.errorIcon}>😞</div>
+                <h1 className={STYLES.errorTitle}>
                     {error || MESSAGES.DETAIL_NOT_FOUND}
                 </h1>
-                <Link
-                    href="/listings"
-                    className="mt-6 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-block"
-                >
+                <Link href="/listings" className={STYLES.errorLink}>
                     {MESSAGES.DETAIL_BACK_TO_LISTINGS}
                 </Link>
             </div>
@@ -128,25 +96,15 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
 
     // Success state
     return (
-        <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className={STYLES.container}>
             {/* Back button */}
-            <Link
-                href="/listings"
-                className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
-            >
-                <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
+            <Link href="/listings" className={STYLES.backLink}>
+                <ArrowLeft size={20} />
                 {MESSAGES.DETAIL_BACK_TO_LISTINGS}
             </Link>
 
             {/* Main content */}
-            <ListingDetailView listing={listing} />
+            <ListingDetailView listing={listing} userRole={userRole} />
         </div>
     );
 }

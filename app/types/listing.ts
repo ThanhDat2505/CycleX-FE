@@ -45,6 +45,7 @@ export interface HomeBike {
     price: number;               // Matches backend
     imageUrl: string;            // Matches backend
     locationCity: string | null; // Matches backend
+    viewCount?: number;          // Optional popularity metric
 }
 
 /**
