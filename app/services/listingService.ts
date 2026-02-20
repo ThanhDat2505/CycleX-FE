@@ -233,21 +233,9 @@ export async function searchListings(
         params.append('pageSize', pageSize.toString());
         params.append('sortBy', sortBy);
 
-        const response = await fetch(
-            `/backend/api/bikelistings?${params.toString()}`,
-            {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            }
+        const data = await apiCallGET<{ items: HomeBike[]; pagination: PaginationInfo }>(
+            `/bikelistings?${params.toString()}`
         );
-
-        if (!response.ok) {
-            throw new Error(`Failed to search listings: ${response.statusText}`);
-        }
-
-        const data = await response.json();
 
         // ✅ VALIDATION: Strict check of public search response
         validateResponse(data, 'search response');
@@ -415,26 +403,10 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
         return validateListingDetail(listing);
     }
 
-    // Real API: GET /api/bikelistings/{id}
+    // Real API: GET /api/bikelistings/{listingId}
     try {
-        const response = await fetch(`/backend/api/bikelistings/${listingId}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (response.status === 404) {
-            throw new Error('Listing not found');
-        }
-
-        if (!response.ok) {
-            throw new Error(`Failed to fetch listing: ${response.statusText}`);
-        }
-
-        const data = await response.json();
-        const validated = validateListingDetail(data);
-
-
-        return validated;
+        const data = await apiCallGET<ListingDetail>(`/bikelistings/${listingId}`);
+        return validateListingDetail(data);
     } catch (error) {
         console.error('Error fetching listing detail:', error);
         throw error;
