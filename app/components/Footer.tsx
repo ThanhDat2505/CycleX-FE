@@ -17,7 +17,7 @@ export default function Footer() {
     const router = useRouter();
     const pathname = usePathname();
 
-    // Skip rendering on Auth pages to keep focus on form and allow full-screen split layout
+    // hiden footer on auth pages
     if (AUTH_ROUTES.includes(pathname)) {
         return null;
     }

@@ -51,7 +51,7 @@ export const authService = {
             if (user) {
                 const mockToken = 'mock-jwt-token-' + Date.now();
                 authService.saveToken(mockToken);
-                authService.saveUser(user); // ✅ Save user data for role check
+                authService.saveUser(user); // Save user data for role check
 
                 return {
                     accessToken: mockToken,
@@ -146,14 +146,10 @@ export const authService = {
                 role
             } as RegisterRequest);
 
-            // ✅ VALIDATION: Strict check of register response
+            // VALIDATION
             validateResponse(data, 'register response');
             validateString(data.message, 'message');
             validateUser(data.user);
-
-            // ❌ DO NOT save token - register doesn't return token
-            // ❌ DO NOT auto-login
-            // ✅ Just return data for redirect to verify email
 
             return data;
         } catch (error) {

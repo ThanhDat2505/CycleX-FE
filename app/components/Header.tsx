@@ -43,8 +43,7 @@ export default function Header() {
         }
     }, [isLoggedIn, isRestrictedRole, isBuyer, router]);
 
-    // Skip rendering on Auth pages to allow full-screen split layout
-    // Moved after hooks to follow "Rules of Hooks"
+    //Hidden header on auth pages
     if (AUTH_ROUTES.includes(pathname)) {
         return null;
     }
