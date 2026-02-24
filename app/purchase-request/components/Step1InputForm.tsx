@@ -133,7 +133,7 @@ export default function Step1InputForm({
                         </div>
                     </div>
 
-                    {/* Option 2: Deposit
+                    {/* Option 2: Deposit */}
                     <div
                         onClick={() => handleTypeChange('DEPOSIT')}
                         className={STYLES.paymentOption(formData.transactionType === 'DEPOSIT')}
@@ -156,10 +156,10 @@ export default function Step1InputForm({
                                 </p>
                             </div>
                         </div>
-                    </div> */}
+                    </div>
                 </div>
 
-                {/* Option 2: Deposit */}
+                {/* Option 2: Deposit
                 <div className={STYLES.disabledOption}>
                     <div className="flex items-start gap-3">
                         <div className={STYLES.disabledCircle}></div>
@@ -173,7 +173,7 @@ export default function Step1InputForm({
                             </p>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
 
                 {/* Option 3: Online Payment (Disabled) */}
