@@ -181,9 +181,9 @@ export default function ListingDetailView({ listing, userRole }: ListingDetailVi
                             >
                                 {MESSAGES.DETAIL_PURCHASE_BUTTON}
                             </Link>
-                            <p className={STYLES.ctaHint}>
+                            {/* <p className={STYLES.ctaHint}>
                                 {MESSAGES.DETAIL_PURCHASE_HINT}
-                            </p>
+                            </p> */}
                         </div>
                     )}
                 </div>

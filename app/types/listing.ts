@@ -68,9 +68,9 @@ export interface SearchFilters {
     keyword?: string;
     minPrice?: number;
     maxPrice?: number;
-    bikeTypes?: string[];      // e.g., ["Xe Đạp Địa Hình", "Xe Đạp Đua"]
-    brands?: string[];         // e.g., ["Giant", "Trek"]
-    conditions?: ('new' | 'used')[];  // Multiple conditions: ["new", "used"]
+    bikeTypes?: string[];
+    brands?: string[];
+    conditions?: ('new' | 'used')[];
 }
 
 /**
