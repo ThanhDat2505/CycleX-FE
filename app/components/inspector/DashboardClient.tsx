@@ -14,6 +14,20 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
   const [filter, setFilter] = useState<Filter>("ALL");
   const [active, setActive] = useState<Filter>("PENDING");
 
+  const statusCounts = listings.reduce(
+    (acc, listing) => {
+      acc[listing.status] += 1;
+      return acc;
+    },
+    {
+      PENDING: 0,
+      NEED_MORE_INFO: 0,
+      DISPUTE: 0,
+      FLAGGED: 0,
+      DONE: 0,
+    } as Record<ListingStatus, number>,
+  );
+
   const clickFilter = (f: Filter) => {
     setActive(f);
     setFilter(f);
@@ -78,8 +92,10 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
           </h1>
           <p className="text-gray-600 mt-2 text-lg">
             Chào mừng trở lại! Bạn có{" "}
-            <span className="font-bold text-orange-600">15</span> tin cần duyệt
-            hôm nay.
+            <span className="font-bold text-orange-600">
+              {statusCounts.PENDING}
+            </span>{" "}
+            tin cần duyệt hôm nay.
           </p>
         </div>
         <Link
@@ -98,35 +114,35 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
         <StatCard
           type="PENDING"
           label="Tin chờ duyệt"
-          count={15}
+          count={statusCounts.PENDING}
           icon="schedule"
           colorClass="bg-yellow-500 text-yellow-600"
         />
         <StatCard
           type="NEED_MORE_INFO"
           label="Cần bổ sung"
-          count={5}
+          count={statusCounts.NEED_MORE_INFO}
           icon="article"
           colorClass="bg-blue-500 text-blue-600"
         />
         <StatCard
           type="DISPUTE"
           label="Cần xem xét"
-          count={2}
+          count={statusCounts.DISPUTE}
           icon="warning"
           colorClass="bg-red-500 text-red-600"
         />
         <StatCard
           type="FLAGGED"
           label="Bị report"
-          count={1}
+          count={statusCounts.FLAGGED}
           icon="flag"
           colorClass="bg-gray-500 text-gray-600"
         />
         <StatCard
           type="DONE"
           label="Đã duyệt"
-          count={32}
+          count={statusCounts.DONE}
           icon="check_circle"
           colorClass="bg-green-500 text-green-600"
         />
