@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, ChangeEvent, KeyboardEvent } from "react";
+import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type Sender = "INSPECTOR" | "SELLER" | "SYSTEM";
@@ -30,6 +30,15 @@ export default function InspectorChat() {
   const isLocked = listingStatus === "ARCHIVED";
   const endRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadedImageUrlsRef = useRef<string[]>([]);
+
+  useEffect(() => {
+    return () => {
+      uploadedImageUrlsRef.current.forEach((imageUrl) => {
+        URL.revokeObjectURL(imageUrl);
+      });
+    };
+  }, []);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -53,14 +62,19 @@ export default function InspectorChat() {
   };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0] || isLocked) return;
+    const file = e.target.files?.[0];
+    if (!file || isLocked) return;
+
+    const previewUrl = URL.createObjectURL(file);
+    uploadedImageUrlsRef.current.push(previewUrl);
+
     setIsUploading(true);
     setTimeout(() => {
       const newMsg: Message = {
         id: Date.now().toString(),
         sender: "INSPECTOR",
-        content: "Đã gửi một ảnh đính kèm",
-        images: ["https://picsum.photos/400/300?random=" + Date.now()],
+        content: "",
+        images: [previewUrl],
         timestamp: new Date().toLocaleTimeString("vi-VN", {
           hour: "2-digit",
           minute: "2-digit",
@@ -68,6 +82,7 @@ export default function InspectorChat() {
       };
       setMessages((prev) => [...prev, newMsg]);
       setIsUploading(false);
+      e.target.value = "";
     }, 1000);
   };
 
@@ -143,10 +158,12 @@ export default function InspectorChat() {
                       alt="attachment"
                     />
                   ))}
-                  <div className="msg-bubble">
-                    {msg.content}
-                    <span className="msg-time">{msg.timestamp}</span>
-                  </div>
+                  {msg.content.trim() && (
+                    <div className="msg-bubble">
+                      {msg.content}
+                      <span className="msg-time">{msg.timestamp}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             );
