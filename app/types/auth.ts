@@ -19,18 +19,18 @@ export interface LoginResponse {
  * API Document: /backend/api/auth/login
  */
 export interface User {
-    userId: number;                    // ⚠️ API returns number, not string
+    userId: number;
     email: string;
-    fullName: string | null;           // ⚠️ Can be null per official API
+    fullName: string | null;
     phone: string;
-    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // ✅ Official API roles
-    isVerify: boolean;                 // ⚠️ API uses 'isVerify', not 'is_verified'
-    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null;  // ⚠️ Can be null per official API
-    cccd: string;                      // ⚠️ CCCD field from API (12 characters)
-    avatarUrl: string | null;          // ⚠️ Can be null
-    createdAt: string;                 // ⚠️ ISO string, not Date object
-    updatedAt: string;                 // ⚠️ ISO string, not Date object
-    lastLogin: string | null;          // ⚠️ ISO string or null
+    role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';
+    isVerify: boolean;
+    status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null;
+    cccd: string;
+    avatarUrl: string | null;
+    createdAt: string;
+    updatedAt: string;
+    lastLogin: string | null;
 }
 
 export interface AuthError {

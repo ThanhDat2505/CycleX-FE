@@ -46,6 +46,7 @@ next-env.d.ts
 # IDE
 .idea/
 .vscode/
+.agent/
 *.swp
 *.swo
 *~
@@ -59,3 +60,7 @@ test-results/
 *_RESULTS_*.csv
 *_REPORT_*.xlsx
 screenshots/
+
+.gemini/
+
+docs/*.md

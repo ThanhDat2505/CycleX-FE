@@ -6,13 +6,21 @@
 
 'use client';
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { scrollToElementById } from '../utils/scroll';
 import { ELEMENT_IDS } from '../constants/navigation';
 
+const AUTH_ROUTES = ['/login', '/register', '/verify-email'];
+
 export default function Footer() {
     const router = useRouter();
+    const pathname = usePathname();
+
+    // hiden footer on auth pages
+    if (AUTH_ROUTES.includes(pathname)) {
+        return null;
+    }
 
     const handleHomeClick = () => {
         // Check if we're already on home page
@@ -70,19 +78,19 @@ export default function Footer() {
                                 </button>
                             </li>
                             <li>
-                                <button onClick={() => router.push('/search')} className="text-gray-400 hover:text-brand-primary transition-colors">
+                                <Link href="/listings" className="text-gray-400 hover:text-brand-primary transition-colors">
                                     Mua Xe
-                                </button>
+                                </Link>
                             </li>
                             <li>
-                                <button onClick={() => router.push('/sell')} className="text-gray-400 hover:text-brand-primary transition-colors">
+                                <Link href="/sell" className="text-gray-400 hover:text-brand-primary transition-colors">
                                     Bán Xe
-                                </button>
+                                </Link>
                             </li>
                             <li>
-                                <button onClick={() => router.push('/guide')} className="text-gray-400 hover:text-brand-primary transition-colors">
+                                <Link href="/guide" className="text-gray-400 hover:text-brand-primary transition-colors">
                                     Cẩm Nang
-                                </button>
+                                </Link>
                             </li>
                         </ul>
                     </div>

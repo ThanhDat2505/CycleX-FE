@@ -1,114 +1,86 @@
 /**
  * Header Component
  * Navigation header with dark theme matching Figma mockup
- * Features: Logo, navigation menu, search, notifications, user menu, "Đăng Tin" button
+ * 
+ * Refactored to use sub-components:
+ * - NavLinks: Desktop navigation
+ * - SearchBar: Expandable search
+ * - UserMenu: User dropdown
+ * - MobileMenu: Mobile navigation
  */
 
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useCallback } from 'react';
+import Link from 'next/link';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../hooks/useAuth';
+
+// Sub-components (explicit imports to avoid circular reference)
+import { NavLinks } from './Header/NavLinks';
+import { SearchBar } from './Header/SearchBar';
+import { UserMenu } from './Header/UserMenu';
+import { MobileMenu } from './Header/MobileMenu';
+
+const AUTH_ROUTES = ['/login', '/register', '/verify-email'];
 
 export default function Header() {
     const router = useRouter();
-    const { isLoggedIn, logout } = useAuth();
+    const pathname = usePathname();
+    const { isLoggedIn, logout, user, isLoading } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-    const [searchOpen, setSearchOpen] = useState(false);
-    const [searchKeyword, setSearchKeyword] = useState('');
 
-    const handleSellClick = () => {
+    // Role restrictions
+    const isRestrictedRole = user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role);
+    const isBuyer = user?.role === 'BUYER';
+
+    // Handle sell button click with auth check — blocks BUYER and restricted roles
+    const handleSellClick = useCallback(() => {
         if (!isLoggedIn) {
-            // Redirect to login with return URL
-            router.push('/login?returnUrl=/create-listing');
-        } else {
-            router.push('/create-listing');
+            router.push('/login?returnUrl=/seller/create-listing');
+        } else if (!isRestrictedRole && !isBuyer) {
+            router.push('/seller/create-listing');
         }
-    };
+    }, [isLoggedIn, isRestrictedRole, isBuyer, router]);
+
+    //Hidden header on auth pages
+    if (AUTH_ROUTES.includes(pathname)) {
+        return null;
+    }
 
     return (
         <header className="bg-brand-bg text-white sticky top-0 z-50 shadow-lg">
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <div
-                        onClick={() => router.push('/')}
-                        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+                    <Link
+                        href="/"
+                        className="flex items-center gap-2 hover:opacity-80 transition-opacity"
                     >
                         <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
                             <span className="text-white font-bold text-xl">C</span>
                         </div>
                         <span className="text-2xl font-bold">CycleX</span>
-                    </div>
+                    </Link>
 
                     {/* Desktop Navigation */}
-                    <nav className="hidden md:flex items-center gap-8">
-                        <button
-                            onClick={() => router.push('/listings')}
-                            className="text-white hover:text-brand-primary transition-colors"
-                        >
-                            Mua Xe
-                        </button>
-                        <button
-                            onClick={handleSellClick}
-                            className="text-white hover:text-brand-primary transition-colors"
-                        >
-                            Bán Xe
-                        </button>
-                        <button
-                            onClick={() => router.push('/guide')}
-                            className="text-white hover:text-brand-primary transition-colors"
-                        >
-                            Cẩm Nang
-                        </button>
-                    </nav>
+                    <NavLinks
+                        isRestrictedRole={!!isRestrictedRole}
+                        userRole={user?.role}
+                        onSellClick={handleSellClick}
+                        isLoading={isLoading}
+                    />
 
                     {/* Right Side Actions */}
                     <div className="flex items-center gap-4">
-                        {/* Search - Expandable Input */}
+                        {/* Search */}
                         <div className="relative">
-                            {searchOpen ? (
-                                <form
-                                    onSubmit={(e) => {
-                                        e.preventDefault();
-                                        if (searchKeyword.trim()) {
-                                            router.push(`/listings?keyword=${encodeURIComponent(searchKeyword.trim())}`);
-                                            setSearchOpen(false);
-                                            setSearchKeyword('');
-                                        }
-                                    }}
-                                    className="flex items-center"
-                                >
-                                    <input
-                                        type="text"
-                                        placeholder="Tìm kiếm xe..."
-                                        value={searchKeyword}
-                                        onChange={(e) => setSearchKeyword(e.target.value)}
-                                        className="w-48 md:w-64 px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-primary"
-                                        autoFocus
-                                        onBlur={() => {
-                                            // Delay to allow form submission
-                                            setTimeout(() => {
-                                                setSearchOpen(false);
-                                                setSearchKeyword('');
-                                            }, 200);
-                                        }}
-                                    />
-                                </form>
-                            ) : (
-                                <button
-                                    onClick={() => setSearchOpen(true)}
-                                    className="text-white hover:text-brand-primary transition-colors"
-                                    aria-label="Search"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </button>
-                            )}
+                            {!isRestrictedRole && <SearchBar />}
                         </div>
 
-                        {isLoggedIn ? (
+                        {isLoading ? (
+                            <div className="w-32 h-10 animate-pulse rounded-lg bg-gray-600"></div>
+                        ) : isLoggedIn ? (
                             <>
                                 {/* Notification Bell */}
                                 <button
@@ -121,24 +93,22 @@ export default function Header() {
                                     <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">3</span>
                                 </button>
 
-                                {/* User Icon */}
-                                <button
-                                    onClick={() => router.push('/profile')}
-                                    className="hidden md:block text-white hover:text-brand-primary transition-colors"
-                                    aria-label="Profile"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                    </svg>
-                                </button>
+                                {/* User Menu */}
+                                <UserMenu
+                                    isRestrictedRole={!!isRestrictedRole}
+                                    userRole={user?.role}
+                                    onLogout={logout}
+                                />
 
-                                {/* Đăng Tin Button */}
-                                <button
-                                    onClick={() => router.push('/create-listing')}
-                                    className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
-                                >
-                                    Đăng Tin
-                                </button>
+                                {/* Đăng Tin Button — only SELLER and Guest, NOT BUYER */}
+                                {!isRestrictedRole && !isBuyer && (
+                                    <Link
+                                        href="/seller/create-listing"
+                                        className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                                    >
+                                        Đăng Tin
+                                    </Link>
+                                )}
 
                                 {/* Logout (mobile only) */}
                                 <button
@@ -151,18 +121,18 @@ export default function Header() {
                         ) : (
                             <>
                                 {/* Login/Register for guests */}
-                                <button
-                                    onClick={() => router.push('/login')}
+                                <Link
+                                    href="/login"
                                     className="hidden md:block text-white hover:text-brand-primary transition-colors font-medium"
                                 >
                                     Login
-                                </button>
-                                <button
-                                    onClick={() => router.push('/register')}
+                                </Link>
+                                <Link
+                                    href="/register"
                                     className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
                                 >
                                     Register
-                                </button>
+                                </Link>
                             </>
                         )}
 
@@ -184,46 +154,15 @@ export default function Header() {
                 </div>
 
                 {/* Mobile Menu */}
-                {mobileMenuOpen && (
-                    <nav className="md:hidden mt-4 pb-4 border-t border-gray-700 pt-4">
-                        <div className="flex flex-col gap-4">
-                            <button
-                                onClick={() => { router.push('/listings'); setMobileMenuOpen(false); }}
-                                className="text-white hover:text-brand-primary transition-colors text-left"
-                            >
-                                Mua Xe
-                            </button>
-                            <button
-                                onClick={() => { handleSellClick(); setMobileMenuOpen(false); }}
-                                className="text-white hover:text-brand-primary transition-colors text-left"
-                            >
-                                Bán Xe
-                            </button>
-                            <button
-                                onClick={() => { router.push('/guide'); setMobileMenuOpen(false); }}
-                                className="text-white hover:text-brand-primary transition-colors text-left"
-                            >
-                                Cẩm Nang
-                            </button>
-                            {isLoggedIn && (
-                                <>
-                                    <button
-                                        onClick={() => { router.push('/profile'); setMobileMenuOpen(false); }}
-                                        className="text-white hover:text-brand-primary transition-colors text-left"
-                                    >
-                                        Profile
-                                    </button>
-                                    <button
-                                        onClick={() => { router.push('/notifications'); setMobileMenuOpen(false); }}
-                                        className="text-white hover:text-brand-primary transition-colors text-left"
-                                    >
-                                        Notifications
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </nav>
-                )}
+                <MobileMenu
+                    isOpen={mobileMenuOpen}
+                    isLoggedIn={isLoggedIn}
+                    isRestrictedRole={!!isRestrictedRole}
+                    userRole={user?.role}
+                    onClose={() => setMobileMenuOpen(false)}
+                    onSellClick={handleSellClick}
+                    isLoading={isLoading}
+                />
             </div>
         </header>
     );

@@ -1,15 +1,24 @@
-'use client'; //Báo cho Next.js biết: "File này chạy ở phía client (browser), không phải server"
-// bởi vì dùng useState (chỉ chạy được ở browser)
-import { useState } from 'react'; // giống như biến, nhưng khi thay đổi, react sẽ tự động render lại
-import { useRouter, useSearchParams } from 'next/navigation'; // hook của nextjs để điều hướng 
-import Link from 'next/link'; // component để tạo link thay cho a
+'use client';
+
+import { useState, useCallback } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Input, Button, ErrorMessage, Checkbox } from '@/app/components/ui';
 import { authService } from '@/app/services/authService';
 import { validateEmail, validatePasswordLogin } from '@/app/utils/validation';
 import { handleAuthError } from '@/app/utils/errorHandler';
 
+/** Style constants */
+const STYLES = {
+    form: 'space-y-6',
+    inputWrapper: 'space-y-5 animate-fade-in delay-100',
+    rememberRow: 'flex items-center justify-between animate-fade-in delay-200',
+    forgotLink: 'text-sm text-brand-primary hover:text-brand-primary/80 transition-colors font-semibold',
+    registerRow: 'text-center mt-6 text-sm text-gray-500 animate-fade-in delay-300',
+    registerLink: 'text-brand-primary hover:underline font-bold ml-1',
+} as const;
+
 export function LoginForm() {
-    // mục đích là lưu email, password, rememberMe, error, isLoading
     const router = useRouter();
     const searchParams = useSearchParams();
     const returnUrl = searchParams.get('returnUrl') || '/';
@@ -20,32 +29,24 @@ export function LoginForm() {
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-
-    // Validation functions moved to utils/validation.ts
-
-    // Handel submit
-    const handleSubmit = async () => {
-        // xóa thông báo lỗi cũ (nếu có)
+    const handleSubmit = useCallback(async () => {
         setError('');
 
-        // Client-side validation
         if (!email || !password) {
-            setError('Email and password are required');
+            setError('Vui lòng nhập email và mật khẩu');
             return;
         }
 
         if (!validateEmail(email)) {
-            setError('Email is invalid');
+            setError('Email không hợp lệ');
             return;
         }
 
         if (!validatePasswordLogin(password)) {
-            setError('Password must be at least 6 characters long');
+            setError('Mật khẩu phải từ 6 ký tự');
             return;
         }
 
-        // nếu không phải return có nghĩa là thỏa điều kiện, để được gửi đi
-        // button sẽ hiện 'đang xử lí' và disabled
         setIsLoading(true);
 
         try {
@@ -53,9 +54,8 @@ export function LoginForm() {
 
             // BR-L07: Check isVerify first
             if (!response.user.isVerify) {
-                // Redirect FIRST before setting state to avoid timing issues
                 router.push(`/verify-email?email=${encodeURIComponent(email)}`);
-                setError('Please verify your email first');
+                setError('Vui lòng xác minh email trước');
                 setIsLoading(false);
                 return;
             }
@@ -63,76 +63,73 @@ export function LoginForm() {
             // BR-L05, BR-L06: Check status
             switch (response.user.status) {
                 case 'INACTIVE':
-                    // BR-L05: INACTIVE → redirect verify email
-                    // Redirect FIRST before setting state to avoid timing issues
                     router.push(`/verify-email?email=${encodeURIComponent(email)}`);
-                    setError('Account inactive. Please verify your email');
+                    setError('Tài khoản chưa kích hoạt. Vui lòng xác minh email');
                     setIsLoading(false);
                     return;
 
                 case 'SUSPENDED':
-                    // BR-L05: SUSPENDED → show error, contact admin
-                    setError('Your account has been suspended. Please contact Admin for assistance.');
+                    setError('Tài khoản bị khóa. Vui lòng liên hệ Admin.');
                     setIsLoading(false);
                     return;
 
                 case 'ACTIVE':
-                    // BR-L05: ACTIVE → allow login
                     break;
 
                 default:
-                    // Unknown status
-                    setError('Invalid account status. Please contact support.');
+                    setError('Trạng thái tài khoản không hợp lệ.');
                     setIsLoading(false);
                     return;
             }
 
-            // BR-L03: Login successful - token already saved by authService
-            // BR-L08: Redirect to returnUrl (or Home if not specified)
-            router.push(returnUrl);
+            if (response.user.role === 'SHIPPER') {
+                router.push('/shipper');
+            } else {
+                router.push(returnUrl);
+            }
         } catch (err: any) {
-            // BR-L11: Use centralized error handler
             setError(handleAuthError(err));
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [email, password, rememberMe, returnUrl, router]);
 
     return (
-        <div className="space-y-4">
+        <div className={STYLES.form}>
             <ErrorMessage message={error} />
 
-            <Input
-                label="Email"
-                id="email"
-                type="email"
-                value={email}
-                onChange={setEmail}
-                placeholder="example@email.com"
-            />
+            <div className={STYLES.inputWrapper}>
+                <Input
+                    label="Email"
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={setEmail}
+                    placeholder="email@example.com"
+                    disabled={isLoading}
+                />
 
-            <Input
-                label="Password"
-                id="password"
-                type="password"
-                value={password}
-                onChange={setPassword}
-                placeholder="••••••••"
-            />
+                <Input
+                    label="Mật khẩu"
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={setPassword}
+                    placeholder="••••••••"
+                    disabled={isLoading}
+                />
+            </div>
 
-            <div className="flex items-center justify-between">
+            <div className={STYLES.rememberRow}>
                 <Checkbox
                     id="remember"
-                    label="Remember me"
+                    label="Ghi nhớ đăng nhập"
                     checked={rememberMe}
                     onChange={setRememberMe}
                 />
 
-                <Link
-                    href="/forgot-password"
-                    className="text-sm text-brand-primary hover:underline font-medium"
-                >
-                    Forgot password?
+                <Link href="/forgot-password" className={STYLES.forgotLink}>
+                    Quên mật khẩu?
                 </Link>
             </div>
 
@@ -140,17 +137,15 @@ export function LoginForm() {
                 type="submit"
                 loading={isLoading}
                 onClick={handleSubmit}
+                className="w-full py-4 text-lg font-bold shadow-xl shadow-brand-primary/10"
             >
-                Login
+                Đăng Nhập
             </Button>
 
-            <div className="text-center mt-4 text-sm text-gray-600">
-                Don't have an account?{' '}
-                <Link
-                    href="/register"
-                    className="text-brand-primary hover:underline font-semibold"
-                >
-                    Register now
+            <div className={STYLES.registerRow}>
+                Chưa có tài khoản?
+                <Link href="/register" className={STYLES.registerLink}>
+                    Đăng ký ngay
                 </Link>
             </div>
         </div>

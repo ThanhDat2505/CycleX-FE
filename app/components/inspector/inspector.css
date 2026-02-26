@@ -25,11 +25,11 @@
   font-family: "Inter", sans-serif;
 }
 
-body {
+/* body {
   background: var(--bg);
   color: var(--text);
   line-height: 1.5;
-}
+} */
 
 a {
   color: inherit;
@@ -48,7 +48,7 @@ a {
   justify-content: center;
 }
 
-.dashboard-layout {
+/* .dashboard-layout {
   display: flex;
   min-height: 100vh;
   width: 100%;
@@ -59,14 +59,14 @@ a {
   flex: 1;
   padding: 32px 32px 48px;
   overflow-y: auto;
-}
+} */
 
 .wrap {
   max-width: 1320px;
   margin: 0 auto;
 }
 
-.sidebar {
+/* .sidebar {
   width: var(--sidebar-w);
   padding: var(--sidebar-pad);
   background: #f5f5f5;
@@ -78,7 +78,7 @@ a {
   top: 0;
   flex-shrink: 0;
   z-index: 10;
-}
+} */
 
 .brand {
   display: flex;

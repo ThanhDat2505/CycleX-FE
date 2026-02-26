@@ -1,7 +1,7 @@
 /**
  * FeaturedBikesSection Component
  * "Xe Đạp Đang Hot" section for Home page
- * 
+ *
  * Features:
  * - Displays 6 bikes max (from /api/home)
  * - NO pagination
@@ -11,138 +11,108 @@
 
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { getFeaturedBikes } from '../services/listingService';
 import { HomeBike } from '../types/listing';
 import FeaturedBikeCard from './FeaturedBikeCard';
-import Badge from './ui/Badge';
-import { generateMockHomeBikes } from '../mocks';
+import SectionHeader from './ui/SectionHeader';
+import BikeSkeleton from './ui/BikeSkeleton';
 
 const MAX_FEATURED_BIKES = 6;
+const SKELETON_DELAY_MS = 300;
 
-// Check if we should use mock API (for development)
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
+/** Style constants — tách riêng để JSX gọn gàng */
+const STYLES = {
+    section: 'container mx-auto px-6 py-20',
+    errorBox: 'bg-red-50 border border-red-200 text-red-600 px-6 py-4 rounded-2xl text-center animate-fade-in',
+    grid: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8',
+    emptyState: 'col-span-full text-center py-20 text-gray-500 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200',
+    ctaWrapper: 'text-center mt-16 animate-slide-up',
+    ctaButton: 'inline-flex items-center gap-3 bg-brand-bg text-white px-10 py-4 rounded-full font-bold hover:bg-gray-800 transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 group',
+    ctaArrow: 'w-5 h-5 group-hover:translate-x-1 transition-transform',
+} as const;
 
 export default function FeaturedBikesSection() {
-    const router = useRouter();
     const [bikes, setBikes] = useState<HomeBike[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        let isMounted = true;
+
+        const fetchFeaturedBikes = async () => {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const data = await getFeaturedBikes();
+
+                if (isMounted) {
+                    setBikes(data.slice(0, MAX_FEATURED_BIKES));
+                }
+            } catch {
+                if (isMounted) {
+                    setError('Không thể tải danh sách xe. Vui lòng thử lại sau.');
+                }
+            } finally {
+                if (isMounted) {
+                    setTimeout(() => {
+                        if (isMounted) setLoading(false);
+                    }, SKELETON_DELAY_MS);
+                }
+            }
+        };
+
         fetchFeaturedBikes();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    /**
-     * Fetch featured bikes from /backend/api/home
-     * Falls back to mock data if USE_MOCK_API is enabled
-     */
-    const fetchFeaturedBikes = async () => {
-        setLoading(true);
-        setError(null);
-
-        // Use mock data in development
-        if (USE_MOCK_API) {
-            // Simulate network delay
-            await new Promise(resolve => setTimeout(resolve, 500));
-            setBikes(generateMockHomeBikes());
-            setLoading(false);
-            return;
-        }
-
-        // Real API call
-        try {
-            const response = await fetch('/backend/api/home');
-
-            if (!response.ok) {
-                throw new Error('Failed to fetch featured bikes');
-            }
-
-            const data: HomeBike[] = await response.json();
-
-            // Limit to 6 bikes for Home preview
-            setBikes(data.slice(0, MAX_FEATURED_BIKES));
-        } catch (err) {
-            setError('Không thể tải danh sách xe. Vui lòng thử lại sau.');
-            console.error('Error fetching featured bikes:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    /**
-     * Navigate to listing detail page
-     */
-    const handleBikeClick = (listingId: number) => {
-        router.push(`/listing/${listingId}`);
-    };
-
-    /**
-     * Navigate to full listing page
-     */
-    const handleViewAll = () => {
-        router.push('/listings');
-    };
+    const gridClassName = `${STYLES.grid} ${loading ? '' : 'animate-fade-in'}`;
 
     return (
-        <section className="container mx-auto px-4 py-12">
+        <section className={STYLES.section}>
             {/* Section Header */}
-            <div className="text-center mb-12">
-                <Badge icon="🔥" text="Nổi Bật" className="mb-4" />
-                <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-                    Xe Đạp Đang Hot
-                </h2>
-                <p className="text-gray-600">
-                    Những chiếc xe đạp được quan tâm nhiều nhất tuần này
-                </p>
-            </div>
-
-            {/* Loading State */}
-            {loading && (
-                <div className="flex justify-center items-center py-20">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                </div>
-            )}
+            <SectionHeader
+                badge={{ icon: '🔥', text: 'Săn Xe Giá Tốt' }}
+                title="Xe Đạp Đang Hot"
+                description="Khám phá những mẫu xe đạp thể thao được cộng đồng quan tâm nhất tuần qua. Chất lượng đỉnh cao, giá thành hợp lý."
+            />
 
             {/* Error State */}
-            {error && !loading && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-center">
-                    {error}
-                </div>
+            {error && (
+                <div className={STYLES.errorBox}>{error}</div>
             )}
 
-            {/* Bikes Grid */}
-            {!loading && !error && bikes.length > 0 && (
-                <>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-                        {bikes.map((bike) => (
-                            <FeaturedBikeCard
-                                key={bike.listingId}
-                                bike={bike}
-                                onClick={() => handleBikeClick(bike.listingId)}
-                            />
-                        ))}
+            {/* Content Grid */}
+            <div className={gridClassName}>
+                {loading ? (
+                    [...Array(MAX_FEATURED_BIKES)].map((_, i) => (
+                        <BikeSkeleton key={i} />
+                    ))
+                ) : bikes.length > 0 ? (
+                    bikes.map(bike => (
+                        <FeaturedBikeCard key={bike.listingId} bike={bike} />
+                    ))
+                ) : (
+                    <div className={STYLES.emptyState}>
+                        Chưa có xe nào để hiển thị
                     </div>
+                )}
+            </div>
 
-                    {/* CTA Button */}
-                    <div className="text-center">
-                        <button
-                            onClick={handleViewAll}
-                            className="inline-flex items-center gap-2 bg-brand-primary hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors"
-                        >
-                            Xem thêm xe
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                            </svg>
-                        </button>
-                    </div>
-                </>
-            )}
-
-            {/* Empty State */}
-            {!loading && !error && bikes.length === 0 && (
-                <div className="text-center py-12">
-                    <p className="text-gray-500 text-lg">Chưa có xe nào để hiển thị</p>
+            {/* CTA */}
+            {!loading && bikes.length > 0 && !error && (
+                <div className={STYLES.ctaWrapper}>
+                    <Link href="/listings" className={STYLES.ctaButton}>
+                        <span>Xem thêm xe</span>
+                        <svg className={STYLES.ctaArrow} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </Link>
                 </div>
             )}
         </section>
