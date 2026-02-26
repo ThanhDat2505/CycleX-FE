@@ -54,7 +54,7 @@ export const useCreateListing = () => {
     useEffect(() => {
         if (!isLoading) {
             if (!isLoggedIn) {
-                router.push("/login?returnUrl=/create-listing");
+                router.push("/login?returnUrl=/seller/create-listing");
                 return;
             }
             if (role !== 'SELLER') {
@@ -308,7 +308,7 @@ export const useCreateListing = () => {
         try {
             const payload = getPayload();
             await saveDraft(payload);
-            router.push('/my-listings');
+            router.push('/seller/my-listings');
         } catch (error) {
 
             setSubmitError("Failed to save draft. Please try again.");
@@ -334,7 +334,7 @@ export const useCreateListing = () => {
             // Draft-First: Submit existing draft instead of creating new
             await submitDraft(listingId);
 
-            router.push('/my-listings');
+            router.push('/seller/my-listings');
         } catch (error) {
 
             setSubmitError("Failed to submit listing. Please try again.");

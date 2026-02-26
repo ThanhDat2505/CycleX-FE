@@ -12,7 +12,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { formatPrice } from '../../utils/format';
+import { formatPrice } from '../../../utils/format';
 import { StatusBadge } from '@/app/components/ui/StatusBadge';
 
 export interface MyListingCardProps {

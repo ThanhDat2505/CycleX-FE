@@ -1,4 +1,4 @@
-// app/draft-listings/page.tsx
+// app/seller/draft-listings/page.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -13,7 +13,7 @@ const DraftListingsPage: React.FC = () => {
   // ✅ AUTH PROTECTION: Redirect to login if not authenticated
   useEffect(() => {
     if (!isLoading && !isLoggedIn) {
-      router.push('/login?returnUrl=/draft-listings');
+      router.push('/login?returnUrl=/seller/draft-listings');
     }
     // Note: Users can view their own drafts (backend checks ownership)
   }, [isLoggedIn, isLoading, router]);
@@ -85,7 +85,7 @@ const DraftListingsPage: React.FC = () => {
 
                   <div className="flex gap-2">
                     <Link
-                      href={`/create-listing?draft=${listing.id}`}
+                      href={`/seller/create-listing?draft=${listing.id}`}
                       className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center"
                     >
                       Continue
@@ -103,7 +103,7 @@ const DraftListingsPage: React.FC = () => {
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
           <p className="text-gray-600 text-lg mb-4">No draft listings yet</p>
           <Link
-            href="/create-listing"
+            href="/seller/create-listing"
             className="inline-block px-6 py-3 bg-[#FF8A00] text-white rounded-lg font-semibold hover:bg-[#FF7A00] transition"
           >
             Create New Listing

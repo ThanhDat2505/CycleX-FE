@@ -61,7 +61,7 @@ export default function ListingGrid({ listings, isLoading }: ListingGridProps) {
             <div className={STYLES.resultCount}>
                 <span>{MESSAGES.SHOWING_RESULTS}</span>
                 <span className={STYLES.resultCountBold}>{listings.length}</span>
-                <span>{MESSAGES.PRODUCTS_COUNT}</span>
+                <span>{MESSAGES.PRODUCTS_COUNT}</span>  
             </div>
 
             {/* Grid */}

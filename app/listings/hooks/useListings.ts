@@ -88,7 +88,7 @@ export function useListings(): UseListingsReturn {
             router.replace('/shipper');
         }
         if (!isAuthLoading && user?.role === 'SELLER') {
-            router.replace('/dashboard');
+            router.replace('/seller/dashboard');
         }
     }, [user, isAuthLoading, router]);
 

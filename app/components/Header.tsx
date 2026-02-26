@@ -37,9 +37,9 @@ export default function Header() {
     // Handle sell button click with auth check — blocks BUYER and restricted roles
     const handleSellClick = useCallback(() => {
         if (!isLoggedIn) {
-            router.push('/login?returnUrl=/create-listing');
+            router.push('/login?returnUrl=/seller/create-listing');
         } else if (!isRestrictedRole && !isBuyer) {
-            router.push('/create-listing');
+            router.push('/seller/create-listing');
         }
     }, [isLoggedIn, isRestrictedRole, isBuyer, router]);
 
@@ -103,7 +103,7 @@ export default function Header() {
                                 {/* Đăng Tin Button — only SELLER and Guest, NOT BUYER */}
                                 {!isRestrictedRole && !isBuyer && (
                                     <Link
-                                        href="/create-listing"
+                                        href="/seller/create-listing"
                                         className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
                                     >
                                         Đăng Tin

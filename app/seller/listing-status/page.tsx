@@ -1,4 +1,4 @@
-// app/listing-status/page.tsx
+// app/seller/listing-status/page.tsx
 "use client";
 
 import React from "react";

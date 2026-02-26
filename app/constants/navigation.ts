@@ -11,7 +11,7 @@ export interface NavItem {
 
 export const MAIN_NAV_ITEMS: NavItem[] = [
     { label: 'Mua Xe', path: '/search', requiresAuth: false },
-    { label: 'Bán Xe', path: '/create-listing', requiresAuth: true },
+    { label: 'Bán Xe', path: '/seller/create-listing', requiresAuth: true },
     { label: 'Cẩm Nang', path: '/guide', requiresAuth: false },
 ] as const;
 

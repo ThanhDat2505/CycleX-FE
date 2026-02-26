@@ -1,4 +1,4 @@
-// app/my-listings/page.tsx
+// app/seller/my-listings/page.tsx
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
@@ -6,10 +6,10 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
-import { formatPrice } from '../utils/format';
+import { formatPrice } from '../../utils/format';
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
-import Pagination from '../listings/components/Pagination';
+import Pagination from '../../listings/components/Pagination';
 import { ITEMS_PER_PAGE } from "@/app/constants";
 
 // Force dynamic rendering
@@ -47,7 +47,7 @@ function MyListingsContent() {
   useEffect(() => {
     if (!authLoading) {
       if (!isLoggedIn) {
-        router.push('/login?returnUrl=/my-listings');
+        router.push('/login?returnUrl=/seller/my-listings');
       } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
         router.push('/');
       }
@@ -105,7 +105,7 @@ function MyListingsContent() {
           <p className="text-gray-600 mt-2">Manage all your bike listings</p>
         </div>
         <Link
-          href="/create-listing"
+          href="/seller/create-listing"
           className="px-6 py-3 bg-[#FF8A00] text-white rounded-lg font-semibold hover:bg-[#FF7A00] transition"
         >
           Create New Listing

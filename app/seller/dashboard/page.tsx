@@ -1,4 +1,4 @@
-// app/dashboard/page.tsx
+// app/seller/dashboard/page.tsx
 "use client";
 
 import React, { useEffect } from "react";
@@ -10,8 +10,8 @@ import { type TopListing } from "@/app/services/dashboardService";
 import { MetricCard } from "@/app/components/MetricCard";
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { useToast } from "@/app/contexts/ToastContext";
-import { formatPrice } from "../utils/format";
-import { TOP_LISTINGS_LIMIT } from "../constants";
+import { formatPrice } from "../../utils/format";
+import { TOP_LISTINGS_LIMIT } from "../../constants";
 
 const DashboardPage: React.FC = () => {
   const router = useRouter();
@@ -27,7 +27,7 @@ const DashboardPage: React.FC = () => {
   useEffect(() => {
     if (!authLoading) {
       if (!isLoggedIn) {
-        router.push('/login?returnUrl=/dashboard');
+        router.push('/login?returnUrl=/seller/dashboard');
       } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
         router.push('/'); // Redirect restricted roles to Home
       }
@@ -118,7 +118,7 @@ const DashboardPage: React.FC = () => {
                 value={activeListings}
                 icon="📋"
                 change="↑ 2 from last month"
-                href="/my-listings?status=active"
+                href="/seller/my-listings?status=active"
                 isPositive={true}
               />
               {/* BR-S10-F01: PENDING listings */}
@@ -127,7 +127,7 @@ const DashboardPage: React.FC = () => {
                 value={pendingListings}
                 icon="⏳"
                 change="Waiting for approval"
-                href="/my-listings?status=pending"
+                href="/seller/my-listings?status=pending"
               />
               {/* BR-S10-F01: REJECTED listings */}
               <MetricCard
@@ -135,7 +135,7 @@ const DashboardPage: React.FC = () => {
                 value={rejectedListings}
                 icon="❌"
                 change="Need attention"
-                href="/my-listings?status=rejected"
+                href="/seller/my-listings?status=rejected"
               />
               {/* BR-S10-F02: Transactions count */}
               <MetricCard
@@ -186,7 +186,7 @@ const DashboardPage: React.FC = () => {
                 </h2>
                 <div className="space-y-3">
                   <Link
-                    href="/create-listing"
+                    href="/seller/create-listing"
                     className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-[#FF8A00] text-white rounded-lg font-bold hover:bg-[#FF7A00] hover:shadow-lg hover:-translate-y-0.5 transition-all text-center"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,13 +202,13 @@ const DashboardPage: React.FC = () => {
                     <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                   </Link>
                   <Link
-                    href="/my-listings"
+                    href="/seller/my-listings"
                     className="block px-4 py-3 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-all text-center border border-gray-100"
                   >
                     View Listings
                   </Link>
                   <Link
-                    href="/draft-listings"
+                    href="/seller/draft-listings"
                     className="block px-4 py-3 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-all text-center border border-gray-100"
                   >
                     Draft Listings
