@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getAssignedDeliveries, getDeliverySummary } from '@/app/services/shipperService';
@@ -13,6 +13,18 @@ import { Package, ArrowRight, Clock, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DeliveryListPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <LoadingSpinner />
+            </div>
+        }>
+            <DeliveryListContent />
+        </Suspense>
+    );
+}
+
+function DeliveryListContent() {
     const { user, isLoggedIn, isLoading: isAuthLoading, role } = useAuth();
     const router = useRouter();
     const searchParams = useSearchParams();
