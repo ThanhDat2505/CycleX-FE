@@ -2220,7 +2220,7 @@ body {
   font-weight: 900;
 }
 
-.hidden {
+.inspector-hidden {
   display: none !important;
 }
 
