@@ -11,9 +11,9 @@
 import { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { usePurchaseRequest } from './hooks/usePurchaseRequest';
-import { MESSAGES } from '../constants';
+import { MESSAGES } from '../../constants';
 import StepIndicator from './components/StepIndicator';
-import { LoadingSpinner, EmptyState } from '../components/ui';
+import { LoadingSpinner, EmptyState } from '../../components/ui';
 import Step1InputForm from './components/Step1InputForm';
 import Step2Review from './components/Step2Review';
 

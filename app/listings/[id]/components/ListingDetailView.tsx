@@ -176,7 +176,7 @@ export default function ListingDetailView({ listing, userRole }: ListingDetailVi
                     {!isSeller && (
                         <div className={STYLES.ctaSection}>
                             <Link
-                                href={`/purchase-request?listingId=${listing.listingId}`}
+                                href={`/buyer/purchase-request?listingId=${listing.listingId}`}
                                 className={STYLES.ctaButton}
                             >
                                 {MESSAGES.DETAIL_PURCHASE_BUTTON}
@@ -193,7 +193,7 @@ export default function ListingDetailView({ listing, userRole }: ListingDetailVi
             {!isSeller && (
                 <div className={STYLES.mobileStickyCta}>
                     <Link
-                        href={`/purchase-request?listingId=${listing.listingId}`}
+                        href={`/buyer/purchase-request?listingId=${listing.listingId}`}
                         className={STYLES.mobileCtaButton}
                     >
                         {MESSAGES.DETAIL_PURCHASE_BUTTON} - {formatPrice(listing.price)}
