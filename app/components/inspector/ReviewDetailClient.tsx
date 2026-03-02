@@ -1,12 +1,14 @@
 ﻿"use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import type { Listing } from "@/app/mocks/inspector/inspectorListings";
 
 type ActionPanel = "NONE" | "NEED_INFO" | "APPROVE" | "REJECT";
 
 export default function ReviewDetailClient({ listing }: { listing: Listing }) {
+  const router = useRouter();
   const [note, setNote] = useState("");
   const [activePanel, setActivePanel] = useState<ActionPanel>("NONE");
 
@@ -265,7 +267,10 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                 <button
                   className="btn btn-success btn-sm"
                   type="button"
-                  onClick={() => alert("Đã duyệt!")}
+                  onClick={() => {
+                    alert("Đã duyệt!");
+                    router.push("/inspector/dashboard");
+                  }}
                 >
                   XÁC NHẬN
                 </button>
@@ -310,7 +315,11 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                   className="btn btn-danger btn-sm"
                   type="button"
                   disabled={!canConfirmReject}
-                  onClick={() => canConfirmReject && alert("Đã từ chối!")}
+                  onClick={() => {
+                    if (!canConfirmReject) return;
+                    alert("Đã từ chối!");
+                    router.push("/inspector/dashboard");
+                  }}
                 >
                   XÁC NHẬN
                 </button>
