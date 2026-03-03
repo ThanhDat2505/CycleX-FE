@@ -2,13 +2,24 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
-import type { Listing } from "@/app/mocks/inspector/inspectorListings";
+import { useEffect, useMemo, useState } from "react";
+import {
+  inspectorService,
+  type InspectorReviewDetail,
+} from "@/app/services/inspectorService";
 
 type ActionPanel = "NONE" | "NEED_INFO" | "APPROVE" | "REJECT";
 
-export default function ReviewDetailClient({ listing }: { listing: Listing }) {
+export default function ReviewDetailClient({
+  listingId,
+}: {
+  listingId?: string;
+}) {
   const router = useRouter();
+  const [listing, setListing] = useState<InspectorReviewDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [activePanel, setActivePanel] = useState<ActionPanel>("NONE");
 
@@ -16,6 +27,39 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectOther, setRejectOther] = useState("");
   const [needInfoNote, setNeedInfoNote] = useState("");
+
+  useEffect(() => {
+    let mounted = true;
+    const id = listingId?.trim();
+
+    if (!id) {
+      setLoading(false);
+      setError("Thiếu mã tin đăng");
+      return;
+    }
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        await inspectorService.lockListing(id);
+        const detail = await inspectorService.getListingDetail(id);
+        if (mounted) setListing(detail);
+      } catch (err: any) {
+        if (mounted) {
+          setError(err?.message || "Không tải được chi tiết tin");
+          setListing(null);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [listingId]);
 
   const reqId = "REQ-" + (listing?.id?.replace(/\D/g, "") || "0000");
 
@@ -28,10 +72,18 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
     }).format(listing?.priceVnd ?? 0);
   }, [listing?.priceVnd]);
 
-  if (!listing) {
+  if (loading) {
     return (
       <div className="p-10 text-center font-bold text-gray-500">
-        Không tìm thấy tin đăng.
+        Đang tải chi tiết tin đăng...
+      </div>
+    );
+  }
+
+  if (!listing || error) {
+    return (
+      <div className="p-10 text-center font-bold text-gray-500">
+        {error || "Không tìm thấy tin đăng."}
       </div>
     );
   }
@@ -240,7 +292,13 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                 <button
                   className="btn btn-info btn-sm"
                   type="button"
-                  onClick={() => alert("Đã gửi yêu cầu!")}
+                  disabled={submitting || needInfoNote.trim().length === 0}
+                  onClick={() => {
+                    alert(
+                      "Đã gửi yêu cầu bổ sung (UI). Endpoint riêng chưa có trong collection INSPECTOR.",
+                    );
+                    setActivePanel("NONE");
+                  }}
                 >
                   GỬI
                 </button>
@@ -267,9 +325,32 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                 <button
                   className="btn btn-success btn-sm"
                   type="button"
-                  onClick={() => {
-                    alert("Đã duyệt!");
-                    router.push("/inspector/dashboard");
+                  disabled={submitting || approveReason === ""}
+                  onClick={async () => {
+                    if (!listing) return;
+                    const reasonCode =
+                      approveReason === "ok"
+                        ? "MEETS_STANDARDS"
+                        : "PRICE_REASONABLE";
+                    const reasonText =
+                      approveReason === "ok"
+                        ? "Đủ ảnh và mô tả khớp"
+                        : "Giá phù hợp với thông tin sản phẩm";
+
+                    try {
+                      setSubmitting(true);
+                      await inspectorService.approveListing(listing.id, {
+                        reasonCode,
+                        reasonText,
+                        note,
+                      });
+                      alert("Đã duyệt tin thành công");
+                      router.push("/inspector/dashboard");
+                    } catch (err: any) {
+                      alert(err?.message || "Duyệt tin thất bại");
+                    } finally {
+                      setSubmitting(false);
+                    }
                   }}
                 >
                   XÁC NHẬN
@@ -314,11 +395,41 @@ export default function ReviewDetailClient({ listing }: { listing: Listing }) {
                 <button
                   className="btn btn-danger btn-sm"
                   type="button"
-                  disabled={!canConfirmReject}
-                  onClick={() => {
+                  disabled={!canConfirmReject || submitting}
+                  onClick={async () => {
                     if (!canConfirmReject) return;
-                    alert("Đã từ chối!");
-                    router.push("/inspector/dashboard");
+
+                    const reasonCode =
+                      rejectReason === "mismatch_desc"
+                        ? "MISMATCH_DESC"
+                        : rejectReason === "missing_info"
+                          ? "MISSING_INFO"
+                          : rejectReason === "duplicate_post"
+                            ? "DUPLICATE_POST"
+                            : rejectReason === "spam_content"
+                              ? "SPAM_CONTENT"
+                              : rejectReason === "wrong_photo"
+                                ? "WRONG_PHOTO"
+                                : "OTHER";
+                    const reasonText =
+                      rejectReason === "other" && rejectOther.trim().length > 0
+                        ? rejectOther.trim()
+                        : rejectReason;
+
+                    try {
+                      setSubmitting(true);
+                      await inspectorService.rejectListing(listing.id, {
+                        reasonCode,
+                        reasonText,
+                        note,
+                      });
+                      alert("Đã từ chối tin thành công");
+                      router.push("/inspector/dashboard");
+                    } catch (err: any) {
+                      alert(err?.message || "Từ chối tin thất bại");
+                    } finally {
+                      setSubmitting(false);
+                    }
                   }}
                 >
                   XÁC NHẬN

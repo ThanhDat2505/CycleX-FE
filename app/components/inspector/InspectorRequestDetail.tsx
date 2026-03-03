@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getListingById } from "@/app/mocks/inspector/inspectorListings";
+import {
+  inspectorService,
+  type InspectorReviewDetail,
+} from "@/app/services/inspectorService";
 
 function formatVnd(v?: number) {
   if (typeof v !== "number") return "—";
@@ -24,7 +27,29 @@ export default function InspectorRequestDetail() {
   const reqParam = searchParams.get("req") || "REQ-20001";
   const idParam = searchParams.get("id") || "ID-55555";
 
-  const listing = useMemo(() => getListingById(idParam), [idParam]);
+  const [listing, setListing] = useState<InspectorReviewDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        const detail = await inspectorService.getListingDetail(idParam);
+        if (mounted) setListing(detail);
+      } catch {
+        if (mounted) setListing(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, [idParam]);
 
   const [imgIndex, setImgIndex] = useState(0);
   const [isFading, setIsFading] = useState(false);
@@ -63,6 +88,17 @@ export default function InspectorRequestDetail() {
   const frame = listing?.specs?.frame ?? "—";
   const weight = listing?.specs?.weight ?? "—";
   const chatHref = `/inspector/inspector-chat?req=${encodeURIComponent(reqParam)}&id=${encodeURIComponent(idParam)}`;
+
+  if (loading) {
+    return (
+      <main className="main-content">
+        <div className="wrap" style={{ padding: 24 }}>
+          Đang tải chi tiết yêu cầu...
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="main-content">
       <div className="wrap">

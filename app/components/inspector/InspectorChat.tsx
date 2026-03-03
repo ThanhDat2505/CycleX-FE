@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, ChangeEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { inspectorService } from "@/app/services/inspectorService";
 
 type Sender = "INSPECTOR" | "SELLER" | "SYSTEM";
 type ListingStatus = "ACTIVE" | "ARCHIVED";
@@ -22,6 +23,7 @@ export default function InspectorChat() {
   const listingId = searchParams.get("id") || "ID-Unknown";
 
   const [messages, setMessages] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const [input, setInput] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -31,6 +33,51 @@ export default function InspectorChat() {
   const endRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const uploadedImageUrlsRef = useRef<string[]>([]);
+
+  const inspectionRequestId = (reqId || "").replace(/\D/g, "") || "1";
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadThread = async () => {
+      try {
+        setLoading(true);
+        const thread =
+          await inspectorService.getChatThread(inspectionRequestId);
+        if (!mounted) return;
+
+        const mapped: Message[] = thread.map((item: any, index: number) => ({
+          id: String(item.id ?? item.messageId ?? `${Date.now()}-${index}`),
+          sender:
+            item.senderRole === "INSPECTOR" || item.sender === "INSPECTOR"
+              ? "INSPECTOR"
+              : item.senderRole === "SELLER" || item.sender === "SELLER"
+                ? "SELLER"
+                : "SYSTEM",
+          content: String(item.text ?? item.content ?? item.message ?? ""),
+          images: Array.isArray(item.images)
+            ? item.images
+            : item.imageUrl
+              ? [item.imageUrl]
+              : undefined,
+          timestamp: String(item.createdAt ?? item.timestamp ?? ""),
+        }));
+
+        setMessages(mapped);
+      } catch {
+        if (mounted) {
+          setMessages([]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    loadThread();
+    return () => {
+      mounted = false;
+    };
+  }, [inspectionRequestId]);
 
   useEffect(() => {
     return () => {
@@ -44,7 +91,7 @@ export default function InspectorChat() {
     endRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || isLocked) return;
 
     const newMsg: Message = {
@@ -57,8 +104,13 @@ export default function InspectorChat() {
       }),
     };
 
-    setMessages((prev) => [...prev, newMsg]);
-    setInput("");
+    try {
+      await inspectorService.sendChatText(inspectionRequestId, input.trim());
+      setMessages((prev) => [...prev, newMsg]);
+      setInput("");
+    } catch {
+      // Keep UI stable if API fails
+    }
   };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +188,7 @@ export default function InspectorChat() {
         </div>
 
         <div className="chat-messages-area">
+          {loading && <div className="msg-system">Đang tải hội thoại...</div>}
           {messages.map((msg) => {
             const isMe = msg.sender === "INSPECTOR";
             const isSystem = msg.sender === "SYSTEM";
