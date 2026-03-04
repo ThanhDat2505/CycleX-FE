@@ -137,9 +137,9 @@ export async function getMyListings(
 
 /**
  * Create a new listing and submit for approval
- * Endpoint: POST /api/seller/listings (saveDraft: false)
+ * Endpoint: POST /api/seller/{sellerId}/listings (saveDraft: false)
  * 
- * @param payload - Listing data
+ * @param payload - Listing data including sellerId
  * @returns Promise<Listing> - Created listing with PENDING status
  */
 export async function createListing(payload: CreateListingPayload): Promise<Listing> {
@@ -172,9 +172,9 @@ export async function createListing(payload: CreateListingPayload): Promise<List
         return mockResponse;
     }
 
-    // Real API: POST /api/seller/listings with saveDraft: false
-    const requestBody = { ...payload, saveDraft: false };
-    const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
+    // Real API: POST /api/seller/{sellerId}/listings/create with saveDraft: false
+    const { sellerId, ...rest } = payload;
+    const response = await apiCallPOST<Listing>(`/seller/${sellerId}/listings/create`, { ...rest, saveDraft: false });
 
     validateResponse(response, 'createListing response');
     validateNumber(response.id, 'id');
@@ -188,9 +188,9 @@ export async function createListing(payload: CreateListingPayload): Promise<List
 
 /**
  * Save listing as draft (not submitted for approval)
- * Endpoint: POST /api/seller/listings (saveDraft: true)
+ * Endpoint: POST /api/seller/{sellerId}/listings (saveDraft: true)
  * 
- * @param payload - Listing data
+ * @param payload - Listing data including sellerId
  * @returns Promise<Listing> - Created listing with DRAFT status
  */
 export async function saveDraft(payload: CreateListingPayload): Promise<Listing> {
@@ -223,9 +223,9 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
         return mockResponse;
     }
 
-    // Real API: POST /api/seller/listings with saveDraft: true
-    const requestBody = { ...payload, saveDraft: true };
-    const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
+    // Real API: POST /api/seller/{sellerId}/listings/create with saveDraft: true
+    const { sellerId, ...rest } = payload;
+    const response = await apiCallPOST<Listing>(`/seller/${sellerId}/listings/create`, { ...rest, saveDraft: true });
 
     validateResponse(response, 'saveDraft response');
     validateNumber(response.id, 'id');
@@ -325,10 +325,10 @@ export async function submitDraft(listingId: number): Promise<Listing> {
 
 /**
  * Preview a listing before submitting
- * Endpoint: POST /api/seller/listings/preview
+ * Endpoint: POST /api/seller/{sellerId}/listings/preview
  * 
- * @param sellerId - Seller ID
- * @param listingId - Listing ID to preview
+ * @param sellerId - Seller ID (path variable)
+ * @param listingId - Listing ID to preview (request body)
  * @returns Promise<Listing> - Preview data
  */
 export async function previewListing(sellerId: number, listingId: number): Promise<Listing> {
@@ -346,7 +346,7 @@ export async function previewListing(sellerId: number, listingId: number): Promi
         return listing;
     }
 
-    const response = await apiCallPOST<Listing>('/seller/listings/preview', { sellerId, listingId });
+    const response = await apiCallPOST<Listing>(`/seller/${sellerId}/listings/preview`, { listingId });
     validateResponse(response, 'previewListing response');
     validateNumber(response.id, 'id');
     validateString(response.brand, 'brand');
@@ -358,10 +358,10 @@ export async function previewListing(sellerId: number, listingId: number): Promi
 
 /**
  * Submit a DRAFT listing for approval (DRAFT → PENDING)
- * Endpoint: POST /api/seller/listings/{id}/submit
+ * Endpoint: POST /api/seller/{sellerId}/listings/{listingId}/submit
  * 
- * @param sellerId - Seller ID
- * @param listingId - Listing ID to submit
+ * @param sellerId - Seller ID (path variable)
+ * @param listingId - Listing ID to submit (path variable)
  * @returns Promise<Listing> - Updated listing with PENDING status
  */
 export async function submitListing(sellerId: number, listingId: number): Promise<Listing> {
@@ -386,7 +386,7 @@ export async function submitListing(sellerId: number, listingId: number): Promis
         return mockListings[listingIndex];
     }
 
-    const response = await apiCallPOST<Listing>(`/seller/listings/${listingId}/submit`, { sellerId, listingId });
+    const response = await apiCallPOST<Listing>(`/seller/${sellerId}/listings/${listingId}/submit`, {});
     validateResponse(response, 'submitListing response');
     validateNumber(response.id, 'id');
     validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
@@ -414,9 +414,9 @@ export interface GetDraftsResponse {
 
 /**
  * Get all draft listings
- * Endpoint: POST /api/seller/drafts
+ * Endpoint: POST /api/seller/{sellerId}/drafts
  * 
- * @param params - Query parameters
+ * @param params - Query parameters including sellerId
  * @returns Promise<GetDraftsResponse> - Paginated draft listings
  */
 export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsResponse> {
@@ -452,8 +452,7 @@ export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsRespo
         };
     }
 
-    const response = await apiCallPOST<GetDraftsResponse>('/seller/drafts', {
-        sellerId,
+    const response = await apiCallPOST<GetDraftsResponse>(`/seller/${sellerId}/drafts`, {
         sort,
         page,
         pageSize,

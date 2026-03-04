@@ -39,7 +39,7 @@ export interface DashboardData {
 /**
  * Get seller's dashboard statistics and top performing listings
  * 
- * API Endpoint: GET /api/seller/dashboard
+ * API Endpoint: GET /api/seller/{sellerId}/dashboard/stats
  * Authentication: Required (authToken in headers)
  *
  * Response Format (SellerDashboardResponse):
@@ -65,19 +65,9 @@ export interface DashboardData {
  *   ]
  * }
  *
- * Replace with API call:
- * const authToken = localStorage.getItem('authToken');
- * const response = await fetch('/backend/api/seller/dashboard', {
- *     method: 'GET',
- *     headers: {
- *         'Content-Type': 'application/json',
- *         'Authorization': `Bearer ${authToken}`
- *     }
- * });
- * const data = await response.json();
- * return data;
+ * @param sellerId - The seller's ID
  */
-export async function getDashboardData(): Promise<DashboardData> {
+export async function getDashboardData(sellerId: number): Promise<DashboardData> {
     const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
     if (USE_MOCK_API) {
@@ -142,8 +132,8 @@ export async function getDashboardData(): Promise<DashboardData> {
         };
     }
 
-    // ✅ REAL API: GET /api/seller/dashboard/stats
-    const data = await apiCallGET<DashboardData>('/seller/dashboard/stats');
+    // ✅ REAL API: GET /api/seller/{sellerId}/dashboard/stats
+    const data = await apiCallGET<DashboardData>(`/seller/${sellerId}/dashboard/stats`);
 
     // ✅ VALIDATION: Validate response structure
     validateResponse(data);

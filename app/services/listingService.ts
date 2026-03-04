@@ -7,7 +7,7 @@
 import { Listing, HomeBike, PaginationInfo, ListingDetail, validateListingDetail } from '../types/listing';
 import { PAGINATION } from '../constants/pagination';
 import { MOCK_LISTINGS } from '../mocks';
-import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
+import { apiCallGET, apiCallPOST, apiCallPUT, apiCallDELETE } from '../utils/apiHelpers';
 import {
     validateResponse,
     validateArray,
@@ -415,13 +415,13 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
 
 /**
  * Get detailed information for seller's own listing (SELLER VIEW)
- * Endpoint: POST /api/seller/listings/detail
+ * Endpoint: POST /api/seller/{sellerId}/listings/{listingId}/detail
  * 
  * Use this for: My Listings page → seller clicks their own listing
  * Requires authentication (seller must be logged in)
  *
- * @param sellerId - Seller's user ID (required)
- * @param listingId - ID of the listing
+ * @param sellerId - Seller's user ID (path variable)
+ * @param listingId - ID of the listing (path variable)
  * @returns Promise<ListingDetail> - Full listing details including all statuses
  * @throws Error if listing not found or not owned by seller
  */
@@ -441,9 +441,91 @@ export async function getSellerListingDetail(sellerId: number, listingId: number
     }
 
     // Real API: POST /api/seller/listings/detail
-    const data = await apiCallPOST<ListingDetail>('/seller/listings/detail', { sellerId, listingId });
+    const data = await apiCallPOST<ListingDetail>(`/seller/${sellerId}/listings/${listingId}/detail`, {});
     const validated = validateListingDetail(data);
 
     return validated;
+}
+
+/**
+ * Create a new BikeListing (PUBLIC - Any seller)
+ * POST /api/bikelistings
+ * 
+ * @param createData - Bike listing creation data
+ * @returns Promise<ListingDetail> - Created listing
+ */
+export async function createBikeListing(createData: {
+    sellerId: number;
+    title: string;
+    description: string;
+    bikeType: string;
+    brand: string;
+    model: string;
+    manufactureYear: number;
+    condition: string;
+    usageTime: string;
+    reasonForSale: string;
+    price: number;
+    locationCity: string;
+    pickupAddress: string;
+    status?: string;
+}): Promise<ListingDetail> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        // Return mock response
+        return {
+            listingId: Math.floor(Math.random() * 10000),
+            ...createData,
+            status: createData.status || 'PENDING',
+            createdAt: new Date().toISOString(),
+        } as any;
+    }
+
+    return apiCallPOST<ListingDetail>('/bikelistings', createData);
+}
+
+/**
+ * Update a BikeListing
+ * PUT /api/bikelistings/{listingId}
+ * 
+ * @param listingId - ID of the listing to update
+ * @param updateData - Fields to update
+ * @returns Promise<ListingDetail> - Updated listing
+ */
+export async function updateBikeListing(
+    listingId: number,
+    updateData: {
+        title?: string;
+        description?: string;
+        price?: number;
+        condition?: string;
+        usageTime?: string;
+        reasonForSale?: string;
+        locationCity?: string;
+        pickupAddress?: string;
+    }
+): Promise<ListingDetail> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return { listingId, ...updateData } as any;
+    }
+
+    return apiCallPUT<ListingDetail>(`/bikelistings/${listingId}`, updateData);
+}
+
+/**
+ * Delete a BikeListing
+ * DELETE /api/bikelistings/{listingId}
+ * 
+ * @param listingId - ID of the listing to delete
+ * @returns Promise<{ message: string }> - Confirmation message
+ */
+export async function deleteBikeListing(listingId: number): Promise<{ message: string }> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return { message: 'Listing deleted successfully' };
+    }
+
+    return apiCallDELETE(`/bikelistings/${listingId}`);
 }
 

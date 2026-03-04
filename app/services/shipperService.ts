@@ -1,32 +1,84 @@
 import { DeliverySummary, Delivery, DeliveryFilter } from '@/app/types/shipper';
+import { apiCallGET } from '@/app/utils/apiHelpers';
+
+const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 /**
  * Get delivery summary for a shipper
- * Mock implementation for S-60/S-61
+ * GET /api/shipper/dashboard/summary
+ * Real API endpoint from S-60.F1
  */
 export async function getDeliverySummary(shipperId: number): Promise<DeliverySummary> {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    if (USE_MOCK_API) {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 800));
 
-    // Calculate summary from MOCK_DELIVERIES to ensure consistency
-    const summary: DeliverySummary = {
-        assigned: 0,
-        inProgress: 0,
-        delivered: 0,
-        failed: 0
-    };
+        // Calculate summary from MOCK_DELIVERIES to ensure consistency
+        const summary: DeliverySummary = {
+            assigned: 0,
+            inProgress: 0,
+            delivered: 0,
+            failed: 0
+        };
 
-    MOCK_DELIVERIES.forEach(d => {
-        if (d.status === 'ASSIGNED') summary.assigned++;
-        else if (d.status === 'IN_PROGRESS') summary.inProgress++;
-        else if (d.status === 'DELIVERED') summary.delivered++;
-        else if (d.status === 'FAILED') summary.failed++;
-    });
+        MOCK_DELIVERIES.forEach(d => {
+            if (d.status === 'ASSIGNED') summary.assigned++;
+            else if (d.status === 'IN_PROGRESS') summary.inProgress++;
+            else if (d.status === 'DELIVERED') summary.delivered++;
+            else if (d.status === 'FAILED') summary.failed++;
+        });
 
-    return summary;
+        return summary;
+    }
+
+    // Real API call: GET /api/shipper/dashboard/summary
+    try {
+        return await apiCallGET<DeliverySummary>('/shipper/dashboard/summary');
+    } catch (error) {
+        console.error('Error fetching delivery summary:', error);
+        throw error;
+    }
 }
 
-// Mock Deliveries Data
+/**
+ * Get assigned deliveries for a shipper
+ * GET /api/shipper/deliveries/assigned
+ * Real API endpoint from S-60.F2
+ */
+export async function getAssignedDeliveries(
+    shipperId: number, 
+    filter: DeliveryFilter = 'ALL',
+    page: number = 0,
+    pageSize: number = 10
+): Promise<Delivery[]> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        if (filter === 'ALL') return MOCK_DELIVERIES;
+
+        return MOCK_DELIVERIES.filter(d => d.status === filter);
+    }
+
+    // Real API call: GET /api/shipper/deliveries/assigned
+    try {
+        const params = new URLSearchParams();
+        params.append('page', page.toString());
+        params.append('pageSize', pageSize.toString());
+        if (filter !== 'ALL') {
+            params.append('status', filter);
+        }
+
+        const response = await apiCallGET<{ items: Delivery[] }>(
+            `/shipper/deliveries/assigned?${params.toString()}`
+        );
+        return response.items || [];
+    } catch (error) {
+        console.error('Error fetching assigned deliveries:', error);
+        throw error;
+    }
+}
+
+// Mock Deliveries Data (used when NEXT_PUBLIC_MOCK_API=true)
 const MOCK_DELIVERIES: Delivery[] = [
     {
         id: 'DEL-001',
@@ -118,24 +170,13 @@ const MOCK_DELIVERIES: Delivery[] = [
 ];
 
 /**
- * Get assigned deliveries for a shipper
- * Mock implementation for S-61
- */
-export async function getAssignedDeliveries(shipperId: number, filter: DeliveryFilter = 'ALL'): Promise<Delivery[]> {
-    await new Promise(resolve => setTimeout(resolve, 600));
-
-    if (filter === 'ALL') return MOCK_DELIVERIES;
-
-    return MOCK_DELIVERIES.filter(d => d.status === filter);
-}
-
-/**
- * Get delivery detail
- * Mock implementation for S-62
+ * Get delivery detail (mock only - not in API spec)
  */
 export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | null> {
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const delivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
-    return delivery || null;
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const delivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        return delivery || null;
+    }
+    return null;
 }

@@ -146,3 +146,43 @@ export async function apiCallPUT<T>(
         throw error;
     }
 }
+
+/**
+ * Helper for DELETE requests
+ * @param endpoint - API endpoint (e.g., '/bikelistings/123')
+ * @returns Promise with parsed JSON response
+ */
+export async function apiCallDELETE<T>(
+    endpoint: string
+): Promise<T> {
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
+}
