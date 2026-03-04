@@ -32,7 +32,7 @@ export function VerifyEmailForm() {
     const [resendCooldown, setResendCooldown] = useState(0);
 
     // OTP expiration timer (BR-12)
-    const [otpExpiration, setOtpExpiration] = useState(300); // 5 minutes default
+    const [otpExpiration, setOtpExpiration] = useState(120); // 2 minutes default
 
     // Resend cooldown timer effect
     useEffect(() => {
@@ -82,7 +82,8 @@ export function VerifyEmailForm() {
             // BR-12: Verify OTP
             const response = await authService.verifyOtp(email, otp);
 
-            if (response.success) {
+            // Official API returns message and user object
+            if (response.message) {
                 setSuccess('Email verified successfully! Redirecting to login...');
 
                 // BR-14: Redirect to login after successful verification
@@ -91,9 +92,19 @@ export function VerifyEmailForm() {
                 }, 2000);
             }
         } catch (err: any) {
-            // Handle specific error cases
-            if (err.status === 400) {
-                setError('Invalid or expired OTP. Please try again.');
+            // Handle specific error cases from official API
+            if (err.status === 423) {
+                // OTP Locked after 3 failed attempts
+                setError('OTP is locked. Please request a new OTP.');
+            } else if (err.status === 400) {
+                // Check specific 400 error messages
+                if (err.message.includes('expired')) {
+                    setError('OTP expired. Please request a new OTP.');
+                } else if (err.message.includes('Invalid OTP')) {
+                    setError('Invalid OTP. Please try again.');
+                } else {
+                    setError('Invalid or expired OTP. Please try again.');
+                }
             } else if (err.status === 404) {
                 setError('Email not found. Please register first.');
             } else {
@@ -121,13 +132,14 @@ export function VerifyEmailForm() {
         setIsResending(true);
 
         try {
-            // BR-13: Resend OTP
-            const response = await authService.resendOtp(email);
+            // BR-13: Send OTP (official API)
+            const response = await authService.sendOtp(email);
 
-            if (response.success) {
-                setSuccess('OTP has been resent to your email');
+            // Official API just returns message
+            if (response.message) {
+                setSuccess(response.message);
                 setResendCooldown(60); // 60 seconds cooldown
-                setOtpExpiration(response.expiresIn || 300); // Reset expiration
+                setOtpExpiration(120); // Reset to 2 minutes
                 setOtp(''); // Clear old OTP input
             }
         } catch (err: any) {
@@ -213,8 +225,8 @@ export function VerifyEmailForm() {
                         onClick={handleResend}
                         disabled={resendCooldown > 0 || isResending}
                         className={`font-semibold ${resendCooldown > 0 || isResending
-                                ? 'text-gray-400 cursor-not-allowed'
-                                : 'text-brand-primary hover:underline'
+                            ? 'text-gray-400 cursor-not-allowed'
+                            : 'text-brand-primary hover:underline'
                             }`}
                     >
                         {isResending ? 'Sending...' : resendCooldown > 0 ? `Resend (${resendCooldown}s)` : 'Resend OTP'}

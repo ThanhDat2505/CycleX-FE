@@ -5,8 +5,9 @@ import {
     RegisterResponse,
     VerifyOtpRequest,
     VerifyOtpResponse,
-    ResendOtpRequest,
-    ResendOtpResponse,
+    SendOtpRequest,
+    SendOtpResponse,
+    User,
     AuthError
 } from '@/app/types/auth';
 import {
@@ -17,32 +18,16 @@ import {
     verifyMockOtp,
     verifyMockUserEmail,
     storeMockOtp,
-} from './mockData';
+    getMockUser,
+} from '../mocks';
+import { apiCallPOST } from '@/app/utils/apiHelpers';
+import {
+    validateResponse,
+    validateString,
+    validateUser
+} from '../utils/apiValidation';
 
 // All API calls now use /backend/api prefix (handled by next.config.ts proxy)
-
-/**
- * Helper function to make API calls with consistent error handling
- * @param endpoint - API endpoint (e.g., '/auth/login')
- * @param body - Request body object
- * @returns Promise with parsed JSON response
- */
-async function apiCall<T>(endpoint: string, body: object): Promise<T> {
-    const response = await fetch(`/backend/api${endpoint}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-        const error: AuthError = await response.json();
-        throw error;
-    }
-
-    return await response.json();
-}
 
 /**
  * Authentication Service
@@ -55,7 +40,6 @@ export const authService = {
      * @param password - User password
      * @param rememberMe - Whether to remember the user
      * @returns Promise with login response
-     * async báo hiệu có thể dùng await, gọi APi mất thời gian, không block code khác, đợi kết quả rồi mới chạy
      */
     login: async (email: string, password: string, rememberMe: boolean = false): Promise<LoginResponse> => {
         // Mock mode for testing UI without backend
@@ -67,6 +51,7 @@ export const authService = {
             if (user) {
                 const mockToken = 'mock-jwt-token-' + Date.now();
                 authService.saveToken(mockToken);
+                authService.saveUser(user); // Save user data for role check
 
                 return {
                     accessToken: mockToken,
@@ -75,14 +60,8 @@ export const authService = {
                     message: 'Login successful!'
                 };
             } else {
-                // Check if user exists but not verified
-                if (mockEmailExists(email)) {
-                    throw {
-                        status: 403,
-                        message: 'Please verify your email before logging in',
-                    };
-                }
-                // Wrong credentials
+                // User not found OR wrong password
+                // BR-L11: Generic error message for security
                 throw {
                     status: 401,
                     message: 'Email or password is incorrect',
@@ -90,14 +69,25 @@ export const authService = {
             }
         }
 
-        // gọi API mất thời gian, nên dùng promise kiểu dữ liệu là LoginResponse
         try {
-            // sử dụng helper function apiCall để gọi API
-            const data = await apiCall<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
+            // sử dụng helper function apiCallPOST từ apiHelpers để gọi API
+            const data = await apiCallPOST<LoginResponse>('/auth/login', { email, password, rememberMe } as LoginRequest);
 
-            // Save token if login successful
+            // ✅ VALIDATION: Strict check of login response
+            validateResponse(data, 'login response');
+            validateString(data.accessToken, 'accessToken');
+            validateUser(data.user);
+
+            if (!data.user.status || data.user.status !== 'ACTIVE') {
+                throw {
+                    status: 401,
+                    message: 'Please verify your email',
+                }
+            }
+            // Save token and user data if login successful
             if (data.accessToken) {
-                authService.saveToken(data.accessToken); // nếu có token thì lưu vào localStorage
+                authService.saveToken(data.accessToken); // lưu token vào localStorage
+                authService.saveUser(data.user); // ✅ lưu user data vào localStorage để giữ session khi reload
             }
 
             return data;
@@ -108,15 +98,15 @@ export const authService = {
 
     /**
      * Register new user
-     * Per API Document: /api/auth/register
+     * Per Official API: POST /api/auth/register
      * @param email - User email
      * @param password - User password (6-20 chars)
      * @param phone - User phone (required, 10 digits starting with 0)
-     * @param cccd - User CCCD (12 digits)
-     * @param fullName - User full name
-     * @returns Promise with register response (no token)
+     * @param cccd - User CCCD (12 characters)
+     * @param role - User role (BUYER or SELLER)
+     * @returns Promise with register response (no token, fullName will be null)
      */
-    register: async (email: string, password: string, phone: string, cccd: string, fullName: string): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'): Promise<RegisterResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
@@ -138,7 +128,8 @@ export const authService = {
             }
 
             // Register new user and generate OTP
-            const user = registerMockUser(email, password, phone, cccd, fullName);
+            // Use selected role (BUYER or SELLER)
+            const user = registerMockUser(email, password, phone, cccd, role as any);
 
             return {
                 message: 'Registration successful! Please check your email for OTP.',
@@ -147,17 +138,18 @@ export const authService = {
         }
 
         try {
-            const data = await apiCall<RegisterResponse>('/auth/register', {
+            const data = await apiCallPOST<RegisterResponse>('/auth/register', {
                 email,
                 password,
                 phone,
                 cccd,
-                fullName
+                role
             } as RegisterRequest);
 
-            // ❌ DO NOT save token - register doesn't return token
-            // ❌ DO NOT auto-login
-            // ✅ Just return data for redirect to verify email
+            // VALIDATION
+            validateResponse(data, 'register response');
+            validateString(data.message, 'message');
+            validateUser(data.user);
 
             return data;
         } catch (error) {
@@ -178,25 +170,46 @@ export const authService = {
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate network delay
 
-            // Verify OTP using mock data system
-            if (verifyMockOtp(email, otp)) {
-                // Mark user as verified
-                verifyMockUserEmail(email);
+            try {
+                // Verify OTP using mock data system
+                // verifyMockOtp throws errors for locked (423) and expired (400)
+                if (verifyMockOtp(email, otp)) {
+                    // Mark user as verified
+                    verifyMockUserEmail(email);
 
-                return {
-                    success: true,
-                    message: 'Email verified successfully!',
-                };
-            } else {
-                throw {
-                    status: 400,
-                    message: 'Invalid or expired OTP code',
-                };
+                    // Get updated user object
+                    const user = getMockUser(email);
+                    if (!user) {
+                        throw {
+                            status: 404,
+                            message: 'User not found',
+                        };
+                    }
+
+                    return {
+                        message: 'Email verified successfully!',
+                        user: user,
+                    };
+                } else {
+                    // Invalid OTP
+                    throw {
+                        status: 400,
+                        message: 'Invalid OTP',
+                    };
+                }
+            } catch (err: any) {
+                // Re-throw errors from verifyMockOtp (423 locked, 400 expired)
+                throw err;
             }
         }
 
         try {
-            const data = await apiCall<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
+            const data = await apiCallPOST<VerifyOtpResponse>('/auth/verify-otp', { email, otp } as VerifyOtpRequest);
+
+            // ✅ VALIDATION: Strict check of verification response
+            validateResponse(data, 'verifyOtp response');
+            validateString(data.message, 'message');
+            validateUser(data.user);
 
             // ❌ DO NOT save token - verification doesn't return token
             // ❌ DO NOT auto-login
@@ -209,12 +222,12 @@ export const authService = {
     },
 
     /**
-     * Resend OTP for email verification
-     * BR-13: User can resend OTP, old OTP becomes invalid
+     * Send OTP for email verification
+     * Official API: POST /api/auth/send-otp
      * @param email - User email
-     * @returns Promise with resend response
+     * @returns Promise with send response
      */
-    resendOtp: async (email: string): Promise<ResendOtpResponse> => {
+    sendOtp: async (email: string): Promise<SendOtpResponse> => {
         // Mock mode for testing UI without backend
         if (process.env.NEXT_PUBLIC_MOCK_API === 'true') {
             await new Promise((resolve) => setTimeout(resolve, 800)); // Simulate network delay
@@ -223,14 +236,17 @@ export const authService = {
             storeMockOtp(email);
 
             return {
-                success: true,
                 message: 'OTP has been resent to your email',
-                expiresIn: 300, // 5 minutes
             };
         }
 
         try {
-            const data = await apiCall<ResendOtpResponse>('/auth/resend-otp', { email } as ResendOtpRequest);
+            const data = await apiCallPOST<SendOtpResponse>('/auth/send-otp', { email } as SendOtpRequest);
+
+            // ✅ VALIDATION: Strict check of sendOtp response
+            validateResponse(data, 'sendOtp response');
+            validateString(data.message, 'message');
+
             return data;
         } catch (error) {
             throw error;
@@ -241,18 +257,41 @@ export const authService = {
      * Save authentication token to localStorage
      * @param token - JWT token from backend
      */
-    saveToken: (token: string): void => { // hàm không return
-        if (typeof window !== 'undefined') { //next render code ở server nên không có window, chỉ browser mới có window
-            console.log(`Saving token to localStorage: ${token}`);
+    saveToken: (token: string): void => {
+        if (typeof window !== 'undefined') {
+
             localStorage.setItem('authToken', token);
         }
+    },
+
+    /**
+     * Save user data to localStorage
+     * @param user - User object from login response
+     */
+    saveUser: (user: User): void => {
+        if (typeof window !== 'undefined') {
+
+            localStorage.setItem('userData', JSON.stringify(user));
+        }
+    },
+
+    /**
+     * Get user data from localStorage
+     * @returns User object or null
+     */
+    getUser: (): User | null => {
+        if (typeof window !== 'undefined') {
+            const userData = localStorage.getItem('userData');
+            return userData ? JSON.parse(userData) : null;
+        }
+        return null;
     },
 
     /**
      * Get authentication token from localStorage
      * @returns Token string or null
      */
-    getToken: (): string | null => { // return string or null
+    getToken: (): string | null => {
         if (typeof window !== 'undefined') {
             return localStorage.getItem('authToken');
         }
@@ -260,11 +299,12 @@ export const authService = {
     },
 
     /**
-     * Remove authentication token (logout)
+     * Remove authentication token and user data (logout)
      */
     logout: (): void => {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
         }
     },
 
@@ -273,6 +313,6 @@ export const authService = {
      * @returns boolean
      */
     isAuthenticated: (): boolean => {
-        return !!authService.getToken(); // nếu có token thì return true, không có thì return false
+        return !!authService.getToken();
     },
 };

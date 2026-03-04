@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#f3f4f6"/>
+  <g transform="translate(150, 90)">
+    <circle cx="50" cy="50" r="30" fill="none" stroke="#d1d5db" stroke-width="3"/>
+    <circle cx="50" cy="50" r="5" fill="#d1d5db"/>
+    <line x1="50" y1="20" x2="50" y2="50" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="50" y1="50" x2="30" y2="70" stroke="#d1d5db" stroke-width="2"/>
+    <line x1="50" y1="50" x2="70" y2="70" stroke="#d1d5db" stroke-width="2"/>
+  </g>
+  <text x="200" y="190" text-anchor="middle" fill="#9ca3af" font-family="Arial, sans-serif" font-size="14">Không có hình ảnh</text>
+</svg>

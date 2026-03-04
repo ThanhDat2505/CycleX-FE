@@ -25,7 +25,7 @@ export const validatePasswordLogin = (password: string): boolean => {
 /**
  * Validate password for Register (8-20 characters)
  * @param password - Password string to validate
- * @returns true if password is 8-20 characters, false otherwise
+ * @returns true if password is 6-20 characters, false otherwise
  */
 export const validatePasswordRegister = (password: string): boolean => {
     return password.length >= 6 && password.length <= 20;
