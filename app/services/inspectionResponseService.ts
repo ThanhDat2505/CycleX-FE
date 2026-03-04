@@ -1,115 +1,135 @@
 import axiosInstance from './axiosConfig';
-import {
-    InspectionResponseData,
-    SubmitResponseRequest
-} from '../types/inspection';
-
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 /**
- * S-42.1: Load Inspection Response Screen
+ * Inspection Response Service
+ * Maps to Postman collection: S-42
+ * Seller responds to inspection requirements with files and answers
+ */
+
+// ============================================================
+// TYPE DEFINITIONS
+// ============================================================
+
+interface UploadDraftFileResponse {
+  fileId: number;
+  fileName: string;
+  uploadDate: string;
+}
+
+interface SubmitResponseRequest {
+  answers: Array<{
+    requirementId: number;
+    text: string;
+  }>;
+}
+
+interface InspectionResponseData {
+  inspectionRequestId: number;
+  listingId: number;
+  status: string;
+  requirements: Array<{
+    requirementId: number;
+    title: string;
+    description: string;
+    type: 'TEXT' | 'IMAGE' | 'FILE';
+    required: boolean;
+  }>;
+  existingAnswers: Array<{
+    requirementId: number;
+    text: string;
+  }>;
+  existingFiles: Array<{
+    fileId: number;
+    fileName: string;
+    uploadDate: string;
+  }>;
+}
+
+// ============================================================
+// S-42.1: LOAD INSPECTION RESPONSE SCREEN
+// ============================================================
+
+/**
+ * S-42.1: Load inspection response screen data
  * GET /api/seller/listings/{listingId}/inspection-response
+ * @param listingId - The listing's ID
+ * @returns Requirements list with file upload fields and text answer fields
  */
-export const getInspectionResponseData = async (listingId: number): Promise<InspectionResponseData> => {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        return {
-            inspectionRequestId: 123,
-            listingId: listingId,
-            status: 'PENDING_SELLER_RESPONSE',
-            requirements: [
-                {
-                    requirementId: 1,
-                    title: 'Service History',
-                    description: 'Please describe the maintenance history of the bike.',
-                    type: 'TEXT',
-                    required: true
-                },
-                {
-                    requirementId: 2,
-                    title: 'Frame Condition',
-                    description: 'Any scratches or dents on the frame?',
-                    type: 'TEXT',
-                    required: false
-                },
-                {
-                    requirementId: 3,
-                    title: 'Engine/Component Photos',
-                    description: 'Upload clear photos of the drive train and engine area.',
-                    type: 'IMAGE',
-                    required: true
-                }
-            ],
-            existingAnswers: [],
-            existingFiles: []
-        };
-    }
-    return axiosInstance.get(`/api/seller/listings/${listingId}/inspection-response`);
+export const getInspectionResponseData = async (
+  listingId: number
+): Promise<InspectionResponseData> => {
+  return axiosInstance.get(
+    `/api/seller/listings/${listingId}/inspection-response`
+  );
 };
 
+// ============================================================
+// S-42.2: UPLOAD DRAFT FILE
+// ============================================================
+
 /**
- * S-42.2: Upload Draft File
+ * S-42.2: Upload a draft file as evidence for a requirement
  * POST /api/seller/inspection-requests/{inspectionRequestId}/response/requirements/{requirementId}/files
+ * @param inspectionRequestId - The inspection request's ID
+ * @param requirementId - The requirement's ID
+ * @param formData - FormData containing:
+ *   - file: Any file type for inspection evidence
+ * @returns Uploaded file with fileId, fileName, uploadDate
  */
-export const uploadInspectionFile = async (
-    inspectionRequestId: number,
-    requirementId: number,
-    file: File
-): Promise<{ fileId: number; fileUrl: string }> => {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return {
-            fileId: Math.floor(Math.random() * 1000),
-            fileUrl: URL.createObjectURL(file)
-        };
+export const uploadDraftFile = async (
+  inspectionRequestId: string,
+  requirementId: string,
+  formData: FormData
+) => {
+  return axiosInstance.post(
+    `/api/seller/inspection-requests/${inspectionRequestId}/response/requirements/${requirementId}/files`,
+    formData,
+    {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     }
-
-    const formData = new FormData();
-    formData.append('file', file);
-
-    return axiosInstance.post(
-        `/api/seller/inspection-requests/${inspectionRequestId}/response/requirements/${requirementId}/files`,
-        formData,
-        {
-            headers: {
-                'Content-Type': 'multipart/form-data',
-            },
-        }
-    );
+  );
 };
 
+// ============================================================
+// S-42.3: DELETE DRAFT FILE
+// ============================================================
+
 /**
- * S-42.3: Delete Draft File
+ * S-42.3: Delete a draft file that was uploaded
  * DELETE /api/seller/inspection-requests/{inspectionRequestId}/response/files/{fileId}
+ * @param inspectionRequestId - The inspection request's ID
+ * @param fileId - The file's ID
+ * @returns Deletion confirmation
  */
-export const deleteInspectionFile = async (
-    inspectionRequestId: number,
-    fileId: number
-): Promise<void> => {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        return;
-    }
-    return axiosInstance.delete(
-        `/api/seller/inspection-requests/${inspectionRequestId}/response/files/${fileId}`
-    );
+export const deleteDraftFile = async (
+  inspectionRequestId: string,
+  fileId: string
+) => {
+  return axiosInstance.delete(
+    `/api/seller/inspection-requests/${inspectionRequestId}/response/files/${fileId}`
+  );
 };
 
+// ============================================================
+// S-42.4: SUBMIT INSPECTION RESPONSE
+// ============================================================
+
 /**
- * S-42.4: Submit Inspection Response
+ * S-42.4: Submit the inspection response with answers and uploaded files
  * POST /api/seller/inspection-requests/{inspectionRequestId}/response/submit
+ * @param inspectionRequestId - The inspection request's ID
+ * @param data - Response data containing answers array
+ * @returns Submission confirmation (status: SUBMITTED)
  */
 export const submitInspectionResponse = async (
-    inspectionRequestId: number,
-    data: SubmitResponseRequest
-): Promise<void> => {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('Submitted response:', data);
-        return;
-    }
-    return axiosInstance.post(
-        `/api/seller/inspection-requests/${inspectionRequestId}/response/submit`,
-        data
-    );
+  inspectionRequestId: string,
+  data: SubmitResponseRequest
+) => {
+  return axiosInstance.post(
+    `/api/seller/inspection-requests/${inspectionRequestId}/response/submit`,
+    data
+  );
 };
+

@@ -1,280 +1,187 @@
 
-/**
- * Transaction Service
- * Handles API calls for transaction operations (BP5)
- * Currently in mock mode - will connect to real API later
- */
-
-import { CreateTransactionRequest, Transaction } from '../types/transaction';
-
-// Mock mode for development
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
+import axiosInstance from './axiosConfig';
 
 /**
- * Create purchase or deposit request
- * Endpoint: POST /api/transactions (future)
- * 
- * @param data - Transaction request data
- * @returns Promise<Transaction> - Created transaction
+ * Transaction & Purchase Request Service
+ * Maps to Postman collection: S-50 (Purchase Request), S-52 to S-54 (Transactions)
  */
-import { apiCallPOST, apiCallGET, apiCallPUT } from '../utils/apiHelpers';
 
-/**
- * Create purchase or deposit request
- * Endpoint: POST /api/transactions (future)
- * 
- * @param data - Transaction request data
- * @returns Promise<Transaction> - Created transaction
- */
-export async function createPurchaseRequest(
-    data: CreateTransactionRequest
-): Promise<Transaction> {
-    if (USE_MOCK_API) {
-        // ... existing mock logic ...
-        // Simulate network delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
+// ============================================================
+// TYPE DEFINITIONS
+// ============================================================
 
-        // Mock fees calculation
-        const platformFee = 50000; // 50k VND
-        const inspectionFee = 100000; // 100k VND
-
-        // Calculate total
-        const listingPrice = 5000000; // Will get from listing data
-        const totalAmount = data.transactionType === 'PURCHASE'
-            ? listingPrice + platformFee + inspectionFee
-            : (data.depositAmount || 0) + platformFee;
-
-        // Return mock transaction
-        const mockTransaction: Transaction = {
-            transactionId: Math.floor(Math.random() * 10000),
-            listingId: data.listingId,
-            buyerId: data.buyerId,
-            sellerId: 1, // Mock seller ID
-            transactionType: data.transactionType,
-            status: 'PENDING_SELLER_CONFIRM',
-            desiredTime: data.desiredTime,
-            receiverName: data.receiverName,
-            receiverPhone: data.receiverPhone,
-            receiverAddress: data.receiverAddress,
-            depositAmount: data.depositAmount,
-            note: data.note,
-            platformFee,
-            inspectionFee,
-            totalAmount,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        return mockTransaction;
-    }
-
-    // Real API call
-    return apiCallPOST<Transaction>('/transactions', data);
+interface PurchaseRequestReviewData {
+  transactionType: 'PURCHASE' | 'DEPOSIT';
+  desiredTransactionTime: string;
+  note?: string;
 }
 
-/**
- * Get transaction detail
- * @param transactionId - Transaction ID
- * @returns Promise<Transaction>
- */
-export async function getTransactionDetail(
-    transactionId: number
-): Promise<import('../types/transaction').TransactionWithDetails> {
-    if (USE_MOCK_API) {
-        // ... existing mock logic ...
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        // Return mock transaction with details
-        const mockTransaction: import('../types/transaction').TransactionWithDetails = {
-            transactionId,
-            listingId: 1,
-            // Dynamic Owner: Set buyerId to current user so they can access it in testing
-            buyerId: (() => {
-                try {
-                    if (typeof window !== 'undefined') {
-                        const u = localStorage.getItem('userData');
-                        if (u) return JSON.parse(u).userId;
-                    }
-                } catch { }
-                return 2; // Fallback
-            })(),
-            sellerId: 3, // Mock Seller (seller@example.com)
-            transactionType: 'PURCHASE',
-            status: 'PENDING_SELLER_CONFIRM',
-            desiredTime: new Date(Date.now() + 86400000).toISOString(),
-            platformFee: 50000,
-            inspectionFee: 100000,
-            totalAmount: 5150000,
-            listingTitle: 'Trek Marlin 7 2022 (Mock Detail)',
-            listingImage: 'https://images.unsplash.com/photo-1576435728678-be95d398b646?auto=format&fit=crop&q=80&w=500',
-            buyerName: 'Nguyễn Văn A',
-            sellerName: 'CycleX Verified Seller',
-            sellerPhone: '0912345678',
-            receiverName: 'Nguyễn Văn A',
-            receiverPhone: '0987654321',
-            receiverAddress: '123 Đường Láng, Hà Nội',
-            note: 'Giao hàng vào buổi sáng giúp mình nhé.',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        return mockTransaction;
-    }
-
-    // Real API call
-    return apiCallGET<import('../types/transaction').TransactionWithDetails>(`/transactions/${transactionId}`);
+interface CreatePurchaseRequestData {
+  transactionType: 'PURCHASE' | 'DEPOSIT';
+  desiredTransactionTime: string;
+  note?: string;
 }
 
-// In-memory mock storage
-let mockTransactions: import('../types/transaction').TransactionWithDetails[] = [
-    {
-        transactionId: 101,
-        listingId: 1,
-        buyerId: 2, // Default mock buyer
-        sellerId: 3, // Default mock seller
-        transactionType: 'PURCHASE',
-        status: 'PENDING_SELLER_CONFIRM',
-        desiredTime: new Date(Date.now() + 86400000 * 2).toISOString(),
-        listingTitle: 'Trek Marlin 7 2022',
-        listingImage: 'https://images.unsplash.com/photo-1576435728678-be95d398b646?auto=format&fit=crop&q=80&w=500',
-        buyerName: 'Nguyễn Văn A',
-        sellerName: 'CycleX Verified Seller',
-        platformFee: 50000,
-        inspectionFee: 100000,
-        totalAmount: 5500000,
-        receiverName: 'Nguyễn Văn A',
-        receiverPhone: '0987654321',
-        receiverAddress: '123 Đường Láng, Hà Nội',
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-    {
-        transactionId: 105,
-        listingId: 5,
-        buyerId: 2,
-        sellerId: 3,
-        transactionType: 'DEPOSIT',
-        status: 'CONFIRMED',
-        desiredTime: new Date(Date.now() + 86400000 * 3).toISOString(),
-        listingTitle: 'Honda Wave Alpha',
-        listingImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=500',
-        buyerName: 'Nguyễn Văn A',
-        sellerName: 'Another Seller',
-        depositAmount: 500000,
-        platformFee: 50000,
-        inspectionFee: 0,
-        totalAmount: 550000,
-        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-];
-
-/**
- * Get transactions for seller (S-52)
- * @param sellerId - Seller ID
- * @param status - Filter by status
- * @returns Promise<TransactionWithDetails[]>
- */
-export async function getSellerTransactions(
-    sellerId: number,
-    status?: string
-): Promise<import('../types/transaction').TransactionWithDetails[]> {
-    if (USE_MOCK_API) {
-        // ... existing mock logic ...
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        // Use in-memory mock data
-        let results = mockTransactions.filter(t => t.sellerId === sellerId);
-
-        if (status) {
-            results = results.filter(t => t.status === status);
-        }
-
-        return results;
-    }
-
-    // Real API call
-    const queryParams = status ? `?status=${status}` : '';
-    return apiCallGET<import('../types/transaction').TransactionWithDetails[]>(`/seller/${sellerId}/transactions${queryParams}`);
+interface ConfirmTransactionRequest {
+  note?: string;
 }
 
-/**
- * Get transactions for buyer (S-54/List)
- * @param buyerId - Buyer ID
- * @returns Promise<TransactionWithDetails[]>
- */
-export async function getBuyerTransactions(
-    buyerId: number
-): Promise<import('../types/transaction').TransactionWithDetails[]> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        // Use in-memory mock data
-        // For testing purposes, we might just return all mock transactions 
-        // OR filtering by buyerId if we were strictly following the mock user logic.
-        // Given previous dynamic buyerId fix, let's just return all to ensure visibility.
-        // In a real mock, we would filter: mockTransactions.filter(t => t.buyerId === buyerId);
-        // But to make it easy for the user to see "their" transactions regardless of ID drift:
-        return mockTransactions.map(t => ({
-            ...t,
-            // Dynamically set buyerId to current user to prevent access issues
-            buyerId: (() => {
-                try {
-                    if (typeof window !== 'undefined') {
-                        const u = localStorage.getItem('userData');
-                        if (u) return JSON.parse(u).userId;
-                    }
-                } catch { }
-                return t.buyerId;
-            })(),
-        }));
-    }
-    return apiCallGET<import('../types/transaction').TransactionWithDetails[]>(`/buyer/${buyerId}/transactions`);
+interface RejectTransactionRequest {
+  reason: string;
 }
 
-/**
- * Accept transaction (S-52 Action)
- * @param transactionId - Transaction ID
- */
-export async function acceptTransaction(transactionId: number): Promise<boolean> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        const tx = mockTransactions.find(t => t.transactionId === transactionId);
-        if (tx) {
-            tx.status = 'CONFIRMED';
-        }
-
-        return true;
-    }
-    // Real API: usually PUT /transactions/{id}/status or similar
-    // Assuming endpoint for now
-    await apiCallPUT(`/transactions/${transactionId}/accept`, {});
-    return true;
+interface PendingTransactionParams {
+  page?: number;
+  size?: number;
+  sortBy?: string;
+  sortDir?: string;
+  transactionType?: 'PURCHASE' | 'DEPOSIT';
+  keyword?: string;
 }
 
-/**
- * Reject transaction (S-53 Action - REMOVED per user request)
- * Keeping logic commented out or removing if needed.
- */
-// export async function rejectTransaction... // Removed
+// ============================================================
+// S-50: PURCHASE REQUEST
+// ============================================================
 
 /**
- * Cancel transaction (S-54 Action)
- * @param transactionId - Transaction ID
+ * S-50.1: Init Purchase Request Screen
+ * GET /api/products/{productId}/purchase-request/init
+ * @param productId - The product's ID
+ * @returns Init data (product details, seller info, pricing, fees)
  */
-export async function cancelTransaction(transactionId: number): Promise<boolean> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        console.log(`Transaction ${transactionId} cancelled.`);
+export const initPurchaseRequest = async (productId: string) => {
+  return axiosInstance.get(`/api/products/${productId}/purchase-request/init`);
+};
 
-        const tx = mockTransactions.find(t => t.transactionId === transactionId);
-        if (tx) {
-            tx.status = 'CANCELLED';
-        }
+/**
+ * S-50.2: Review Purchase Request (no DB write)
+ * POST /api/products/{productId}/purchase-requests/review
+ * @param productId - The product's ID
+ * @param data - Review data (transactionType, desiredTransactionTime, note)
+ * @returns Review preview (totals, fees, timeline)
+ */
+export const reviewPurchaseRequest = async (
+  productId: string,
+  data: PurchaseRequestReviewData
+) => {
+  return axiosInstance.post(
+    `/api/products/${productId}/purchase-requests/review`,
+    data
+  );
+};
 
-        return true;
-    }
-    await apiCallPUT(`/transactions/${transactionId}/cancel`, {});
-    return true;
-}
+/**
+ * S-50.3: Create Purchase Request (PURCHASE or DEPOSIT)
+ * POST /api/products/{productId}/purchase-requests
+ * @param productId - The product's ID
+ * @param data - Purchase request data (transactionType, desiredTransactionTime, note)
+ * @returns Created request with requestId
+ */
+export const createPurchaseRequest = async (
+  productId: string,
+  data: CreatePurchaseRequestData
+) => {
+  return axiosInstance.post(
+    `/api/products/${productId}/purchase-requests`,
+    data
+  );
+};
+
+// ============================================================
+// S-52: SELLER - GET PENDING TRANSACTIONS
+// ============================================================
+
+/**
+ * S-52: Get pending transactions for seller
+ * GET /api/seller/transactions/pending
+ * @param params - Filter and pagination parameters
+ * @returns Paginated pending transactions array with buyer info
+ */
+export const getSellerPendingTransactions = async (
+  params?: PendingTransactionParams
+) => {
+  const queryParams = new URLSearchParams();
+  if (params?.page !== undefined) queryParams.append('page', params.page.toString());
+  if (params?.size !== undefined) queryParams.append('size', params.size.toString());
+  if (params?.sortBy) queryParams.append('sortBy', params.sortBy);
+  if (params?.sortDir) queryParams.append('sortDir', params.sortDir);
+  if (params?.transactionType) queryParams.append('transactionType', params.transactionType);
+  if (params?.keyword) queryParams.append('keyword', params.keyword);
+
+  const queryString = queryParams.toString();
+  return axiosInstance.get(
+    `/api/seller/transactions/pending${queryString ? '?' + queryString : ''}`
+  );
+};
+
+// ============================================================
+// S-53: SELLER - TRANSACTION DETAIL & ACTIONS
+// ============================================================
+
+/**
+ * S-53: Get transaction detail (seller view)
+ * GET /api/seller/transactions/{requestId}
+ * @param requestId - The transaction/request ID
+ * @returns Transaction detail (buyer, listing, amount, desired time, status)
+ */
+export const getSellerTransactionDetail = async (requestId: string) => {
+  return axiosInstance.get(`/api/seller/transactions/${requestId}`);
+};
+
+/**
+ * S-53: Confirm transaction (seller accepts purchase request)
+ * POST /api/seller/transactions/{requestId}/confirm
+ * @param requestId - The transaction/request ID
+ * @param data - Confirmation data (note)
+ * @returns Confirmation (status: CONFIRMED)
+ */
+export const confirmSellerTransaction = async (
+  requestId: string,
+  data?: ConfirmTransactionRequest
+) => {
+  return axiosInstance.post(
+    `/api/seller/transactions/${requestId}/confirm`,
+    data || {}
+  );
+};
+
+/**
+ * S-53: Reject transaction (seller rejects purchase request)
+ * POST /api/seller/transactions/{requestId}/reject
+ * @param requestId - The transaction/request ID
+ * @param data - Rejection data (reason)
+ * @returns Rejection confirmation (status: REJECTED)
+ */
+export const rejectSellerTransaction = async (
+  requestId: string,
+  data: RejectTransactionRequest
+) => {
+  return axiosInstance.post(
+    `/api/seller/transactions/${requestId}/reject`,
+    data
+  );
+};
+
+// ============================================================
+// S-54: BUYER - TRANSACTION DETAIL & ACTIONS
+// ============================================================
+
+/**
+ * S-54: Get transaction detail (buyer view)
+ * GET /api/buyer/transactions/{requestId}
+ * @param requestId - The transaction/request ID
+ * @returns Transaction detail (seller, listing, status, timeline)
+ */
+export const getBuyerTransactionDetail = async (requestId: string) => {
+  return axiosInstance.get(`/api/buyer/transactions/${requestId}`);
+};
+
+/**
+ * S-54: Cancel transaction (buyer cancels before seller confirms)
+ * POST /api/buyer/transactions/{requestId}/cancel
+ * @param requestId - The transaction/request ID
+ * @returns Cancellation confirmation (status: CANCELLED)
+ */
+export const cancelBuyerTransaction = async (requestId: string) => {
+  return axiosInstance.post(`/api/buyer/transactions/${requestId}/cancel`);
+};
