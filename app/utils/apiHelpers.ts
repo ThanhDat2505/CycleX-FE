@@ -4,6 +4,15 @@
  * Used by authService and listingService
  */
 
+/**
+ * Lấy JWT token từ localStorage để gắn vào Authorization header.
+ * Trả về null nếu chưa đăng nhập hoặc đang chạy trên server (SSR).
+ */
+function getAuthToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('authToken');
+}
+
 export interface ApiError {
     status: number;
     message: string;
@@ -24,12 +33,14 @@ export async function apiCallPOST<T>(
     body: object
 ): Promise<T> {
     try {
+        const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json', // báo server biết dữ liệu gửi lên là JSON
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
-            body: JSON.stringify(body), // chuyển dữ liệu sang JSON
+            body: JSON.stringify(body),
         });
 
         if (!response.ok) {
@@ -68,10 +79,12 @@ export async function apiCallPOST<T>(
  */
 export async function apiCallGET<T>(endpoint: string): Promise<T> {
     try {
+        const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
         });
 
@@ -115,10 +128,12 @@ export async function apiCallPUT<T>(
     body: object
 ): Promise<T> {
     try {
+        const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
             },
             body: JSON.stringify(body),
         });
