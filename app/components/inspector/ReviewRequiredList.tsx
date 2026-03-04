@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { mockPendingRows } from "@/app/mocks/inspector/mockPending";
-// Đảm bảo đường dẫn types này chính xác với cấu trúc bạn đã gộp
+import { useEffect, useMemo, useState } from "react";
 import type { PendingStatus } from "@/app/types/pendingTypes";
+import { inspectorService } from "@/app/services/inspectorService";
 
 type FilterKey = "ALL" | "DISPUTE" | "NEED_MORE_INFO";
 
@@ -33,20 +32,45 @@ function StatusPill({ status }: { status: PendingStatus }) {
 }
 
 export default function ReviewRequiredList() {
+  const [rows, setRows] = useState<RowVM[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
   const [filter, setFilter] = useState<FilterKey>("ALL");
 
-  const rows = useMemo<RowVM[]>(() => {
-    return mockPendingRows
-      .filter((x) => x.status === "DISPUTE" || x.status === "NEED_MORE_INFO")
-      .map((x) => ({
-        id: x.id,
-        req: makeReq(x.id),
-        name: x.name,
-        shop: x.shop,
-        submittedAt: x.submittedAt,
-        status: x.status,
-      }));
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await inspectorService.getReviewRequiredRows();
+        if (!mounted) return;
+
+        setRows(
+          data.map((x) => ({
+            id: x.id,
+            req: makeReq(x.id),
+            name: x.name,
+            shop: x.shop,
+            submittedAt: x.submittedAt,
+            status: x.status,
+          })),
+        );
+      } catch (err: any) {
+        if (!mounted) return;
+        setError(err?.message || "Không tải được danh sách cần review");
+        setRows([]);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   const filtered = useMemo(() => {
@@ -93,58 +117,64 @@ export default function ReviewRequiredList() {
       </div>
 
       <section className="tableCard">
-        <table className="table">
-          <thead className="thead">
-            <tr>
-              <th>Tên sản phẩm</th>
-              <th>Cửa hàng</th>
-              <th>Ngày gửi duyệt</th>
-              <th>Trạng thái</th>
-              <th style={{ textAlign: "right" }}>Hành động</th>
-            </tr>
-          </thead>
+        {loading && <div style={{ padding: 20 }}>Đang tải dữ liệu...</div>}
+        {!loading && error && (
+          <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
+        )}
+        {!loading && !error && (
+          <table className="table">
+            <thead className="thead">
+              <tr>
+                <th>Tên sản phẩm</th>
+                <th>Cửa hàng</th>
+                <th>Ngày gửi duyệt</th>
+                <th>Trạng thái</th>
+                <th style={{ textAlign: "right" }}>Hành động</th>
+              </tr>
+            </thead>
 
-          <tbody className="tbody">
-            {filtered.map((row) => {
-              const href = `/inspector/inspector-request-detail?req=${encodeURIComponent(row.req)}&id=${encodeURIComponent(row.id)}`;
-              return (
-                <tr key={`${row.req}-${row.id}`}>
-                  <td>
-                    <div className="productCell">
-                      <div className="productName">{row.name}</div>
-                      <div className="productId">#{row.id}</div>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="storeName">{row.shop}</div>
-                  </td>
-                  <td>
-                    <div className="dateText">{row.submittedAt}</div>
-                  </td>
-                  <td>
-                    <StatusPill status={row.status} />
-                  </td>
-                  <td className="actionCell">
-                    <Link className="viewBtn" href={href}>
-                      <span className="material-symbols-outlined">
-                        north_east
-                      </span>
-                      Xem chi tiết
-                    </Link>
+            <tbody className="tbody">
+              {filtered.map((row) => {
+                const href = `/inspector/inspector-request-detail?req=${encodeURIComponent(row.req)}&id=${encodeURIComponent(row.id)}`;
+                return (
+                  <tr key={`${row.req}-${row.id}`}>
+                    <td>
+                      <div className="productCell">
+                        <div className="productName">{row.name}</div>
+                        <div className="productId">#{row.id}</div>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="storeName">{row.shop}</div>
+                    </td>
+                    <td>
+                      <div className="dateText">{row.submittedAt}</div>
+                    </td>
+                    <td>
+                      <StatusPill status={row.status} />
+                    </td>
+                    <td className="actionCell">
+                      <Link className="viewBtn" href={href}>
+                        <span className="material-symbols-outlined">
+                          north_east
+                        </span>
+                        Xem chi tiết
+                      </Link>
+                    </td>
+                  </tr>
+                );
+              })}
+
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={5} style={{ padding: 20, textAlign: "center" }}>
+                    Không có tin cần xem xét/bổ sung.
                   </td>
                 </tr>
-              );
-            })}
-
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={5} style={{ padding: 20, textAlign: "center" }}>
-                  Không có tin cần xem xét/bổ sung.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              )}
+            </tbody>
+          </table>
+        )}
       </section>
     </div>
   );

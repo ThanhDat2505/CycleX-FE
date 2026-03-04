@@ -5,27 +5,59 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { Listing, ListingStatus } from "@/app/types/types";
 import ListingsTable from "./ListingsTable";
+import { inspectorService } from "@/app/services/inspectorService";
 
 type Filter = "ALL" | ListingStatus;
 
-export default function DashboardClient({ listings }: { listings: Listing[] }) {
-  const router = useRouter();
+export default function DashboardClient() {
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [filter, setFilter] = useState<Filter>("ALL");
   const [active, setActive] = useState<Filter>("PENDING");
 
-  const statusCounts = listings.reduce(
-    (acc, listing) => {
-      acc[listing.status] += 1;
-      return acc;
-    },
-    {
-      PENDING: 0,
-      NEED_MORE_INFO: 0,
-      DISPUTE: 0,
-      FLAGGED: 0,
-      DONE: 0,
-    } as Record<ListingStatus, number>,
+  useEffect(() => {
+    let mounted = true;
+
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const rows = await inspectorService.getDashboardListings();
+        if (mounted) setListings(rows);
+      } catch (err: any) {
+        if (mounted) {
+          setError(err?.message || "Không tải được dữ liệu dashboard");
+          setListings([]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  const statusCounts = useMemo(
+    () =>
+      listings.reduce(
+        (acc, listing) => {
+          acc[listing.status] += 1;
+          return acc;
+        },
+        {
+          PENDING: 0,
+          NEED_MORE_INFO: 0,
+          DISPUTE: 0,
+          FLAGGED: 0,
+          DONE: 0,
+        } as Record<ListingStatus, number>,
+      ),
+    [listings],
   );
 
   const clickFilter = (f: Filter) => {
@@ -179,7 +211,15 @@ export default function DashboardClient({ listings }: { listings: Listing[] }) {
         </div>
 
         <div className="p-0">
-          <ListingsTable rows={listings} filter={filter} />
+          {loading && (
+            <div className="px-6 py-8 text-gray-500">Đang tải dữ liệu...</div>
+          )}
+          {!loading && error && (
+            <div className="px-6 py-8 text-red-600">{error}</div>
+          )}
+          {!loading && !error && (
+            <ListingsTable rows={listings} filter={filter} />
+          )}
         </div>
       </div>
     </div>
