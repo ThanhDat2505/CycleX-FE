@@ -168,8 +168,8 @@ export function validateListingDetail(data: any): ListingDetail {
         throw new Error('Invalid listing data: not an object');
     }
 
-    // Only validate fields that backend actually returns
-    const required = ['listingId', 'title', 'price', 'brand', 'viewsCount'];
+    // `brand` might sometimes be skipped or named differently depending on product variants.
+    const required = ['listingId', 'title', 'price'];
     for (const field of required) {
         if (data[field] === undefined) {
             throw new Error(`Invalid listing data: missing field '${field}'`);
@@ -185,9 +185,6 @@ export function validateListingDetail(data: any): ListingDetail {
         throw new Error('Invalid listing data: price must be non-negative number');
     }
 
-    // Handle images field: use provided value or default to empty array
-    const images = Array.isArray(data.images) ? data.images : [];
-
     // Optional field validations (only if present)
     if (data.condition && data.condition !== 'new' && data.condition !== 'used') {
         throw new Error('Invalid listing data: condition must be "new" or "used"');
@@ -199,12 +196,27 @@ export function validateListingDetail(data: any): ListingDetail {
             'APPROVED', 'REJECTED', 'HELD', 'SOLD'
         ];
         if (!validStatuses.includes(data.status)) {
-            throw new Error(`Invalid listing data: status must be one of ${validStatuses.join(', ')}`);
+            // Log but don't strictly throw if status is misaligned from API to prevent blank page
+            console.warn(`Unexpected API listing status: ${data.status}`);
         }
+    }
+
+    // Handle images field: use provided value (whether string array or object array mapped usually via API)
+    // Make sure we have a string array for standard rendering
+    let images: string[] = [];
+    if (Array.isArray(data.images)) {
+        images = data.images.map((img: any) => typeof img === 'string' ? img : (img.imageUrl || img.url || ''));
+    } else if (data.imageUrl) {
+        images = [data.imageUrl];
     }
 
     return {
         ...data,
-        images
+        images,
+        // Fallback fields missing in some backend responses:
+        viewsCount: typeof data.viewsCount === 'number' ? data.viewsCount :
+            (typeof data.viewCount === 'number' ? data.viewCount : 0),
+        brand: data.brand || 'Unknown Brand',
+        status: data.status || 'APPROVED' // Default to APPROVED for public view if API omits it for some reason
     } as ListingDetail;
 }

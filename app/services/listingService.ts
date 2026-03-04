@@ -229,8 +229,8 @@ export async function searchListings(
         if (filters?.bikeTypes) filters.bikeTypes.forEach(t => params.append('bikeType', t));
         if (filters?.brands) filters.brands.forEach(b => params.append('brand', b));
         if (filters?.conditions) filters.conditions.forEach(c => params.append('condition', c));
-        params.append('page', page.toString());
-        params.append('pageSize', pageSize.toString());
+        params.append('page', (page > 0 ? page - 1 : 0).toString());
+        params.append('size', pageSize.toString());
         params.append('sortBy', sortBy);
 
         const data = await apiCallGET<{ items: HomeBike[]; pagination: PaginationInfo }>(
@@ -406,7 +406,14 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
     // Real API: GET /api/bikelistings/{listingId}
     try {
         const data = await apiCallGET<ListingDetail>(`/bikelistings/${listingId}`);
-        return validateListingDetail(data);
+        validateObject(data, 'listingDetailResponse');
+
+        try {
+            return validateListingDetail(data);
+        } catch (validationErr) {
+            console.error('Data structure validation failed:', validationErr);
+            throw new Error('API returns corrupted listing structure');
+        }
     } catch (error) {
         console.error('Error fetching listing detail:', error);
         throw error;

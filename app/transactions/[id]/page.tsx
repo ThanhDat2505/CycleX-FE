@@ -55,7 +55,7 @@ export default function TransactionDetailPage() {
             if (!transactionId || !user?.userId) return;
             try {
                 setIsLoading(true);
-                const data = await getTransactionDetail(transactionId);
+                const data = await getTransactionDetail(transactionId, role as 'BUYER' | 'SELLER');
 
                 if (isMounted) {
                     const isOwner = data.buyerId === user.userId || data.sellerId === user.userId;

@@ -6,6 +6,8 @@
  */
 
 import { CreateTransactionRequest, Transaction } from '../types/transaction';
+import { validateObject, validateNumber, validateString, validateEnum, validateArray } from '../utils/apiValidation';
+import { apiCallPOST, apiCallGET, apiCallPUT } from '../utils/apiHelpers';
 
 // Mock mode for development
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
@@ -16,8 +18,6 @@ const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
  * 
  * @param data - Transaction request data
  * @returns Promise<Transaction> - Created transaction
- */
-import { apiCallPOST, apiCallGET, apiCallPUT } from '../utils/apiHelpers';
 
 /**
  * Create purchase or deposit request
@@ -68,17 +68,42 @@ export async function createPurchaseRequest(
         return mockTransaction;
     }
 
-    // Real API call
-    return apiCallPOST<Transaction>('/transactions', data);
+    // Real API call: S-50
+    // Maps frontend formData fields to what the Postman API expects.
+    // We ignore buyerId, receiverName, receiverPhone, receiverAddress as backend doesn't take them.
+    const payload: Record<string, any> = {
+        transactionType: data.transactionType,
+        desiredTransactionTime: data.desiredTime, // maps from input desiredTime
+        note: data.note,
+    };
+
+    if (data.transactionType === 'DEPOSIT' && data.depositAmount) {
+        payload.depositAmount = data.depositAmount;
+    }
+
+    const dataResponse = await apiCallPOST<Transaction>(`/products/${data.listingId}/purchase-requests`, payload);
+
+    // Validate backend response since we should not strictly trust it
+    if (!dataResponse || typeof dataResponse !== 'object') {
+        throw new Error('Invalid backend response: Expected a transaction object');
+    }
+
+    if (!dataResponse.transactionId) {
+        throw new Error('Invalid backend response: Missing transactionId');
+    }
+
+    return dataResponse;
 }
 
 /**
  * Get transaction detail
  * @param transactionId - Transaction ID
+ * @param role - Differentiate whether buyer or seller is fetching
  * @returns Promise<Transaction>
  */
 export async function getTransactionDetail(
-    transactionId: number
+    transactionId: number,
+    role: 'BUYER' | 'SELLER' = 'BUYER'
 ): Promise<import('../types/transaction').TransactionWithDetails> {
     if (USE_MOCK_API) {
         // ... existing mock logic ...
@@ -121,8 +146,28 @@ export async function getTransactionDetail(
         return mockTransaction;
     }
 
-    // Real API call
-    return apiCallGET<import('../types/transaction').TransactionWithDetails>(`/transactions/${transactionId}`);
+    // Real API call: Differentiate endpoints by role
+    const prefix = role === 'SELLER' ? '/seller' : '/buyer';
+    const dataResponse = await apiCallGET<import('../types/transaction').TransactionWithDetails>(`${prefix}/transactions/${transactionId}`);
+
+    // Validate backend response
+    if (!dataResponse || typeof dataResponse !== 'object') {
+        throw new Error('Invalid backend response: Expected a transaction detail object');
+    }
+
+    const ctx = 'Transaction Detail API Response';
+
+    validateObject(dataResponse, ctx);
+    validateNumber(dataResponse.transactionId, `${ctx}.transactionId`);
+    validateNumber(dataResponse.listingId, `${ctx}.listingId`);
+    validateString(dataResponse.createdAt, `${ctx}.createdAt`);
+    validateEnum<import('../types/transaction').TransactionType>(dataResponse.transactionType, ['PURCHASE', 'DEPOSIT'], `${ctx}.transactionType`);
+
+    // Allow displaying correctly if some data is accidentally dropped
+    return {
+        ...dataResponse,
+        listingTitle: dataResponse.listingTitle || 'Unknown Listing'
+    };
 }
 
 // In-memory mock storage
@@ -194,8 +239,36 @@ export async function getSellerTransactions(
     }
 
     // Real API call
-    const queryParams = status ? `?status=${status}` : '';
-    return apiCallGET<import('../types/transaction').TransactionWithDetails[]>(`/seller/${sellerId}/transactions${queryParams}`);
+    let endpoint = `/seller/transactions`;
+    // Map the status to the specific endpoint according to Postman
+    if (status === 'PENDING_SELLER_CONFIRM') {
+        endpoint = `/seller/transactions/pending`;
+    }
+
+    const dataResponse = await apiCallGET<any>(endpoint);
+
+    // Handle pagination wrapper if backend returns { items: [], pagination: {} } 
+    // Postman indicates sizes, so it might be paginated. Let's safely extract array:
+    const itemsArray = Array.isArray(dataResponse) ? dataResponse : (dataResponse?.items || []);
+
+    validateArray(itemsArray, 'Seller Transactions API Response');
+
+    // Strict validation inside the loop: Do not trust BE
+    itemsArray.forEach((t: any, i: number) => {
+        const ctx = `sellerTransactions[${i}]`;
+        validateObject(t, ctx);
+        validateNumber(t.transactionId, `${ctx}.transactionId`);
+        validateNumber(t.listingId, `${ctx}.listingId`);
+        validateNumber(t.totalAmount, `${ctx}.totalAmount`);
+        validateString(t.createdAt, `${ctx}.createdAt`);
+        validateEnum(t.transactionType, ['PURCHASE', 'DEPOSIT'] as const, `${ctx}.transactionType`);
+    });
+
+    return itemsArray.map((t: any) => ({
+        ...t,
+        listingTitle: t.listingTitle || `Xe đạp #${t.listingId}`,
+        buyerName: t.buyerName || 'Khách hàng',
+    }));
 }
 
 /**
@@ -229,7 +302,30 @@ export async function getBuyerTransactions(
             })(),
         }));
     }
-    return apiCallGET<import('../types/transaction').TransactionWithDetails[]>(`/buyer/${buyerId}/transactions`);
+
+    // Real API call: GET /buyer/transactions
+    const dataResponse = await apiCallGET<import('../types/transaction').TransactionWithDetails[]>(`/buyer/${buyerId}/transactions`);
+
+    validateArray(dataResponse, 'Buyer Transactions API Response');
+
+    // Strict validation inside the loop: Do not trust BE
+    dataResponse.forEach((t, i) => {
+        const ctx = `buyerTransactions[${i}]`;
+        validateObject(t, ctx);
+        validateNumber(t.transactionId, `${ctx}.transactionId`);
+        validateNumber(t.listingId, `${ctx}.listingId`);
+        validateNumber(t.totalAmount, `${ctx}.totalAmount`);
+        validateString(t.createdAt, `${ctx}.createdAt`);
+        validateEnum(t.transactionType, ['PURCHASE', 'DEPOSIT'] as const, `${ctx}.transactionType`);
+        // We know missing text/image fields can crash the UI component renderer
+    });
+
+    // Mapped fallback data just in case Backend doesn't fully join table or misses visual fields
+    return dataResponse.map(t => ({
+        ...t,
+        listingTitle: t.listingTitle || `Xe đạp #${t.listingId}`,
+        sellerName: t.sellerName || 'CycleX Seller',
+    }));
 }
 
 /**
@@ -247,9 +343,9 @@ export async function acceptTransaction(transactionId: number): Promise<boolean>
 
         return true;
     }
-    // Real API: usually PUT /transactions/{id}/status or similar
-    // Assuming endpoint for now
-    await apiCallPUT(`/transactions/${transactionId}/accept`, {});
+
+    // Real API: POST /seller/transactions/{id}/confirm
+    await apiCallPOST(`/seller/transactions/${transactionId}/confirm`, { note: 'Đã xác nhận từ phía người bán' });
     return true;
 }
 
@@ -275,6 +371,8 @@ export async function cancelTransaction(transactionId: number): Promise<boolean>
 
         return true;
     }
-    await apiCallPUT(`/transactions/${transactionId}/cancel`, {});
+
+    // Real API: POST /buyer/transactions/{id}/cancel
+    await apiCallPOST(`/buyer/transactions/${transactionId}/cancel`, {});
     return true;
 }
