@@ -113,6 +113,16 @@ export const getSellerListingDetail = async (sellerId: string, listingId: string
 };
 
 /**
+ * S-19: Listing Result (Approve/Reject + InspectionReport)
+ * URL: /api/seller/{sellerId}/listings/{listingId}/result
+ * Method: GET
+ */
+export const getSellerListingResult = async (sellerId: string, listingId: string) => {
+  return axiosInstance.get(`/api/seller/${sellerId}/listings/${listingId}/result`);
+};
+
+
+/**
  * S-11: Get rejection reason for a listing
  * @param sellerId - The seller's ID
  * @param listingId - The listing's ID
