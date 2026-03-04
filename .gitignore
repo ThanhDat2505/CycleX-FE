@@ -59,3 +59,12 @@ test-results/
 *_RESULTS_*.csv
 *_REPORT_*.xlsx
 screenshots/
+
+# Bỏ qua tất cả các file Markdown
+*.md
+
+# Bỏ qua tất cả các file CSV
+*.csv
+
+# Bỏ qua toàn bộ thư mục .gemini và các nội dung bên trong nó
+.gemini/
