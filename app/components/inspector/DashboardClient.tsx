@@ -58,38 +58,32 @@ export default function DashboardClient() {
     };
   }, []);
 
-  const pendingTotal = Number(stats.pendingCount) + Number(stats.reviewingCount);
+  const pendingTotal =
+    Number(stats.pendingCount) + Number(stats.reviewingCount);
 
   const StatCard = ({
     label,
     count,
     icon,
-    colorClass,
+    iconColorClass,
   }: {
     label: string;
     count: number;
     icon: string;
-    colorClass: string;
+    iconColorClass: string;
   }) => (
-    <div
-      className="relative flex flex-col items-start p-6 bg-white rounded-xl shadow-sm border border-gray-200 w-full"
-    >
+    <div className="relative flex flex-col items-start p-6 bg-white rounded-xl shadow-sm border border-gray-200 w-full">
       <div className="flex justify-between items-start w-full mb-4">
-        <div className={`p-2 rounded-lg ${colorClass} bg-opacity-10`}>
+        <div>
           <span
-            className={`material-symbols-outlined text-2xl ${colorClass.replace(
-              "bg-",
-              "text-",
-            )}`}
+            className={`material-symbols-outlined text-2xl ${iconColorClass}`}
           >
             {icon}
           </span>
         </div>
       </div>
       <div className="text-3xl font-bold text-gray-900 mb-1">{count}</div>
-      <div className="text-sm font-medium text-gray-600">
-        {label}
-      </div>
+      <div className="text-sm font-medium text-gray-600">{label}</div>
     </div>
   );
 
@@ -103,9 +97,7 @@ export default function DashboardClient() {
           </h1>
           <p className="text-gray-600 mt-2 text-lg">
             Chào mừng trở lại! Bạn có{" "}
-            <span className="font-bold text-orange-600">
-              {pendingTotal}
-            </span>{" "}
+            <span className="font-bold text-orange-600">{pendingTotal}</span>{" "}
             tin cần duyệt hôm nay.
           </p>
         </div>
@@ -120,12 +112,8 @@ export default function DashboardClient() {
         </Link>
       </div>
 
-      {loading && (
-        <div className="text-gray-500">Đang tải dữ liệu...</div>
-      )}
-      {!loading && error && (
-        <div className="text-red-600">{error}</div>
-      )}
+      {loading && <div className="text-gray-500">Đang tải dữ liệu...</div>}
+      {!loading && error && <div className="text-red-600">{error}</div>}
 
       {/* Stats Grid */}
       {!loading && !error && (
@@ -134,31 +122,31 @@ export default function DashboardClient() {
             label="Tin chờ duyệt"
             count={pendingTotal}
             icon="schedule"
-            colorClass="bg-yellow-500 text-yellow-600"
+            iconColorClass="text-yellow-600"
           />
           <StatCard
             label="Đang xem xét"
             count={Number(stats.reviewingCount)}
             icon="article"
-            colorClass="bg-blue-500 text-blue-600"
+            iconColorClass="text-blue-600"
           />
           <StatCard
             label="Tranh chấp"
             count={Number(stats.disputeCount)}
             icon="warning"
-            colorClass="bg-red-500 text-red-600"
+            iconColorClass="text-red-600"
           />
           <StatCard
             label="Đã từ chối"
             count={Number(stats.rejectedCount)}
             icon="cancel"
-            colorClass="bg-gray-500 text-gray-600"
+            iconColorClass="text-gray-600"
           />
           <StatCard
             label="Đã duyệt"
             count={Number(stats.approvedCount)}
             icon="check_circle"
-            colorClass="bg-green-500 text-green-600"
+            iconColorClass="text-green-600"
           />
         </div>
       )}
