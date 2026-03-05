@@ -2000,6 +2000,19 @@ body {
   margin-bottom: 0;
 }
 
+.review-detail-page button.btn.btn-danger,
+.review-detail-page .btn.btn-danger.btn-sm {
+  background-color: var(--red-color) !important;
+  color: #ffffff !important;
+}
+
+.review-detail-page button.btn.btn-danger:disabled,
+.review-detail-page .btn.btn-danger.btn-sm:disabled {
+  background-color: var(--red-color) !important;
+  color: #ffffff !important;
+  opacity: 0.6;
+}
+
 .btnOutline {
   background: #fff;
   color: #111827;
