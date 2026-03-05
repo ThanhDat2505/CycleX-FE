@@ -112,7 +112,41 @@ function getInspectorId(): number {
   );
 }
 
+/**
+ * Check whether the current JWT token is expired.
+ * Returns true when the token is missing or its `exp` claim is in the past.
+ */
+function isTokenExpired(): boolean {
+  const token = getAuthToken();
+  if (!token) return true;
+  try {
+    const payloadBase64 = token.split(".")[1];
+    if (!payloadBase64) return true;
+    const normalized = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    const payload = JSON.parse(atob(padded));
+    if (typeof payload?.exp === "number") {
+      // exp is in seconds; Date.now() is in milliseconds
+      return payload.exp * 1000 < Date.now();
+    }
+    return false; // no exp claim → assume valid
+  } catch {
+    return true;
+  }
+}
+
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // --- Token expiration guard ---
+  if (isTokenExpired()) {
+    // Clear stale auth data and redirect to login
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userData");
+      window.location.href = "/login";
+    }
+    throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+  }
+
   const token = getAuthToken();
   const method = (init?.method ?? "GET").toUpperCase();
   const bodyKey =
@@ -128,30 +162,57 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
     return existingRequest as Promise<T>;
   }
 
-  const headers = new Headers(init?.headers ?? {});
+  const headers: Record<string, string> = {};
 
-  if (!headers.has("Content-Type") && !(init?.body instanceof FormData)) {
-    headers.set("Content-Type", "application/json");
+  if (!(init?.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
   }
 
   if (token) {
-    headers.set("Authorization", `Bearer ${token}`);
+    headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // Use the explicit API proxy route handler (/api/proxy/[...slug])
+  // instead of Next.js rewrites. Rewrites forward browser cookies which
+  // can trigger Spring Security CSRF rejection (403) on POST/PUT/DELETE.
   const requestPromise = (async () => {
-    const response = await fetch(`/backend/api${path}`, {
-      ...init,
+    const response = await fetch(`/api/proxy${path}`, {
+      method,
       headers,
+      body: init?.body,
+      // Do NOT send cookies; the proxy route handler only needs
+      // the Authorization header to authenticate with the backend.
+      credentials: "omit",
     });
 
     if (!response.ok) {
       let message = `Server error: ${response.status} ${response.statusText}`;
       try {
-        const errorData = await response.json();
-        message = errorData?.message || errorData?.error || message;
+        const text = await response.text();
+        // Try parsing as JSON first
+        try {
+          const errorData = JSON.parse(text);
+          message =
+            errorData?.message ||
+            errorData?.error ||
+            errorData?.detail ||
+            message;
+        } catch {
+          // Plain-text error body
+          if (text.length > 0 && text.length < 500) message = text;
+        }
       } catch {
-        // Ignore parse error and use fallback message
+        // Ignore read error
       }
+
+      // Special handling for auth errors
+      if (response.status === 401 || response.status === 403) {
+        console.error(
+          `[inspectorFetch] ${response.status} on ${method} ${path}:`,
+          message,
+        );
+      }
+
       throw new Error(message);
     }
 
