@@ -67,6 +67,17 @@ export default function DashboardClient() {
     [listings],
   );
 
+  const displayCounts = useMemo(
+    () => ({
+      pending: statusCounts.PENDING,
+      reviewing: statusCounts.REVIEWING,
+      dispute: statusCounts.DISPUTE,
+      flagged: statusCounts.FLAGGED,
+      approved: statusCounts.APPROVED + statusCounts.DONE,
+    }),
+    [statusCounts],
+  );
+
   const clickFilter = (f: Filter) => {
     setActive(f);
     setFilter(f);
@@ -153,35 +164,35 @@ export default function DashboardClient() {
         <StatCard
           type="PENDING"
           label="Tin chờ duyệt"
-          count={statusCounts.PENDING}
+          count={displayCounts.pending}
           icon="schedule"
           colorClass="bg-yellow-500 text-yellow-600"
         />
         <StatCard
           type="REVIEWING"
           label="Đang duyệt tin"
-          count={statusCounts.REVIEWING}
+          count={displayCounts.reviewing}
           icon="article"
           colorClass="bg-blue-500 text-blue-600"
         />
         <StatCard
           type="DISPUTE"
           label="Cần xem xét"
-          count={statusCounts.DISPUTE}
+          count={displayCounts.dispute}
           icon="warning"
           colorClass="bg-red-500 text-red-600"
         />
         <StatCard
           type="FLAGGED"
           label="Bị report"
-          count={statusCounts.FLAGGED}
+          count={displayCounts.flagged}
           icon="flag"
           colorClass="bg-gray-500 text-gray-600"
         />
         <StatCard
           type="APPROVED"
           label="Đã duyệt"
-          count={statusCounts.APPROVED}
+          count={displayCounts.approved}
           icon="check_circle"
           colorClass="bg-green-500 text-green-600"
         />

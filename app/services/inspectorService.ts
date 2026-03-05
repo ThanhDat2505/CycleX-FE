@@ -248,41 +248,65 @@ function toArrayPayload(value: any): RawObject[] {
   return [];
 }
 
+function normalizeStatus(status: unknown): string {
+  const normalized = String(status ?? "PENDING")
+    .trim()
+    .toUpperCase();
+  return normalized || "PENDING";
+}
+
 function statusToDashboardStatus(status: string): DashboardListingStatus {
-  switch (status) {
+  const normalizedStatus = normalizeStatus(status);
+
+  switch (normalizedStatus) {
     case "PENDING":
+    case "PENDING_APPROVAL":
       return "PENDING";
+    case "REVIEWING":
+    case "IN_REVIEW":
+      return "REVIEWING";
     case "NEED_MORE_INFO":
     case "NEED_INFO":
+    case "MISSING_INFO":
       return "NEED_MORE_INFO";
     case "DISPUTE":
+    case "UNDER_REVIEW":
       return "DISPUTE";
     case "FLAGGED":
+    case "REPORTED":
+    case "REPORT":
       return "FLAGGED";
     case "APPROVED":
+    case "PASSED":
       return "APPROVED";
     case "DONE":
     case "REJECTED":
       return "DONE";
-    case "REVIEWING":
-      return "REVIEWING";
     default:
       return "PENDING";
   }
 }
 
 function statusToPendingStatus(status: string): PendingStatus {
-  switch (status) {
+  const normalizedStatus = normalizeStatus(status);
+
+  switch (normalizedStatus) {
     case "PENDING":
+    case "PENDING_APPROVAL":
       return "PENDING";
     case "REVIEWING":
+    case "IN_REVIEW":
       return "REVIEWING";
     case "NEED_MORE_INFO":
     case "NEED_INFO":
+    case "MISSING_INFO":
       return "NEED_MORE_INFO";
     case "DISPUTE":
+    case "UNDER_REVIEW":
       return "DISPUTE";
     case "FLAGGED":
+    case "REPORTED":
+    case "REPORT":
       return "FLAGGED";
     default:
       return "PENDING";
@@ -335,7 +359,7 @@ function getSubmittedAt(raw: RawObject): string {
 }
 
 function getStatus(raw: RawObject): string {
-  return String(raw.status ?? raw.reviewStatus ?? raw.state ?? "PENDING");
+  return normalizeStatus(raw.status ?? raw.reviewStatus ?? raw.state);
 }
 
 function mapToDashboardListing(raw: RawObject): DashboardListing {
