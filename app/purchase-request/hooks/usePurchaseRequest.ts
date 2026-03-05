@@ -88,9 +88,12 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         }
 
         if (role && role !== 'BUYER') {
-            setIsSellerBlocked(true);
-            setError(MESSAGES.S50_ERROR_ROLE);
-            setIsListingLoading(false);
+            if (role === 'SELLER') {
+                addToast('Bạn không có quyền thực hiện chức năng này', 'error');
+                router.replace('/seller/dashboard');
+            } else {
+                setError(MESSAGES.S50_ERROR_ROLE);
+            }
             return;
         }
 

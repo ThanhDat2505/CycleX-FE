@@ -11,9 +11,11 @@
 
 'use client';
 
-import { use } from 'react';
+import { use, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { useToast } from '@/app/contexts/ToastContext';
 import { MESSAGES } from '../../constants';
 import { useListingDetail } from './hooks/useListingDetail';
 import ListingDetailView from './components/ListingDetailView';
@@ -49,16 +51,31 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     const resolvedParams = use(params);
     const listingId = parseInt(resolvedParams.id);
 
+    const router = useRouter();
+    const { addToast } = useToast();
     const {
         listing,
         isLoading,
         error,
         isAuthLoading,
         userRole,
+        userId,
     } = useListingDetail(listingId);
 
-    // Block SHIPPER from viewing
-    if (userRole === 'SHIPPER') return null;
+    // Block SHIPPER and unauthorized SELLER from viewing
+    useEffect(() => {
+        if (!isAuthLoading) {
+            if (userRole === 'SHIPPER') {
+                router.replace('/shipper');
+            } else if (userRole === 'SELLER' && listing && userId !== listing.sellerId) {
+                addToast('Bạn không có quyền truy cập trang này', 'error');
+                router.replace('/seller/dashboard');
+            }
+        }
+    }, [isAuthLoading, userRole, listing, userId, router, addToast]);
+
+    if (!isAuthLoading && userRole === 'SHIPPER') return null;
+    if (!isAuthLoading && userRole === 'SELLER' && listing && userId !== listing.sellerId) return null;
 
     // Loading state
     if (isLoading || isAuthLoading) {
