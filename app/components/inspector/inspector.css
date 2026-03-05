@@ -2584,3 +2584,15 @@ a {
   border: none;
   background: none;
 }
+
+.review-detail-page .btn.btn-danger {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+}
+
+.review-detail-page .btn.btn-danger:disabled {
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  opacity: 0.6;
+}
