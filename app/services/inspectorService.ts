@@ -6,6 +6,8 @@ import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 
 type RawObject = Record<string, any>;
 
+const inFlightInspectorRequests = new Map<string, Promise<unknown>>();
+
 export type InspectorReviewDetail = {
   id: string;
   productName: string;
@@ -77,6 +79,20 @@ function getInspectorId(): number {
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getAuthToken();
+  const method = (init?.method ?? "GET").toUpperCase();
+  const bodyKey =
+    typeof init?.body === "string"
+      ? init.body
+      : init?.body instanceof URLSearchParams
+        ? init.body.toString()
+        : "";
+  const requestKey = `${method} ${path} ${bodyKey}`;
+
+  const existingRequest = inFlightInspectorRequests.get(requestKey);
+  if (existingRequest) {
+    return existingRequest as Promise<T>;
+  }
+
   const headers = new Headers(init?.headers ?? {});
 
   if (!headers.has("Content-Type") && !(init?.body instanceof FormData)) {
@@ -87,27 +103,37 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const response = await fetch(`/backend/api${path}`, {
-    ...init,
-    headers,
-  });
+  const requestPromise = (async () => {
+    const response = await fetch(`/backend/api${path}`, {
+      ...init,
+      headers,
+    });
 
-  if (!response.ok) {
-    let message = `Server error: ${response.status} ${response.statusText}`;
-    try {
-      const errorData = await response.json();
-      message = errorData?.message || errorData?.error || message;
-    } catch {
-      // Ignore parse error and use fallback message
+    if (!response.ok) {
+      let message = `Server error: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        message = errorData?.message || errorData?.error || message;
+      } catch {
+        // Ignore parse error and use fallback message
+      }
+      throw new Error(message);
     }
-    throw new Error(message);
-  }
 
-  if (response.status === 204) {
-    return undefined as T;
-  }
+    if (response.status === 204) {
+      return undefined as T;
+    }
 
-  return (await response.json()) as T;
+    return (await response.json()) as T;
+  })();
+
+  inFlightInspectorRequests.set(requestKey, requestPromise);
+
+  try {
+    return await requestPromise;
+  } finally {
+    inFlightInspectorRequests.delete(requestKey);
+  }
 }
 
 function toArrayPayload(value: any): RawObject[] {
