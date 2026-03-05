@@ -21,6 +21,194 @@ import {
 // Check if we should use mock API (for development)
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
+type PublicListingApiResponse = {
+    items?: unknown;
+    pagination?: {
+        page?: unknown;
+        pageSize?: unknown;
+        total?: unknown;
+    };
+    content?: unknown;
+    number?: unknown;
+    size?: unknown;
+    totalElements?: unknown;
+};
+
+function toSafeNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+        const parsed = Number(value);
+        return Number.isFinite(parsed) ? parsed : null;
+    }
+    return null;
+}
+
+function resolvePublicImageUrl(rawPath: unknown): string {
+    if (typeof rawPath !== 'string') {
+        return '';
+    }
+
+    const path = rawPath.trim();
+    if (path.length === 0) {
+        return '';
+    }
+
+    if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+    }
+
+    if (path.startsWith('/uploads/')) {
+        return `/backend${path}`;
+    }
+
+    if (path.startsWith('/')) {
+        return path;
+    }
+
+    return `/${path}`;
+}
+
+function normalizeImageUrl(images: unknown, imageUrl: unknown, imageUrls?: unknown): string {
+    if (typeof imageUrl === 'string' && imageUrl.trim().length > 0) {
+        return resolvePublicImageUrl(imageUrl);
+    }
+
+    const candidates: unknown[] = [];
+    if (Array.isArray(images)) {
+        candidates.push(...images);
+    }
+    if (Array.isArray(imageUrls)) {
+        candidates.push(...imageUrls);
+    }
+
+    if (candidates.length === 0) {
+        return '';
+    }
+
+    const first = candidates[0] as unknown;
+    if (typeof first === 'string') {
+        return resolvePublicImageUrl(first);
+    }
+
+    if (first && typeof first === 'object') {
+        const firstObj = first as Record<string, unknown>;
+        if (typeof firstObj.imageUrl === 'string') {
+            return resolvePublicImageUrl(firstObj.imageUrl);
+        }
+        if (typeof firstObj.url === 'string') {
+            return resolvePublicImageUrl(firstObj.url);
+        }
+        if (typeof firstObj.imagePath === 'string') {
+            return resolvePublicImageUrl(firstObj.imagePath);
+        }
+    }
+
+    return '';
+}
+
+function normalizeHomeBike(item: unknown): HomeBike | null {
+    if (!item || typeof item !== 'object') {
+        return null;
+    }
+
+    const source = item as Record<string, unknown>;
+    const listingId = toSafeNumber(source.listingId ?? source.id ?? source.listing_id);
+    const productId = toSafeNumber(source.productId ?? source.product_id);
+    const price = toSafeNumber(source.price);
+    const title = typeof source.title === 'string' ? source.title.trim() : '';
+
+    if (listingId === null || price === null || title.length === 0) {
+        return null;
+    }
+
+    const viewCount = toSafeNumber(source.viewCount ?? source.viewsCount);
+
+    return {
+        listingId,
+        productId: productId ?? undefined,
+        title,
+        price,
+        imageUrl: normalizeImageUrl(source.images, source.imageUrl, source.imageUrls),
+        locationCity: typeof source.locationCity === 'string'
+            ? source.locationCity
+            : (typeof source.pickupAddress === 'string' ? source.pickupAddress : null),
+        viewCount: viewCount ?? undefined,
+    };
+}
+
+function sortPublicListings(items: HomeBike[], sortBy: 'newest' | 'priceAsc' | 'priceDesc' | 'mostViewed'): HomeBike[] {
+    const sorted = [...items];
+
+    switch (sortBy) {
+        case 'priceAsc':
+            sorted.sort((a, b) => a.price - b.price);
+            break;
+        case 'priceDesc':
+            sorted.sort((a, b) => b.price - a.price);
+            break;
+        case 'mostViewed':
+            sorted.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+            break;
+        case 'newest':
+        default:
+            sorted.sort((a, b) => b.listingId - a.listingId);
+            break;
+    }
+
+    return sorted;
+}
+
+function normalizePublicListingResponse(
+    data: unknown,
+    requestedPage: number,
+    requestedPageSize: number,
+    sortBy: 'newest' | 'priceAsc' | 'priceDesc' | 'mostViewed'
+): { items: HomeBike[]; pagination: PaginationInfo } {
+    validateResponse(data, 'search response');
+
+    const payload = data as PublicListingApiResponse;
+
+    let rawItems: unknown[] = [];
+    let pageIndex = Math.max(requestedPage - 1, 0);
+    let pageSize = requestedPageSize;
+    let total = 0;
+
+    if (Array.isArray(payload.items)) {
+        rawItems = payload.items;
+        pageIndex = toSafeNumber(payload.pagination?.page) ?? pageIndex;
+        pageSize = toSafeNumber(payload.pagination?.pageSize) ?? pageSize;
+        total = toSafeNumber(payload.pagination?.total) ?? rawItems.length;
+    } else if (Array.isArray(payload.content)) {
+        rawItems = payload.content;
+        pageIndex = toSafeNumber(payload.number) ?? pageIndex;
+        pageSize = toSafeNumber(payload.size) ?? pageSize;
+        total = toSafeNumber(payload.totalElements) ?? rawItems.length;
+    } else if (Array.isArray(data)) {
+        rawItems = data;
+        total = rawItems.length;
+    } else {
+        throw new Error('Invalid response: expected items/content array');
+    }
+
+    const normalizedItems = sortPublicListings(
+        rawItems
+            .map(normalizeHomeBike)
+            .filter((item): item is HomeBike => item !== null),
+        sortBy
+    );
+
+    return {
+        items: normalizedItems,
+        pagination: {
+            page: pageIndex + 1,
+            pageSize,
+            total,
+        },
+    };
+}
+
 /**
  * Fetch FEATURED bikes for home page "Xe Đạp Đang Hot" section
  * Uses /api/home - Returns top bikes sorted by viewCount DESC
@@ -61,7 +249,7 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
     // Map imageUrl from images[] if backend returns array format
     return bikes.map((bike: any) => ({
         ...bike,
-        imageUrl: bike.imageUrl || (Array.isArray(bike.images) && bike.images.length > 0 ? bike.images[0] : ''),
+        imageUrl: normalizeImageUrl(bike.images, bike.imageUrl, bike.imageUrls),
     }));
 }
 
@@ -82,21 +270,13 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
         return MOCK_LISTINGS.slice(startIndex, endIndex);
     }
 
-    const bikes = await apiCallGET<HomeBike[]>('/bikelistings');
+    const params = new URLSearchParams();
+    params.append('status', 'APPROVED');
+    params.append('page', (Math.max(page, 1) - 1).toString());
+    params.append('size', '10');
 
-    // ✅ VALIDATION: Ensure bikes is an array and each bike has required fields
-    validateResponse(bikes, 'all listings');
-    validateArray(bikes, 'all listings');
-
-    bikes.forEach((bike, index) => {
-        const ctx = `allListings[${index}]`;
-        validateNumber(bike.listingId, `${ctx}.listingId`);
-        validateString(bike.title, `${ctx}.title`);
-        validateNumber(bike.price, `${ctx}.price`);
-    });
-
-
-    return bikes;
+    const data = await apiCallGET<unknown>(`/bikelistings?${params.toString()}`);
+    return normalizePublicListingResponse(data, page, 10, 'newest').items;
 }
 
 /**
@@ -223,41 +403,22 @@ export async function searchListings(
     try {
         // Build query string
         const params = new URLSearchParams();
-        if (keyword) params.append('keyword', keyword);
+        if (keyword) params.append('title', keyword);
         if (filters?.minPrice) params.append('minPrice', filters.minPrice.toString());
         if (filters?.maxPrice) params.append('maxPrice', filters.maxPrice.toString());
         if (filters?.bikeTypes) filters.bikeTypes.forEach(t => params.append('bikeType', t));
         if (filters?.brands) filters.brands.forEach(b => params.append('brand', b));
         if (filters?.conditions) filters.conditions.forEach(c => params.append('condition', c));
+        params.append('status', 'APPROVED');
         params.append('page', (page > 0 ? page - 1 : 0).toString());
         params.append('size', pageSize.toString());
         params.append('sortBy', sortBy);
 
-        const data = await apiCallGET<{ items: HomeBike[]; pagination: PaginationInfo }>(
+        const data = await apiCallGET<unknown>(
             `/bikelistings?${params.toString()}`
         );
 
-        // ✅ VALIDATION: Strict check of public search response
-        validateResponse(data, 'search response');
-        validateArray(data.items, 'items');
-        validateObject(data.pagination, 'pagination');
-        validateNumber(data.pagination.total, 'pagination.total');
-
-        data.items.forEach((item: any, index: number) => {
-            const ctx = `items[${index}]`;
-            validateNumber(item.listingId, `${ctx}.listingId`);
-            validateString(item.title, `${ctx}.title`);
-            validateNumber(item.price, `${ctx}.price`);
-        });
-
-        // Map items to ensure imageUrl exists
-        // Backend may return 'images' array instead of 'imageUrl' field
-        data.items = data.items.map((item: any) => ({
-            ...item,
-            imageUrl: item.imageUrl || (Array.isArray(item.images) && item.images.length > 0 ? item.images[0] : ''),
-        }));
-
-        return data;
+        return normalizePublicListingResponse(data, page, pageSize, sortBy);
     } catch (error) {
         console.error('Error searching listings:', error);
         throw error;
@@ -409,7 +570,11 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
         validateObject(data, 'listingDetailResponse');
 
         try {
-            return validateListingDetail(data);
+            const validated = validateListingDetail(data);
+            return {
+                ...validated,
+                images: (validated.images || []).map(resolvePublicImageUrl).filter((img) => img.length > 0),
+            };
         } catch (validationErr) {
             console.error('Data structure validation failed:', validationErr);
             throw new Error('API returns corrupted listing structure');

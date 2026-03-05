@@ -54,8 +54,11 @@ export default function FeaturedBikeCard({ bike, className = '' }: FeaturedBikeC
 
     const handlePurchase = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
-        router.push(`/purchase-request?listingId=${bike.listingId}`);
-    }, [router, bike.listingId]);
+        const query = bike.productId
+            ? `listingId=${bike.listingId}&productId=${bike.productId}`
+            : `listingId=${bike.listingId}`;
+        router.push(`/purchase-request?${query}`);
+    }, [router, bike.listingId, bike.productId]);
 
     const isHot = (bike.viewCount || 0) > HOT_THRESHOLD;
 

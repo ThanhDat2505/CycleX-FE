@@ -41,6 +41,7 @@ export interface PaginationInfo {
  */
 export interface HomeBike {
     listingId: number;           // Matches backend
+    productId?: number;
     title: string;               // Matches backend
     price: number;               // Matches backend
     imageUrl: string;            // Matches backend
@@ -130,6 +131,7 @@ export type InspectionStatus = 'PASSED' | 'FAILED' | 'PENDING' | null;
 export interface ListingDetail {
     // Core listing info (camelCase to match backend)
     listingId: number;              // ✅ Backend has
+    productId?: number;
     title: string;                  // ✅ Backend has
     price: number;                  // ✅ Backend has
     description: string | null;     // ✅ Backend has (can be null)
@@ -181,14 +183,22 @@ export function validateListingDetail(data: any): ListingDetail {
         throw new Error('Invalid listing data: listingId must be number');
     }
 
-    if (typeof data.price !== 'number' || data.price < 0) {
+    const parsedPrice = typeof data.price === 'number' ? data.price : Number(data.price);
+    if (!Number.isFinite(parsedPrice) || parsedPrice < 0) {
         throw new Error('Invalid listing data: price must be non-negative number');
     }
 
-    // Optional field validations (only if present)
-    if (data.condition && data.condition !== 'new' && data.condition !== 'used') {
-        throw new Error('Invalid listing data: condition must be "new" or "used"');
-    }
+    const normalizeCondition = (condition: unknown): 'new' | 'used' | undefined => {
+        if (typeof condition !== 'string' || condition.trim().length === 0) {
+            return undefined;
+        }
+
+        const normalized = condition.trim().toUpperCase();
+        if (normalized.includes('NEW')) {
+            return 'new';
+        }
+        return 'used';
+    };
 
     if (data.status) {
         const validStatuses: ListingStatus[] = [
@@ -201,18 +211,34 @@ export function validateListingDetail(data: any): ListingDetail {
         }
     }
 
-    // Handle images field: use provided value (whether string array or object array mapped usually via API)
-    // Make sure we have a string array for standard rendering
+    const normalizeImageValue = (img: any): string => {
+        if (typeof img === 'string') return img;
+        if (img && typeof img === 'object') {
+            return img.imageUrl || img.url || img.imagePath || '';
+        }
+        return '';
+    };
+
+    // Handle images field from multiple backend formats
     let images: string[] = [];
     if (Array.isArray(data.images)) {
-        images = data.images.map((img: any) => typeof img === 'string' ? img : (img.imageUrl || img.url || ''));
+        images = data.images.map(normalizeImageValue);
+    } else if (Array.isArray(data.imageUrls)) {
+        images = data.imageUrls.map(normalizeImageValue);
     } else if (data.imageUrl) {
         images = [data.imageUrl];
     }
 
+    images = images.filter((img) => typeof img === 'string' && img.trim().length > 0);
+
+    const productId = Number(data.productId);
+
     return {
         ...data,
+        productId: Number.isFinite(productId) && productId > 0 ? productId : undefined,
+        price: parsedPrice,
         images,
+        condition: normalizeCondition(data.condition),
         // Fallback fields missing in some backend responses:
         viewsCount: typeof data.viewsCount === 'number' ? data.viewsCount :
             (typeof data.viewCount === 'number' ? data.viewCount : 0),
