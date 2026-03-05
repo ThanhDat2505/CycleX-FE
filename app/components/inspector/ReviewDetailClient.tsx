@@ -42,7 +42,11 @@ export default function ReviewDetailClient({
       try {
         setLoading(true);
         setError(null);
-        await inspectorService.lockListing(id);
+        try {
+          await inspectorService.lockListing(id);
+        } catch {
+          // Allow opening detail even when listing is already in REVIEWING/locked state
+        }
         const detail = await inspectorService.getListingDetail(id);
         if (mounted) setListing(detail);
       } catch (err: any) {
