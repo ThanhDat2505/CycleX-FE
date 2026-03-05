@@ -1,0 +1,152 @@
+Test Case ID,Category,Priority,Test Case Name,Precondition,Test Steps,Test Data,Expected Result,Business Rule,Status,Actual Result,Notes
+TC-LOGIN-001,Happy Path,P0,Login with ACTIVE + Verified User,User exists with status=ACTIVE and isVerify=true,"1. Navigate to /login
+2. Enter email: test@example.com
+3. Enter password: password123
+4. Click Login","Email: test@example.com
+Password: password123","? Login successful
+? Token saved to localStorage
+? Redirect to / (Home)
+? No error messages","BR-L02, BR-L03, BR-L05, BR-L08",Not Tested,,
+TC-LOGIN-002,Status Validation,P0,Login with Unverified User (isVerify=false),User exists with isVerify=false,"1. Navigate to /login
+2. Enter email: unverified@example.com
+3. Enter password: unverified123
+4. Click Login","Email: unverified@example.com
+Password: unverified123","? Login blocked
+? Error: Please verify your email first
+? Redirect to /verify-email?email=unverified@example.com
+? No token saved",BR-L07,Not Tested,,
+TC-LOGIN-003,Status Validation,P0,Login with INACTIVE User,User exists with status=INACTIVE,"1. Navigate to /login
+2. Enter email: inactive@example.com
+3. Enter password: inactive123
+4. Click Login","Email: inactive@example.com
+Password: inactive123","? Login blocked
+? Error: Account inactive. Please verify your email
+? Redirect to /verify-email?email=inactive@example.com
+? No token saved","BR-L05, BR-L06",Not Tested,,
+TC-LOGIN-004,Status Validation,P0,Login with SUSPENDED User,User exists with status=SUSPENDED,"1. Navigate to /login
+2. Enter email: suspended@example.com
+3. Enter password: suspended123
+4. Click Login","Email: suspended@example.com
+Password: suspended123","? Login blocked
+? Error: Your account has been suspended. Please contact Admin or Inspector for assistance.
+? No redirect (stays on login page)
+? No token saved","BR-L05, BR-L06",Not Tested,,
+TC-LOGIN-005,Authentication,P0,Login with Wrong Password,User exists,"1. Navigate to /login
+2. Enter email: test@example.com
+3. Enter password: wrongpassword
+4. Click Login","Email: test@example.com
+Password: wrongpassword","? Login failed
+? Error: Email or password is incorrect
+? No redirect
+? No token saved",BR-L11,Not Tested,,
+TC-LOGIN-006,Authentication,P1,Login with Non-existent User,User does not exist,"1. Navigate to /login
+2. Enter email: notexist@example.com
+3. Enter password: anything
+4. Click Login","Email: notexist@example.com
+Password: anything","? Login failed
+? Error: Account not found or Email or password is incorrect
+? No redirect
+? No token saved",BR-L11,Not Tested,,
+TC-LOGIN-007,Validation,P1,Empty Email Field,User on login page,"1. Navigate to /login
+2. Leave email empty
+3. Enter password: password123
+4. Click Login","Email: (empty)
+Password: password123",? Error: Email and password are required,BR-L10,Not Tested,,
+TC-LOGIN-008,Validation,P1,Empty Password Field,User on login page,"1. Navigate to /login
+2. Enter email: test@example.com
+3. Leave password empty
+4. Click Login","Email: test@example.com
+Password: (empty)",? Error: Email and password are required,BR-L09,Not Tested,,
+TC-LOGIN-009,Validation,P1,Invalid Email Format,User on login page,"1. Navigate to /login
+2. Enter email: notanemail
+3. Enter password: password123
+4. Click Login","Email: notanemail
+Password: password123",? Error: Email is invalid,BR-L10,Not Tested,,
+TC-LOGIN-010,Validation,P0,Password Too Short (< 6 chars),User on login page,"1. Navigate to /login
+2. Enter email: test@example.com
+3. Enter password: pass (4 chars)
+4. Click Login","Email: test@example.com
+Password: pass",? Error: Password must be at least 6 characters long,BR-L09,Not Tested,,
+TC-LOGIN-011,Validation,P1,Valid Password Length (6 chars),User on login page,"1. Navigate to /login
+2. Enter email: test@example.com
+3. Enter password: pass12 (6 chars)
+4. Click Login","Email: test@example.com
+Password: pass12","? Validation passes
+? API call made (may fail if wrong password)",BR-L09,Not Tested,,
+TC-LOGIN-012,Validation,P1,Valid Password Length (20 chars),User on login page,"1. Navigate to /login
+2. Enter email: test@example.com
+3. Enter password: 12345678901234567890 (20 chars)
+4. Click Login","Email: test@example.com
+Password: 12345678901234567890","? Validation passes
+? API call made (may fail if wrong password)",BR-L09,Not Tested,,
+TC-LOGIN-013,UI/UX,P2,Remember Me Checkbox,User on login page,"1. Navigate to /login
+2. Check Remember Me checkbox
+3. Enter valid credentials
+4. Click Login","Email: test@example.com
+Password: password123
+Remember Me: checked","? Login successful
+? Remember me preference saved",N/A,Not Tested,,
+TC-LOGIN-014,UI/UX,P2,Loading State,User on login page,"1. Navigate to /login
+2. Enter valid credentials
+3. Click Login
+4. Observe UI during API call","Email: test@example.com
+Password: password123","? Button shows loading state
+? Form inputs disabled
+? Cannot submit again",N/A,Not Tested,,
+TC-LOGIN-015,UI/UX,P2,Error Message Display,User on login page,"1. Navigate to /login
+2. Enter invalid credentials
+3. Click Login
+4. Observe error message","Email: test@example.com
+Password: wrong","? Error message displayed in red box
+? Error persists until corrected",N/A,Not Tested,,
+TC-LOGIN-016,UI/UX,P2,Error Message Clears,User on login page with error,"1. Trigger an error
+2. Correct the input
+3. Click Login again",Valid credentials,"? Previous error cleared
+? New validation runs",N/A,Not Tested,,
+TC-LOGIN-017,Navigation,P1,Forgot Password Link,User on login page,"1. Navigate to /login
+2. Click Forgot password? link",N/A,? Navigate to /forgot-password,N/A,Not Tested,,
+TC-LOGIN-018,Navigation,P1,Register Link,User on login page,"1. Navigate to /login
+2. Click Register now link",N/A,? Navigate to /register,N/A,Not Tested,,
+TC-LOGIN-019,State Transition,P0,ACTIVE + Verified ¨ Login Allowed,User with status=ACTIVE and isVerify=true,"1. Login with ACTIVE verified user
+2. Check redirect","Email: test@example.com
+Password: password123","? Login successful
+? Redirect to Home",State L1,Not Tested,,
+TC-LOGIN-020,State Transition,P0,INACTIVE + Unverified ¨ Login Forbidden,User with status=INACTIVE and isVerify=false,"1. Login with INACTIVE unverified user
+2. Check redirect","Email: inactive@example.com
+Password: inactive123","? Login blocked
+? Redirect to verify email",State L2,Not Tested,,
+TC-LOGIN-021,State Transition,P0,SUSPENDED ¨ Login Forbidden,User with status=SUSPENDED,"1. Login with SUSPENDED user
+2. Check error message","Email: suspended@example.com
+Password: suspended123","? Login blocked
+? Error message shown
+? No redirect",State L3,Not Tested,,
+TC-LOGIN-022,Integration,P0,Login ¨ Home Redirect,User successfully logged in,"1. Complete successful login
+2. Verify redirect destination",Valid credentials,"? Redirect to / (Home)
+? NOT redirected by role",BR-L08,Not Tested,,
+TC-LOGIN-023,Integration,P1,Token Persistence,User successfully logged in,"1. Login successfully
+2. Check localStorage
+3. Refresh page","Email: test@example.com
+Password: password123","? Token saved in localStorage
+? Token persists after refresh",BR-L03,Not Tested,,
+TC-LOGIN-024,Security,P1,No Token on Failed Login,Login fails for any reason,"1. Attempt login with invalid credentials
+2. Check localStorage",Invalid credentials,"? No token in localStorage
+? User not authenticated",BR-L06,Not Tested,,
+TC-LOGIN-025,Security,P1,No Token for Unverified User,User not verified,"1. Login with unverified user
+2. Check localStorage","Email: unverified@example.com
+Password: unverified123","? No token saved
+? User redirected to verify",BR-L07,Not Tested,,
+TC-LOGIN-026,Security,P1,No Token for SUSPENDED User,User suspended,"1. Login with suspended user
+2. Check localStorage","Email: suspended@example.com
+Password: suspended123","? No token saved
+? Error message shown",BR-L06,Not Tested,,
+TC-LOGIN-027,Mock Mode,P2,Mock Login Success,Mock mode enabled,"1. Enable mock mode
+2. Login with test user","Email: test@example.com
+Password: password123","? Mock response returned
+? Login successful",N/A,Not Tested,,Mock mode only
+TC-LOGIN-028,Mock Mode,P2,Mock Status Validation,Mock mode enabled,"1. Enable mock mode
+2. Login with suspended user","Email: suspended@example.com
+Password: suspended123","? Status check works
+? Login blocked",N/A,Not Tested,,Mock mode only
+TC-LOGIN-029,Error Handling,P1,Network Error,Network unavailable,"1. Disconnect network
+2. Attempt login",Valid credentials,? Error: Network error. Please check your internet connection.,N/A,Not Tested,,
+TC-LOGIN-030,Error Handling,P1,Server Error (500),Backend returns 500,1. Login when server error occurs,Valid credentials,? Error: Server error. Please try again later.,N/A,Not Tested,,Backend simulation needed

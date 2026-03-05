@@ -1,0 +1,1230 @@
+FE,Function,Level,Person in charge,Sprint,Note,BR,JOB
+"S-01 – Home / Landing Page (Guest, Buyer) – BP3 
+Xong FE","Hiển thị danh sách listing nổi bật (ACTIVE) nổi bật xác định thế nào (view count để xuât hiện các xe nổi bật)
+Xem danh sách xe (Điều hướng, Button, Link)
+Đăng nhập / Đăng ký (Điều hướng, Button, Link)
+Search
+
+Hiển thị danh sách listing nổi bật (ACTIVE)
+
+Điều hướng:
+Xem danh sách xe
+Đăng nhập / Đăng ký
+Search nhanh (keyword → S-30)",simple,"BE: Quang
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"2️⃣ Data Scope – Tin đăng hiển thị (RẤT QUAN TRỌNG)
+Business Rule (BP3 + AC):
+Chỉ hiển thị tin có trạng thái:
+APPROVED / ACTIVE
+❌ KHÔNG hiển thị:
+DRAFT
+PENDING_APPROVAL
+REJECTED
+HELD
+SOLD
+👉 FE không tự lọc bằng logic nghiệp vụ,
+FE nhận đúng danh sách từ backend.
+3️⃣ Nội dung hiển thị (FE View)
+Mỗi item (card xe) hiển thị:
+Ảnh đại diện
+Tên xe / tiêu đề
+Giá
+Tình trạng xe
+Thành phố / khu vực
+Badge (nếu có kiểm định)
+❌ Không hiển thị:
+Thông tin Seller riêng tư
+Trạng thái nội bộ (Pending, Held…)
+4️⃣ CTA & Interaction Rules
+4.1 Click vào tin
+Điều hướng → S-32 – Listing Detail (Public)
+4.2 CTA theo trạng thái user
+Guest
+CTA chính: “Xem chi tiết”
+CTA bị khóa:
+Đặt mua
+Wishlist
+Nếu click CTA bị khóa:
+Redirect → S-02 – Login
+Buyer (đã đăng nhập)
+CTA chính: “Xem chi tiết”
+Không phân biệt Buyer/Seller tại S-01
+5️⃣ Validation & State (FE)
+v_ing – validating
+Khi load trang lần đầu
+Khi refresh danh sách
+FE xử lý:
+Show skeleton / loading
+Disable interaction trong lúc load
+v_ed – validated
+Khi data load xong
+Render danh sách tin
+6️⃣ Empty & Error State
+Empty State
+Khi không có tin phù hợp
+Hiển thị:
+“Hiện chưa có xe nào được đăng bán.”
+Error State
+Khi load data thất bại
+Hiển thị:
+“Không thể tải danh sách xe. Vui lòng thử lại.”
+7️⃣ Permission Rules (FE)
+Guest và Buyer:
+Xem cùng 1 dữ liệu
+❌ Không phân quyền khác nhau ở S-01
+❌ Không hiển thị thông tin cá nhân
+8️⃣ Những thứ CỐ TÌNH KHÔNG có ở S-01
+❌ Filter nâng cao (đưa sang S-30)
+❌ Search nâng cao
+❌ Sort phức tạp
+❌ Pagination logic phức tạp (FE chỉ consume API)
+👉 S-01 giữ đơn giản – entry đúng nghĩa",
+"S-02 – Login Screen – Global (Xong)
+Xong FE, Xong BE","Nhập email / password
+Validate credential
+Login user
+Redirect theo role (Seller / Buyer / Inspector / Admin)
+Hiển thị lỗi đăng nhập",simple,"BE: Quang
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,https://phanthanhdat2505.atlassian.net/jira/software/projects/SCRUM/list?jql=project%20%3D%20SCRUM%20ORDER%20BY%20created%20DESC&selectedIssue=SCRUM-37,
+"S-03 – Register Screen – Global (xong)
+
+Xong FE, Xong BE","Nhập thông tin đăng ký
+Validate dữ liệu
+Tạo tài khoản
+Gửi thông báo đăng ký thành công
+Redirect login
+Verify account",simple,"BE: Quang
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"1️⃣ Input Business Rules
+1.1 Email (email)
+Field: email
+Required: ✅
+Rules (FE):
+Không được để trống
+Phải đúng format email
+Có @
+Có domain hợp lệ
+❌ FE không kiểm tra trùng email
+Việc này do backend xử lý
+1.2 Password
+Field: password
+Required: ✅
+Rules (FE – register là nơi validate chính):
+Tối thiểu 8 ký tự
+Phải chứa ít nhất 1 chữ cái
+Phải chứa ít nhất 1 số
+Phải chứa ít nhất 1 ký tự đặc biệt
+(vd: ! @ # $ % ^ & *)
+👉 Đây là rule hợp lý cho register, không dùng lại cho login.
+1.3 Confirm Password
+Field: confirmPassword
+Required: ✅
+Rules (FE):
+Không được để trống
+Phải trùng với password
+1.4 Full Name
+Field: fullName
+Required: ✅
+Rules (FE):
+Không được để trống
+Tối thiểu 2 ký tự
+❌ Không chứa số
+Cho phép khoảng trắng
+1.5 Phone Number
+Field: phone
+Required: ✅
+Rules (FE):
+Chỉ chứa số
+Độ dài hợp lý (9–11 số)
+❌ Không validate nhà mạng (để backend)
+2️⃣ Validation Flow (FE State)
+v_ing – validating
+Xảy ra khi:
+User bấm Register
+FE bắt đầu kiểm tra toàn bộ input
+FE xử lý:
+Validate từng field
+Hiển thị lỗi tại field sai
+Disable Register button khi đang xử lý
+v_ed – validated
+Xảy ra khi:
+Toàn bộ input pass FE validation
+FE gửi request lên backend
+3️⃣ Status of Object (User – sau khi register)
+Dựa trên tài liệu hệ thống:
+User.status sau khi tạo:
+Mặc định: INACTIVE hoặc UNVERIFIED
+❌ Không phải ACTIVE ngay
+👉 FE không set status, chỉ nhận response.
+4️⃣ Register Result (FE-centric)
+✅ SUCCESS
+Điều kiện:
+Backend tạo user thành công
+FE xử lý:
+Hiển thị message:
+“Đăng ký thành công. Vui lòng đăng nhập.”
+Redirect về S-02 – Login
+❌ Không auto login
+❌ FAIL – Validation (Backend)
+Trường hợp:
+Email đã tồn tại
+Data không hợp lệ (backend reject)
+FE xử lý:
+Hiển thị message từ backend (mapping thân thiện)
+Không clear form
+❌ FAIL – System Error
+Trường hợp:
+Lỗi server
+Network error
+FE xử lý:
+Hiển thị message chung:
+“Hệ thống đang gặp sự cố, vui lòng thử lại sau.”
+5️⃣ Security & Constraint (FE)
+❌ FE không hash password
+❌ FE không lưu password
+❌ Không log password
+✔️ Clear password field khi submit fail",
+S-04 – User Profile – Supporting,"Xem thông tin cá nhân
+Cập nhật profile (name, phone, address, avatar)
+Đổi mật khẩu",medium,"BE: Đạt
+FE: Huy",Sprint 3,,"2️⃣ Input Business Rules (FE)
+2.1 Email (email)
+Editable: ❌
+Rule:
+Chỉ hiển thị
+Không cho sửa
+Không validate
+👉 Email là định danh, chỉ đổi qua flow khác (không nằm trong S-04)
+2.2 Full Name
+Editable: ✅
+Required: ✅
+Rules (FE):
+Không được để trống
+Tối thiểu 2 ký tự
+❌ Không chứa số
+Cho phép khoảng trắng
+2.3 Phone Number
+Editable: ✅
+Required: ✅
+Rules (FE):
+Chỉ chứa số
+Độ dài 9–11 số
+❌ Không validate nhà mạng
+2.4 Avatar
+Editable: ✅
+Rules (FE):
+Định dạng ảnh (jpg, jpeg, png)
+Dung lượng ≤ 5MB
+Preview trước khi lưu
+3️⃣ Seller Capability (phản ánh – không xử lý)
+3.1 Hiển thị trạng thái bán
+Trong S-04 chỉ HIỂN THỊ:
+Trạng thái bán:
+⭕ Chưa bật bán
+✅ Đã bật bán
+FE behavior:
+Nếu chưa bật:
+Hiển thị text: “Bạn chưa đăng bán sản phẩm nào”
+CTA: “Đăng bán xe” → điều hướng sang BP1
+Nếu đã bật:
+Hiển thị shortcut sang Seller Dashboard
+❌ FE không:
+Set role
+Verify điều kiện bán
+Quyết định user có được bán hay không
+4️⃣ Validation Flow (FE State)
+v_ing – validating
+Khi user bấm Save Profile
+Khi user click CTA liên quan đến bán (chỉ navigate)
+v_ed – validated
+Khi backend trả response
+5️⃣ Status of Object (User)
+Dựa trên tài liệu:
+User.status (backend quản lý):
+ACTIVE
+INACTIVE
+BLOCKED
+UNVERIFIED
+FE rule:
+Nếu BLOCKED / INACTIVE:
+Cho xem profile
+❌ Disable update
+Hiển thị banner trạng thái
+6️⃣ Những thứ CỐ TÌNH KHÔNG có trong S-04
+❌ Đổi password
+❌ Đổi email
+❌ Đổi role
+❌ Nhập thông tin bán (xe, giao dịch)",
+S-05 – Notification Center – Supporting (BP1–BP7),"Xem danh sách notification
+Đánh dấu đã đọc
+Điều hướng tới screen liên quan (listing / transaction / dispute) complex",medium,"BE: Đạt
+FE: Huy",Sprint 3,,"3️⃣ Notification Object (FE view model)
+FE chỉ cần quan tâm các field hiển thị:
+id
+title
+message
+type (INFO / ACTION / ALERT)
+relatedBP (BP1–BP7)
+relatedObjectId
+isRead
+createdAt
+❌ FE không:
+Generate notification
+Quyết định nội dung nghiệp vụ
+4️⃣ UI Business Rules (FE)
+4.1 Danh sách thông báo
+Hiển thị theo thứ tự mới → cũ
+Có phân biệt:
+Chưa đọc
+Đã đọc
+4.2 Read / Unread
+Khi user click notification:
+Đánh dấu read
+Điều hướng sang screen liên quan (nếu có)
+4.3 Điều hướng (Navigation Rule)
+BP	Điều hướng tới
+BP1	Listing Detail (Seller View)
+BP2	Pending Listings / Dispute
+BP4	Inspection Chat
+BP5	Transaction Detail
+BP6	Delivery Detail
+BP7	Dispute Detail
+👉 Điều hướng chỉ là shortcut, không xử lý logic.
+5️⃣ Validation & State (FE)
+v_ing – validating
+Khi load notification list
+Khi mark as read
+v_ed – validated
+Khi data load xong
+Khi backend xác nhận đã đọc
+6️⃣ Permission Rules (FE)
+User chỉ thấy notification của chính mình
+❌ Không thấy notification của user khác
+❌ Không sửa nội dung notification
+7️⃣ Error Handling (FE)
+❌ Load fail
+Hiển thị:
+“Không thể tải thông báo. Vui lòng thử lại.”
+❌ Empty state
+Hiển thị:
+“Bạn chưa có thông báo nào.”
+8️⃣ Những thứ CỐ TÌNH KHÔNG làm
+❌ Filter nâng cao
+❌ Search notification
+❌ Delete notification
+❌ Push realtime (MVP)
+👉 Chỉ cần pull khi mở screen / refresh.",
+My Orders,"1️⃣ View My Orders (Core)
+
+Function:
+👉 Xem danh sách các đơn mua của tôi
+
+Mô tả chức năng:
+
+Hiển thị tất cả order mà user là buyer
+
+Có thể phân theo trạng thái:
+
+Pending Seller Confirm
+
+Confirmed
+
+Delivering
+
+Completed
+
+Cancelled / In Dispute
+2️⃣ View Order Detail (Core – điều hướng)
+
+Function:
+👉 Xem chi tiết 1 đơn mua
+
+Mô tả chức năng:
+
+Mở sang Order Detail (Buyer View)
+
+Dashboard KHÔNG xử lý nghiệp vụ, chỉ điều hướng
+
+📌 Function này đã tồn tại trong BP5, dashboard chỉ là entry point
+
+3️⃣ Track Order Status (Core – read-only)
+
+Function:
+👉 Theo dõi trạng thái hiện tại của đơn mua
+
+Mô tả chức năng:
+
+Xem trạng thái tổng quát:
+
+Chờ seller
+
+Đang giao
+
+Hoàn tất
+
+Không xác nhận
+
+Không chỉnh sửa
+
+4️⃣ Cancel Order (Conditional)
+
+Function:
+👉 Hủy đơn mua (nếu còn ở trạng thái cho phép)
+
+Điều kiện:
+
+Order ở trạng thái Pending Seller Confirm
+
+Mô tả chức năng:
+
+Gọi action hủy
+
+Không xử lý logic (BE xử lý)
+
+📌 Function này:
+
+Thuộc BP5
+
+Dashboard chỉ expose lại khi hợp lệ
+5️⃣ Raise Dispute (Conditional)
+
+Function:
+👉 Tạo khiếu nại / tranh chấp
+
+Điều kiện:
+
+Order chưa Completed
+
+Buyer là người liên quan
+
+📌 Function này:
+
+Thuộc BP7
+
+Dashboard chỉ hiển thị entry
+6️⃣ View Delivery Info (Read-only)
+
+Function:
+👉 Xem thông tin giao hàng
+
+Bao gồm:
+
+Trạng thái giao
+
+Shipper / carrier
+
+Thời gian dự kiến",MEDIUM,,Sprint 2,"✅ Nên gọi
+
+“My Orders”
+
+“Purchase Overview”
+
+“Order Center”
+
+📌 Và mô tả trong báo cáo:
+
+Trang này tổng hợp các đơn mua của người dùng để tiện theo dõi,
+không phải một business screen riêng biệt được định nghĩa trong hệ thống.
+FE convenience",,
+"S-10 – Seller Dashboard – BP1
+
+Xong BE","Số tin ACTIVE / PENDING / REJECTED
+Số giao dịch
+Shortcut tạo listing
+Điều hướng My Listings
+Draft (optional)",medium,"BE: Đạt
+FE: Quốc Anh",Sprint 1,"[SCRUM-38] Các câu hỏi FE hỏi BE để làm sprint 1 (bao gồm S-01,S-02,S-03,S-20,S-21,S-22,S-23,S-24) - Jira","BR-S10-F01 – Hiển thị số listing ACTIVE / PENDING / REJECTED
+•        Hệ thống truy vấn tất cả listing thuộc Seller
+•        Mỗi listing được đếm theo status hiện tại
+•        Draft không được tính
+•        Nếu Seller chưa có listing → hiển thị 0 cho tất cả trạng thái
+BR-S10-F02 – Hiển thị số giao dịch
+•	Chỉ đếm giao dịch có mapping với listing của Seller
+•	Giao dịch bị huỷ → không được tính
+•	Nếu không có giao dịch → hiển thị 0
+
+BR-S10-F03 – Shortcut tạo listing
+•	Seller click shortcut → không kiểm tra điều kiện gì thêm
+•	Điều hướng trực tiếp sang Create Listing (S-12)
+•	Không tự động tạo Draft
+
+BR-S10-F04 – Điều hướng My Listings
+•	Khi click → chuyển sang S-11
+•	Không thay đổi trạng thái hoặc dữ liệu listing
+
+",
+"S-11 – My Listings – BP1
+Xong BE","Xem danh sách listing của Seller
+Hiển thị status (Draft / Pending / Active / Rejected)
+Filter theo status
+View detail (Điều hướng)
+Edit (Điều hướng)
+Xem lý do reject (Điều hướng)",medium,"BE: Đạt
+FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S11-F01 – Xem danh sách listing
+•        Hệ thống load toàn bộ listing của Seller
+•        Bao gồm: Draft / Pending / Active / Rejected
+•        Không hiển thị listing đã bị xoá
+
+BR-S11-F02 – Hiển thị status listing
+•        Status hiển thị là status hiện tại trong DB
+•        Không cho phép chỉnh sửa status tại màn này
+
+BR-S11-F03 – Filter theo status
+•        Khi chọn filter:
+o        Hệ thống chỉ trả về listing có status tương ứng
+•        Khi bỏ filter:
+o        Hiển thị lại toàn bộ listing
+
+BR-S11-F04 – View Detail
+•        Seller click listing → điều hướng S-15
+•        Nếu listing không thuộc Seller → không cho truy cập
+
+BR-S11-F05 – Edit Listing
+•        Nút Edit chỉ hiển thị nếu status cho phép
+•        Nếu Seller truy cập URL Edit trực tiếp:
+o        Hệ thống kiểm tra status
+o        Status không hợp lệ → redirect về Detail
+
+BR-S11-F06 – Xem lý do reject
+•        Chỉ hiển thị khi status = REJECTED
+•        Nếu không có reject reason → hiển thị message mặc định
+",
+"S-12 – Create Listing (Form) – BP1
+Xong BE","Nhập thông tin xe
+Validate dữ liệu
+Lưu Draft
+Submit tạo listing (PENDING_APPROVAL)",medium,"BE: Đạt
+FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S12-F01 – Nhập thông tin xe
+•	Seller có thể nhập từng phần
+•	Dữ liệu chưa được lưu cho đến khi:
+o	Save Draft hoặc
+o	Submit
+________________________________________
+BR-S12-F02 – Validate dữ liệu
+•	Validate xảy ra khi:
+o	Save Draft → validate cơ bản
+o	Submit → validate đầy đủ
+•	Field sai format → highlight lỗi cụ thể
+________________________________________
+BR-S12-F03 – Lưu Draft
+•	Khi Save Draft:
+o	Tạo listing với status = DRAFT
+o	Lưu toàn bộ dữ liệu hiện tại
+•	Draft có thể được cập nhật nhiều lần
+________________________________________
+BR-S12-F04 – Submit tạo listing
+•	Trước khi submit:
+o	Validate toàn bộ field bắt buộc
+o	Kiểm tra rule ảnh (S-13)
+•	Submit thành công → status = PENDING_APPROVAL",
+"S-13 – Upload Images – BP1
+Xong BE","Upload ảnh
+Validate định dạng / kích thước
+Retry ảnh lỗi
+Xóa ảnh
+Kiểm tra >= 3 ảnh",complex,"BE: Đạt
+FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S13-F01 – Upload ảnh
+•	Mỗi ảnh được gắn với 1 listing
+•	Upload thành công → ảnh hiển thị ngay
+________________________________________
+BR-S13-F02 – Validate định dạng / kích thước
+•	Ảnh sai định dạng:
+o	Không lưu
+o	Hiển thị lỗi cụ thể
+•	Ảnh vượt kích thước:
+o	Không upload
+o	Yêu cầu chọn ảnh khác
+________________________________________
+BR-S13-F03 – Retry ảnh lỗi
+•	Seller có thể upload lại ảnh lỗi
+•	Ảnh mới thay thế ảnh lỗi
+________________________________________
+BR-S13-F04 – Xóa ảnh
+•	Khi xóa:
+o	Ảnh bị remove khỏi listing
+o	Không hiển thị trong Preview
+________________________________________
+BR-S13-F05 – Kiểm tra tối thiểu 3 ảnh
+•	Trước khi submit:
+o	Hệ thống đếm số ảnh hợp lệ
+•	< 3 ảnh:
+o	Disable nút Submit
+o	Hiển thị thông báo lỗi",
+"S-14 – Listing Preview – BP1
+Xong BE","Preview listing trước khi đăng
+Quay lại chỉnh sửa
+Xác nhận đăng tin",simple,"BE: Đạt
+FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S14-F01 – Preview listing
+•	Preview lấy dữ liệu từ bản lưu mới nhất
+•	Không chỉnh sửa được dữ liệu tại màn này
+________________________________________
+BR-S14-F02 – Quay lại chỉnh sửa
+•	Khi quay lại:
+o	Giữ nguyên toàn bộ dữ liệu đã nhập
+o	Không reset form
+________________________________________
+BR-S14-F03 – Xác nhận đăng
+•	Khi xác nhận:
+o	Thực hiện submit listing
+•	Khi không xác nhận:
+o	Không thay đổi trạng thái
+",
+"S-15 – Listing Detail (Seller View) – BP1
+Xong BE","Xem chi tiết listing
+Xem trạng thái duyệt
+Xem inspection status
+Xem transaction liên quan (nếu có)",medium,"BE: Đạt
+FE: Quốc Anh",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S15-F01 – Xem chi tiết listing
+•	Seller chỉ xem được listing của mình
+•	Listing bị xoá → không cho truy cập
+________________________________________
+BR-S15-F02 – Xem trạng thái duyệt
+•	Status hiển thị theo dữ liệu hệ thống
+•	Không cho chỉnh sửa tại màn này
+________________________________________
+BR-S15-F03 – Xem inspection status
+•	Nếu chưa inspection → ẩn thông tin
+•	Nếu có → hiển thị trạng thái hiện tại
+________________________________________
+BR-S15-F04 – Xem transaction liên quan
+•	Chỉ hiển thị transaction liên quan đến listing
+•	Không có → không hiển thị block",
+"S-16 – Edit Listing – BP1
+Xong BE","Chỉnh sửa nội dung listing
+Update ảnh
+Submit lại duyệt
+Validate rule chỉnh sửa theo status",complex,"BE: Đạt
+FE: Quốc Anh",Sprint 2,,"BR-S16-F01 – Điều kiện chỉnh sửa
+•	Chỉ cho phép Edit nếu status hợp lệ
+•	Status không hợp lệ → không truy cập màn Edit
+________________________________________
+BR-S16-F02 – Chỉnh sửa nội dung
+•	Seller có thể thay đổi field cho phép
+•	Field bị khóa → không cho chỉnh sửa
+________________________________________
+BR-S16-F03 – Update ảnh
+•	Áp dụng toàn bộ rule S-13
+•	Xóa ảnh làm < 3 ảnh → không cho submit
+________________________________________
+BR-S16-F04 – Submit lại duyệt
+•	Khi submit:
+o	Validate lại toàn bộ dữ liệu
+o	Status chuyển sang PENDING_APPROVAL",
+"S-17 – Listing Status View – BP1
+Xong BE","Xem lifecycle listing
+Xem lịch sử duyệt
+Xem ghi chú Inspector
+CTA theo status (Resubmit / Edit)",simple,"BE: Đạt
+FE: Quốc Anh",Sprint 2,,"BR-S17-F01 – Xem lifecycle
+•	Hiển thị danh sách các trạng thái đã đi qua
+•	Không cho chỉnh sửa dữ liệu
+________________________________________
+BR-S17-F02 – Xem lịch sử duyệt
+•	Mỗi lần duyệt phải có:
+o	Thời gian
+o	Kết quả
+________________________________________
+BR-S17-F03 – Xem ghi chú Inspector
+•	Có ghi chú → hiển thị
+•	Không có → ẩn block
+________________________________________
+BR-S17-F04 – CTA theo status
+•	CTA hiển thị dựa trên status hiện tại
+•	Không hiển thị action không hợp lệ",
+"S-18 – Draft Listings – BP1
+Xong BE","Xem danh sách draft
+Edit draft
+Delete draft
+Submit draft",medium,"BE: Đạt
+FE: Quốc Anh",Sprint 2,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,"BR-S18-F01 – Xem danh sách Draft
+•	Chỉ hiển thị listing status = DRAFT
+________________________________________
+BR-S18-F02 – Edit Draft
+•	Draft luôn được phép chỉnh sửa
+•	Không giới hạn số lần
+________________________________________
+BR-S18-F03 – Delete Draft
+•	Chỉ cho phép delete Draft
+•	Delete → remove vĩnh viễn
+________________________________________
+BR-S18-F04 – Submit Draft
+•	Submit Draft:
+o	Validate đầy đủ
+o	Status = PENDING_APPROVAL",
+"S-19 – Listing Need More Info – BP1 → BP4
+Đang suy nghĩ, ghi lí do reject","Xem yêu cầu bổ sung
+Điều hướng sang Inspection Chat (S-40) (Optional)
+Cập nhật thông tin yêu cầu",medium,"BE: Đạt
+FE: Quốc Anh",Sprint 2,,"BR-S19-F01 – Xem yêu cầu bổ sung
+•	Chỉ hiển thị yêu cầu chưa được xử lý
+•	Yêu cầu đã xử lý → không hiển thị
+________________________________________
+BR-S19-F02 – Điều hướng Inspection Chat
+•	Nếu feature bật:
+o	Cho phép điều hướng
+•	Nếu tắt:
+o	Ẩn CTA
+________________________________________
+BR-S19-F03 – Cập nhật thông tin theo yêu cầu
+•	Seller chỉ cập nhật đúng field được yêu cầu
+•	Cập nhật xong:
+o	Cho phép submit lại listing
+________________________________________",
+"S-20 – Inspector Dashboard – BP2
+Xong BE","1. Xem số lượng tin chờ duyệt (PENDING)
+2. Xem số lượng tranh chấp đang xử lý (DISPUTE)
+3. Điều hướng sang Pending Listings (S-21)
+4. Điều hướng sang Review History (S-24)",simple,"BE: Quang
+FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-21 – Pending/Reviewing Listings – BP2
+Xong BE","1. Xem danh sách các tin ở trạng thái PENDING
+2. Hiển thị trạng thái REVIEWING (Locked) khi tin đang được Inspector xử lý
+3. Không cho mở tin đang ở trạng thái REVIEWING (UI disable / locked)
+4. Click tin PENDING để điều hướng sang S-22 – Listing Review & Approval Detail
+5. Filter cơ bản: ALL / PENDING / REVIEWING
+6. Sort cơ bản: Mới nhất / Cũ nhất",medium,"BE: Quang
+FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-22 – Listing Review Detail – BP2
+Xong BE","1. Hiển thị chi tiết listing (listing_id).
+2. Hiển thị hình ảnh listing.
+3. Hiển thị trạng thái (PENDING / REVIEWING).
+4. Mở listing → lock sang REVIEWING.
+5. Nhập ghi chú đánh giá.
+6. Chọn Approve / Reject.
+7. Gửi dữ liệu review sang S-23.",medium,"BE: Quang
+FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-23 – Approve / Reject Listing – BP2 
+(Gôm lại với S-22)","1. Nhận yêu cầu Approve.
+2. Kiểm tra quyền Inspector.
+3. Cập nhật trạng thái → APPROVED.
+4. Nhận yêu cầu Reject.
+5. Kiểm tra lý do reject (bắt buộc).
+6. Cập nhật trạng thái → REJECTED.
+7. Lưu ghi chú / lý do.
+8. Lưu lịch sử duyệt.
+9. Gửi thông báo cho Seller.
+10. Unlock listing (thoát REVIEWING).",medium,"BE: Quang
+FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-24 – Review History – BP2
+Xong BE","1. Xem lịch sử duyệt tin đã xử lý
+2. Lọc lịch sử theo khoảng thời gian (From – To)",simple,"BE: Quang
+FE: Lâm",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-30 – Listing Search & Filter – BP3
+
+S-30 gôm lại với S-1
+
+Xong BE (đang nằm ở seller), FE đã gắn API","1. Nhập keyword
+2. Filter theo giá / loại / kiểm định
+3. Submit search
+
+Có ý định  gộp với home",simple,"BE: Đạt
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-31 – Listing List – BP3
+Fitler
+
+Xong BE (đang nằm ở seller), FE đã gắn API","1. Hiển thị danh sách ACTIVE
+2. Pagination
+3. Điều hướng detail
+
+Fitler thì để dưới đây luôn",medium,"BE: Đạt
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-32 – Listing Detail (Public) – BP3
+
+Chưa","1. Xem thông tin xe
+2. Xem ảnh
+4 CTA:
+- Đặt mua / đặt cọc
+",medium,"BE: Đạt
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-33 – Seller Profile (Public) – BP3
+
+(nếu rãnh thì sẽ quay lại)","1. Xem thông tin Seller
+2. Xem rating / lịch sử bán (nếu có)
+
+Nghi vấn chỗ này bởi DB đâu có gì liên quan đến reivew đâu, không có trong BP, nếu làm thì phải giải thích thêm, system sẽ đảm bảo là mỗi chiếc xe đều đảm bảo chất lượng của công ty
+bởi inspector là kiểm duyệt thông tin và mọi thứ. Inspector chỉ đảm bảo tính trung thực & minh bạch của thông tin",medium,"BE: Đạt
+FE: Huy",Sprint 1,https://phanthanhdat2505.atlassian.net/browse/SCRUM-38,,
+"S-40 – Inspection Chat Thread (Inspector–Seller) – BP4 (Optional)
+","1. Gửi / nhận message
+2. Upload ảnh bổ sung
+3. Lưu log trao đổi
+4. Lock khi listing ARCHIVED
+5. Disable message edit and delete actions at UI level",complex,Dev C ( Lâm ),Sprint 2,,,
+"S-41 – Inspection Request Detail – BP4
+Xong BE","1. Xem yêu cầu kiểm định (yêu cầu kiểm định là gì, là cái bài đăng lên à?)
+2. Xem checklist thông tin cần bổ sung",medium,Dev C ( Lâm ),Sprint 2,,,
+S-42 – Inspection Response Screen (Seller) – BP4 (Optional),"Seller trả lời Inspector
+Upload tài liệu / ảnh
+Gửi phản hồi",medium,Dev A ( Quốc Anh ),Sprint 2,,"Mục đích màn này: Seller phản hồi các yêu cầu từ Inspector
+________________________________________
+ĐIỀU KIỆN TRUY CẬP CHUNG (áp dụng cho toàn màn)
+•	Seller chỉ truy cập được S-42 khi:
+o	Listing thuộc quyền sở hữu của Seller
+o	Listing đang ở trạng thái Need More Info / Waiting Seller Response (hoặc trạng thái tương đương)
+•	Nếu không thỏa điều kiện:
+o	Không cho truy cập màn
+o	Điều hướng về Listing Detail
+________________________________________
+Function 1 – Seller trả lời Inspector
+BR-S42-F01 – Hiển thị nội dung yêu cầu từ Inspector
+•	Hệ thống hiển thị:
+o	Nội dung yêu cầu bổ sung từ Inspector
+o	Các câu hỏi / hạng mục cần Seller phản hồi
+•	Chỉ hiển thị yêu cầu chưa được phản hồi
+•	Yêu cầu đã xử lý → không hiển thị tại màn này
+________________________________________
+BR-S42-F02 – Seller nhập nội dung trả lời
+•	Seller chỉ được nhập phản hồi cho các yêu cầu Inspector đã đưa ra
+•	Không cho phép thêm nội dung ngoài phạm vi yêu cầu
+•	Nội dung trả lời không được để trống nếu yêu cầu bắt buộc phản hồi
+________________________________________
+BR-S42-F03 – Validate nội dung trả lời
+•	Trước khi gửi phản hồi:
+o	Kiểm tra field bắt buộc đã được trả lời
+•	Thiếu nội dung:
+o	Disable nút Gửi phản hồi
+o	Hiển thị lỗi tại field tương ứng
+________________________________________
+Function 2 – Upload tài liệu / ảnh
+BR-S42-F04 – Upload tài liệu / ảnh
+•	Seller có thể upload:
+o	Ảnh
+o	Tài liệu
+•	File được gắn với đúng yêu cầu Inspection
+________________________________________
+BR-S42-F05 – Validate file upload
+•	File sai định dạng → không cho upload
+•	File vượt kích thước → không cho upload
+•	File lỗi → hiển thị thông báo lỗi cụ thể
+________________________________________
+BR-S42-F06 – Quản lý file đã upload
+•	File upload thành công:
+o	Hiển thị trong danh sách file phản hồi
+•	Seller có thể:
+o	Xóa file trước khi gửi phản hồi
+•	File bị xóa → không được gửi cho Inspector
+________________________________________
+BR-S42-F07 – Yêu cầu file (nếu có)
+•	Nếu Inspector yêu cầu bắt buộc upload file:
+o	Không có file → không cho gửi phản hồi
+•	Nếu file là optional:
+o	Cho phép gửi phản hồi không kèm file
+________________________________________
+Function 3 – Gửi phản hồi
+BR-S42-F08 – Điều kiện gửi phản hồi
+•	Chỉ cho phép gửi phản hồi khi:
+o	Đã trả lời đầy đủ các nội dung bắt buộc
+o	Đã upload đủ tài liệu/ảnh bắt buộc (nếu có)
+________________________________________
+BR-S42-F09 – Gửi phản hồi thành công
+•	Khi gửi thành công:
+o	Phản hồi được lưu vào hệ thống
+o	Gắn với listing và inspection tương ứng
+•	Listing chuyển sang trạng thái:
+o	Waiting Inspector Review (hoặc trạng thái tương đương)
+________________________________________
+BR-S42-F10 – Sau khi gửi phản hồi
+•	Seller:
+o	Không được chỉnh sửa phản hồi đã gửi
+•	Hệ thống:
+o	Điều hướng Seller về Listing Detail hoặc Listing Status View
+________________________________________
+Function 4 – Optional behavior (BP4)
+BR-S42-F11 – Màn hình Optional
+•	Nếu Inspection Response không được bật cho BP hiện tại:
+o	Không hiển thị CTA điều hướng đến S-42
+•	Seller không thể truy cập trực tiếp bằng URL",
+S-43 – Inspection Summary – BP4,"F1. Load inspection summary
+Input: inspectionId
+Load:
+listing info
+inspector info
+overall score
+summary conclusion
+inspection date
+F2. Load inspection checklist
+Load danh sách checklist:
+category
+item
+result (pass/fail)
+remark
+F3. Load inspection media
+Load:
+ảnh / video
+phân loại theo category
+F4. Read-only enforcement
+Disable:
+- edit
+- upload
+- approve / reject
+",medium,Dev C ( Lâm ),Sprint 2,"Mục tiêu
+Inspector xem kết quả tổng hợp kiểm định
+Là đầu ra cuối của BP4
+KHÔNG action
+Actor & Permission
+Actor: Inspector
+Điều kiện:
+- Có inspectionReport tồn tại
+- Inspector được assign inspection đó
+Output
+Entry từ: BP4 flow
+Exit:
+- Back to Inspector Dashboard
+- Back to Inspection Request Detail",,
+S-50 – Purchase / Deposit Request (Review & Confirm) (Buyer) – BP5,"FUNCTION GROUP A – Load & Pre-check
+F1. Load listing information
+Input: listingId
+Load:
+- Listing title
+- seller basic info
+- price
+- current listing status
+Rule:
+- Nếu status ≠ APPROVED → redirect + show error
+F2. Load buyer information
+Lấy từ session:
+- buyerId
+- buyer profile (readonly)
+Không cho chỉnh sửa tại screen này
+FUNCTION GROUP B – Step 1: Input Request
+F3. Select transaction type
+Options:
+- Purchase
+- Deposit
+Rule:
+- Purchase → depositAmount = 0
+- Deposit → depositAmount > 0
+F4. Input desired transaction time
+Input:
+- desiredTime (datetime)
+Validate:
+- Không được ở quá khứ
+- Không quá X ngày (nếu có rule)
+F5. Input optional note
+Optional text
+Max length (ví dụ 500 ký tự)
+F6. Validate request input
+Validate:
+- transactionType ≠ null
+- desiredTime hợp lệ
+- depositAmount (nếu có) > 0
+Nếu fail:
+- highlight field
+- KHÔNG chuyển sang review
+FUNCTION GROUP C – Step 2: Review & Confirm
+(logic của S-51 cũ)
+F7. Display transaction summary (readonly)
+Hiển thị:
+- Listing info
+- Seller info
+- Buyer info 
+- Transaction type
+- Desired time
+- Estimated fees (platform / inspection)
+F8. Back to edit
+- Cho phép quay lại Step 1
+- Không mất dữ liệu đã nhập
+F9. Confirm transaction request
+Khi Buyer click Confirm
+Backend:
+- Create Transaction
+- status = PENDING_SELLER_CONFIRM
+- link với:
+  + listing
+  + buyer
+  + seller
+Post-condition:
+- Listing → vẫn APPROVED (chưa HELD)
+- Seller được notify
+FUNCTION GROUP D – Error & Edge case
+F10. Prevent duplicate request (optional, trường hợp này là 1 buyer mở 2 tab để mua cùng 1 product)
+Nếu Buyer đã có transaction pending cho listing này:
+- chặn tạo mới
+- show warning
+F11. Handle concurrent status change (chỗ này là backend check lại để 1 products chỉ được mua bởi 1 người)
+Nếu listing chuyển sang HELD trong lúc Buyer đang review:
+- block confirm
+- reload + show message
+",medium,Dev D (Huy),Sprint 2,"Multi-step
+Output & điều hướng
+Success:
+- Redirect → S-54 – Transaction Detail (Buyer View)
+Fail:
+- Ở lại S-50 + show error",,
+S-51 – Transaction Summary (Buyer) – BP5,"1. Xem thông tin giao dịch
+2. Hủy request (nếu pending)",simple,Dev D,Sprint 2,,,
+S-52 – Pending Transactions (Seller) – BP5,"F1. Load pending transactions
+Filter:
+- status = PENDING_SELLER_CONFIRM
+Load:
+- transactionId
+- buyer name
+- listing title
+- transaction type
+- created date
+F2. Sort & filter
+Sort theo:
+- created date
+Optional filter:
+- purchase / deposit
+F3. Navigate to transaction detail
+Click row → redirect S-53",medium,Dev D (Huy),Sprint 2,"Mục tiêu
+Seller xem danh sách transaction đang chờ xử lý
+Actor & Permission
+Actor: Seller
+Chỉ load transaction thuộc sellerId
+
+Output
+Không đổi trạng thái
+Chỉ list + điều hướng",,
+S-53 – Transaction Detail (Seller View) – BP5,"F1. Load transaction detail
+Load:
+- buyer info
+- listing info
+- transaction type
+- desired time
+- fee breakdown
+F2. Accept transaction
+Action:
+- status → CONFIRMED
+- listing → HELD
+Notify Buyer
+F3. Prevent invalid action
+Nếu status ≠ pending:
+- disable CTA",medium,Dev D (Huy),Sprint 2,"Mục tiêu
+Seller:
+xem chi tiết transaction
+accept
+
+Actor & Permission
+Actor: Seller
+Transaction status = PENDING_SELLER_CONFIRM
+
+Output
+- Success → refresh detail
+- Buyer được notify",,
+S-54 – Transaction Detail (Buyer View) – BP5,"F1. Load transaction detail
+Hiển thị:
+- seller info
+- listing info
+- status
+- timeline
+F2. Cancel transaction
+Condition:
+- status = PENDING_SELLER_CONFIRM
+Action:
+transaction → CANCELLED
+listing → APPROVED
+F3. Prevent invalid cancel
+Nếu status ≠ pending:
+- disable cancel",medium,Dev D (Huy),Sprint 2,"Mục tiêu
+Buyer theo dõi trạng thái transaction
+Actor & Permission
+Actor: Buyer
+BuyerId phải match transaction
+Output
+Redirect về Buyer Transaction List",,
+S-60 – Shipper Dashboard – BP6,"F1. Load delivery summary
+Count:
+- assigned
+- in-progress
+- failed
+F2. Navigate
+CTA:
+- View Assigned Deliveries → S-61",simple,Dev D (Huy),Sprint 2,"Mục tiêu
+Overview công việc shipper
+",,
+S-61 – Assigned Deliveries (Detail View) – BP6,"FUNCTION GROUP A – Load deliveries
+F1. Load assigned deliveries
+Input:
+- shipperId
+Load list:
+- deliveryId
+- orderId
+- pickup city
+- delivery city
+- status
+- scheduled time
+F2. Filter deliveries by status
+Filter:
+- Assigned
+- In Progress
+- Failed
+Optional
+FUNCTION GROUP B – View delivery detail (gộp S-62)
+F3. Select delivery from list
+Trigger:
+- click 1 row
+Load detail:
+- seller info
+- buyer info
+- pickup address
+- delivery address
+- contact info
+- current status
+F4. Display delivery timeline (readonly)
+Hiển thị:
+- assigned time
+- shipped time (nếu có)
+- expected delivery time
+FUNCTION GROUP C – Navigate to action screens
+F5. Navigate to delivery confirmation
+Condition:
+- status = IN_PROGRESS
+Action:
+- redirect → S-63 – Delivery Confirmation
+F6. Navigate to delivery failed report
+Condition:
+- delivery failed
+Action:
+- redirect → S-64 – Delivery Failed Report
+FUNCTION GROUP D – Security & consistency
+F7. Prevent unauthorized access
+Nếu shipperId ≠ assigned shipper:
+- block access
+- redirect
+F8. Refresh delivery status
+Nếu status thay đổi (ví dụ đã completed):
+- disable CTA
+- show info message
+",medium,Dev D (Huy),Sprint 2,"Mục tiêu
+Cho Shipper:
+- xem tất cả delivery được gán
+- xem chi tiết từng delivery
+- điều hướng sang screen action (S-63 / S-64)
+
+Actor & quyền
+Actor: Shipper
+Permission:
+- Shipper đăng nhập
+- Chỉ thấy delivery được assign cho mình
+
+Output & điều hướng
+Không thay đổi trạng thái delivery tại screen này
+Mọi thay đổi trạng thái:
+chỉ xảy ra ở S-63 / S-64",,
+S-62 – Delivery Detail – BP6,"1. Xem thông tin giao hàng
+2. Liên hệ Buyer / Seller",medium,Dev D,Sprint 2,Remove S-62,,
+S-63 – Delivery Confirmation – BP6,"F1. Load delivery info
+Hiển thị:
+- buyer info
+- address
+- order info
+F2. Confirm delivery
+Input:
+receiver name
+receiver phone
+signature image (optional, khoi cung dc)
+
+Action:
+
+delivery → DELIVERED
+
+transaction → COMPLETED
+
+listing → SOLD
+
+F3. Prevent double submit
+
+Nếu delivery ≠ IN_PROGRESS:
+
+block confirm",complex,Dev D (Huy),Sprint 3,"Mục tiêu
+Xác nhận giao hàng thành công
+
+Permission
+Shipper phải được assign
+Delivery status = IN_PROGRESS
+
+Output
+Redirect → Shipper Dashboard",,
+S-64 – Delivery Failed Report – BP6 → BP7,"F1. Input failed reason
+Require:
+- reason
+- optional image proof (khoi cung duoc)
+F2. Submit failed report
+Action:
+- delivery → FAILED
+- transaction → IN_DISPUTE
+- Notify Buyer/Seller
+",medium,Dev D (Huy),Sprint 3,"Mục tiêu
+Báo cáo giao hàng thất bại
+Permission
+Shipper được assign
+Delivery status = IN_PROGRESS
+Output
+Redirect → Shipper Dashboard",,
+"S-70 – Dispute Creation (Buyer, Seller) – BP7",,medium,Dev B ( Quang ),Sprint 3,,,
+"S-71 – Dispute List (Inspector, Admin) – BP7",,medium,Dev C ( Lâm ),Sprint 3,,,
+S-72 – Dispute Detail (Inspector) – BP7,,medium,Dev C ( Lâm ),Sprint 3,,,
+S-73 – Dispute Resolution (Inspector) – BP7,,complex,Dev C ( Lâm ),Sprint 3,,,
+"S-74 – Dispute Result View (Buyer, Seller) – BP7",,simple,Dev B ( Quang ),Sprint 3,,,
+S-80 – Admin Dashboard – Supporting,,simple,Dev E (Đạt ),Sprint 3,,,
+S-81 – User Management – Supporting,,complex,Dev E (Đạt ),Sprint 3,,,
+S-82 – Audit Log – Supporting,,medium,Dev E (Đạt ),Sprint 3,,,
+S-83 – Dispute Override – BP7 (Special),,complex,Dev E (Đạt ),Sprint 3,,,
+,,,,,,,
+Note,,,,,,,
+"level easy: <=3 No of Transaction tương ứng với (CRUD)
+
+level medium: >3 & <=8  _______
+
+level complex: >8 _______",,,,,,,
+"SPRINT 1
+S-02 / S-03 – Login / Register (done)
+S-10 / S-11 – Seller Dashboard + My Listings
+S-12 → S-14 – Create Listing Flow
+S-20 → S-22 – Inspector duyệt
+S-01 – Home (kèm search keyword)
+S-31 → S-32 – Buyer Listing List + Detail
+
+
+SPRINT 2 – Giao dịch & kiểm định
+A. Hoàn thiện Listing & Inspection (tiếp nối Sprint 1)
+S-16 – Edit Listing
+S-18 – Draft Listings
+S-19 – Listing Need More Info
+S-40 – Inspection Chat Thread
+S-41 – Inspection Request Detail
+S-42 – Inspection Response (Seller)
+S-43 – Inspection Summary
+B. Core Transaction Flow (BP5)
+S-50 – Purchase / Deposit Request (Buyer)
+S-51 – Transaction Summary (Buyer)
+S-52 – Pending Transactions (Seller)
+S-53 – Transaction Detail (Seller)
+✅ S-54 – Transaction Detail (Buyer) ← CORE, chốt giao dịch
+C. Delivery – CORE (chỉ phần chính)
+S-60 – Shipper Dashboard
+S-61 – Assigned Deliveries
+S-62 – Delivery Detail
+
+
+
+SPRINT 3 – Exception & Supporting
+A. Delivery Result & Exception
+S-63 – Delivery Confirmation
+S-64 – Delivery Failed Report
+B. Dispute Flow (BP7)
+S-70 – Dispute Creation
+S-71 – Dispute List
+S-72 – Dispute Detail
+S-73 – Dispute Resolution
+S-74 – Dispute Result View
+C. Buyer Convenience (FE Supporting)
+🟩 My Orders
+Overview đơn mua
+Điều hướng vào S-54
+Empty state + CTA
+📌 Đặt ở đây là đúng nhất:
+Đã có order
+Đã có delivery
+Đã có dispute
+D. User & System Supporting
+S-04 – User Profile
+S-05 – Notification Center
+🔹 E. Admin (luôn để cuối)
+S-80 – Admin Dashboard
+S-81 – User Management
+S-82 – Audit Log
+S-83 – Dispute Override
+🔹 F. Optional / Nice-to-have
+S-24 – Review History (Optional)
+",,,,,,,
