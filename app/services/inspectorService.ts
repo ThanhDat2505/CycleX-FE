@@ -65,46 +65,53 @@ function getAuthToken(): string | null {
   return localStorage.getItem("authToken");
 }
 
-function getInspectorId(): number {
-  if (typeof window === "undefined") return 0;
+function getJwtPayload(token: string | null): RawObject | null {
+  if (!token) return null;
+  try {
+    const payloadBase64 = token.split(".")[1];
+    if (!payloadBase64) return null;
+    const normalized = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+    return JSON.parse(atob(padded));
+  } catch {
+    return null;
+  }
+}
 
-  const fromUserData = parseJsonSafe(localStorage.getItem("userData"));
-  const userIdCandidates = [
-    fromUserData?.userId,
-    fromUserData?.id,
-    fromUserData?.inspectorId,
-    fromUserData?.user?.userId,
-    fromUserData?.user?.id,
-  ];
-
-  for (const value of userIdCandidates) {
+function pickPositiveNumber(values: unknown[]): number | null {
+  for (const value of values) {
     const candidate = Number(value);
     if (Number.isFinite(candidate) && candidate > 0) {
       return candidate;
     }
   }
+  return null;
+}
+
+function getInspectorId(): number {
+  if (typeof window === "undefined") return 0;
 
   const token = localStorage.getItem("authToken");
-  if (token) {
-    try {
-      const payloadBase64 = token.split(".")[1];
-      if (payloadBase64) {
-        const normalized = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
-        const padded =
-          normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
-        const payload = JSON.parse(atob(padded));
+  const payload = getJwtPayload(token);
+  const tokenInspectorId = pickPositiveNumber([
+    payload?.userId,
+    payload?.id,
+    payload?.sub,
+  ]);
+  if (tokenInspectorId) {
+    return tokenInspectorId;
+  }
 
-        const tokenIdCandidates = [payload?.userId, payload?.id, payload?.sub];
-        for (const value of tokenIdCandidates) {
-          const candidate = Number(value);
-          if (Number.isFinite(candidate) && candidate > 0) {
-            return candidate;
-          }
-        }
-      }
-    } catch {
-      // ignore parse errors and throw explicit error below
-    }
+  const fromUserData = parseJsonSafe(localStorage.getItem("userData"));
+  const userDataInspectorId = pickPositiveNumber([
+    fromUserData?.userId,
+    fromUserData?.id,
+    fromUserData?.inspectorId,
+    fromUserData?.user?.userId,
+    fromUserData?.user?.id,
+  ]);
+  if (userDataInspectorId) {
+    return userDataInspectorId;
   }
 
   throw new Error(
@@ -119,19 +126,20 @@ function getInspectorId(): number {
 function isTokenExpired(): boolean {
   const token = getAuthToken();
   if (!token) return true;
-  try {
-    const payloadBase64 = token.split(".")[1];
-    if (!payloadBase64) return true;
-    const normalized = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
-    const padded = normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
-    const payload = JSON.parse(atob(padded));
-    if (typeof payload?.exp === "number") {
-      // exp is in seconds; Date.now() is in milliseconds
-      return payload.exp * 1000 < Date.now();
-    }
-    return false; // no exp claim → assume valid
-  } catch {
-    return true;
+  const payload = getJwtPayload(token);
+  if (!payload) return true;
+  if (typeof payload?.exp === "number") {
+    return payload.exp * 1000 < Date.now();
+  }
+  return false;
+}
+
+class InspectorApiError extends Error {
+  status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+    this.status = status;
   }
 }
 
@@ -172,16 +180,14 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // Use the explicit API proxy route handler (/api/proxy/[...slug])
-  // instead of Next.js rewrites. Rewrites forward browser cookies which
-  // can trigger Spring Security CSRF rejection (403) on POST/PUT/DELETE.
+  // Keep calls under /backend so Next.js rewrites to backend host.
+  // credentials: "omit" prevents browser cookies from being attached,
+  // avoiding CSRF/session side effects on POST/PUT/DELETE.
   const requestPromise = (async () => {
-    const response = await fetch(`/api/proxy${path}`, {
+    const response = await fetch(`/backend/api${path}`, {
       method,
       headers,
       body: init?.body,
-      // Do NOT send cookies; the proxy route handler only needs
-      // the Authorization header to authenticate with the backend.
       credentials: "omit",
     });
 
@@ -213,7 +219,7 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
         );
       }
 
-      throw new Error(message);
+      throw new InspectorApiError(response.status, message);
     }
 
     if (response.status === 204) {
@@ -491,13 +497,18 @@ export const inspectorService = {
 
   async getListingDetail(listingId: string): Promise<InspectorReviewDetail> {
     const inspectorId = getInspectorId();
+    const normalizedListingId = String(listingId).trim();
     const response = await inspectorFetch<any>(
-      `/inspector/${inspectorId}/listings/${listingId}/detail`,
+      `/inspector/${inspectorId}/listings/${normalizedListingId}/detail`,
       { method: "GET" },
     );
 
     const payload = response?.data ?? response;
-    return mapToReviewDetail(payload ?? {});
+    const detail = mapToReviewDetail(payload ?? {});
+    // Always keep detail id consistent with route param to avoid posting
+    // approve/reject requests with mismatched listing identifiers.
+    detail.id = normalizedListingId;
+    return detail;
   },
 
   async lockListing(listingId: string): Promise<void> {
@@ -526,13 +537,42 @@ export const inspectorService = {
   ): Promise<void> {
     const inspectorId = getInspectorId();
     const listingPathId = Number(listingId);
-    await inspectorFetch<void>(
-      `/inspector/${inspectorId}/listings/${Number.isFinite(listingPathId) && listingPathId > 0 ? listingPathId : listingId}/approve`,
-      {
+    const normalizedListingId =
+      Number.isFinite(listingPathId) && listingPathId > 0
+        ? String(listingPathId)
+        : String(listingId).trim();
+
+    const approvePath = `/inspector/${inspectorId}/listings/${normalizedListingId}/approve`;
+
+    try {
+      await inspectorFetch<void>(approvePath, {
         method: "POST",
         body: JSON.stringify(payload),
-      },
-    );
+      });
+    } catch (error) {
+      if (!(error instanceof InspectorApiError) || error.status !== 403) {
+        throw error;
+      }
+
+      const detail = await this.getListingDetail(normalizedListingId);
+      const normalizedStatus = String(detail?.status ?? "")
+        .trim()
+        .toUpperCase();
+
+      if (
+        normalizedStatus === "PENDING" ||
+        normalizedStatus === "PENDING_APPROVAL"
+      ) {
+        await this.lockListing(normalizedListingId);
+        await inspectorFetch<void>(approvePath, {
+          method: "POST",
+          body: JSON.stringify(payload),
+        });
+        return;
+      }
+
+      throw error;
+    }
   },
 
   async rejectListing(
