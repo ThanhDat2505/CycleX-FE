@@ -11,32 +11,29 @@ export interface ApiError {
 }
 
 /**
- * Helper for POST requests with body
- * @param endpoint - API endpoint (e.g., '/auth/login')
- * @param body - Request body object
- * @returns Promise with parsed JSON response
+ * Core function to handle API requests with common logic (auth, errors, etc.)
  */
-// Ví dụ: apiCallPOST('/auth/login', {email, password}) đường dẫn API và dữ liệu gửi lên
-// → Gửi đến: /backend/api/auth/login
-// → Trả về: LoginResponse
-export async function apiCallPOST<T>(
-    endpoint: string,
-    body: object
-): Promise<T> {
+async function coreFetch<T>(endpoint: string, options: RequestInit): Promise<T> {
     try {
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+            ...(options.headers as Record<string, string> || {})
+        };
+        const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+
         const response = await fetch(`/backend/api${endpoint}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json', // báo server biết dữ liệu gửi lên là JSON
-            },
-            body: JSON.stringify(body), // chuyển dữ liệu sang JSON
+            ...options,
+            headers,
         });
 
         if (!response.ok) {
             // Try to parse error from backend
+            let errorPayload;
             try {
-                const error: ApiError = await response.json(); // parse lỗi từ server thành json
-                throw error; // ném lỗi ra ngoài
+                errorPayload = await response.json(); // parse lỗi từ server thành json
             } catch (parseError) {
                 // If can't parse JSON, throw generic error with status code
                 throw {
@@ -44,6 +41,7 @@ export async function apiCallPOST<T>(
                     message: `Server error: ${response.statusText}`,
                 };
             }
+            throw errorPayload; // ném lỗi ra ngoài
         }
 
         return await response.json();
@@ -62,46 +60,31 @@ export async function apiCallPOST<T>(
 }
 
 /**
+ * Helper for POST requests with body
+ * @param endpoint - API endpoint (e.g., '/auth/login')
+ * @param body - Request body object
+ * @returns Promise with parsed JSON response
+ */
+// Ví dụ: apiCallPOST('/auth/login', {email, password}) đường dẫn API và dữ liệu gửi lên
+// → Gửi đến: /backend/api/auth/login
+// → Trả về: LoginResponse
+export async function apiCallPOST<T>(
+    endpoint: string,
+    body: object
+): Promise<T> {
+    return coreFetch<T>(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body)
+    });
+}
+
+/**
  * Helper for GET requests
  * @param endpoint - API endpoint (e.g., '/home')
  * @returns Promise with parsed JSON response
  */
 export async function apiCallGET<T>(endpoint: string): Promise<T> {
-    try {
-        const response = await fetch(`/backend/api${endpoint}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            // Try to parse error from backend
-            try {
-                const error: ApiError = await response.json();
-                throw error;
-            } catch (parseError) {
-                // If can't parse JSON, throw generic error with status code
-                throw {
-                    status: response.status,
-                    message: `Server error: ${response.statusText}`,
-                };
-            }
-        }
-
-        return await response.json();
-    } catch (error: any) {
-        // Handle network errors (server down, no internet, CORS, etc.)
-        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-            throw {
-                status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
-            };
-        }
-
-        // Re-throw other errors (from backend or parsing)
-        throw error;
-    }
+    return coreFetch<T>(endpoint, { method: 'GET' });
 }
 
 /**
@@ -114,37 +97,10 @@ export async function apiCallPUT<T>(
     endpoint: string,
     body: object
 ): Promise<T> {
-    try {
-        const response = await fetch(`/backend/api${endpoint}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-        });
-
-        if (!response.ok) {
-            try {
-                const error: ApiError = await response.json();
-                throw error;
-            } catch (parseError) {
-                throw {
-                    status: response.status,
-                    message: `Server error: ${response.statusText}`,
-                };
-            }
-        }
-
-        return await response.json();
-    } catch (error: any) {
-        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-            throw {
-                status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
-            };
-        }
-        throw error;
-    }
+    return coreFetch<T>(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(body)
+    });
 }
 
 /**
@@ -155,34 +111,5 @@ export async function apiCallPUT<T>(
 export async function apiCallDELETE<T>(
     endpoint: string
 ): Promise<T> {
-    try {
-        const response = await fetch(`/backend/api${endpoint}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            try {
-                const error: ApiError = await response.json();
-                throw error;
-            } catch (parseError) {
-                throw {
-                    status: response.status,
-                    message: `Server error: ${response.statusText}`,
-                };
-            }
-        }
-
-        return await response.json();
-    } catch (error: any) {
-        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-            throw {
-                status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
-            };
-        }
-        throw error;
-    }
+    return coreFetch<T>(endpoint, { method: 'DELETE' });
 }
