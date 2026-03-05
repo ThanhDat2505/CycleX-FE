@@ -2625,3 +2625,274 @@ body {
   border: none;
   background: none;
 }
+
+/* Inspector UI polish: keep existing structure, improve visual hierarchy */
+:root {
+  --brand-primary: #2563eb;
+  --brand-primary-2: #1d4ed8;
+  --brand-success: #16a34a;
+  --brand-success-2: #15803d;
+  --brand-danger: #dc2626;
+  --brand-danger-2: #b91c1c;
+  --brand-ink: #0b1b34;
+  --surface-soft: #f8fbff;
+  --surface-card: #fbfdff;
+}
+
+.wrap {
+  padding: 0 20px;
+}
+
+.layout {
+  gap: clamp(20px, 2.2vw, 34px);
+}
+
+.page-title {
+  letter-spacing: -0.03em;
+  color: var(--brand-ink);
+}
+
+.meta {
+  gap: 12px 18px;
+}
+
+.box,
+.card,
+.tableCard,
+.filterCard,
+.summary-card,
+.chat-shell,
+.chat-info-sidebar {
+  background: linear-gradient(180deg, #ffffff 0%, var(--surface-card) 100%);
+  border: 1px solid #dfe7f3;
+  box-shadow:
+    0 14px 34px rgba(15, 23, 42, 0.08),
+    0 2px 8px rgba(15, 23, 42, 0.04);
+}
+
+.box,
+.tableCard,
+.summary-card,
+.chat-shell {
+  border-radius: 18px;
+}
+
+.card,
+.chat-info-sidebar {
+  border-radius: 22px;
+}
+
+.boxTitle {
+  margin-bottom: 18px;
+}
+
+.boxTitle::before {
+  background: linear-gradient(180deg, var(--brand-primary) 0%, #0f172a 100%);
+}
+
+.mainBox,
+.thumbBox {
+  border: 1px solid #d6e2f2;
+  background:
+    radial-gradient(
+      circle at 18% 16%,
+      rgba(59, 130, 246, 0.08),
+      transparent 42%
+    ),
+    linear-gradient(180deg, #f8fbff 0%, #f2f7ff 100%);
+}
+
+.btn,
+.actionBtn,
+.summary-btn,
+.viewBtn,
+.actionLink {
+  border-radius: 12px;
+  font-weight: 800;
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease,
+    background 0.2s ease;
+}
+
+.btn:hover,
+.actionBtn:hover,
+.summary-btn:hover,
+.viewBtn:hover,
+.actionLink:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.16);
+}
+
+.btn:active,
+.actionBtn:active,
+.summary-btn:active,
+.viewBtn:active,
+.actionLink:active {
+  transform: translateY(0);
+}
+
+.btn-info,
+.needInfo {
+  background: linear-gradient(
+    135deg,
+    var(--brand-primary) 0%,
+    var(--brand-primary-2) 100%
+  ) !important;
+}
+
+.btn-success,
+.approve {
+  background: linear-gradient(
+    135deg,
+    var(--brand-success) 0%,
+    var(--brand-success-2) 100%
+  ) !important;
+}
+
+.btn-danger,
+.reject,
+.btn-reject-solid {
+  background: linear-gradient(
+    135deg,
+    var(--brand-danger) 0%,
+    var(--brand-danger-2) 100%
+  ) !important;
+}
+
+.note-box,
+.panel,
+.panel-reject {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.panel-title,
+.note-box-title {
+  color: var(--brand-ink);
+  font-weight: 900;
+}
+
+.textarea,
+.select,
+.filterInput,
+.searchInput {
+  border: 1px solid #d4deeb;
+  background: #ffffff;
+}
+
+.textarea:focus,
+.select:focus,
+.filterInput:focus,
+.searchInput:focus {
+  border-color: var(--brand-primary);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+}
+
+.tableHeader {
+  background: linear-gradient(180deg, #f9fbff 0%, #f2f6fd 100%);
+  border-bottom: 1px solid #dce6f5;
+}
+
+.tableRow:hover,
+.table tbody tr:hover {
+  background: #f2f8ff;
+}
+
+.review-detail-page .header {
+  margin-bottom: 26px;
+}
+
+.review-detail-page .page-title {
+  font-size: clamp(28px, 3.2vw, 42px);
+}
+
+.review-detail-page .metaItem {
+  padding: 8px 12px;
+  border: 1px solid #dbe5f3;
+  border-radius: 999px;
+  background: #fff;
+}
+
+.review-detail-page .gallery {
+  padding: 14px;
+  border-radius: 18px;
+  border: 1px solid #dbe5f2;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.review-detail-page .mainBox {
+  height: clamp(280px, 48vw, 470px);
+  border-radius: 16px;
+}
+
+.review-detail-page .thumbGrid {
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.review-detail-page .thumbBox {
+  height: 110px;
+  border-radius: 14px;
+}
+
+.review-detail-page .box {
+  padding: clamp(18px, 2.2vw, 28px);
+}
+
+.review-detail-page .card {
+  width: min(380px, 100%);
+  top: 18px;
+  padding: 24px;
+}
+
+.review-detail-page .price {
+  font-size: clamp(28px, 2.1vw, 36px);
+  margin-bottom: 20px;
+  letter-spacing: 0.01em;
+}
+
+.review-detail-page .btn {
+  min-height: 48px;
+}
+
+.review-detail-page .panel {
+  margin-top: 8px;
+  padding: 12px;
+}
+
+.review-detail-page .confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+@media (max-width: 992px) {
+  .wrap {
+    padding: 0 14px;
+  }
+
+  .card {
+    position: static;
+    width: 100%;
+  }
+
+  .review-detail-page .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .review-detail-page .rightActions {
+    padding-top: 0;
+    justify-content: flex-start;
+  }
+
+  .review-detail-page .thumbGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
