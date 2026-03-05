@@ -2635,8 +2635,8 @@ body {
   --brand-danger: #dc2626;
   --brand-danger-2: #b91c1c;
   --brand-ink: #0b1b34;
-  --surface-soft: #f8fbff;
   --surface-card: #fbfdff;
+  --surface-soft: #f8fbff;
 }
 
 .wrap {
