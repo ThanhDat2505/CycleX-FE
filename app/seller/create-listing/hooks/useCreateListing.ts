@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useToast } from "@/app/contexts/ToastContext";
-import { saveDraft, updateDraft, submitDraft } from "@/app/services/myListingsService";
+import { saveDraft, updateDraft, submitDraft, uploadListingImage } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import { CREATE_LISTING_STEPS, LISTING_CONFIG, CURRENT_YEAR } from "../constants";
 import { ListingFormData } from "../types";
@@ -42,11 +42,14 @@ export const useCreateListing = () => {
         brand: "",
         model: "",
         category: "",
-        condition: "used",
+        condition: "New",
         year: CURRENT_YEAR.toString(),
         price: "",
         location: "",
+        pickupAddress: "",
         description: "",
+        usageTime: "",
+        reasonForSale: "",
         shipping: false,
     });
 
@@ -203,6 +206,16 @@ export const useCreateListing = () => {
         if (!files || files.length === 0) return;
         setUploadError(null);
 
+        if (!listingId) {
+            setUploadError("Draft not ready yet. Please complete Step 1 and try again.");
+            return;
+        }
+
+        if (!user?.userId) {
+            setUploadError("You must be logged in to upload images.");
+            return;
+        }
+
         if (imageUrls.length + files.length > LISTING_CONFIG.MAX_IMAGES) {
             setUploadError(`You can only upload a maximum of ${LISTING_CONFIG.MAX_IMAGES} images.`);
             return;
@@ -228,8 +241,16 @@ export const useCreateListing = () => {
         setIsUploading(true);
         try {
             // Draft-First: Pass listingId to uploadImage for correct folder structure
-            const uploadPromises = filesToUpload.map(file => uploadImage(file, listingId ?? undefined));
+            const uploadPromises = filesToUpload.map(file => uploadImage(file, listingId));
             const newUrls = await Promise.all(uploadPromises);
+
+            // Persist uploaded image paths to BE listing-images table (S-13).
+            await Promise.all(
+                newUrls.map((url, index) =>
+                    uploadListingImage(user.userId, listingId, url, imageUrls.length + index + 1)
+                )
+            );
+
             // Only update state if component is still mounted
             if (isMountedRef.current) {
                 setImageUrls(prev => [...prev, ...newUrls]);
@@ -273,7 +294,7 @@ export const useCreateListing = () => {
         if (!user || !user.userId) {
             throw new Error("User not identified. Please try logging in again.");
         }
-
+ 
         return {
             sellerId: user.userId,
             title: formData.title,
@@ -283,9 +304,12 @@ export const useCreateListing = () => {
             model: formData.model,
             manufactureYear: Number(formData.year),
             condition: formData.condition,
+            usageTime: formData.usageTime || undefined,
+            reasonForSale: formData.reasonForSale || undefined,
             price: Number(formData.price),
             locationCity: formData.location,
-            imageUrls: imageUrls,
+            pickupAddress: formData.pickupAddress || formData.location,
+            saveDraft: true,
         };
     };
 
@@ -332,7 +356,7 @@ export const useCreateListing = () => {
         setIsSaving(true);
         try {
             // Draft-First: Submit existing draft instead of creating new
-            await submitDraft(listingId);
+            await submitDraft(listingId, user.userId);
 
             router.push('/seller/my-listings');
         } catch (error) {

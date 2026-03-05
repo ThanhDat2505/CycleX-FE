@@ -7,6 +7,9 @@ export interface ListingFormData {
     year: string;
     price: string;
     location: string;
+    pickupAddress: string;
     description: string;
+    usageTime: string;
+    reasonForSale: string;
     shipping: boolean;
 }

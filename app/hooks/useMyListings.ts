@@ -30,6 +30,16 @@ export function useMyListings(params: GetMyListingsParams): UseMyListingsReturn 
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
+        if (!params.sellerId) {
+            setListings([]);
+            setTotalItems(0);
+            setTotalPages(0);
+            setCurrentPage(params.page || 1);
+            setLoading(false);
+            setError(null);
+            return;
+        }
+
         const loadListings = async () => {
             setLoading(true);
             setError(null); // Clear previous errors
@@ -49,7 +59,7 @@ export function useMyListings(params: GetMyListingsParams): UseMyListingsReturn 
         };
 
         loadListings();
-    }, [params.page, params.status, params.sortBy, retryCount]); // Reload when params or retry changes
+    }, [params.sellerId, params.page, params.pageSize, params.status, params.sortBy, retryCount]); // Reload when params or retry changes
 
     const retry = () => {
         setRetryCount(prev => prev + 1);

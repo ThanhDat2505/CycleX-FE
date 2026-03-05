@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
-import { formatPrice } from '../../utils/format';
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
 import Pagination from '../../listings/components/Pagination';
@@ -78,6 +77,7 @@ function MyListingsContent() {
     error,
     retry
   } = useMyListings({
+    sellerId: user?.userId,
     page,
     pageSize: ITEMS_PER_PAGE,
     status: filterStatus || undefined,
