@@ -20,6 +20,23 @@ export interface ApiError {
 }
 
 /**
+ * Get auth headers from localStorage token
+ * Returns Authorization header if token exists
+ */
+function getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('authToken');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+    return headers;
+}
+
+/**
  * Helper for POST requests with body
  * @param endpoint - API endpoint (e.g., '/auth/login')
  * @param body - Request body object
@@ -36,10 +53,7 @@ export async function apiCallPOST<T>(
         const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(body),
         });
 
@@ -82,10 +96,7 @@ export async function apiCallGET<T>(endpoint: string): Promise<T> {
         const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
+            headers: getAuthHeaders(),
         });
 
         if (!response.ok) {
@@ -131,10 +142,7 @@ export async function apiCallPUT<T>(
         const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-            },
+            headers: getAuthHeaders(),
             body: JSON.stringify(body),
         });
 
@@ -151,6 +159,87 @@ export async function apiCallPUT<T>(
         }
 
         return await response.json();
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
+}
+
+/**
+ * Helper for PATCH requests with body
+ * @param endpoint - API endpoint (e.g., '/seller/{sellerId}/listings/15')
+ * @param body - Request body object
+ * @returns Promise with parsed JSON response
+ */
+export async function apiCallPATCH<T>(
+    endpoint: string,
+    body: object
+): Promise<T> {
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
+}
+
+/**
+ * Helper for DELETE requests
+ * @param endpoint - API endpoint (e.g., '/seller/{sellerId}/drafts/1')
+ * @returns Promise with parsed JSON response
+ */
+export async function apiCallDELETE<T>(
+    endpoint: string
+): Promise<T> {
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        // Some DELETE endpoints return empty body
+        const text = await response.text();
+        return text ? JSON.parse(text) : ({} as T);
     } catch (error: any) {
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {

@@ -385,7 +385,7 @@ export default function InspectorChecklist() {
               DUYỆT & LƯU BIÊN BẢN
             </button>
             <button
-              className="actionBtn reject"
+              className="actionBtn reject btn-reject-solid"
               onClick={() => handleSubmit("reject")}
               style={{ marginBottom: "12px" }}
             >

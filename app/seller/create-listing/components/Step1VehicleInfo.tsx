@@ -98,7 +98,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                     >
                         <option value="">Select Category</option>
                         {BIKE_CATEGORIES.map((cat) => (
-                            <option key={cat.slug} value={cat.name}>
+                            <option key={cat.slug} value={cat.apiValue}>
                                 {cat.icon} {cat.name}
                             </option>
                         ))}
@@ -119,8 +119,12 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                         onChange={onChange}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
                     >
-                        <option value="new">New (Mới 100%)</option>
-                        <option value="used">Used (Đã sử dụng)</option>
+                        <option value="New">New (Mới 100%)</option>
+                        <option value="Like New">Like New (Như mới)</option>
+                        <option value="Excellent">Excellent (Rất tốt)</option>
+                        <option value="Good">Good (Tốt)</option>
+                        <option value="Fair">Fair (Khá)</option>
+                        <option value="Used">Used (Đã sử dụng)</option>
                     </select>
                 </div>
             </div>
@@ -165,22 +169,73 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
                 </div>
             </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Usage Time */}
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Usage Time
+                    </label>
+                    <input
+                        type="text"
+                        name="usageTime"
+                        value={formData.usageTime}
+                        onChange={onChange}
+                        placeholder="e.g., 6 months, 2 years"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    />
+                </div>
+
+                {/* Reason for Sale */}
+                <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Reason for Sale
+                    </label>
+                    <input
+                        type="text"
+                        name="reasonForSale"
+                        value={formData.reasonForSale}
+                        onChange={onChange}
+                        placeholder="e.g., Upgrade to newer model"
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
+                    />
+                </div>
+            </div>
+
             {/* Location */}
             <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Location <span className="text-red-500">*</span>
+                    City <span className="text-red-500">*</span>
                 </label>
                 <input
                     type="text"
                     name="location"
                     value={formData.location}
                     onChange={onChange}
-                    placeholder="e.g., Quận 1, TP.HCM"
+                    placeholder="e.g., Ho Chi Minh, Ha Noi, Da Nang"
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.location ? "border-red-500" : "border-gray-300"
                         }`}
                 />
                 {errors.location && (
                     <p className="text-red-500 text-sm mt-1">{errors.location}</p>
+                )}
+            </div>
+
+            {/* Pickup Address */}
+            <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Pickup Address <span className="text-red-500">*</span>
+                </label>
+                <input
+                    type="text"
+                    name="pickupAddress"
+                    value={formData.pickupAddress}
+                    onChange={onChange}
+                    placeholder="e.g., 123 Nguyen Hue, Quan 1, TP.HCM"
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${errors.pickupAddress ? "border-red-500" : "border-gray-300"
+                        }`}
+                />
+                {errors.pickupAddress && (
+                    <p className="text-red-500 text-sm mt-1">{errors.pickupAddress}</p>
                 )}
             </div>
 

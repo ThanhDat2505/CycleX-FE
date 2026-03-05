@@ -1,41 +1,99 @@
 ﻿"use client";
 
-import { useState } from "react";
-import { listings } from "@/app/mocks/inspector/inspectorListings";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import InspectorNav from "@/app/components/inspector/InspectorNav";
 import "@/app/components/inspector/inspector.css";
+import {
+  inspectorService,
+  type ReviewHistoryRow,
+} from "@/app/services/inspectorService";
 
 export default function ReviewHistoryPage() {
+  const [rows, setRows] = useState<ReviewHistoryRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [filterId, setFilterId] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
-  const filtered = listings.filter((item) => {
-    if (item.status !== "DONE") return false;
+  useEffect(() => {
+    let mounted = true;
+    const today = new Date();
+    const yearStart = `${today.getFullYear()}-01-01`;
+    const yearEnd = `${today.getFullYear()}-12-31`;
 
-    if (
-      filterId &&
-      !item.id.toLowerCase().includes(filterId.toLowerCase()) &&
-      !item.productName.toLowerCase().includes(filterId.toLowerCase())
-    ) {
-      return false;
-    }
+    const load = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await inspectorService.getReviewHistory(
+          yearStart,
+          yearEnd,
+        );
+        if (mounted) setRows(data);
+      } catch (err: any) {
+        if (mounted) {
+          setError(err?.message || "Không tải được lịch sử review");
+          setRows([]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
 
-    if (filterDate && !item.submittedAt.startsWith(filterDate)) return false;
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-    return true;
-  });
+  const filtered = useMemo(
+    () =>
+      rows.filter((item) => {
+        if (
+          filterId &&
+          !item.id.toLowerCase().includes(filterId.toLowerCase()) &&
+          !item.productName.toLowerCase().includes(filterId.toLowerCase())
+        ) {
+          return false;
+        }
+
+        if (filterDate) {
+          const [dd, mm, yyyy] = item.submittedAt.split("/");
+          const normalized =
+            dd && mm && yyyy ? `${yyyy}-${mm}-${dd}` : item.submittedAt;
+          if (normalized !== filterDate) return false;
+        }
+
+        return true;
+      }),
+    [rows, filterDate, filterId],
+  );
 
   const renderBadge = (status: string) => {
-    switch (status) {
+    const normalizedStatus = String(status ?? "")
+      .trim()
+      .toUpperCase();
+
+    switch (normalizedStatus) {
+      case "APPROVED":
+        return <span className="badge badgeApproved">Đã duyệt</span>;
       case "DONE":
-        return <span className="badge badgeApproved">Đã xử lý</span>;
+        return <span className="badge badgeApproved">Hoàn tất</span>;
+      case "REJECTED":
+        return <span className="badge badgeDanger">Đã từ chối</span>;
       case "NEED_INFO":
+      case "NEED_MORE_INFO":
         return <span className="badge badgeInfo">Cần bổ sung</span>;
       case "DISPUTE":
+      case "UNDER_REVIEW":
         return <span className="badge badgeDanger">Tranh chấp</span>;
       case "FLAGGED":
+      case "REPORT":
+      case "REPORTED":
         return <span className="badge badgeFlag">Bị flag</span>;
       case "PENDING":
+      case "PENDING_APPROVAL":
         return (
           <span
             className="badge"
@@ -49,9 +107,10 @@ export default function ReviewHistoryPage() {
           </span>
         );
       case "REVIEWING":
+      case "IN_REVIEW":
         return <span className="badge badgeInfo">Đang xem</span>;
       default:
-        return <span className="badge">{status}</span>;
+        return <span className="badge">{normalizedStatus || status}</span>;
     }
   };
 
@@ -100,51 +159,53 @@ export default function ReviewHistoryPage() {
         </div>
 
         <div className="dataTable">
-          <div className="historyTable">
-            <div className="tableHeader">
-              <span>Mã tin</span>
-              <span>Tên sản phẩm</span>
-              <span>Thời gian gửi</span>
-              <span className="center">Trạng thái</span>
-              <span>Người bán</span>
-              <span>Ghi chú</span>
-              <span className="right">Hành động</span>
-            </div>
-
-            {filtered.map((row) => {
-              const lastHistory =
-                row.history && row.history.length > 0
-                  ? row.history[row.history.length - 1].desc
-                  : "";
-
-              return (
-                <div key={row.id} className="tableRow">
-                  <div className="cell font-bold">{row.id}</div>
-                  <div className="cell name">{row.productName}</div>
-                  <div className="cell text-muted">{row.submittedAt}</div>
-                  <div className="cell center">{renderBadge(row.status)}</div>
-                  <div className="cell">{row.sellerName}</div>
-                  <div className="cell noteCell">{lastHistory}</div>
-
-                  <div className="cell right">
-                    <button
-                      type="button"
-                      className="actionLink"
-                      onClick={() => console.log("Redirect logic for:", row.id)}
-                    >
-                      Xem
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-
-            {filtered.length === 0 && (
-              <div style={{ padding: 30, textAlign: "center", color: "#999" }}>
-                Không tìm thấy dữ liệu đã xử lý nào.
+          {loading && <div style={{ padding: 20 }}>Đang tải dữ liệu...</div>}
+          {!loading && error && (
+            <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
+          )}
+          {!loading && !error && (
+            <div className="historyTable">
+              <div className="tableHeader">
+                <span>Mã tin</span>
+                <span>Tên sản phẩm</span>
+                <span>Thời gian gửi</span>
+                <span className="center">Trạng thái</span>
+                <span>Người bán</span>
+                <span>Ghi chú</span>
+                <span className="right">Hành động</span>
               </div>
-            )}
-          </div>
+
+              {filtered.map((row) => {
+                return (
+                  <div key={row.id} className="tableRow">
+                    <div className="cell font-bold">{row.id}</div>
+                    <div className="cell name">{row.productName}</div>
+                    <div className="cell text-muted">{row.submittedAt}</div>
+                    <div className="cell center">{renderBadge(row.status)}</div>
+                    <div className="cell">{row.sellerName}</div>
+                    <div className="cell noteCell">{row.note}</div>
+
+                    <div className="cell right">
+                      <Link
+                        href={`/inspector/review-detail?id=${encodeURIComponent(row.id)}`}
+                        className="actionLink"
+                      >
+                        Xem
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filtered.length === 0 && (
+                <div
+                  style={{ padding: 30, textAlign: "center", color: "#999" }}
+                >
+                  Không tìm thấy dữ liệu đã duyệt nào.
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>

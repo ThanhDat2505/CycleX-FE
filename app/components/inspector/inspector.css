@@ -437,22 +437,6 @@
   transform: translateY(1px);
 }
 
-.btn-info {
-  background-color: var(--blue-color) !important;
-  color: #ffffff !important;
-}
-
-.btn-success {
-  background-color: var(--green-color) !important;
-  color: #ffffff !important;
-}
-
-.btn-danger {
-  background-color: var(--red-color) !important;
-  color: #ffffff !important;
-  margin-bottom: 0;
-}
-
 .btn-sm {
   width: auto;
   padding: 10px 20px;
@@ -1998,6 +1982,64 @@ body {
 
 .btn:active {
   transform: translateY(1px);
+}
+
+.btn-info {
+  background-color: var(--blue-color) !important;
+  color: #ffffff !important;
+}
+
+.btn-success {
+  background-color: var(--green-color) !important;
+  color: #ffffff !important;
+}
+
+.btn-danger {
+  background-color: var(--red-color) !important;
+  color: #ffffff !important;
+  margin-bottom: 0;
+}
+
+.btn-reject-solid,
+.btn-reject-solid:hover,
+.btn-reject-solid:focus,
+.btn-reject-solid:active,
+.btn-reject-solid:visited {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.btn-reject-solid:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 1px;
+}
+
+.btn-reject-solid:disabled {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border: none !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+.review-detail-page button.btn.btn-danger,
+.review-detail-page .btn.btn-danger.btn-sm {
+  background-color: var(--red-color) !important;
+  color: #ffffff !important;
+  border: none !important;
+}
+
+.review-detail-page button.btn.btn-danger:disabled,
+.review-detail-page .btn.btn-danger.btn-sm:disabled {
+  background-color: var(--red-color) !important;
+  color: #ffffff !important;
+  border: none !important;
+  opacity: 1;
 }
 
 .btnOutline {

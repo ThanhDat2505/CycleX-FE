@@ -16,12 +16,16 @@ export default function ListingsTable({
     switch (status) {
       case "PENDING":
         return "bg-yellow-100 text-yellow-800";
+      case "REVIEWING":
+        return "bg-blue-100 text-blue-800";
       case "NEED_MORE_INFO":
         return "bg-blue-100 text-blue-800";
       case "DISPUTE":
         return "bg-red-100 text-red-800";
       case "FLAGGED":
         return "bg-gray-100 text-gray-800";
+      case "APPROVED":
+        return "bg-green-100 text-green-800";
       case "DONE":
         return "bg-green-100 text-green-800";
       default:
@@ -33,12 +37,16 @@ export default function ListingsTable({
     switch (status) {
       case "PENDING":
         return "Đang chờ duyệt";
+      case "REVIEWING":
+        return "Đang duyệt tin";
       case "NEED_MORE_INFO":
         return "Cần bổ sung";
       case "DISPUTE":
         return "Cần xem xét";
       case "FLAGGED":
         return "Bị flag";
+      case "APPROVED":
+        return "Đã duyệt";
       case "DONE":
         return "Đã duyệt";
       default:
@@ -73,9 +81,17 @@ export default function ListingsTable({
             >
               <td className="px-6 py-4">
                 <div className="w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400 font-medium overflow-hidden shadow-sm">
-                  <span className="material-symbols-outlined text-[20px]">
-                    image
-                  </span>
+                  {r.imageUrl ? (
+                    <img
+                      src={r.imageUrl}
+                      alt={r.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined text-[20px]">
+                      image
+                    </span>
+                  )}
                 </div>
               </td>
               <td className="px-6 py-4 font-medium text-gray-900">
@@ -91,7 +107,7 @@ export default function ListingsTable({
               </td>
               <td className="px-6 py-4">
                 <span
-                  className={`px-3 py-1 rounded-full text-xs font-semibold ${getBadgeStyles(
+                  className={`inline-flex items-center justify-center whitespace-nowrap rounded-full px-3 py-1.5 text-xs font-semibold leading-none ${getBadgeStyles(
                     r.status,
                   )}`}
                 >

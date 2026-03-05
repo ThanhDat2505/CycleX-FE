@@ -11,7 +11,23 @@ import Step3Preview from "./components/Step3Preview";
 
 const CreateListingPage: React.FC = () => {
   const { state, actions } = useCreateListing();
-  const { step, formData, errors, isSaving, isUploading, imageUrls, uploadError, isLoggedIn, isLoading, isCreatingDraft, submitError } = state;
+  const {
+    step,
+    formData,
+    errors,
+    isSaving,
+    isUploading,
+    imageUrls,
+    uploadError,
+    isLoggedIn,
+    isLoading,
+    isCreatingDraft,
+    isCancellingPublish,
+    submitError,
+    isReadOnly,
+    readOnlyMessage,
+    canCancelPublish,
+  } = state;
 
   if (isLoading) {
     return (
@@ -35,42 +51,46 @@ const CreateListingPage: React.FC = () => {
         </p>
       </div>
 
-      {/* Progress Bar */}
-      <div className="flex items-center justify-between mb-12">
-        {Object.values(CREATE_LISTING_STEPS).map((s) => (
-          <React.Fragment key={s}>
-            <div
-              className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${s <= step
-                ? "bg-brand-primary text-white"
-                : "bg-gray-200 text-gray-600"
-                }`}
-            >
-              {s}
-            </div>
-            {s < CREATE_LISTING_STEPS.PREVIEW && (
-              <div
-                className={`h-1 flex-1 mx-2 transition ${s < step ? "bg-brand-primary" : "bg-gray-200"
-                  }`}
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
+      {!isReadOnly && (
+        <>
+          {/* Progress Bar */}
+          <div className="flex items-center justify-between mb-12">
+            {Object.values(CREATE_LISTING_STEPS).map((s) => (
+              <React.Fragment key={s}>
+                <div
+                  className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${s <= step
+                    ? "bg-brand-primary text-white"
+                    : "bg-gray-200 text-gray-600"
+                    }`}
+                >
+                  {s}
+                </div>
+                {s < CREATE_LISTING_STEPS.PREVIEW && (
+                  <div
+                    className={`h-1 flex-1 mx-2 transition ${s < step ? "bg-brand-primary" : "bg-gray-200"
+                      }`}
+                  />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
 
-      <div className="flex gap-4 mb-8 text-center text-sm">
-        <div className="flex-1">
-          <p className="font-semibold text-gray-900">Step {CREATE_LISTING_STEPS.VEHICLE_INFO}</p>
-          <p className="text-gray-600">Basic Info</p>
-        </div>
-        <div className="flex-1">
-          <p className="font-semibold text-gray-900">Step {CREATE_LISTING_STEPS.UPLOAD_IMAGES}</p>
-          <p className="text-gray-600">Images</p>
-        </div>
-        <div className="flex-1">
-          <p className="font-semibold text-gray-900">Step {CREATE_LISTING_STEPS.PREVIEW}</p>
-          <p className="text-gray-600">Preview</p>
-        </div>
-      </div>
+          <div className="flex gap-4 mb-8 text-center text-sm">
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900">Step {CREATE_LISTING_STEPS.VEHICLE_INFO}</p>
+              <p className="text-gray-600">Basic Info</p>
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900">Step {CREATE_LISTING_STEPS.UPLOAD_IMAGES}</p>
+              <p className="text-gray-600">Images</p>
+            </div>
+            <div className="flex-1">
+              <p className="font-semibold text-gray-900">Step {CREATE_LISTING_STEPS.PREVIEW}</p>
+              <p className="text-gray-600">Preview</p>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Form */}
       <form
@@ -82,7 +102,9 @@ const CreateListingPage: React.FC = () => {
         }}
         className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm"
       >
-        {step === CREATE_LISTING_STEPS.VEHICLE_INFO && (
+        {isReadOnly ? (
+          <Step3Preview formData={formData} imageUrls={imageUrls} />
+        ) : step === CREATE_LISTING_STEPS.VEHICLE_INFO && (
           <Step1VehicleInfo
             formData={formData}
             errors={errors}
@@ -90,7 +112,7 @@ const CreateListingPage: React.FC = () => {
           />
         )}
 
-        {step === CREATE_LISTING_STEPS.UPLOAD_IMAGES && (
+        {!isReadOnly && step === CREATE_LISTING_STEPS.UPLOAD_IMAGES && (
           <Step2ImageUpload
             imageUrls={imageUrls}
             isUploading={isUploading}
@@ -103,8 +125,14 @@ const CreateListingPage: React.FC = () => {
           />
         )}
 
-        {step === CREATE_LISTING_STEPS.PREVIEW && (
+        {!isReadOnly && step === CREATE_LISTING_STEPS.PREVIEW && (
           <Step3Preview formData={formData} imageUrls={imageUrls} />
+        )}
+
+        {isReadOnly && readOnlyMessage && (
+          <div className="mt-4 bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg">
+            {readOnlyMessage}
+          </div>
         )}
 
         {/* Submit Error Banner */}
@@ -118,57 +146,78 @@ const CreateListingPage: React.FC = () => {
         )}
 
         {/* Buttons */}
-        <div className="flex gap-4 mt-8 justify-between">
-          <button
-            type="button"
-            onClick={actions.handleSaveDraft}
-            disabled={isSaving}
-            className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? "Saving..." : "Save for Later"}
-          </button>
-
-          <div className="flex gap-4">
-            {step > CREATE_LISTING_STEPS.VEHICLE_INFO && (
+        {isReadOnly ? (
+          <div className="flex mt-8 justify-end gap-4">
+            {canCancelPublish && (
               <button
                 type="button"
-                onClick={actions.handleBack}
-                className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
+                onClick={actions.handleCancelPublish}
+                disabled={isCancellingPublish}
+                className="px-6 py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Back
+                {isCancellingPublish ? "Cancelling..." : "Cancel Publish"}
               </button>
             )}
-
-            {step < CREATE_LISTING_STEPS.PREVIEW ? (
-              <button
-                type="button"
-                onClick={actions.handleNext}
-                disabled={isCreatingDraft}
-                className="px-6 py-3 bg-brand-primary text-white rounded-lg font-semibold hover:bg-brand-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-              >
-                {isCreatingDraft && (
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                  </svg>
-                )}
-                {isCreatingDraft
-                  ? "Creating Draft..."
-                  : `Continue to ${step === CREATE_LISTING_STEPS.VEHICLE_INFO ? "Images" : "Preview"}`
-                }
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={actions.handleSubmit}
-                disabled={isSaving}
-                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSaving ? "Publishing..." : "Publish Listing"}
-              </button>
-            )}
+            <a
+              href="/seller/my-listings"
+              className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
+            >
+              Back to My Listings
+            </a>
           </div>
-        </div>
+        ) : (
+          <div className="flex gap-4 mt-8 justify-between">
+            <button
+              type="button"
+              onClick={actions.handleSaveDraft}
+              disabled={isSaving}
+              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSaving ? "Saving..." : "Save for Later"}
+            </button>
+
+            <div className="flex gap-4">
+              {step > CREATE_LISTING_STEPS.VEHICLE_INFO && (
+                <button
+                  type="button"
+                  onClick={actions.handleBack}
+                  className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
+                >
+                  Back
+                </button>
+              )}
+
+              {step < CREATE_LISTING_STEPS.PREVIEW ? (
+                <button
+                  type="button"
+                  onClick={actions.handleNext}
+                  disabled={isCreatingDraft}
+                  className="px-6 py-3 bg-brand-primary text-white rounded-lg font-semibold hover:bg-brand-primary-hover transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  {isCreatingDraft && (
+                    <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  )}
+                  {isCreatingDraft
+                    ? "Creating Draft..."
+                    : `Continue to ${step === CREATE_LISTING_STEPS.VEHICLE_INFO ? "Images" : "Preview"}`
+                  }
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={actions.handleSubmit}
+                  disabled={isSaving}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? "Publishing..." : "Publish Listing"}
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

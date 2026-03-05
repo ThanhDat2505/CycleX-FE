@@ -42,9 +42,25 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
                         </p>
                     </div>
                     <div>
-                        <p className="text-sm text-gray-500">Location</p>
+                        <p className="text-sm text-gray-500">City</p>
                         <p className="font-semibold text-gray-900">{formData.location}</p>
                     </div>
+                    <div>
+                        <p className="text-sm text-gray-500">Pickup Address</p>
+                        <p className="font-semibold text-gray-900">{formData.pickupAddress || formData.location}</p>
+                    </div>
+                    {formData.usageTime && (
+                        <div>
+                            <p className="text-sm text-gray-500">Usage Time</p>
+                            <p className="font-semibold text-gray-900">{formData.usageTime}</p>
+                        </div>
+                    )}
+                    {formData.reasonForSale && (
+                        <div>
+                            <p className="text-sm text-gray-500">Reason for Sale</p>
+                            <p className="font-semibold text-gray-900">{formData.reasonForSale}</p>
+                        </div>
+                    )}
                 </div>
                 <div>
                     <p className="text-sm text-gray-500">Description</p>
