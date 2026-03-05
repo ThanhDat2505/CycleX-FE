@@ -42,13 +42,23 @@ export default function ReviewDetailClient({
       try {
         setLoading(true);
         setError(null);
-        try {
-          await inspectorService.lockListing(id);
-        } catch {
-          // Allow opening detail even when listing is already in REVIEWING/locked state
-        }
         const detail = await inspectorService.getListingDetail(id);
         if (mounted) setListing(detail);
+
+        const normalizedStatus = String(detail?.status ?? "")
+          .trim()
+          .toUpperCase();
+
+        if (
+          normalizedStatus === "PENDING" ||
+          normalizedStatus === "PENDING_APPROVAL"
+        ) {
+          try {
+            await inspectorService.lockListing(id);
+          } catch {
+            // Non-blocking: opening detail should not fail if lock is rejected
+          }
+        }
       } catch (err: any) {
         if (mounted) {
           setError(err?.message || "Không tải được chi tiết tin");
