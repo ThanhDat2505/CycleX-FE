@@ -328,10 +328,22 @@ export default function ReviewDetailClient({
                   disabled={submitting || approveReason === ""}
                   onClick={async () => {
                     if (!listing) return;
+                    const reasonCode =
+                      approveReason === "ok"
+                        ? "MEETS_STANDARDS"
+                        : "GOOD_CONDITION";
+                    const reasonText =
+                      approveReason === "ok"
+                        ? "Đủ ảnh và mô tả khớp"
+                        : "Giá phù hợp với thông tin sản phẩm";
 
                     try {
                       setSubmitting(true);
-                      await inspectorService.approveListing(listing.id);
+                      await inspectorService.approveListing(listing.id, {
+                        reasonCode,
+                        reasonText,
+                        note,
+                      });
                       alert("Đã duyệt tin thành công");
                       router.push("/inspector/dashboard");
                     } catch (err: any) {
