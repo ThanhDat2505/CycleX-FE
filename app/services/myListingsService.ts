@@ -10,7 +10,7 @@ import {
     validateEnum,
     validatePositiveNumber
 } from '../utils/apiValidation';
-import { apiCallPOST, apiCallPUT } from '../utils/apiHelpers';
+import { apiCallPOST, apiCallPUT, apiCallGET, apiCallPATCH, apiCallDELETE } from '../utils/apiHelpers';
 import { ITEMS_PER_PAGE, API_DELAY_MS, VALID_LISTING_STATUSES, type ListingStatus } from '../constants';
 import { MOCK_MY_LISTINGS, type MyListing } from '../mocks';
 
@@ -21,6 +21,7 @@ const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 export type Listing = MyListing;
 
 export interface GetMyListingsParams {
+    sellerId?: number;
     page?: number;
     pageSize?: number;
     status?: string;
@@ -49,11 +50,97 @@ export interface CreateListingPayload {
     locationCity: string;
     pickupAddress?: string;
     imageUrls?: string[];
+    saveDraft?: boolean;
 }
 
 // Mock data now imported from @/app/mocks/myListings.ts
 // Re-export for backward compatibility with existing code
 export const mockListings = MOCK_MY_LISTINGS;
+
+type ListingApiResponse = Partial<Listing> & {
+    listingId?: number;
+};
+
+interface SellerListingSearchItemResponse {
+    listingId: number;
+    title?: string;
+    brand: string;
+    model: string;
+    price: number | string;
+    status: string;
+    viewsCount?: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+interface SellerListingSearchPageResponse {
+    content: SellerListingSearchItemResponse[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+}
+
+/**
+ * Backend may return `listingId` while FE expects `id`.
+ * Normalize once so downstream code can consistently rely on `id`.
+ */
+function normalizeListingResponse(response: ListingApiResponse, context: string): Listing {
+    validateResponse(response, context);
+
+    const normalizedId = typeof response.id === 'number'
+        ? response.id
+        : response.listingId;
+
+    if (typeof normalizedId !== 'number') {
+        throw new Error(`Invalid response: ${context}.id (or listingId) must be a number`);
+    }
+
+    return {
+        ...response,
+        id: normalizedId,
+    } as Listing;
+}
+
+function mapStatusFromBackend(status: string): ListingStatus {
+    const normalized = status.toUpperCase();
+    if (normalized === 'APPROVED') return 'APPROVE';
+    if (normalized === 'REJECTED') return 'REJECT';
+    if (normalized === 'PENDING' || normalized === 'DRAFT') {
+        return normalized as ListingStatus;
+    }
+    return 'DRAFT';
+}
+
+function mapStatusToBackend(status?: string): string | undefined {
+    if (!status) return undefined;
+
+    const normalized = status.toUpperCase();
+    if (normalized === 'APPROVE' || normalized === 'ACTIVE') return 'APPROVED';
+    if (normalized === 'REJECT') return 'REJECTED';
+    if (normalized === 'DRAFT' || normalized === 'PENDING') return normalized;
+
+    return undefined;
+}
+
+function mapSearchItemToListing(item: SellerListingSearchItemResponse): Listing {
+    const parsedPrice = Number(item.price ?? 0);
+
+    return {
+        id: item.listingId,
+        brand: item.brand,
+        model: item.model,
+        type: item.title || 'Bike Listing',
+        condition: '-',
+        price: Number.isFinite(parsedPrice) ? parsedPrice : 0,
+        location: '-',
+        status: mapStatusFromBackend(item.status),
+        shipping: false,
+        views: item.viewsCount ?? 0,
+        inquiries: 0,
+        createdDate: item.createdAt || new Date().toISOString(),
+        updatedDate: item.updatedAt || item.createdAt || new Date().toISOString(),
+    };
+}
 
 /**
  * Get seller's listings with pagination and filters
@@ -65,81 +152,58 @@ export const mockListings = MOCK_MY_LISTINGS;
 export async function getMyListings(
     params: GetMyListingsParams = {}
 ): Promise<GetMyListingsResponse> {
-    const { page = 1, pageSize = 10, status, sortBy = 'recent' } = params;
+    const { sellerId, page = 1, pageSize = ITEMS_PER_PAGE, status, sortBy = 'recent' } = params;
 
-    // ⚠️ MOCK IMPLEMENTATION - REPLACE WITH API CALL
-    // TODO: Replace this entire block with:
-    // 
-    // const response = await apiCallGET<GetMyListingsResponse>(
-    //   '/seller/listings',
-    //   params
-    // );
-    // 
-    // ✅ IMPORTANT: Validate response after API call
-    // validateResponse(response);
-    // validateArray(response.listings, 'listings');
-    // validateNumber(response.totalItems, 'totalItems');
-    // validateNumber(response.totalPages, 'totalPages');
-    // validateNumber(response.currentPage, 'currentPage');
-    // 
-    // // Validate each listing has required fields
-    // response.listings.forEach((listing, index) => {
-    //   const context = `Listing ${index}`;
-    //   validateNumber(listing.id, `${context}.id`);
-    //   validateString(listing.brand, `${context}.brand`);
-    //   validateString(listing.model, `${context}.model`);
-    //   validateEnum(listing.status, VALID_LISTING_STATUSES, `${context}.status`);
-    //   validatePositiveNumber(listing.price, `${context}.price`);
-    //   validateString(listing.createdDate, `${context}.createdDate`);
-    //   validateString(listing.updatedDate, `${context}.updatedDate`);
-    // });
-    // 
-    // return response;
-
-    // Client-side filtering (server will do this)
-    let filtered = [...MOCK_MY_LISTINGS]; // Use spread to avoid mutating original
-
-    if (status) {
-        filtered = filtered.filter(l => l.status.toLowerCase() === status.toLowerCase());
+    if (!sellerId) {
+        throw new Error('Seller ID is required to load listings.');
     }
 
-    // Client-side sorting (server will do this)
+    const backendStatus = mapStatusToBackend(status);
+    const queryObj: Record<string, string> = {
+        page: Math.max(page - 1, 0).toString(),
+        pageSize: pageSize.toString(),
+        sort: sortBy === 'recent' ? 'newest' : 'newest',
+    };
+
+    if (backendStatus) {
+        queryObj.status = backendStatus;
+    }
+
+    const queryStr = new URLSearchParams(queryObj).toString();
+    const response = await apiCallGET<SellerListingSearchPageResponse>(
+        `/seller/${sellerId}/listings/search?${queryStr}`
+    );
+
+    validateResponse(response, 'getMyListings response');
+    validateArray(response.content, 'content');
+    validateNumber(response.totalElements, 'totalElements');
+    validateNumber(response.totalPages, 'totalPages');
+    validateNumber(response.number, 'number');
+
+    const mappedListings = response.content.map(mapSearchItemToListing);
+
+    // BE currently sorts by createdAt; keep FE-side sort fallback for current page.
     if (sortBy === 'views') {
-        filtered.sort((a, b) => b.views - a.views);
+        mappedListings.sort((a, b) => b.views - a.views);
     } else if (sortBy === 'price-high') {
-        filtered.sort((a, b) => b.price - a.price);
+        mappedListings.sort((a, b) => b.price - a.price);
     } else if (sortBy === 'price-low') {
-        filtered.sort((a, b) => a.price - b.price);
-    } else {
-        filtered.sort((a, b) =>
-            new Date(b.updatedDate).getTime() - new Date(a.updatedDate).getTime()
-        );
+        mappedListings.sort((a, b) => a.price - b.price);
     }
-
-    // Client-side pagination (server will do this)
-    const totalItems = filtered.length;
-    const totalPages = Math.ceil(totalItems / pageSize);
-    const startIndex = (page - 1) * pageSize;
-    const endIndex = startIndex + pageSize;
-    const paginatedListings = filtered.slice(startIndex, endIndex);
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
 
     return {
-        listings: paginatedListings,
-        totalItems,
-        totalPages,
-        currentPage: page,
+        listings: mappedListings,
+        totalItems: response.totalElements,
+        totalPages: response.totalPages,
+        currentPage: response.number + 1,
     };
-    // ⚠️ END MOCK IMPLEMENTATION
 }
 
 /**
  * Create a new listing and submit for approval
- * Endpoint: POST /api/seller/listings (saveDraft: false)
+ * Endpoint: POST /api/seller/{sellerId}/listings/create
  * 
- * @param payload - Listing data
+ * @param payload - Listing data including sellerId
  * @returns Promise<Listing> - Created listing with PENDING status
  */
 export async function createListing(payload: CreateListingPayload): Promise<Listing> {
@@ -172,25 +236,26 @@ export async function createListing(payload: CreateListingPayload): Promise<List
         return mockResponse;
     }
 
-    // Real API: POST /api/seller/listings with saveDraft: false
-    const requestBody = { ...payload, saveDraft: false };
-    const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
+    // Real API: POST /api/seller/{sellerId}/listings/create
+    // Strip imageUrls — images are uploaded separately via /images endpoint
+    const { sellerId, imageUrls, ...body } = payload;
+    const response = await apiCallPOST<ListingApiResponse>(`/seller/${sellerId}/listings/create`, { ...body, sellerId, saveDraft: false });
+    const normalizedResponse = normalizeListingResponse(response, 'createListing response');
 
-    validateResponse(response, 'createListing response');
-    validateNumber(response.id, 'id');
-    validateString(response.brand, 'brand');
-    validateString(response.model, 'model');
-    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+    validateNumber(normalizedResponse.id, 'id');
+    validateString(normalizedResponse.brand, 'brand');
+    validateString(normalizedResponse.model, 'model');
+    validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
 
 
-    return response;
+    return normalizedResponse;
 }
 
 /**
  * Save listing as draft (not submitted for approval)
- * Endpoint: POST /api/seller/listings (saveDraft: true)
+ * Endpoint: POST /api/seller/{sellerId}/listings/create (saveDraft: true)
  * 
- * @param payload - Listing data
+ * @param payload - Listing data including sellerId
  * @returns Promise<Listing> - Created listing with DRAFT status
  */
 export async function saveDraft(payload: CreateListingPayload): Promise<Listing> {
@@ -223,27 +288,29 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
         return mockResponse;
     }
 
-    // Real API: POST /api/seller/listings with saveDraft: true
-    const requestBody = { ...payload, saveDraft: true };
-    const response = await apiCallPOST<Listing>('/seller/listings', requestBody);
+    // Real API: POST /api/seller/{sellerId}/listings/create with saveDraft: true
+    // Strip imageUrls — images are uploaded separately via /images endpoint
+    const { sellerId, imageUrls, ...body } = payload;
+    const response = await apiCallPOST<ListingApiResponse>(`/seller/${sellerId}/listings/create`, { ...body, sellerId, saveDraft: true });
+    const normalizedResponse = normalizeListingResponse(response, 'saveDraft response');
 
-    validateResponse(response, 'saveDraft response');
-    validateNumber(response.id, 'id');
-    validateString(response.brand, 'brand');
-    validateString(response.model, 'model');
-    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+    validateNumber(normalizedResponse.id, 'id');
+    validateString(normalizedResponse.brand, 'brand');
+    validateString(normalizedResponse.model, 'model');
+    validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
 
 
-    return response;
+    return normalizedResponse;
 }
 
 /**
- * Update an existing draft listing
- * Endpoint: PUT /api/seller/listings/:id
+ * Update an existing listing
+ * Endpoint: PATCH /api/seller/{sellerId}/listings/{listingId}
  * 
- * @param listingId - ID of the draft to update
+ * @param sellerId - Seller ID
+ * @param listingId - ID of the listing to update
  * @param payload - Updated listing data
- * @returns Promise<Listing> - Updated listing with DRAFT status
+ * @returns Promise<Listing> - Updated listing
  */
 export async function updateDraft(listingId: number, payload: Partial<CreateListingPayload>): Promise<Listing> {
 
@@ -272,24 +339,27 @@ export async function updateDraft(listingId: number, payload: Partial<CreateList
         return updated;
     }
 
-    // Real API: PUT /seller/listings/:id
-    const response = await apiCallPUT<Listing>(`/seller/listings/${listingId}`, payload);
+    // Real API: PATCH /api/seller/{sellerId}/listings/{listingId}
+    const { sellerId, ...rest } = payload;
+    const sid = sellerId ?? 0;
+    const response = await apiCallPATCH<ListingApiResponse>(`/seller/${sid}/listings/${listingId}`, rest);
+    const normalizedResponse = normalizeListingResponse(response, 'updateDraft response');
 
-    validateResponse(response, 'updateDraft response');
-    validateNumber(response.id, 'id');
+    validateNumber(normalizedResponse.id, 'id');
 
 
-    return response;
+    return normalizedResponse;
 }
 
 /**
  * Submit a draft listing for approval (DRAFT → PENDING)
- * Endpoint: POST /api/seller/listings/:id/submit
+ * Endpoint: POST /api/seller/{sellerId}/drafts/{listingId}/submit
  * 
  * @param listingId - ID of the draft to submit
+ * @param sellerId - Seller ID
  * @returns Promise<Listing> - Listing with PENDING status
  */
-export async function submitDraft(listingId: number): Promise<Listing> {
+export async function submitDraft(listingId: number, sellerId?: number): Promise<Listing> {
 
 
     if (USE_MOCK_API) {
@@ -312,20 +382,21 @@ export async function submitDraft(listingId: number): Promise<Listing> {
         return submitted;
     }
 
-    // Real API: POST /seller/listings/:id/submit
-    const response = await apiCallPOST<Listing>(`/seller/listings/${listingId}/submit`, {});
+    // Real API: POST /api/seller/{sellerId}/drafts/{listingId}/submit
+    const sid = sellerId ?? 0;
+    const response = await apiCallPOST<ListingApiResponse>(`/seller/${sid}/drafts/${listingId}/submit`, {});
+    const normalizedResponse = normalizeListingResponse(response, 'submitDraft response');
 
-    validateResponse(response, 'submitDraft response');
-    validateNumber(response.id, 'id');
-    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+    validateNumber(normalizedResponse.id, 'id');
+    validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
 
 
-    return response;
+    return normalizedResponse;
 }
 
 /**
  * Preview a listing before submitting
- * Endpoint: POST /api/seller/listings/preview
+ * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/preview
  * 
  * @param sellerId - Seller ID
  * @param listingId - Listing ID to preview
@@ -346,19 +417,21 @@ export async function previewListing(sellerId: number, listingId: number): Promi
         return listing;
     }
 
-    const response = await apiCallPOST<Listing>('/seller/listings/preview', { sellerId, listingId });
-    validateResponse(response, 'previewListing response');
-    validateNumber(response.id, 'id');
-    validateString(response.brand, 'brand');
-    validateString(response.model, 'model');
+    // Real API: GET /api/seller/{sellerId}/listings/{listingId}/preview
+    const response = await apiCallGET<ListingApiResponse>(`/seller/${sellerId}/listings/${listingId}/preview`);
+    const normalizedResponse = normalizeListingResponse(response, 'previewListing response');
+
+    validateNumber(normalizedResponse.id, 'id');
+    validateString(normalizedResponse.brand, 'brand');
+    validateString(normalizedResponse.model, 'model');
 
 
-    return response;
+    return normalizedResponse;
 }
 
 /**
  * Submit a DRAFT listing for approval (DRAFT → PENDING)
- * Endpoint: POST /api/seller/listings/{id}/submit
+ * Endpoint: POST /api/seller/{sellerId}/drafts/{listingId}/submit
  * 
  * @param sellerId - Seller ID
  * @param listingId - Listing ID to submit
@@ -386,13 +459,15 @@ export async function submitListing(sellerId: number, listingId: number): Promis
         return mockListings[listingIndex];
     }
 
-    const response = await apiCallPOST<Listing>(`/seller/listings/${listingId}/submit`, { sellerId, listingId });
-    validateResponse(response, 'submitListing response');
-    validateNumber(response.id, 'id');
-    validateEnum(response.status, VALID_LISTING_STATUSES, 'status');
+    // Real API: POST /api/seller/{sellerId}/drafts/{listingId}/submit
+    const response = await apiCallPOST<ListingApiResponse>(`/seller/${sellerId}/drafts/${listingId}/submit`, {});
+    const normalizedResponse = normalizeListingResponse(response, 'submitListing response');
+
+    validateNumber(normalizedResponse.id, 'id');
+    validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
 
 
-    return response;
+    return normalizedResponse;
 }
 
 export interface GetDraftsParams {
@@ -414,7 +489,7 @@ export interface GetDraftsResponse {
 
 /**
  * Get all draft listings
- * Endpoint: POST /api/seller/drafts
+ * Endpoint: GET /api/seller/{sellerId}/drafts?page=0&pageSize=10&sort=newest
  * 
  * @param params - Query parameters
  * @returns Promise<GetDraftsResponse> - Paginated draft listings
@@ -422,55 +497,185 @@ export interface GetDraftsResponse {
 export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsResponse> {
     const { sellerId, sort = 'newest', page = 0, pageSize = 10 } = params;
 
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        // Filter drafts from mock listings
-        const drafts = mockListings.filter(l => l.status === 'DRAFT');
-
-        // Sort
-        const sorted = [...drafts].sort((a, b) => {
-            if (sort === 'newest') {
-                return new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime();
-            }
-            return new Date(a.createdDate).getTime() - new Date(b.createdDate).getTime();
-        });
-
-        // Paginate
-        const start = page * pageSize;
-        const items = sorted.slice(start, start + pageSize);
-
-        return {
-            items,
-            pagination: {
-                totalItems: drafts.length,
-                totalPages: Math.ceil(drafts.length / pageSize),
-                currentPage: page,
-                pageSize,
-            },
-        };
-    }
-
-    const response = await apiCallPOST<GetDraftsResponse>('/seller/drafts', {
-        sellerId,
+    // Real API: GET /api/seller/{sellerId}/drafts
+    const queryParams = new URLSearchParams({
+        page: page.toString(),
+        pageSize: pageSize.toString(),
         sort,
-        page,
-        pageSize,
-    });
+    }).toString();
+    const response = await apiCallGET<SellerListingSearchPageResponse>(`/seller/${sellerId}/drafts?${queryParams}`);
 
     validateResponse(response, 'getDrafts response');
-    validateArray(response.items, 'items');
-    validateObject(response.pagination, 'pagination');
-    validateNumber(response.pagination.totalItems, 'pagination.totalItems');
+    validateArray(response.content, 'content');
+    validateNumber(response.totalElements, 'totalElements');
+    validateNumber(response.totalPages, 'totalPages');
+    validateNumber(response.number, 'number');
 
-    response.items.forEach((item, index) => {
-        const ctx = `drafts[${index}]`;
-        validateNumber(item.id, `${ctx}.id`);
-        validateString(item.brand, `${ctx}.brand`);
-        validateEnum(item.status, VALID_LISTING_STATUSES, `${ctx}.status`);
-    });
+    const items = response.content.map(mapSearchItemToListing);
 
+    return {
+        items,
+        pagination: {
+            totalItems: response.totalElements,
+            totalPages: response.totalPages,
+            currentPage: response.number,
+            pageSize,
+        },
+    };
+}
 
-    return response;
+// ========== NEW API ENDPOINTS (from CycleX API Postman) ==========
+
+/**
+ * Get seller dashboard stats
+ * Endpoint: GET /api/seller/{sellerId}/dashboard/stats
+ */
+export async function getDashboardStats(sellerId: number): Promise<any> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return { totalListings: 5, activeListings: 3, pendingListings: 1, draftListings: 1, totalViews: 120, totalInquiries: 15 };
+    }
+
+    return await apiCallGET(`/seller/${sellerId}/dashboard/stats`);
+}
+
+/**
+ * Get My Listings with search/filter
+ * Endpoint: GET /api/seller/{sellerId}/listings/search?page=0&pageSize=20&status=APPROVED
+ */
+export interface SearchListingsParams {
+    sellerId: number;
+    page?: number;
+    pageSize?: number;
+    status?: string;
+    title?: string;
+    brand?: string;
+    model?: string;
+    minPrice?: number;
+    maxPrice?: number;
+    sort?: string;
+}
+
+export async function searchMyListings(params: SearchListingsParams): Promise<GetMyListingsResponse> {
+    const { sellerId, page = 0, pageSize = 20, status, title, brand, model, minPrice, maxPrice, sort } = params;
+
+    const queryObj: Record<string, string> = { page: page.toString(), pageSize: pageSize.toString() };
+    const backendStatus = mapStatusToBackend(status);
+    if (backendStatus) queryObj.status = backendStatus;
+    if (title) queryObj.title = title;
+    if (brand) queryObj.brand = brand;
+    if (model) queryObj.model = model;
+    if (minPrice !== undefined) queryObj.minPrice = minPrice.toString();
+    if (maxPrice !== undefined) queryObj.maxPrice = maxPrice.toString();
+    if (sort) queryObj.sort = sort;
+
+    const queryStr = new URLSearchParams(queryObj).toString();
+    const response = await apiCallGET<SellerListingSearchPageResponse>(`/seller/${sellerId}/listings/search?${queryStr}`);
+
+    validateResponse(response, 'searchMyListings response');
+    validateArray(response.content, 'content');
+    validateNumber(response.totalElements, 'totalElements');
+    validateNumber(response.totalPages, 'totalPages');
+    validateNumber(response.number, 'number');
+
+    return {
+        listings: response.content.map(mapSearchItemToListing),
+        totalItems: response.totalElements,
+        totalPages: response.totalPages,
+        currentPage: response.number + 1,
+    };
+}
+
+/**
+ * Get listing detail
+ * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/detail
+ */
+export async function getListingDetail(sellerId: number, listingId: number): Promise<Listing> {
+    const response = await apiCallGET<SellerListingSearchItemResponse>(`/seller/${sellerId}/listings/${listingId}/detail`);
+
+    validateResponse(response, 'getListingDetail response');
+    validateNumber(response.listingId, 'listingId');
+    validateString(response.brand, 'brand');
+    validateString(response.model, 'model');
+
+    return mapSearchItemToListing(response);
+}
+
+/**
+ * Get rejection reason for a listing
+ * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/rejection
+ */
+export interface RejectionInfo {
+    listingId: number;
+    reasonCode: string;
+    reasonText: string;
+    note?: string;
+}
+
+export async function getRejectionReason(sellerId: number, listingId: number): Promise<RejectionInfo> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return { listingId, reasonCode: 'INVALID_INFO', reasonText: 'Mock rejection reason', note: 'Please update your listing' };
+    }
+
+    return await apiCallGET<RejectionInfo>(`/seller/${sellerId}/listings/${listingId}/rejection`);
+}
+
+/**
+ * Delete a draft listing
+ * Endpoint: DELETE /api/seller/{sellerId}/drafts/{draftId}
+ */
+export async function deleteDraft(sellerId: number, draftId: number): Promise<void> {
+    await apiCallDELETE(`/seller/${sellerId}/drafts/${draftId}`);
+}
+
+/**
+ * Get listing images
+ * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/images
+ */
+export interface ListingImage {
+    id: number;
+    imagePath: string;
+    imageOrder: number;
+}
+
+export async function getListingImages(sellerId: number, listingId: number): Promise<ListingImage[]> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return [];
+    }
+
+    return await apiCallGET<ListingImage[]>(`/seller/${sellerId}/listings/${listingId}/images`);
+}
+
+/**
+ * Upload a listing image
+ * Endpoint: POST /api/seller/{sellerId}/listings/{listingId}/images
+ * Body: { imagePath, imageOrder }
+ */
+export async function uploadListingImage(
+    sellerId: number,
+    listingId: number,
+    imagePath: string,
+    _imageOrder?: number
+): Promise<ListingImage> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return { id: Math.floor(Math.random() * 10000), imagePath, imageOrder: _imageOrder ?? 1 };
+    }
+
+    return await apiCallPOST<ListingImage>(`/seller/${sellerId}/listings/${listingId}/images`, { imagePath });
+}
+
+/**
+ * Delete a listing image
+ * Endpoint: DELETE /api/seller/{sellerId}/listings/{listingId}/images/{imageId}
+ */
+export async function deleteListingImage(sellerId: number, listingId: number, imageId: number): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return;
+    }
+
+    await apiCallDELETE(`/seller/${sellerId}/listings/${listingId}/images/${imageId}`);
 }
