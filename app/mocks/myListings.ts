@@ -7,6 +7,7 @@ import { type ListingStatus } from '../constants';
 
 export interface MyListing {
     id: number;
+    mainImageUrl?: string;
     brand: string;
     model: string;
     type: string;
