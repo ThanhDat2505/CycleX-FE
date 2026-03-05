@@ -410,62 +410,6 @@
   box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.18);
 }
 
-.btn {
-  width: 100%;
-  padding: 14px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 900;
-  font-size: 15px;
-  text-transform: uppercase;
-  cursor: pointer;
-  margin-bottom: 12px;
-  color: #fff;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e5e7eb;
-  color: #111;
-}
-
-.btn:hover {
-  opacity: 0.92;
-  transform: translateY(-1px);
-}
-.btn:active {
-  transform: translateY(1px);
-}
-
-.btn-sm {
-  width: auto;
-  padding: 10px 20px;
-  font-size: 13px;
-  text-transform: none;
-  margin: 0;
-  min-width: 100px;
-}
-
-.btnOutline,
-.btnGhost {
-  height: 40px;
-  padding: 0 16px;
-  border-radius: 999px;
-  font-weight: 900;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border: 1px solid var(--border);
-  background: #fff;
-  font-size: 14px;
-  cursor: pointer;
-  color: var(--text);
-}
-.btnOutline:hover,
-.btnGhost:hover {
-  background: #f3f4f6;
-}
-
 .container {
   max-width: 1100px;
   margin: 0 auto;
@@ -2040,37 +1984,53 @@ body {
   opacity: 1;
 }
 
-.btnOutline {
-  background: #fff;
-  color: #111827;
-  border-color: var(--border);
+.review-detail-page .btn {
+  width: 100%;
+  padding: 14px;
+  height: auto;
+  border: none;
+  font-size: 15px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.btnOutline:hover {
-  background: #f3f4f6;
-  opacity: 1;
+.review-detail-page .btn-sm {
+  width: auto;
+  padding: 10px 20px;
+  font-size: 13px;
+  text-transform: none;
+  margin: 0;
+  min-width: 100px;
 }
 
-.btnGhost {
-  background: #fff;
-  color: #111827;
-  border: 1px solid var(--border);
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    border-color 0.2s ease,
-    transform 0.12s ease,
-    box-shadow 0.2s ease,
-    opacity 0.15s ease;
+.review-detail-page .review-detail-reject-btn,
+.review-detail-page .review-detail-reject-btn:hover,
+.review-detail-page .review-detail-reject-btn:focus,
+.review-detail-page .review-detail-reject-btn:active,
+.review-detail-page .review-detail-reject-btn:visited,
+.review-detail-page .review-detail-reject-confirm-btn,
+.review-detail-page .review-detail-reject-confirm-btn:hover,
+.review-detail-page .review-detail-reject-confirm-btn:focus,
+.review-detail-page .review-detail-reject-confirm-btn:active,
+.review-detail-page .review-detail-reject-confirm-btn:visited {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
-.btnGhost:hover {
-  background: #111827;
-  color: #fff;
-  border-color: #111827;
-  opacity: 0.95;
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+.review-detail-page .review-detail-reject-confirm-btn:disabled {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
 }
 
 .dataTable {
