@@ -424,16 +424,13 @@ export const inspectorService = {
     );
   },
 
-  async approveListing(
-    listingId: string,
-    payload: { reasonCode: string; reasonText: string; note?: string },
-  ): Promise<void> {
+  async approveListing(listingId: string): Promise<void> {
     const inspectorId = getInspectorId();
+    const listingPathId = Number(listingId);
     await inspectorFetch<void>(
-      `/inspector/${inspectorId}/listings/${listingId}/approve`,
+      `/inspector/${inspectorId}/listings/${Number.isFinite(listingPathId) && listingPathId > 0 ? listingPathId : listingId}/approve`,
       {
         method: "POST",
-        body: JSON.stringify(payload),
       },
     );
   },

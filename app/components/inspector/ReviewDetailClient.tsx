@@ -264,7 +264,6 @@ export default function ReviewDetailClient({
           <button
             className="btn btn-danger"
             type="button"
-            style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
             onClick={() => togglePanel("REJECT")}
           >
             TỪ CHỐI
@@ -329,22 +328,10 @@ export default function ReviewDetailClient({
                   disabled={submitting || approveReason === ""}
                   onClick={async () => {
                     if (!listing) return;
-                    const reasonCode =
-                      approveReason === "ok"
-                        ? "MEETS_STANDARDS"
-                        : "PRICE_REASONABLE";
-                    const reasonText =
-                      approveReason === "ok"
-                        ? "Đủ ảnh và mô tả khớp"
-                        : "Giá phù hợp với thông tin sản phẩm";
 
                     try {
                       setSubmitting(true);
-                      await inspectorService.approveListing(listing.id, {
-                        reasonCode,
-                        reasonText,
-                        note,
-                      });
+                      await inspectorService.approveListing(listing.id);
                       alert("Đã duyệt tin thành công");
                       router.push("/inspector/dashboard");
                     } catch (err: any) {
@@ -396,7 +383,6 @@ export default function ReviewDetailClient({
                 <button
                   className="btn btn-danger btn-sm"
                   type="button"
-                  style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
                   disabled={!canConfirmReject || submitting}
                   onClick={async () => {
                     if (!canConfirmReject) return;
