@@ -461,7 +461,7 @@ export const inspectorService = {
 
   async approveListing(
     listingId: string,
-    payload: { reasonCode: string; reasonText: string; note?: string },
+    payload: { reasonText: string; reasonCode?: string; note?: string },
   ): Promise<void> {
     const inspectorId = getInspectorId();
     const listingPathId = Number(listingId);

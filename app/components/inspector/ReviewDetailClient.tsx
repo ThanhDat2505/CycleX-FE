@@ -331,7 +331,7 @@ export default function ReviewDetailClient({
                     const reasonCode =
                       approveReason === "ok"
                         ? "MEETS_STANDARDS"
-                        : "PRICE_REASONABLE";
+                        : "GOOD_CONDITION";
                     const reasonText =
                       approveReason === "ok"
                         ? "Đủ ảnh và mô tả khớp"
