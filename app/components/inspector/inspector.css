@@ -2008,7 +2008,7 @@ body {
   background: #ef4444 !important;
   background-color: #ef4444 !important;
   color: #ffffff !important;
-  border-color: #ef4444 !important;
+  border: none !important;
   -webkit-text-fill-color: #ffffff !important;
 }
 
@@ -2021,7 +2021,7 @@ body {
   background: #ef4444 !important;
   background-color: #ef4444 !important;
   color: #ffffff !important;
-  border-color: #ef4444 !important;
+  border: none !important;
   -webkit-text-fill-color: #ffffff !important;
   opacity: 1 !important;
   cursor: not-allowed;
@@ -2031,12 +2031,14 @@ body {
 .review-detail-page .btn.btn-danger.btn-sm {
   background-color: var(--red-color) !important;
   color: #ffffff !important;
+  border: none !important;
 }
 
 .review-detail-page button.btn.btn-danger:disabled,
 .review-detail-page .btn.btn-danger.btn-sm:disabled {
   background-color: var(--red-color) !important;
   color: #ffffff !important;
+  border: none !important;
   opacity: 1;
 }
 

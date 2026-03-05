@@ -278,7 +278,6 @@ export default function ReviewDetailClient({
           <button
             className="btn btn-danger btn-reject-solid"
             type="button"
-            style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
             onClick={() => togglePanel("REJECT")}
           >
             TỪ CHỐI
@@ -418,7 +417,6 @@ export default function ReviewDetailClient({
                 <button
                   className="btn btn-danger btn-sm btn-reject-solid"
                   type="button"
-                  style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
                   disabled={!canConfirmReject || submitting}
                   onClick={async () => {
                     if (!canConfirmReject) return;
