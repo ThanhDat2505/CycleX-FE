@@ -50,9 +50,6 @@ export default function ReviewHistoryPage() {
   const filtered = useMemo(
     () =>
       rows.filter((item) => {
-        if (!["DONE", "APPROVED", "REJECTED"].includes(item.status))
-          return false;
-
         if (
           filterId &&
           !item.id.toLowerCase().includes(filterId.toLowerCase()) &&
@@ -74,18 +71,29 @@ export default function ReviewHistoryPage() {
   );
 
   const renderBadge = (status: string) => {
-    switch (status) {
-      case "DONE":
+    const normalizedStatus = String(status ?? "")
+      .trim()
+      .toUpperCase();
+
+    switch (normalizedStatus) {
       case "APPROVED":
-      case "REJECTED":
         return <span className="badge badgeApproved">Đã duyệt</span>;
+      case "DONE":
+        return <span className="badge badgeApproved">Hoàn tất</span>;
+      case "REJECTED":
+        return <span className="badge badgeDanger">Đã từ chối</span>;
       case "NEED_INFO":
+      case "NEED_MORE_INFO":
         return <span className="badge badgeInfo">Cần bổ sung</span>;
       case "DISPUTE":
+      case "UNDER_REVIEW":
         return <span className="badge badgeDanger">Tranh chấp</span>;
       case "FLAGGED":
+      case "REPORT":
+      case "REPORTED":
         return <span className="badge badgeFlag">Bị flag</span>;
       case "PENDING":
+      case "PENDING_APPROVAL":
         return (
           <span
             className="badge"
@@ -99,9 +107,10 @@ export default function ReviewHistoryPage() {
           </span>
         );
       case "REVIEWING":
+      case "IN_REVIEW":
         return <span className="badge badgeInfo">Đang xem</span>;
       default:
-        return <span className="badge">{status}</span>;
+        return <span className="badge">{normalizedStatus || status}</span>;
     }
   };
 
