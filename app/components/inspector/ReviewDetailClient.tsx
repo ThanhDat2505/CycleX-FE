@@ -8,7 +8,7 @@ import {
   type InspectorReviewDetail,
 } from "@/app/services/inspectorService";
 
-type ActionPanel = "NONE" | "NEED_INFO" | "APPROVE" | "REJECT";
+type ActionPanel = "NONE" | "NEED_INFO" | "APPROVE" | "DECLINE_REVIEW";
 
 export default function ReviewDetailClient({
   listingId,
@@ -276,10 +276,9 @@ export default function ReviewDetailClient({
             DUYỆT TIN
           </button>
           <button
-            className="btn btn-danger btn-reject-solid"
+            className="btn review-detail-reject-btn"
             type="button"
-            style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
-            onClick={() => togglePanel("REJECT")}
+            onClick={() => togglePanel("DECLINE_REVIEW")}
           >
             TỪ CHỐI
           </button>
@@ -382,7 +381,7 @@ export default function ReviewDetailClient({
             </section>
           )}
 
-          {activePanel === "REJECT" && (
+          {activePanel === "DECLINE_REVIEW" && (
             <section className="panel panel-reject">
               <div className="panel-title">Lý do từ chối</div>
               <label className="field">
@@ -416,9 +415,8 @@ export default function ReviewDetailClient({
               <div className="confirm">
                 <span className="confirm-text">Xác nhận từ chối?</span>
                 <button
-                  className="btn btn-danger btn-sm btn-reject-solid"
+                  className="btn btn-sm review-detail-reject-confirm-btn"
                   type="button"
-                  style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
                   disabled={!canConfirmReject || submitting}
                   onClick={async () => {
                     if (!canConfirmReject) return;
