@@ -1,16 +1,25 @@
 ﻿"use client";
 
-import { useState, useEffect, useMemo} from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { Listing, ListingStatus } from "@/app/types/types";
 import ListingsTable from "./ListingsTable";
-import { inspectorService } from "@/app/services/inspectorService";
+import {
+  inspectorService,
+  type InspectorDashboardStats,
+} from "@/app/services/inspectorService";
 
 type Filter = "ALL" | ListingStatus;
 
 export default function DashboardClient() {
   const [listings, setListings] = useState<Listing[]>([]);
+  const [stats, setStats] = useState<InspectorDashboardStats>({
+    pendingCount: 0,
+    reviewingCount: 0,
+    approvedCount: 0,
+    rejectedCount: 0,
+    disputeCount: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -25,12 +34,46 @@ export default function DashboardClient() {
       try {
         if (showLoading) setLoading(true);
         setError(null);
-        const rows = await inspectorService.getDashboardListings();
-        if (mounted) setListings(rows);
+        const [rowsResult, statsResult] = await Promise.allSettled([
+          inspectorService.getDashboardListings(),
+          inspectorService.getDashboardStats(),
+        ]);
+
+        if (!mounted) return;
+
+        if (rowsResult.status === "fulfilled") {
+          setListings(rowsResult.value);
+        } else {
+          if (showLoading) setListings([]);
+          setError(
+            rowsResult.reason?.message || "Không tải được dữ liệu dashboard",
+          );
+        }
+
+        if (statsResult.status === "fulfilled") {
+          setStats(statsResult.value);
+        } else if (showLoading) {
+          setStats({
+            pendingCount: 0,
+            reviewingCount: 0,
+            approvedCount: 0,
+            rejectedCount: 0,
+            disputeCount: 0,
+          });
+        }
       } catch (err: any) {
         if (mounted) {
           setError(err?.message || "Không tải được dữ liệu dashboard");
-          if (showLoading) setListings([]);
+          if (showLoading) {
+            setListings([]);
+            setStats({
+              pendingCount: 0,
+              reviewingCount: 0,
+              approvedCount: 0,
+              rejectedCount: 0,
+              disputeCount: 0,
+            });
+          }
         }
       } finally {
         if (mounted && showLoading) setLoading(false);
@@ -48,37 +91,29 @@ export default function DashboardClient() {
     };
   }, []);
 
-  const statusCounts = useMemo(
-    () =>
-      listings.reduce(
-        (acc, listing) => {
-          acc[listing.status] += 1;
-          return acc;
-        },
-        {
-          PENDING: 0,
-          REVIEWING: 0,
-          NEED_MORE_INFO: 0,
-          DISPUTE: 0,
-          FLAGGED: 0,
-          APPROVED: 0,
-          DONE: 0,
-          UNKNOWN: 0,
-        } as Record<ListingStatus, number>,
-      ),
-    [listings],
-  );
+  const statusCounts = useMemo(() => {
+    const fromListings = listings.reduce(
+      (acc, listing) => {
+        acc[listing.status] += 1;
+        return acc;
+      },
+      {
+        PENDING: 0,
+        NEED_MORE_INFO: 0,
+        DISPUTE: 0,
+        FLAGGED: 0,
+        APPROVED: 0,
+        DONE: 0,
+      } as Record<ListingStatus, number>,
+    );
 
-  const displayCounts = useMemo(
-    () => ({
-      pending: statusCounts.PENDING,
-      reviewing: statusCounts.REVIEWING,
-      dispute: statusCounts.DISPUTE,
-      flagged: statusCounts.FLAGGED,
-      approved: statusCounts.APPROVED,
-    }),
-    [statusCounts],
-  );
+    return {
+      ...fromListings,
+      PENDING: Math.max(0, Number(stats.pendingCount) + Number(stats.reviewingCount)),
+      APPROVED: Math.max(0, Number(stats.approvedCount)),
+      DISPUTE: Math.max(fromListings.DISPUTE, Number(stats.disputeCount)),
+    };
+  }, [listings, stats]);
 
   const clickFilter = (f: Filter) => {
     setActive(f);
@@ -145,7 +180,7 @@ export default function DashboardClient() {
           <p className="text-gray-600 mt-2 text-lg">
             Chào mừng trở lại! Bạn có{" "}
             <span className="font-bold text-orange-600">
-              {displayCounts.pending}
+              {statusCounts.PENDING}
             </span>{" "}
             tin cần duyệt hôm nay.
           </p>
@@ -166,35 +201,35 @@ export default function DashboardClient() {
         <StatCard
           type="PENDING"
           label="Tin chờ duyệt"
-          count={displayCounts.pending}
+          count={statusCounts.PENDING}
           icon="schedule"
           colorClass="bg-yellow-500 text-yellow-600"
         />
         <StatCard
-          type="REVIEWING"
-          label="Đang duyệt tin"
-          count={displayCounts.reviewing}
+          type="NEED_MORE_INFO"
+          label="Cần bổ sung"
+          count={statusCounts.NEED_MORE_INFO}
           icon="article"
           colorClass="bg-blue-500 text-blue-600"
         />
         <StatCard
           type="DISPUTE"
           label="Cần xem xét"
-          count={displayCounts.dispute}
+          count={statusCounts.DISPUTE}
           icon="warning"
           colorClass="bg-red-500 text-red-600"
         />
         <StatCard
           type="FLAGGED"
           label="Bị report"
-          count={displayCounts.flagged}
+          count={statusCounts.FLAGGED}
           icon="flag"
           colorClass="bg-gray-500 text-gray-600"
         />
         <StatCard
           type="APPROVED"
           label="Đã duyệt"
-          count={displayCounts.approved}
+          count={statusCounts.APPROVED}
           icon="check_circle"
           colorClass="bg-green-500 text-green-600"
         />
