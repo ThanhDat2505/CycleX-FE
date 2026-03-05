@@ -20,7 +20,7 @@ const statusClass = (s: PendingStatus | "DONE") => {
       return "isPending";
     case "REVIEWING":
       return "isReviewing";
-    case "NEED_INFO":
+    case "NEED_MORE_INFO":
       return "isNeedInfo";
     case "DISPUTE":
       return "isDispute";
@@ -104,16 +104,16 @@ export default function PendingListClient() {
     });
 
     return [...filtered].sort((a, b) => {
-      const at = new Date(a.submittedAt).getTime();
-      const bt = new Date(b.submittedAt).getTime();
+      const at = new Date(a.dateISO).getTime();
+      const bt = new Date(b.dateISO).getTime();
       return sort === "new" ? bt - at : at - bt;
     });
-  }, [q, sort]);
+  }, [listings, q, sort]);
 
   return (
     <div className="page">
       <header className="pageHeader">
-        <h1 className="page-title">Pending Approved</h1>
+        <h1 className="page-title">Danh sách chờ duyệt</h1>
       </header>
 
       <div className="toolbar">
@@ -183,7 +183,7 @@ export default function PendingListClient() {
                   </td>
 
                   <td>
-                    <div className="dateText">{formatDate(x.submittedAt)}</div>
+                    <div className="dateText">{formatDate(x.dateISO)}</div>
                   </td>
 
                   <td className="actionCell">
@@ -202,6 +202,14 @@ export default function PendingListClient() {
                   </td>
                 </tr>
               ))}
+
+              {rows.length === 0 && (
+                <tr>
+                  <td colSpan={4} style={{ padding: 20, textAlign: "center" }}>
+                    Không có listing nào trong danh sách chờ duyệt.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         )}

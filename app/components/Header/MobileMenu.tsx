@@ -62,6 +62,11 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                 </Link>
                 {isLoggedIn && (
                     <>
+                        {userRole === 'INSPECTOR' && (
+                            <Link href="/inspector/dashboard" onClick={onClose} className={LINK_STYLE}>
+                                Inspector Dashboard
+                            </Link>
+                        )}
                         <Link href="/profile" onClick={onClose} className={LINK_STYLE}>
                             Profile
                         </Link>

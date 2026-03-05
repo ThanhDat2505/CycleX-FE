@@ -44,6 +44,14 @@ export type ReviewHistoryRow = {
   note: string;
 };
 
+export type InspectorDashboardStats = {
+  pendingCount: number;
+  reviewingCount: number;
+  approvedCount: number;
+  rejectedCount: number;
+  disputeCount: number;
+};
+
 type QueryOptions = {
   status?: string;
   sort?: "newest" | "oldest";
@@ -421,9 +429,9 @@ export const inspectorService = {
       );
   },
 
-  async getDashboardStats(): Promise<any> {
+  async getDashboardStats(): Promise<InspectorDashboardStats> {
     const inspectorId = getInspectorId();
-    return inspectorFetch<any>(`/inspector/${inspectorId}/dashboard/stats`, {
+    return inspectorFetch<InspectorDashboardStats>(`/inspector/${inspectorId}/dashboard/stats`, {
       method: "GET",
     });
   },
