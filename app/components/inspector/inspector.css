@@ -16,6 +16,7 @@
 
   --blue-color: #3b82f6;
   --green-color: #22c55e;
+  --red-color: #ef4444;
 }
 /* * {
   box-sizing: border-box;
@@ -1995,7 +1996,7 @@ body {
 }
 
 .btn-danger {
-  background-color: var(--red-color) !important;
+  background-color: var(--red-color, #ef4444) !important;
   color: #ffffff !important;
   margin-bottom: 0;
 }
@@ -2029,14 +2030,14 @@ body {
 
 .review-detail-page button.btn.btn-danger,
 .review-detail-page .btn.btn-danger.btn-sm {
-  background-color: var(--red-color) !important;
+  background-color: var(--red-color, #ef4444) !important;
   color: #ffffff !important;
   border: none !important;
 }
 
 .review-detail-page button.btn.btn-danger:disabled,
 .review-detail-page .btn.btn-danger.btn-sm:disabled {
-  background-color: var(--red-color) !important;
+  background-color: var(--red-color, #ef4444) !important;
   color: #ffffff !important;
   border: none !important;
   opacity: 1;
