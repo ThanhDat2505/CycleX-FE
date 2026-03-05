@@ -283,7 +283,7 @@ function statusToDashboardStatus(status: string): DashboardListingStatus {
     case "REJECTED":
       return "DONE";
     default:
-      return "PENDING";
+      return "UNKNOWN";
   }
 }
 
@@ -366,13 +366,26 @@ function mapToDashboardListing(raw: RawObject): DashboardListing {
   const submittedAt = getSubmittedAt(raw);
   const waitingDays =
     Number(raw.waitingDays ?? raw.pendingDays ?? raw.daysWaiting ?? 0) || 0;
+  const waitingTimeText =
+    typeof raw.waitingTime === "string" && raw.waitingTime.trim().length > 0
+      ? raw.waitingTime.trim()
+      : typeof raw.waitLabel === "string" && raw.waitLabel.trim().length > 0
+        ? raw.waitLabel.trim()
+        : `${Math.max(0, waitingDays)} ngày`;
 
   return {
     id: getListingId(raw),
     name: getProductName(raw),
     shop: getStoreName(raw),
+    imageUrl:
+      raw.imageUrl ??
+      raw.thumbnailUrl ??
+      raw.mainImageUrl ??
+      (Array.isArray(raw.imageUrls) && raw.imageUrls.length > 0
+        ? raw.imageUrls[0]
+        : undefined),
     submittedAt: toDisplayDate(submittedAt),
-    waitingTime: `${Math.max(0, waitingDays)} ngày`,
+    waitingTime: waitingTimeText,
     status: statusToDashboardStatus(getStatus(raw)),
   };
 }
