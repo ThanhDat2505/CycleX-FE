@@ -18,7 +18,7 @@ interface UseDashboardReturn {
  * Hook to load and manage dashboard data
  * Handles loading state, error handling, and retry logic
  */
-export function useDashboard(enabled: boolean = true): UseDashboardReturn {
+export function useDashboard(enabled: boolean = true, sellerId?: number): UseDashboardReturn {
     const [stats, setStats] = useState<DashboardStats>({
         activeListings: 0,
         pendingListings: 0,
@@ -33,14 +33,14 @@ export function useDashboard(enabled: boolean = true): UseDashboardReturn {
     const [retryCount, setRetryCount] = useState(0);
 
     useEffect(() => {
-        if (!enabled) return;
+        if (!enabled || !sellerId) return;
 
         const loadDashboard = async () => {
             setLoading(true);
             setError(null); // Clear previous errors
 
             try {
-                const data = await getDashboardData();
+                const data = await getDashboardData(sellerId);
                 setStats(data.stats);
                 setTopListings(data.topListings);
             } catch (err) {
@@ -52,7 +52,7 @@ export function useDashboard(enabled: boolean = true): UseDashboardReturn {
         };
 
         loadDashboard();
-    }, [retryCount, enabled]); // Retry when retryCount changes
+    }, [retryCount, enabled, sellerId]); // Retry when retryCount changes
 
     const retry = () => {
         setRetryCount(prev => prev + 1);

@@ -94,7 +94,7 @@ export default function TransactionDetailPage() {
 
             if (success) {
                 addToast('Đã xác nhận giao dịch thành công! 🎉', 'success');
-                const updated = await getTransactionDetail(transaction.transactionId);
+                const updated = await getTransactionDetail(transaction.transactionId, role as 'BUYER' | 'SELLER');
                 setTransaction(updated);
 
                 const tm = setTimeout(() => {
