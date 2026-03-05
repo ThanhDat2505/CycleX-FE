@@ -450,6 +450,23 @@ export async function submitDraft(listingId: number, sellerId?: number): Promise
 }
 
 /**
+ * Cancel publish for a listing (expected PENDING/REVIEWING -> DRAFT)
+ * Fallback implementation uses seller update endpoint with status=DRAFT.
+ */
+export async function cancelPublish(listingId: number, sellerId: number): Promise<Listing> {
+    const response = await apiCallPATCH<ListingApiResponse>(
+        `/seller/${sellerId}/listings/${listingId}`,
+        { sellerId, status: 'DRAFT' }
+    );
+    const normalizedResponse = normalizeListingResponse(response, 'cancelPublish response');
+
+    validateNumber(normalizedResponse.id, 'id');
+    validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
+
+    return normalizedResponse;
+}
+
+/**
  * Preview a listing before submitting
  * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/preview
  * 

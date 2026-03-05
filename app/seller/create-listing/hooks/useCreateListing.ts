@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useToast } from "@/app/contexts/ToastContext";
-import { saveDraft, updateDraft, submitDraft, uploadListingImage, getListingDetail, getListingImages } from "@/app/services/myListingsService";
+import { saveDraft, updateDraft, submitDraft, uploadListingImage, getListingDetail, getListingImages, cancelPublish } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import { CREATE_LISTING_STEPS, LISTING_CONFIG, CURRENT_YEAR } from "../constants";
 import { ListingFormData } from "../types";
@@ -27,6 +27,7 @@ export const useCreateListing = () => {
     // Draft-First: Store listingId after draft creation
     const [listingId, setListingId] = useState<number | null>(null);
     const [isCreatingDraft, setIsCreatingDraft] = useState(false);
+    const [isCancellingPublish, setIsCancellingPublish] = useState(false);
     // Submit/Save errors for inline display
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [loadedListingStatus, setLoadedListingStatus] = useState<string | null>(null);
@@ -231,6 +232,50 @@ export const useCreateListing = () => {
         }
         return 'Listing đang ở chế độ chỉ xem.';
     }, [loadedListingStatus]);
+
+    const canCancelPublish = useCallback(() => {
+        const status = (loadedListingStatus || '').toUpperCase();
+        return status === 'PENDING' || status === 'REVIEWING' || status === 'WAITING_INSPECTOR_REVIEW';
+    }, [loadedListingStatus]);
+
+    const handleCancelPublish = useCallback(async () => {
+        if (!user?.userId) {
+            setSubmitError('You must be logged in to cancel publish.');
+            return;
+        }
+
+        if (!listingId) {
+            setSubmitError('No listing found to cancel publish.');
+            return;
+        }
+
+        if (!canCancelPublish()) {
+            setSubmitError('Cancel publish is only available for pending listings.');
+            return;
+        }
+
+        setIsCancellingPublish(true);
+        setSubmitError(null);
+
+        try {
+            const updated = await cancelPublish(listingId, user.userId);
+            setLoadedListingStatus((updated.status as string) || 'DRAFT');
+            setIsReadOnly(false);
+            setStep(CREATE_LISTING_STEPS.VEHICLE_INFO);
+            addToast('Cancel publish successful. You can edit this listing now.', 'success');
+        } catch (error: any) {
+            const rawMessage = String(error?.message || '');
+            const cannotEditPending = rawMessage.toLowerCase().includes('cannot edit listing with status');
+
+            if (cannotEditPending) {
+                setSubmitError('Backend chưa hỗ trợ Cancel Publish cho listing đang PENDING. Vui lòng nhờ BE mở endpoint này.');
+            } else {
+                setSubmitError('Failed to cancel publish. Please try again.');
+            }
+        } finally {
+            setIsCancellingPublish(false);
+        }
+    }, [addToast, canCancelPublish, listingId, user?.userId]);
 
     const handleNext = async () => {
         if (isReadOnly) return;
@@ -497,9 +542,11 @@ export const useCreateListing = () => {
             isLoading,
             listingId,
             isCreatingDraft,
+            isCancellingPublish,
             submitError,
             isReadOnly,
             readOnlyMessage: isReadOnly ? getReadOnlyMessage() : null,
+            canCancelPublish: canCancelPublish(),
         },
         actions: {
             setStep,
@@ -512,7 +559,8 @@ export const useCreateListing = () => {
             removeImage,
             handleSetPrimary,
             handleSaveDraft,
-            handleSubmit
+            handleSubmit,
+            handleCancelPublish,
         }
     };
 };

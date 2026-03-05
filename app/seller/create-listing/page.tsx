@@ -11,7 +11,23 @@ import Step3Preview from "./components/Step3Preview";
 
 const CreateListingPage: React.FC = () => {
   const { state, actions } = useCreateListing();
-  const { step, formData, errors, isSaving, isUploading, imageUrls, uploadError, isLoggedIn, isLoading, isCreatingDraft, submitError, isReadOnly, readOnlyMessage } = state;
+  const {
+    step,
+    formData,
+    errors,
+    isSaving,
+    isUploading,
+    imageUrls,
+    uploadError,
+    isLoggedIn,
+    isLoading,
+    isCreatingDraft,
+    isCancellingPublish,
+    submitError,
+    isReadOnly,
+    readOnlyMessage,
+    canCancelPublish,
+  } = state;
 
   if (isLoading) {
     return (
@@ -131,7 +147,17 @@ const CreateListingPage: React.FC = () => {
 
         {/* Buttons */}
         {isReadOnly ? (
-          <div className="flex mt-8 justify-end">
+          <div className="flex mt-8 justify-end gap-4">
+            {canCancelPublish && (
+              <button
+                type="button"
+                onClick={actions.handleCancelPublish}
+                disabled={isCancellingPublish}
+                className="px-6 py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCancellingPublish ? "Cancelling..." : "Cancel Publish"}
+              </button>
+            )}
             <a
               href="/seller/my-listings"
               className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
