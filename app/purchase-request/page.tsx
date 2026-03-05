@@ -58,6 +58,7 @@ function PurchaseRequestContent() {
         isListingLoading,
         isAuthLoading,
         isLoggedIn,
+        isSellerBlocked,
         error,
         submitError,
         validationErrors,
@@ -83,6 +84,26 @@ function PurchaseRequestContent() {
     // Not logged in — waiting for redirect
     if (!isLoggedIn) {
         return null;
+    }
+
+    // SELLER blocked — show clear message
+    if (isSellerBlocked) {
+        return (
+            <div className={STYLES.errorWrapper}>
+                <EmptyState
+                    title={MESSAGES.S50_SELLER_BLOCKED_TITLE}
+                    description={error || MESSAGES.S50_ERROR_ROLE}
+                    action={
+                        <button
+                            onClick={() => router.push('/listings')}
+                            className={STYLES.errorButton}
+                        >
+                            {MESSAGES.S50_EMPTY_ACTION}
+                        </button>
+                    }
+                />
+            </div>
+        );
     }
 
     // Error state

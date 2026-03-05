@@ -19,7 +19,7 @@ const DashboardPage: React.FC = () => {
   const { isLoggedIn, isLoading: authLoading, user } = useAuth(); // Get user data
 
   // Load dashboard data using custom hook - Moved up to fix hook ordering
-  const { stats, topListings, loading: dashboardLoading, error, retry } = useDashboard(!authLoading && isLoggedIn);
+  const { stats, topListings, loading: dashboardLoading, error, retry } = useDashboard(!authLoading && isLoggedIn, user?.userId);
 
 
   // ✅ AUTH PROTECTION: Redirect to login if not authenticated

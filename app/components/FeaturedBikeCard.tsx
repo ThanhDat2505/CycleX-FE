@@ -17,6 +17,8 @@ import React, { useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { HomeBike } from '../types/listing';
 import { formatPrice } from '../utils/format';
+import { useAuth } from '../hooks/useAuth';
+import { useToast } from '../contexts/ToastContext';
 import { MapPin, ShoppingCart } from 'lucide-react';
 
 const FALLBACK_IMAGE = '/images/bike-placeholder.svg';
@@ -47,6 +49,9 @@ interface FeaturedBikeCardProps {
 
 export default function FeaturedBikeCard({ bike, className = '' }: FeaturedBikeCardProps) {
     const router = useRouter();
+    const { role } = useAuth();
+    const { addToast } = useToast();
+    const isSeller = role === 'SELLER';
 
     const handleCardClick = useCallback(() => {
         router.push(`/listings/${bike.listingId}`);
@@ -54,11 +59,15 @@ export default function FeaturedBikeCard({ bike, className = '' }: FeaturedBikeC
 
     const handlePurchase = useCallback((e: React.MouseEvent) => {
         e.stopPropagation();
+        if (isSeller) {
+            addToast('Tài khoản Người bán không thể thực hiện mua xe. Vui lòng đăng nhập bằng tài khoản Người mua.', 'error');
+            return;
+        }
         const query = bike.productId
             ? `listingId=${bike.listingId}&productId=${bike.productId}`
             : `listingId=${bike.listingId}`;
         router.push(`/purchase-request?${query}`);
-    }, [router, bike.listingId, bike.productId]);
+    }, [router, bike.listingId, bike.productId, isSeller, addToast]);
 
     const isHot = (bike.viewCount || 0) > HOT_THRESHOLD;
 

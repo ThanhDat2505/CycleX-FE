@@ -119,6 +119,7 @@ export const MESSAGES = {
     S50_ERROR_CHECK_INFO: 'Vui lòng kiểm tra lại thông tin đã nhập.',
     S50_ERROR_CHECK_STEP1: 'Vui lòng kiểm tra lại thông tin ở Bước 1.',
     S50_LOADING: 'Đang tải...',
+    S50_SELLER_BLOCKED_TITLE: 'Không thể thực hiện mua xe',
     S50_EMPTY_TITLE: 'Không tìm thấy sản phẩm',
     S50_EMPTY_DESC: 'Sản phẩm bạn tìm kiếm không tồn tại hoặc đã bị xóa.',
     S50_EMPTY_ACTION: 'Quay lại danh sách',

@@ -77,7 +77,7 @@ export interface DashboardData {
  * const data = await response.json();
  * return data;
  */
-export async function getDashboardData(): Promise<DashboardData> {
+export async function getDashboardData(sellerId: number): Promise<DashboardData> {
     const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
     if (USE_MOCK_API) {
@@ -142,32 +142,28 @@ export async function getDashboardData(): Promise<DashboardData> {
         };
     }
 
-    // ✅ REAL API: GET /api/seller/dashboard/stats
-    const data = await apiCallGET<DashboardData>('/seller/dashboard/stats');
+    // ✅ REAL API: GET /api/seller/{sellerId}/dashboard/stats
+    // BE returns flat: { approvedCount, pendingCount, rejectedCount, totalListings, totalViews }
+    const raw = await apiCallGET<{
+        approvedCount: number;
+        pendingCount: number;
+        rejectedCount: number;
+        totalListings: number;
+        totalViews: number;
+    }>(`/seller/${sellerId}/dashboard/stats`);
 
-    // ✅ VALIDATION: Validate response structure
-    validateResponse(data);
-    validateObject(data.stats, 'stats');
-    validateNumber(data.stats.activeListings, 'stats.activeListings');
-    validateNumber(data.stats.pendingListings, 'stats.pendingListings');
-    validateNumber(data.stats.rejectedListings, 'stats.rejectedListings');
-    validateNumber(data.stats.totalTransactions, 'stats.totalTransactions');
-    validateNumber(data.stats.totalViews, 'stats.totalViews');
-    validateNumber(data.stats.newInquiries, 'stats.newInquiries');
-    validateArray(data.topListings, 'topListings');
+    // Map BE response to FE DashboardData shape
+    const result: DashboardData = {
+        stats: {
+            activeListings: raw.approvedCount ?? 0,
+            pendingListings: raw.pendingCount ?? 0,
+            rejectedListings: raw.rejectedCount ?? 0,
+            totalTransactions: raw.totalListings ?? 0,
+            totalViews: raw.totalViews ?? 0,
+            newInquiries: 0, // BE doesn't return this yet
+        },
+        topListings: [], // BE doesn't return top listings yet
+    };
 
-    // Validate each listing
-    data.topListings.forEach((listing, index) => {
-        const context = `topListings[${index}]`;
-        validateNumber(listing.id, `${context}.id`);
-        validateString(listing.brand, `${context}.brand`);
-        validateString(listing.model, `${context}.model`);
-        validatePositiveNumber(listing.price, `${context}.price`);
-        validateNumber(listing.views, `${context}.views`);
-        validateNumber(listing.inquiries, `${context}.inquiries`);
-        validateString(listing.status, `${context}.status`);
-    });
-
-
-    return data;
+    return result;
 }

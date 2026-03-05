@@ -32,6 +32,7 @@ interface UsePurchaseRequestReturn {
     isListingLoading: boolean;
     isAuthLoading: boolean;
     isLoggedIn: boolean;
+    isSellerBlocked: boolean;
     error: string | null;
     submitError: string | null;
     validationErrors: Partial<Record<keyof PurchaseRequestForm, string>>;
@@ -58,6 +59,7 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
     const [currentStep, setCurrentStep] = useState(1);
     const [listing, setListing] = useState<ListingDetail | null>(null);
     const [isListingLoading, setIsListingLoading] = useState(true);
+    const [isSellerBlocked, setIsSellerBlocked] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof PurchaseRequestForm, string>>>({});
@@ -86,7 +88,9 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         }
 
         if (role && role !== 'BUYER') {
+            setIsSellerBlocked(true);
             setError(MESSAGES.S50_ERROR_ROLE);
+            setIsListingLoading(false);
             return;
         }
 
@@ -275,6 +279,7 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         isListingLoading,
         isAuthLoading,
         isLoggedIn,
+        isSellerBlocked,
         error,
         submitError,
         validationErrors,
