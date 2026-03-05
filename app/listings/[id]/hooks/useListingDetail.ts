@@ -13,6 +13,7 @@ interface UseListingDetailReturn {
     error: string | null;
     isAuthLoading: boolean;
     userRole: string | undefined;
+    userId: number | undefined;
     retryFetch: () => void;
 }
 
@@ -61,7 +62,8 @@ export function useListingDetail(listingId: number): UseListingDetailReturn {
                 if (abortController.signal.aborted) return;
 
                 // BR-S32-01: Frontend validation — never fully trust BE
-                if (data.status !== 'APPROVED') {
+                // Allow SELLER to view their own listing even if not APPROVED
+                if (data.status !== 'APPROVED' && user?.userId !== data.sellerId) {
                     setError(MESSAGES.DETAIL_NOT_AVAILABLE);
                     setIsLoading(false);
                     return;
@@ -105,6 +107,7 @@ export function useListingDetail(listingId: number): UseListingDetailReturn {
         error,
         isAuthLoading,
         userRole: user?.role,
+        userId: user?.userId,
         retryFetch,
     };
 }

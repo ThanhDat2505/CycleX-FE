@@ -28,23 +28,30 @@ import CategorySection from './components/CategorySection';
 import Footer from './components/Footer';
 import { useAuth } from './hooks/useAuth';
 import { useRouter } from 'next/navigation';
+import { useToast } from './contexts/ToastContext';
 
 export default function Home() {
     const { user, isLoading } = useAuth();
     const router = useRouter();
+    const { addToast } = useToast();
 
     useEffect(() => {
-        if (!isLoading && user?.role === 'SHIPPER') {
-            router.replace('/shipper');
+        if (!isLoading) {
+            if (user?.role === 'SHIPPER') {
+                router.replace('/shipper');
+            } else if (user?.role === 'SELLER') {
+                addToast('Bạn không có quyền truy cập trang này', 'error');
+                router.replace('/seller/dashboard');
+            }
         }
-    }, [user, isLoading, router]);
+    }, [user, isLoading, router, addToast]);
 
     if (isLoading) {
         return <div className="min-h-screen bg-white" />; // Prevent flash of content
     }
 
-    if (user?.role === 'SHIPPER') {
-        return null; // Don't render home for Shipper
+    if (user?.role === 'SHIPPER' || user?.role === 'SELLER') {
+        return null; // Don't render home for Shipper/Seller
     }
 
     return (

@@ -4,6 +4,15 @@
  * Used by authService and listingService
  */
 
+/**
+ * Lấy JWT token từ localStorage để gắn vào Authorization header.
+ * Trả về null nếu chưa đăng nhập hoặc đang chạy trên server (SSR).
+ */
+function getAuthToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('authToken');
+}
+
 export interface ApiError {
     status: number;
     message: string;
@@ -18,11 +27,9 @@ function getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    const token = getAuthToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
 }
