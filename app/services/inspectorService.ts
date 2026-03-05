@@ -69,12 +69,47 @@ function getInspectorId(): number {
   if (typeof window === "undefined") return 0;
 
   const fromUserData = parseJsonSafe(localStorage.getItem("userData"));
-  const candidate = Number(fromUserData?.userId);
-  if (Number.isFinite(candidate) && candidate > 0) {
-    return candidate;
+  const userIdCandidates = [
+    fromUserData?.userId,
+    fromUserData?.id,
+    fromUserData?.inspectorId,
+    fromUserData?.user?.userId,
+    fromUserData?.user?.id,
+  ];
+
+  for (const value of userIdCandidates) {
+    const candidate = Number(value);
+    if (Number.isFinite(candidate) && candidate > 0) {
+      return candidate;
+    }
   }
 
-  return 3;
+  const token = localStorage.getItem("authToken");
+  if (token) {
+    try {
+      const payloadBase64 = token.split(".")[1];
+      if (payloadBase64) {
+        const normalized = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+        const padded =
+          normalized + "=".repeat((4 - (normalized.length % 4)) % 4);
+        const payload = JSON.parse(atob(padded));
+
+        const tokenIdCandidates = [payload?.userId, payload?.id, payload?.sub];
+        for (const value of tokenIdCandidates) {
+          const candidate = Number(value);
+          if (Number.isFinite(candidate) && candidate > 0) {
+            return candidate;
+          }
+        }
+      }
+    } catch {
+      // ignore parse errors and throw explicit error below
+    }
+  }
+
+  throw new Error(
+    "Không xác định được inspectorId từ phiên đăng nhập. Vui lòng đăng nhập lại.",
+  );
 }
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -424,13 +459,17 @@ export const inspectorService = {
     );
   },
 
-  async approveListing(listingId: string): Promise<void> {
+  async approveListing(
+    listingId: string,
+    payload: { reasonCode: string; reasonText: string; note?: string },
+  ): Promise<void> {
     const inspectorId = getInspectorId();
     const listingPathId = Number(listingId);
     await inspectorFetch<void>(
       `/inspector/${inspectorId}/listings/${Number.isFinite(listingPathId) && listingPathId > 0 ? listingPathId : listingId}/approve`,
       {
         method: "POST",
+        body: JSON.stringify(payload),
       },
     );
   },
