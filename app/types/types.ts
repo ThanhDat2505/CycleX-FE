@@ -3,6 +3,7 @@ export type ListingStatus =
   | "NEED_MORE_INFO"
   | "DISPUTE"
   | "FLAGGED"
+  | "APPROVED"
   | "DONE";
 
 export type Listing = {

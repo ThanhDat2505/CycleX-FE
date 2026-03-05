@@ -131,8 +131,9 @@ function statusToDashboardStatus(status: string): DashboardListingStatus {
       return "DISPUTE";
     case "FLAGGED":
       return "FLAGGED";
-    case "DONE":
     case "APPROVED":
+      return "APPROVED";
+    case "DONE":
     case "REJECTED":
       return "DONE";
     case "REVIEWING":

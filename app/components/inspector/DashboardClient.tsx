@@ -18,26 +18,32 @@ export default function DashboardClient() {
 
   useEffect(() => {
     let mounted = true;
+    const REFRESH_INTERVAL_MS = 30000;
 
-    const load = async () => {
+    const load = async (showLoading = false) => {
       try {
-        setLoading(true);
+        if (showLoading) setLoading(true);
         setError(null);
         const rows = await inspectorService.getDashboardListings();
         if (mounted) setListings(rows);
       } catch (err: any) {
         if (mounted) {
           setError(err?.message || "Không tải được dữ liệu dashboard");
-          setListings([]);
+          if (showLoading) setListings([]);
         }
       } finally {
-        if (mounted) setLoading(false);
+        if (mounted && showLoading) setLoading(false);
       }
     };
 
-    load();
+    load(true);
+    const timer = window.setInterval(() => {
+      load(false);
+    }, REFRESH_INTERVAL_MS);
+
     return () => {
       mounted = false;
+      window.clearInterval(timer);
     };
   }, []);
 
@@ -53,6 +59,7 @@ export default function DashboardClient() {
           NEED_MORE_INFO: 0,
           DISPUTE: 0,
           FLAGGED: 0,
+          APPROVED: 0,
           DONE: 0,
         } as Record<ListingStatus, number>,
       ),
@@ -171,9 +178,9 @@ export default function DashboardClient() {
           colorClass="bg-gray-500 text-gray-600"
         />
         <StatCard
-          type="DONE"
+          type="APPROVED"
           label="Đã duyệt"
-          count={statusCounts.DONE}
+          count={statusCounts.APPROVED}
           icon="check_circle"
           colorClass="bg-green-500 text-green-600"
         />

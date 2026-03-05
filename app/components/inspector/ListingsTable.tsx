@@ -22,6 +22,8 @@ export default function ListingsTable({
         return "bg-red-100 text-red-800";
       case "FLAGGED":
         return "bg-gray-100 text-gray-800";
+      case "APPROVED":
+        return "bg-green-100 text-green-800";
       case "DONE":
         return "bg-green-100 text-green-800";
       default:
@@ -39,8 +41,10 @@ export default function ListingsTable({
         return "Cần xem xét";
       case "FLAGGED":
         return "Bị flag";
-      case "DONE":
+      case "APPROVED":
         return "Đã duyệt";
+      case "DONE":
+        return "Đã xử lý";
       default:
         return status;
     }

@@ -78,7 +78,7 @@ export default function ReviewHistoryPage() {
       case "DONE":
       case "APPROVED":
       case "REJECTED":
-        return <span className="badge badgeApproved">Đã xử lý</span>;
+        return <span className="badge badgeApproved">Đã duyệt</span>;
       case "NEED_INFO":
         return <span className="badge badgeInfo">Cần bổ sung</span>;
       case "DISPUTE":
@@ -192,7 +192,7 @@ export default function ReviewHistoryPage() {
                 <div
                   style={{ padding: 30, textAlign: "center", color: "#999" }}
                 >
-                  Không tìm thấy dữ liệu đã xử lý nào.
+                  Không tìm thấy dữ liệu đã duyệt nào.
                 </div>
               )}
             </div>
