@@ -12,7 +12,7 @@ export const STATUS_LABEL: Record<ListingStatus, string> = {
   NEED_INFO: "Cần bổ sung",
   DISPUTE: "Tranh chấp",
   FLAGGED: "Bị flag",
-  DONE: "Đã xử lý",
+  DONE: "Đã duyệt",
 };
 
 export type ListingSpec = {

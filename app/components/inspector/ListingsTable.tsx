@@ -44,7 +44,7 @@ export default function ListingsTable({
       case "APPROVED":
         return "Đã duyệt";
       case "DONE":
-        return "Đã xử lý";
+        return "Đã duyệt";
       default:
         return status;
     }

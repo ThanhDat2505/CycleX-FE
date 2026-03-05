@@ -11,7 +11,7 @@ const STATUS_LABEL: Record<PendingStatus | "DONE", string> = {
   NEED_MORE_INFO: "Cần bổ sung",
   DISPUTE: "Tranh chấp",
   FLAGGED: "Bị flag",
-  DONE: "Đã xử lý",
+  DONE: "Đã duyệt",
 };
 
 const statusClass = (s: PendingStatus | "DONE") => {
