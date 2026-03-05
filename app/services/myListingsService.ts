@@ -73,6 +73,27 @@ interface SellerListingSearchItemResponse {
     updatedAt?: string;
 }
 
+export interface SellerListingDetailResponse {
+    listingId: number;
+    sellerId?: number;
+    title?: string;
+    description?: string;
+    bikeType?: string;
+    brand: string;
+    model: string;
+    manufactureYear?: number;
+    condition?: string;
+    usageTime?: string;
+    reasonForSale?: string;
+    price: number | string;
+    locationCity?: string;
+    pickupAddress?: string;
+    status: string;
+    viewsCount?: number;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
 interface SellerListingSearchPageResponse {
     content: SellerListingSearchItemResponse[];
     totalElements: number;
@@ -108,7 +129,13 @@ function mapStatusFromBackend(status: string): ListingStatus {
     if (normalized === 'PENDING' || normalized === 'DRAFT') {
         return normalized as ListingStatus;
     }
-    return 'DRAFT';
+
+    // Treat in-review/non-editable statuses as PENDING on My Listings card.
+    if (normalized === 'REVIEWING' || normalized === 'WAITING_INSPECTOR_REVIEW' || normalized === 'ARCHIVED') {
+        return 'PENDING';
+    }
+
+    return 'PENDING';
 }
 
 function mapStatusToBackend(status?: string): string | undefined {
@@ -140,6 +167,32 @@ function mapSearchItemToListing(item: SellerListingSearchItemResponse): Listing 
         createdDate: item.createdAt || new Date().toISOString(),
         updatedDate: item.updatedAt || item.createdAt || new Date().toISOString(),
     };
+}
+
+async function attachMainImageToListings(sellerId: number, listings: Listing[]): Promise<Listing[]> {
+    const resolveImageUrl = (imagePath?: string): string | undefined => {
+        if (!imagePath) return undefined;
+        if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+        if (imagePath.startsWith('/public/')) return imagePath;
+        if (imagePath.startsWith('/uploads/')) return `/backend${imagePath}`;
+        return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+    };
+
+    const listingsWithImage = await Promise.all(
+        listings.map(async (listing) => {
+            try {
+                const images = await getListingImages(sellerId, listing.id);
+                const sorted = [...images].sort((a, b) => (a.imageOrder ?? 0) - (b.imageOrder ?? 0));
+                const mainImageUrl = resolveImageUrl(sorted[0]?.imagePath);
+                return mainImageUrl ? ({ ...listing, mainImageUrl } as Listing) : listing;
+            } catch {
+                // Image loading failure should not block listing cards.
+                return listing;
+            }
+        })
+    );
+
+    return listingsWithImage;
 }
 
 /**
@@ -191,8 +244,10 @@ export async function getMyListings(
         mappedListings.sort((a, b) => a.price - b.price);
     }
 
+    const listingsWithImage = await attachMainImageToListings(sellerId, mappedListings);
+
     return {
-        listings: mappedListings,
+        listings: listingsWithImage,
         totalItems: response.totalElements,
         totalPages: response.totalPages,
         currentPage: response.number + 1,
@@ -342,7 +397,7 @@ export async function updateDraft(listingId: number, payload: Partial<CreateList
     // Real API: PATCH /api/seller/{sellerId}/listings/{listingId}
     const { sellerId, ...rest } = payload;
     const sid = sellerId ?? 0;
-    const response = await apiCallPATCH<ListingApiResponse>(`/seller/${sid}/listings/${listingId}`, rest);
+    const response = await apiCallPATCH<ListingApiResponse>(`/seller/${sid}/listings/${listingId}`, { sellerId: sid, ...rest });
     const normalizedResponse = normalizeListingResponse(response, 'updateDraft response');
 
     validateNumber(normalizedResponse.id, 'id');
@@ -587,18 +642,19 @@ export async function searchMyListings(params: SearchListingsParams): Promise<Ge
 }
 
 /**
- * Get listing detail
- * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/detail
+ * Get listing detail for seller edit/view flow
+ * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/preview
  */
-export async function getListingDetail(sellerId: number, listingId: number): Promise<Listing> {
-    const response = await apiCallGET<SellerListingSearchItemResponse>(`/seller/${sellerId}/listings/${listingId}/detail`);
+export async function getListingDetail(sellerId: number, listingId: number): Promise<SellerListingDetailResponse> {
+    const response = await apiCallGET<SellerListingDetailResponse>(`/seller/${sellerId}/listings/${listingId}/preview`);
 
     validateResponse(response, 'getListingDetail response');
     validateNumber(response.listingId, 'listingId');
     validateString(response.brand, 'brand');
     validateString(response.model, 'model');
+    validateString(response.status, 'status');
 
-    return mapSearchItemToListing(response);
+    return response;
 }
 
 /**
@@ -634,17 +690,13 @@ export async function deleteDraft(sellerId: number, draftId: number): Promise<vo
  * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/images
  */
 export interface ListingImage {
-    id: number;
+    id?: number;
+    imageId?: number;
     imagePath: string;
     imageOrder: number;
 }
 
 export async function getListingImages(sellerId: number, listingId: number): Promise<ListingImage[]> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return [];
-    }
-
     return await apiCallGET<ListingImage[]>(`/seller/${sellerId}/listings/${listingId}/images`);
 }
 

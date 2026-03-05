@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useToast } from "@/app/contexts/ToastContext";
-import { saveDraft, updateDraft, submitDraft, uploadListingImage } from "@/app/services/myListingsService";
+import { saveDraft, updateDraft, submitDraft, uploadListingImage, getListingDetail, getListingImages } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import { CREATE_LISTING_STEPS, LISTING_CONFIG, CURRENT_YEAR } from "../constants";
 import { ListingFormData } from "../types";
@@ -10,8 +10,12 @@ import type { CreateListingPayload } from "@/app/services/myListingsService";
 
 export const useCreateListing = () => {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { isLoggedIn, isLoading, user, role } = useAuth();
     const { addToast } = useToast();
+    const draftIdParam = searchParams.get('draft');
+    const draftId = draftIdParam ? Number(draftIdParam) : null;
+    const isViewMode = searchParams.get('mode') === 'view';
 
     // State
     const [step, setStep] = useState<number>(CREATE_LISTING_STEPS.VEHICLE_INFO);
@@ -25,6 +29,8 @@ export const useCreateListing = () => {
     const [isCreatingDraft, setIsCreatingDraft] = useState(false);
     // Submit/Save errors for inline display
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [loadedListingStatus, setLoadedListingStatus] = useState<string | null>(null);
+    const [isReadOnly, setIsReadOnly] = useState(false);
 
     // Ref to track if component is mounted (prevents memory leaks)
     const isMountedRef = useRef(true);
@@ -67,6 +73,89 @@ export const useCreateListing = () => {
             }
         }
     }, [isLoggedIn, isLoading, router, role, addToast]);
+
+    // Load existing draft when route has ?draft=<listingId>
+    useEffect(() => {
+        if (isLoading || !isLoggedIn || role !== 'SELLER') return;
+        if (!user?.userId) return;
+        if (!draftId || Number.isNaN(draftId)) return;
+
+        let cancelled = false;
+
+        const loadDraft = async () => {
+            setIsCreatingDraft(true);
+            setSubmitError(null);
+
+            try {
+                const [draft, images] = await Promise.all([
+                    getListingDetail(user.userId, draftId),
+                    getListingImages(user.userId, draftId),
+                ]);
+
+                if (!isMountedRef.current || cancelled) return;
+
+                setListingId(draft.listingId);
+                const normalizedStatus = (draft.status || '').toUpperCase();
+                setLoadedListingStatus(normalizedStatus || null);
+
+                const readOnlyStatuses = new Set([
+                    'PENDING',
+                    'REVIEWING',
+                    'WAITING_INSPECTOR_REVIEW',
+                    'APPROVED',
+                    'ARCHIVED',
+                ]);
+
+                const shouldReadOnly = isViewMode || readOnlyStatuses.has(normalizedStatus);
+                setIsReadOnly(shouldReadOnly);
+
+                setFormData({
+                    title: draft.title || "",
+                    brand: draft.brand || "",
+                    model: draft.model || "",
+                    category: draft.bikeType || "",
+                    condition: draft.condition || "New",
+                    year: draft.manufactureYear ? String(draft.manufactureYear) : CURRENT_YEAR.toString(),
+                    price: draft.price !== undefined && draft.price !== null ? String(draft.price) : "",
+                    location: draft.locationCity || "",
+                    pickupAddress: draft.pickupAddress || "",
+                    description: draft.description || "",
+                    usageTime: draft.usageTime || "",
+                    reasonForSale: draft.reasonForSale || "",
+                    shipping: false,
+                });
+
+                const resolveImageUrl = (imagePath: string): string => {
+                    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) return imagePath;
+                    if (imagePath.startsWith('/public/')) return imagePath;
+                    if (imagePath.startsWith('/uploads/')) return `/backend${imagePath}`;
+                    return imagePath.startsWith('/') ? imagePath : `/${imagePath}`;
+                };
+
+                const sortedImageUrls = [...images]
+                    .sort((a, b) => (a.imageOrder ?? 0) - (b.imageOrder ?? 0))
+                    .map((image) => resolveImageUrl(image.imagePath));
+
+                setImageUrls(sortedImageUrls);
+
+                if (shouldReadOnly) {
+                    setStep(CREATE_LISTING_STEPS.PREVIEW);
+                }
+            } catch {
+                if (!isMountedRef.current || cancelled) return;
+                setSubmitError('Failed to load draft listing. Please try again.');
+            } finally {
+                if (!isMountedRef.current || cancelled) return;
+                setIsCreatingDraft(false);
+            }
+        };
+
+        loadDraft();
+
+        return () => {
+            cancelled = true;
+        };
+    }, [draftId, isLoading, isLoggedIn, role, user?.userId, isViewMode]);
 
     // Auto clear upload error
     useEffect(() => {
@@ -115,6 +204,8 @@ export const useCreateListing = () => {
     const handleInputChange = useCallback((
         e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
     ) => {
+        if (isReadOnly) return;
+
         const { name, value, type } = e.target;
         const checked = (e.target as HTMLInputElement).checked;
 
@@ -131,9 +222,19 @@ export const useCreateListing = () => {
             }
             return prev;
         });
-    }, []);
+    }, [isReadOnly]);
+
+    const getReadOnlyMessage = useCallback(() => {
+        const status = (loadedListingStatus || '').toUpperCase();
+        if (status === 'PENDING' || status === 'REVIEWING' || status === 'WAITING_INSPECTOR_REVIEW') {
+            return 'Listing đang ở trạng thái PENDING. Bạn cần Cancel Publish trước khi chỉnh sửa.';
+        }
+        return 'Listing đang ở chế độ chỉ xem.';
+    }, [loadedListingStatus]);
 
     const handleNext = async () => {
+        if (isReadOnly) return;
+
         if (step === CREATE_LISTING_STEPS.VEHICLE_INFO) {
             if (!validateStep1()) {
                 window.scrollTo(0, 0);
@@ -171,14 +272,6 @@ export const useCreateListing = () => {
             window.scrollTo(0, 0);
         } else if (step === CREATE_LISTING_STEPS.UPLOAD_IMAGES) {
             if (validateStep2()) {
-                // Update draft with image URLs before proceeding
-                if (listingId) {
-                    try {
-                        await updateDraft(listingId, { imageUrls });
-                    } catch (error) {
-
-                    }
-                }
                 setStep(step + 1);
                 window.scrollTo(0, 0);
             }
@@ -188,8 +281,9 @@ export const useCreateListing = () => {
     };
 
     const handleBack = useCallback(() => {
+        if (isReadOnly) return;
         setStep(prev => prev - 1);
-    }, []);
+    }, [isReadOnly]);
 
     // Image Logic
     const validateFile = (file: File): string | null => {
@@ -203,6 +297,11 @@ export const useCreateListing = () => {
     };
 
     const handleFileUpload = async (files: FileList | null) => {
+        if (isReadOnly) {
+            setUploadError(getReadOnlyMessage());
+            return;
+        }
+
         if (!files || files.length === 0) return;
         setUploadError(null);
 
@@ -277,17 +376,19 @@ export const useCreateListing = () => {
     const onDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
 
     const removeImage = useCallback((indexToRemove: number) => {
+        if (isReadOnly) return;
         setImageUrls(prev => prev.filter((_, index) => index !== indexToRemove));
-    }, []);
+    }, [isReadOnly]);
 
     const handleSetPrimary = useCallback((index: number) => {
+        if (isReadOnly) return;
         if (index === 0) return;
         setImageUrls(prev => {
             const newUrls = [...prev];
             [newUrls[0], newUrls[index]] = [newUrls[index], newUrls[0]];
             return newUrls;
         });
-    }, []);
+    }, [isReadOnly]);
 
     // Submission Logic
     const getPayload = (): CreateListingPayload => {
@@ -314,6 +415,11 @@ export const useCreateListing = () => {
     };
 
     const handleSaveDraft = async () => {
+        if (isReadOnly) {
+            setSubmitError(getReadOnlyMessage());
+            return;
+        }
+
         if (!user) {
             setSubmitError("You must be logged in to save a draft.");
             return;
@@ -331,7 +437,12 @@ export const useCreateListing = () => {
         setIsSaving(true);
         try {
             const payload = getPayload();
-            await saveDraft(payload);
+            if (listingId) {
+                await updateDraft(listingId, payload);
+            } else {
+                const draft = await saveDraft(payload);
+                setListingId(draft.id);
+            }
             router.push('/seller/my-listings');
         } catch (error) {
 
@@ -343,6 +454,12 @@ export const useCreateListing = () => {
 
     const handleSubmit = async (e?: React.SyntheticEvent) => {
         if (e) e.preventDefault();
+
+        if (isReadOnly) {
+            setSubmitError(getReadOnlyMessage());
+            return;
+        }
+
         if (!user) {
             setSubmitError("You must be logged in to create a listing.");
             return;
@@ -380,7 +497,9 @@ export const useCreateListing = () => {
             isLoading,
             listingId,
             isCreatingDraft,
-            submitError
+            submitError,
+            isReadOnly,
+            readOnlyMessage: isReadOnly ? getReadOnlyMessage() : null,
         },
         actions: {
             setStep,
