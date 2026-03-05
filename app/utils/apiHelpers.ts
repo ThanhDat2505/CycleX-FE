@@ -27,11 +27,9 @@ function getAuthHeaders(): Record<string, string> {
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
     };
-    if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
+    const token = getAuthToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
 }
@@ -50,7 +48,6 @@ export async function apiCallPOST<T>(
     body: object
 ): Promise<T> {
     try {
-        const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'POST',
             headers: getAuthHeaders(),
@@ -93,7 +90,6 @@ export async function apiCallPOST<T>(
  */
 export async function apiCallGET<T>(endpoint: string): Promise<T> {
     try {
-        const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'GET',
             headers: getAuthHeaders(),
@@ -139,7 +135,6 @@ export async function apiCallPUT<T>(
     body: object
 ): Promise<T> {
     try {
-        const token = getAuthToken();
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'PUT',
             headers: getAuthHeaders(),
