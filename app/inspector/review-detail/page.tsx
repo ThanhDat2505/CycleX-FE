@@ -1,4 +1,5 @@
 import ReviewDetailClient from "@/app/components/inspector/ReviewDetailClient";
+import "@/app/components/inspector/inspector.css";
 
 export const metadata = {
   title: "CycleX - Review History",
