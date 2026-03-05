@@ -198,7 +198,7 @@ function statusToDashboardStatus(status: string): DashboardListingStatus {
     case "REJECTED":
       return "DONE";
     case "REVIEWING":
-      return "PENDING";
+      return "REVIEWING";
     default:
       return "PENDING";
   }

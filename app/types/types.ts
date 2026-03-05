@@ -1,5 +1,6 @@
 export type ListingStatus =
   | "PENDING"
+  | "REVIEWING"
   | "NEED_MORE_INFO"
   | "DISPUTE"
   | "FLAGGED"

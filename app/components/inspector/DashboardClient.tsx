@@ -57,6 +57,7 @@ export default function DashboardClient() {
         },
         {
           PENDING: 0,
+          REVIEWING: 0,
           NEED_MORE_INFO: 0,
           DISPUTE: 0,
           FLAGGED: 0,
@@ -158,9 +159,9 @@ export default function DashboardClient() {
           colorClass="bg-yellow-500 text-yellow-600"
         />
         <StatCard
-          type="NEED_MORE_INFO"
-          label="Cần bổ sung"
-          count={statusCounts.NEED_MORE_INFO}
+          type="REVIEWING"
+          label="Đang duyệt tin"
+          count={statusCounts.REVIEWING}
           icon="article"
           colorClass="bg-blue-500 text-blue-600"
         />
