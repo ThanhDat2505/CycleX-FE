@@ -278,6 +278,7 @@ export default function ReviewDetailClient({
           <button
             className="btn btn-danger"
             type="button"
+            style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
             onClick={() => togglePanel("REJECT")}
           >
             TỪ CHỐI
@@ -353,11 +354,19 @@ export default function ReviewDetailClient({
 
                     try {
                       setSubmitting(true);
-                      await inspectorService.approveListing(listing.id, {
+                      const payload: {
+                        reasonCode: string;
+                        reasonText: string;
+                        note?: string;
+                      } = {
                         reasonCode,
                         reasonText,
-                        note,
-                      });
+                      };
+                      if (note.trim()) payload.note = note.trim();
+                      await inspectorService.approveListing(
+                        listing.id,
+                        payload,
+                      );
                       alert("Đã duyệt tin thành công");
                       router.push("/inspector/dashboard");
                     } catch (err: any) {
@@ -409,6 +418,7 @@ export default function ReviewDetailClient({
                 <button
                   className="btn btn-danger btn-sm"
                   type="button"
+                  style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
                   disabled={!canConfirmReject || submitting}
                   onClick={async () => {
                     if (!canConfirmReject) return;
@@ -432,11 +442,19 @@ export default function ReviewDetailClient({
 
                     try {
                       setSubmitting(true);
-                      await inspectorService.rejectListing(listing.id, {
+                      const rejectPayload: {
+                        reasonCode: string;
+                        reasonText: string;
+                        note?: string;
+                      } = {
                         reasonCode,
                         reasonText,
-                        note,
-                      });
+                      };
+                      if (note.trim()) rejectPayload.note = note.trim();
+                      await inspectorService.rejectListing(
+                        listing.id,
+                        rejectPayload,
+                      );
                       alert("Đã từ chối tin thành công");
                       router.push("/inspector/dashboard");
                     } catch (err: any) {
