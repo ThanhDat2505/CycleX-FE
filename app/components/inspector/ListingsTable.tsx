@@ -16,6 +16,8 @@ export default function ListingsTable({
     switch (status) {
       case "PENDING":
         return "bg-yellow-100 text-yellow-800";
+      case "REVIEWING":
+        return "bg-blue-100 text-blue-800";
       case "NEED_MORE_INFO":
         return "bg-blue-100 text-blue-800";
       case "DISPUTE":
@@ -35,6 +37,8 @@ export default function ListingsTable({
     switch (status) {
       case "PENDING":
         return "Đang chờ duyệt";
+      case "REVIEWING":
+        return "Đang duyệt tin";
       case "NEED_MORE_INFO":
         return "Cần bổ sung";
       case "DISPUTE":
