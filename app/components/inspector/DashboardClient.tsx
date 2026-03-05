@@ -63,6 +63,7 @@ export default function DashboardClient() {
           FLAGGED: 0,
           APPROVED: 0,
           DONE: 0,
+          UNKNOWN: 0,
         } as Record<ListingStatus, number>,
       ),
     [listings],
@@ -74,7 +75,7 @@ export default function DashboardClient() {
       reviewing: statusCounts.REVIEWING,
       dispute: statusCounts.DISPUTE,
       flagged: statusCounts.FLAGGED,
-      approved: statusCounts.APPROVED + statusCounts.DONE,
+      approved: statusCounts.APPROVED,
     }),
     [statusCounts],
   );
@@ -144,7 +145,7 @@ export default function DashboardClient() {
           <p className="text-gray-600 mt-2 text-lg">
             Chào mừng trở lại! Bạn có{" "}
             <span className="font-bold text-orange-600">
-              {statusCounts.PENDING}
+              {displayCounts.pending}
             </span>{" "}
             tin cần duyệt hôm nay.
           </p>

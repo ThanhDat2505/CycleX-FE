@@ -2000,6 +2000,33 @@ body {
   margin-bottom: 0;
 }
 
+.btn-reject-solid,
+.btn-reject-solid:hover,
+.btn-reject-solid:focus,
+.btn-reject-solid:active,
+.btn-reject-solid:visited {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  -webkit-text-fill-color: #ffffff !important;
+}
+
+.btn-reject-solid:focus-visible {
+  outline: 2px solid #ef4444;
+  outline-offset: 1px;
+}
+
+.btn-reject-solid:disabled {
+  background: #ef4444 !important;
+  background-color: #ef4444 !important;
+  color: #ffffff !important;
+  border-color: #ef4444 !important;
+  -webkit-text-fill-color: #ffffff !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
 .review-detail-page button.btn.btn-danger,
 .review-detail-page .btn.btn-danger.btn-sm {
   background-color: var(--red-color) !important;
@@ -2010,7 +2037,7 @@ body {
 .review-detail-page .btn.btn-danger.btn-sm:disabled {
   background-color: var(--red-color) !important;
   color: #ffffff !important;
-  opacity: 0.6;
+  opacity: 1;
 }
 
 .btnOutline {

@@ -276,7 +276,7 @@ export default function ReviewDetailClient({
             DUYỆT TIN
           </button>
           <button
-            className="btn btn-danger"
+            className="btn btn-danger btn-reject-solid"
             type="button"
             style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
             onClick={() => togglePanel("REJECT")}
@@ -416,7 +416,7 @@ export default function ReviewDetailClient({
               <div className="confirm">
                 <span className="confirm-text">Xác nhận từ chối?</span>
                 <button
-                  className="btn btn-danger btn-sm"
+                  className="btn btn-danger btn-sm btn-reject-solid"
                   type="button"
                   style={{ backgroundColor: "#ef4444", color: "#ffffff" }}
                   disabled={!canConfirmReject || submitting}

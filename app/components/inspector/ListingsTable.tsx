@@ -81,9 +81,17 @@ export default function ListingsTable({
             >
               <td className="px-6 py-4">
                 <div className="w-20 h-14 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-400 font-medium overflow-hidden shadow-sm">
-                  <span className="material-symbols-outlined text-[20px]">
-                    image
-                  </span>
+                  {r.imageUrl ? (
+                    <img
+                      src={r.imageUrl}
+                      alt={r.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <span className="material-symbols-outlined text-[20px]">
+                      image
+                    </span>
+                  )}
                 </div>
               </td>
               <td className="px-6 py-4 font-medium text-gray-900">
