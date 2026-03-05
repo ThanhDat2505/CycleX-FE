@@ -16,7 +16,7 @@ export type TransactionStatus =
  */
 export interface PurchaseRequestForm {
     transactionType: TransactionType;
-    desiredTime: string; // ISO datetime string
+    desiredTime: string;
     receiverName: string;
     receiverPhone: string;
     receiverAddress: string;

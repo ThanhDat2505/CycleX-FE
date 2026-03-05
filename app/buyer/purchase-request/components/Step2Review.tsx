@@ -7,7 +7,7 @@
 import { CheckCircle, MapPin, User, AlertCircle, ShieldCheck, Ticket, Calendar, FileText } from 'lucide-react';
 import { PurchaseRequestForm } from '@/app/types/transaction';
 import { ListingDetail } from '@/app/types/listing';
-import { PLATFORM_FEE, INSPECTION_FEE, calculateTotal } from '../../constants/fees';
+import { PLATFORM_FEE, INSPECTION_FEE, calculateTotal } from '../../../constants/fees';
 import { formatPrice, formatDate } from '@/app/utils/format';
 import { Button } from '@/app/components/ui';
 import { MESSAGES } from '@/app/constants';

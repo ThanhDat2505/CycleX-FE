@@ -12,15 +12,15 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { getListingDetail } from '../../services/listingService';
-import { createPurchaseRequest } from '../../services/transactionService';
-import { useAuth } from '../../hooks/useAuth';
+import { getListingDetail } from '../../../services/listingService';
+import { createPurchaseRequest } from '../../../services/transactionService';
+import { useAuth } from '../../../hooks/useAuth';
 import { useToast } from '@/app/contexts/ToastContext';
-import { ListingDetail } from '../../types/listing';
-import { PurchaseRequestForm } from '../../types/transaction';
-import { normalizePhoneNumber } from '../../utils/format';
-import { MESSAGES } from '../../constants';
-import { DEPOSIT_MIN_AMOUNT, MIN_DAYS_AHEAD } from '../../constants/fees';
+import { ListingDetail } from '../../../types/listing';
+import { PurchaseRequestForm } from '../../../types/transaction';
+import { normalizePhoneNumber } from '../../../utils/format';
+import { MESSAGES } from '../../../constants';
+import { DEPOSIT_MIN_AMOUNT, MIN_DAYS_AHEAD } from '../../../constants/fees';
 
 /** Phone number regex: starts with 0, 10 digits total */
 const PHONE_REGEX = /^0\d{9}$/;
