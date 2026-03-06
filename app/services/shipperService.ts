@@ -1,5 +1,5 @@
-import { DeliverySummary, Delivery, DeliveryFilter } from '@/app/types/shipper';
-import { apiCallGET } from '../utils/apiHelpers';
+import { DeliverySummary, Delivery, DeliveryFilter, DeliveryConfirmRequest, DeliveryFailedRequest } from '@/app/types/shipper';
+import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
 import { validateObject, validateArray, validateString } from '../utils/apiValidation';
 
 // USE_MOCK_API can be imported or assumed globally if configured
@@ -154,15 +154,20 @@ export async function getAssignedDeliveries(shipperId: number, filter: DeliveryF
 
     try {
         // E.g. /api/shipper/deliveries/assigned?page=0&pageSize=10
-        const queryParams = filter !== 'ALL' ? `?status=${filter}&page=0&pageSize=20` : '?page=0&pageSize=20';
-        const dataResponse = await apiCallGET<any>(`/shipper/deliveries/assigned${queryParams}`);
+        const dataResponse = await apiCallGET<any>(`/shipper/deliveries/assigned?page=0&pageSize=20`);
 
         // Handle pagination arrays from Response payload 
         const itemsArray = Array.isArray(dataResponse) ? dataResponse : (dataResponse?.items || []);
         validateArray(itemsArray, 'Shipper Deliveries Assigned API');
 
+        // Apply local filter since BE endpoint only supports assigned
+        let filteredItems = itemsArray;
+        if (filter !== 'ALL') {
+            filteredItems = itemsArray.filter((d: any) => d.status === filter);
+        }
+
         // Deep loop validation 
-        itemsArray.forEach((d: any, i: number) => {
+        filteredItems.forEach((d: any, i: number) => {
             const ctx = `shipperDeliveries[${i}]`;
             validateObject(d, ctx);
             validateString(d.id || d.deliveryId, `${ctx}.id`);
@@ -170,22 +175,28 @@ export async function getAssignedDeliveries(shipperId: number, filter: DeliveryF
         });
 
         // Safe Fallback Value mappings to assure standard display for UI component:
-        return itemsArray.map((d: any) => ({
-            ...d,
-            id: d.id || d.deliveryId,
+        return filteredItems.map((d: any) => ({
+            id: String(d.id || d.deliveryId || ''),
+            orderId: String(d.orderId || '---'),
+            status: (d.status as Delivery['status']) || 'ASSIGNED',
+            assignedDate: String(d.assignedDate || new Date().toISOString()),
+            scheduledDate: String(d.scheduledDate || new Date().toISOString()),
+            completedDate: d.completedDate ? String(d.completedDate) : undefined,
+            codAmount: typeof d.codAmount === 'number' ? d.codAmount : undefined,
+            note: d.note ? String(d.note) : undefined,
             bike: {
-                name: d.bike?.name || `Xe đạp`,
-                image: d.bike?.image || '/placeholder-bike.png'
+                name: String(d.bike?.name || 'Xe đạp'),
+                image: String(d.bike?.image || '/placeholder-bike.png')
             },
             sender: {
-                name: d.sender?.name || 'Khách gửi',
-                phone: d.sender?.phone || '---',
-                address: d.sender?.address || '---'
+                name: String(d.sender?.name || 'Khách gửi'),
+                phone: String(d.sender?.phone || '---'),
+                address: String(d.sender?.address || '---')
             },
             receiver: {
-                name: d.receiver?.name || 'Khách nhận',
-                phone: d.receiver?.phone || '---',
-                address: d.receiver?.address || '---'
+                name: String(d.receiver?.name || 'Khách nhận'),
+                phone: String(d.receiver?.phone || '---'),
+                address: String(d.receiver?.address || '---')
             }
         }));
 
@@ -215,25 +226,111 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
         validateString(data.status, 'delivery.status');
 
         return {
-            ...data,
-            id: data.id || data.deliveryId,
+            id: String(data.id || data.deliveryId || deliveryId),
+            orderId: String(data.orderId || '---'),
+            status: (data.status as Delivery['status']) || 'ASSIGNED',
+            assignedDate: String(data.assignedDate || new Date().toISOString()),
+            scheduledDate: String(data.scheduledDate || new Date().toISOString()),
+            completedDate: data.completedDate ? String(data.completedDate) : undefined,
+            codAmount: typeof data.codAmount === 'number' ? data.codAmount : undefined,
+            note: data.note ? String(data.note) : undefined,
             bike: {
-                name: data.bike?.name || `Xe đạp`,
-                image: data.bike?.image || '/placeholder-bike.png'
+                name: String(data.bike?.name || 'Xe đạp'),
+                image: String(data.bike?.image || '/placeholder-bike.png')
             },
             sender: {
-                name: data.sender?.name || 'Khách gửi',
-                phone: data.sender?.phone || '---',
-                address: data.sender?.address || '---'
+                name: String(data.sender?.name || 'Khách gửi'),
+                phone: String(data.sender?.phone || '---'),
+                address: String(data.sender?.address || '---')
             },
             receiver: {
-                name: data.receiver?.name || 'Khách nhận',
-                phone: data.receiver?.phone || '---',
-                address: data.receiver?.address || '---'
+                name: String(data.receiver?.name || 'Khách nhận'),
+                phone: String(data.receiver?.phone || '---'),
+                address: String(data.receiver?.address || '---')
             }
         };
     } catch (error) {
         console.error('Lỗi API Shipper Delivery Detail: ', error);
+        throw error;
+    }
+}
+
+/**
+ * Start delivery (ASSIGNED → IN_PROGRESS)
+ * Shipper confirms pickup and begins delivery
+ * endpoint: POST /api/shipper/deliveries/{deliveryId}/start
+ */
+export async function startDelivery(deliveryId: string): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        const mockDelivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        if (!mockDelivery || mockDelivery.status !== 'ASSIGNED') {
+            throw { status: 400, message: 'Delivery is not in ASSIGNED status' };
+        }
+        mockDelivery.status = 'IN_PROGRESS';
+        return;
+    }
+
+    try {
+        await apiCallPOST(`/shipper/deliveries/${deliveryId}/start`, {});
+    } catch (error) {
+        console.error('Lỗi API Start Delivery: ', error);
+        throw error;
+    }
+}
+
+/**
+ * Confirm delivery as completed (S-63 / BP6)
+ * Backend will: delivery → DELIVERED, transaction → COMPLETED, listing → SOLD
+ * endpoint: POST /api/shipper/deliveries/{deliveryId}/confirm
+ */
+export async function confirmDelivery(
+    deliveryId: string,
+    payload: DeliveryConfirmRequest
+): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Mock: simulate BP6 lifecycle — delivery → DELIVERED
+        const mockDelivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        if (!mockDelivery || mockDelivery.status !== 'IN_PROGRESS') {
+            throw { status: 400, message: 'Delivery is not in IN_PROGRESS status' };
+        }
+        mockDelivery.status = 'DELIVERED';
+        mockDelivery.completedDate = new Date().toISOString();
+        return;
+    }
+
+    try {
+        await apiCallPOST(`/shipper/deliveries/${deliveryId}/confirm`, payload);
+    } catch (error) {
+        console.error('Lỗi API Confirm Delivery: ', error);
+        throw error;
+    }
+}
+
+/**
+ * S-64: Report delivery failed
+ */
+export async function reportDeliveryFailed(deliveryId: string, payload: DeliveryFailedRequest): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const delivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        if (!delivery) throw new Error('Delivery not found');
+        if (delivery.status !== 'IN_PROGRESS') throw new Error('Status not IN_PROGRESS');
+
+        // S-64-BR04
+        delivery.status = 'FAILED';
+        delivery.note = payload.reason;
+        return;
+    }
+
+    try {
+        await apiCallPOST(`/shipper/deliveries/${deliveryId}/fail`, payload);
+    } catch (error) {
+        console.error(`Lỗi API Report Failed Delivery ${deliveryId}:`, error);
         throw error;
     }
 }

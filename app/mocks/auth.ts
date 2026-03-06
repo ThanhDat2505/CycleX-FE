@@ -277,3 +277,35 @@ export const validateMockLogin = (email: string, password: string): User | null 
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
 };
+
+/**
+ * Update mock user profile
+ */
+export const updateMockUser = (email: string, data: any): User => {
+    const user = mockUsers[email];
+    if (!user) throw new Error("User not found in mock DB");
+
+    user.fullName = data.fullName;
+    user.phone = data.phone;
+    if (data.avatarUrl !== undefined) {
+        user.avatarUrl = data.avatarUrl;
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+};
+
+/**
+ * Change mock user password
+ */
+export const changeMockUserPassword = (email: string, oldPass: string, newPass: string): boolean => {
+    const user = mockUsers[email];
+    if (!user) return false;
+
+    if (user.password !== oldPass) {
+        return false;
+    }
+
+    user.password = newPass;
+    return true;
+};
