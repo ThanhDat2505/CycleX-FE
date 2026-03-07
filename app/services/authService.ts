@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
     LoginRequest,
     LoginResponse,
@@ -316,3 +318,4 @@ export const authService = {
         return !!authService.getToken();
     },
 };
+

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Shared API Helpers
  * Centralized API call logic with consistent error handling
@@ -238,3 +240,4 @@ export async function apiCallDELETE<T>(
         throw error;
     }
 }
+

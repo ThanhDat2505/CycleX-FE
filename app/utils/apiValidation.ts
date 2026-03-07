@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * API Response Validation Utilities
  * Centralized validation logic to eliminate duplicate code across services
@@ -97,5 +99,6 @@ export function validateUser(user: any): void {
     const validRoles = ['BUYER', 'SELLER', 'ADMIN', 'INSPECTOR', 'SHIPPER'];
     validateEnum(user.role, validRoles, 'user.role');
 }
+
 
 

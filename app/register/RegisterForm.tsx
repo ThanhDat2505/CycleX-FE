@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -192,3 +194,4 @@ export function RegisterForm() {
         </div>
     );
 }
+

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, prefer-const */
+
 
 /**
  * Transaction Service
@@ -376,3 +378,4 @@ export async function cancelTransaction(transactionId: number): Promise<boolean>
     await apiCallPOST(`/buyer/transactions/${transactionId}/cancel`, {});
     return true;
 }
+

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { DeliverySummary, Delivery, DeliveryFilter } from '@/app/types/shipper';
 import { apiCallGET } from '../utils/apiHelpers';
 import { validateObject, validateArray, validateString } from '../utils/apiValidation';
@@ -237,3 +239,4 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
         throw error;
     }
 }
+

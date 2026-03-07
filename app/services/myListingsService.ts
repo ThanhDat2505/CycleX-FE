@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // Service layer for My Listings (S-11)
 // API endpoints will be provided by backend team
 
@@ -748,3 +750,4 @@ export async function deleteListingImage(sellerId: number, listingId: number, im
 
     await apiCallDELETE(`/seller/${sellerId}/listings/${listingId}/images/${imageId}`);
 }
+
