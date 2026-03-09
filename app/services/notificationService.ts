@@ -139,10 +139,21 @@ export const notificationService = {
         }
 
         try {
-            await apiCallPATCH(`/notifications/${notificationId}/read`, {});
+            const response = await apiCallPATCH<any>(`/notifications/${notificationId}/read`, {});
+
+            // Strict Validation
+            if (response) {
+                validateObject(response, 'Mark Single Notification As Read Response');
+                if (response.isRead !== true) {
+                    console.warn(`[API Warning] Received unexpectedly non-isRead status: ${response.isRead}`);
+                }
+            }
             return true;
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Lỗi mark read ${notificationId}:`, error);
+            if (error.response?.status === 404) {
+                console.warn(`[API Warning] Không tìm thấy notificationId: ${notificationId}`);
+            }
             return false;
         }
     },
@@ -162,10 +173,19 @@ export const notificationService = {
         }
 
         try {
-            await apiCallPATCH(`/notifications/read-all`, {});
+            const response = await apiCallPATCH<any>(`/notifications/read-all`, {});
+
+            // Strict Validation
+            if (response) {
+                validateObject(response, 'Mark All Unread Notifications As Read Response');
+                if (typeof response.updatedCount !== 'number') {
+                    console.warn(`[API Warning] Missing updatedCount in response`);
+                }
+            }
             return true;
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Lỗi mark all read cho user:`, error);
+            // S-05 doesn't explicitly throw specific 400s here, but safe fallback
             return false;
         }
     },

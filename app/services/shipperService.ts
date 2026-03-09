@@ -328,9 +328,28 @@ export async function startDelivery(deliveryId: string): Promise<void> {
     }
 
     try {
-        await apiCallPOST(`/shipper/deliveries/${deliveryId}/start`, {});
-    } catch (error) {
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/start`, {});
+
+        // Strict Validation: Don't trust Backend completely
+        if (response) {
+            validateObject(response, 'Start Delivery Response');
+            // Check if BE actually changed the state
+            if (response.deliveryStatus !== 'IN_PROGRESS') {
+                console.warn(`[API Warning] Received unexpectedly non-IN_PROGRESS status after starting delivery: ${response.deliveryStatus}`);
+            }
+        }
+    } catch (error: any) {
         console.error('Lỗi API Start Delivery: ', error);
+
+        // Enhance explicit error mapping based on Postman docs
+        if (error.response?.status === 409) {
+            throw new Error('Đơn hàng đã được bắt đầu giao trước đó hoặc trạng thái không hợp lệ.');
+        } else if (error.response?.status === 403) {
+            throw new Error('Bạn không có quyền thực hiện giao đơn hàng này.');
+        } else if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy đơn hàng trên hệ thống.');
+        }
+
         throw error;
     }
 }
@@ -358,9 +377,26 @@ export async function confirmDelivery(
     }
 
     try {
-        await apiCallPOST(`/shipper/deliveries/${deliveryId}/confirm`, payload);
-    } catch (error) {
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/confirm`, payload);
+
+        // Strict Validation: Don't trust Backend completely
+        if (response) {
+            validateObject(response, 'Confirm Delivery Response');
+            // Check if BE actually changed the state
+            if (response.deliveryStatus !== 'DELIVERED') {
+                console.warn(`[API Warning] Received unexpectedly non-DELIVERED status after confirming delivery: ${response.deliveryStatus}`);
+            }
+        }
+    } catch (error: any) {
         console.error('Lỗi API Confirm Delivery: ', error);
+
+        // Enhance explicit error mapping based on Postman docs
+        if (error.response?.status === 409) {
+            throw new Error('Đơn hàng đã được xác nhận thành công trước đó.');
+        } else if (error.response?.status === 400) {
+            throw new Error('Dữ liệu xác nhận không hợp lệ.');
+        }
+
         throw error;
     }
 }
@@ -383,9 +419,26 @@ export async function reportDeliveryFailed(deliveryId: string, payload: Delivery
     }
 
     try {
-        await apiCallPOST(`/shipper/deliveries/${deliveryId}/failure-report`, payload);
-    } catch (error) {
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/failure-report`, payload);
+
+        // Strict Validation: Don't trust Backend completely
+        if (response) {
+            validateObject(response, 'Failure Report Response');
+            // Check if BE actually changed the state
+            if (response.deliveryStatus !== 'FAILED') {
+                console.warn(`[API Warning] Received unexpectedly non-FAILED status after reporting failure: ${response.deliveryStatus}`);
+            }
+        }
+    } catch (error: any) {
         console.error(`Lỗi API Report Failed Delivery ${deliveryId}:`, error);
+
+        // Enhance explicit error mapping based on Postman docs
+        if (error.response?.status === 409) {
+            throw new Error('Đơn hàng đã được báo cáo thất bại trước đó.');
+        } else if (error.response?.status === 400) {
+            throw new Error('Lý do thất bại không hợp lệ hoặc bị trống.');
+        }
+
         throw error;
     }
 }
