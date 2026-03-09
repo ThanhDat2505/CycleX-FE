@@ -1,7 +1,10 @@
 export type NotificationType =
-    | 'LISTING_RELATED'
-    | 'TRANSACTION_RELATED'
-    | 'DISPUTE_RELATED'
+    | 'DELIVERY_SUCCESS'
+    | 'DELIVERY_FAILED'
+    | 'PURCHASE_REQUEST'
+    | 'SELLER_CONFIRMED'
+    | 'BUYER_CONFIRMED'
+    | 'INSPECTION_COMPLETE'
     | 'SYSTEM';
 
 export interface NotificationResponse {
@@ -9,7 +12,19 @@ export interface NotificationResponse {
     title: string;
     message: string;
     type: NotificationType;
-    relatedId: number | null; // ID of the listing/transaction/dispute. Null for SYSTEM.
+    relatedId: number | null;
     isRead: boolean;
     createdAt: string;
+}
+
+export interface PaginatedNotificationResponse {
+    items: NotificationResponse[];
+    page: number;
+    size: number;
+    totalElements: number;
+    totalPages: number;
+}
+
+export interface UnreadCountResponse {
+    unreadCount: number;
 }

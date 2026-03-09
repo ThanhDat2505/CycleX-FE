@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/app/hooks/useAuth';
-import { getAssignedDeliveries, getDeliverySummary } from '@/app/services/shipperService';
+import { getDeliveries, getDeliverySummary } from '@/app/services/shipperService';
 import { Delivery, DeliveryFilter, DeliverySummary } from '@/app/types/shipper';
 import { LoadingSpinner, Button } from '@/app/components/ui';
 import { useToast } from '@/app/contexts/ToastContext';
@@ -65,7 +65,7 @@ function DeliveryListContent() {
             try {
                 setIsLoading(true);
                 const [data, statsData] = await Promise.all([
-                    getAssignedDeliveries(user.userId, filter),
+                    getDeliveries(user.userId, filter),
                     getDeliverySummary(user.userId)
                 ]);
 
