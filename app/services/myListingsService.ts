@@ -455,8 +455,8 @@ export async function submitDraft(listingId: number, sellerId?: number): Promise
  */
 export async function cancelPublish(listingId: number, sellerId: number): Promise<Listing> {
     const response = await apiCallPATCH<ListingApiResponse>(
-        `/seller/${sellerId}/listings/${listingId}`,
-        { sellerId, status: 'DRAFT' }
+        `/seller/${sellerId}/listings/${listingId}/cancel-publish`,
+        {}
     );
     const normalizedResponse = normalizeListingResponse(response, 'cancelPublish response');
 

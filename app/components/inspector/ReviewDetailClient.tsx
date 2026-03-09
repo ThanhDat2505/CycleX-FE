@@ -22,6 +22,7 @@ export default function ReviewDetailClient({
   const [error, setError] = useState<string | null>(null);
   const [note, setNote] = useState("");
   const [activePanel, setActivePanel] = useState<ActionPanel>("NONE");
+  const [selectedThumb, setSelectedThumb] = useState(0);
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
@@ -163,10 +164,29 @@ export default function ReviewDetailClient({
       <div className="layout">
         <div className="left">
           <section className="gallery">
-            <div className="mainBox"></div>
+            <div className="mainBox" style={{ overflow: 'hidden', borderRadius: '18px', background: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
+              {(listing.images.main || listing.images.thumbs[0]) ? (
+                <img
+                  src={listing.images.thumbs[selectedThumb] || listing.images.main}
+                  alt={listing.productName}
+                  style={{ width: '100%', height: '400px', objectFit: 'contain' }}
+                />
+              ) : (
+                <span style={{ color: '#999' }}>Không có ảnh</span>
+              )}
+            </div>
             <div className="thumbGrid">
-              {listing.images.thumbs.map((_, idx) => (
-                <div key={idx} className="thumbBox"></div>
+              {listing.images.thumbs.map((url, idx) => (
+                <div
+                  key={idx}
+                  className="thumbBox"
+                  style={{ cursor: 'pointer', border: idx === selectedThumb ? '2px solid #2563eb' : '2px solid transparent', borderRadius: '8px', overflow: 'hidden' }}
+                  onClick={() => setSelectedThumb(idx)}
+                >
+                  {url ? (
+                    <img src={url} alt={`Ảnh ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : null}
+                </div>
               ))}
             </div>
           </section>
