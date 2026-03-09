@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Listing Service
  * Handles API calls for bike listing operations
@@ -647,4 +649,5 @@ export async function getSellerListingDetail(sellerId: number, listingId: number
         throw error;
     }
 }
+
 

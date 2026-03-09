@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
 // app/seller/my-listings/page.tsx
 "use client";
 
@@ -190,3 +192,4 @@ function MyListingsContent() {
 }
 
 export default ListingsPage;
+

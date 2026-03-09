@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import InspectorSummary from "@/app/components/inspector/InspectorSummary";
 
 export const metadata = {
@@ -5,5 +6,9 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <InspectorSummary />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <InspectorSummary />
+    </Suspense>
+  );
 }

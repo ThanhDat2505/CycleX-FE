@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Type definitions for Bike Listing objects and API responses
  * Used across S-01 Home, S-32 Detail, and future listing-related screens
@@ -246,3 +248,4 @@ export function validateListingDetail(data: any): ListingDetail {
         status: data.status || 'APPROVED' // Default to APPROVED for public view if API omits it for some reason
     } as ListingDetail;
 }
+

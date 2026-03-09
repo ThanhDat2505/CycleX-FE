@@ -25,6 +25,11 @@ const NAV_ITEMS = [
     label: "Lịch Sử Duyệt",
     icon: "history",
   },
+  {
+    href: "/inspector/disputes",
+    label: "Danh Sách Tranh Chấp",
+    icon: "gavel",
+  },
 ];
 
 export default function InspectorNav() {
