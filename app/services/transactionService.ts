@@ -5,6 +5,7 @@
 
 import { CreateTransactionRequest, Transaction, TransactionWithDetails, TransactionType } from '../types/transaction';
 import { apiCallPOST, apiCallGET } from '../utils/apiHelpers';
+import { validateObject, validateArray } from '../utils/apiValidation';
 
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
@@ -161,6 +162,7 @@ async function resolveBuyerTransactionType(requestId: number): Promise<Transacti
 }
 
 async function normalizeBuyerTransactionDetail(response: any, requestId: number): Promise<TransactionWithDetails> {
+    if (response) validateObject(response, 'Buyer Transaction Detail Response');
     const source = (response && typeof response === 'object') ? response : {};
     const listing = (source.listing && typeof source.listing === 'object') ? source.listing : {};
     const seller = (source.seller && typeof source.seller === 'object') ? source.seller : {};
@@ -200,6 +202,7 @@ async function normalizeBuyerTransactionDetail(response: any, requestId: number)
 }
 
 async function normalizeSellerTransactionDetail(response: any, requestId: number): Promise<TransactionWithDetails> {
+    if (response) validateObject(response, 'Seller Transaction Detail Response');
     const source = (response && typeof response === 'object') ? response : {};
     const listingId = toNumber(source.listingId) ?? 0;
     const listingImage = (await fetchListingPrimaryImage(listingId)) || undefined;
@@ -279,7 +282,10 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
     };
 
     const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
-    if (!dataResponse || typeof dataResponse !== 'object') {
+
+    if (dataResponse) {
+        validateObject(dataResponse, 'Purchase Request Response');
+    } else {
         throw new Error('Invalid backend response: Expected purchase request object');
     }
 
@@ -347,6 +353,9 @@ export async function getTransactionDetail(
     const prefix = role === 'SELLER' ? '/seller' : '/buyer';
     const dataResponse = await apiCallGET<any>(`${prefix}/transactions/${transactionId}`);
 
+    // Ensure BE returns data before normalizing
+    validateObject(dataResponse, 'Transaction Detail GET Response');
+
     if (role === 'SELLER') {
         return normalizeSellerTransactionDetail(dataResponse, transactionId);
     }
@@ -412,54 +421,61 @@ export async function getSellerTransactions(
         return results;
     }
 
-    const dataResponse = await apiCallGET<any>('/seller/transactions/pending?page=0&size=50');
-    const itemsArray = Array.isArray(dataResponse)
-        ? dataResponse
-        : (Array.isArray(dataResponse?.content) ? dataResponse.content : []);
+    try {
+        const dataResponse = await apiCallGET<any>('/seller/transactions/pending?page=0&size=50');
+        const itemsArray = Array.isArray(dataResponse)
+            ? dataResponse
+            : (Array.isArray(dataResponse?.content) ? dataResponse.content : []);
 
-    const mapped = await Promise.all(itemsArray.map(async (item: any) => {
-        const requestId = toNumber(item?.requestId);
-        if (!requestId) {
-            return null;
+        validateArray(itemsArray, 'Seller Transactions Array');
+
+        const mapped = await Promise.all(itemsArray.map(async (item: any) => {
+            const requestId = toNumber(item?.requestId);
+            if (!requestId) {
+                return null;
+            }
+
+            try {
+                const detail = await apiCallGET<any>(`/seller/transactions/${requestId}`);
+                const normalized = await normalizeSellerTransactionDetail(detail, requestId);
+                return {
+                    ...normalized,
+                    sellerId,
+                    buyerName: typeof item?.buyerName === 'string' ? item.buyerName : normalized.buyerName,
+                };
+            } catch {
+                const listingId = toNumber(item?.listingId) ?? 0;
+                return {
+                    transactionId: requestId,
+                    listingId,
+                    buyerId: 0,
+                    sellerId,
+                    transactionType: (typeof item?.transactionType === 'string' && item.transactionType.toUpperCase() === 'DEPOSIT') ? 'DEPOSIT' : 'PURCHASE',
+                    status: mapStatusToFrontend(item?.status),
+                    desiredTime: new Date().toISOString(),
+                    platformFee: 0,
+                    inspectionFee: 0,
+                    totalAmount: 0,
+                    createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                    updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                    listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
+                    listingImage: await fetchListingPrimaryImage(listingId),
+                    buyerName: typeof item?.buyerName === 'string' ? item.buyerName : 'Khach hang',
+                    sellerName: 'Ban',
+                } as TransactionWithDetails;
+            }
+        }));
+
+        const safe = mapped.filter((item): item is TransactionWithDetails => item !== null);
+        if (!status) {
+            return safe;
         }
 
-        try {
-            const detail = await apiCallGET<any>(`/seller/transactions/${requestId}`);
-            const normalized = await normalizeSellerTransactionDetail(detail, requestId);
-            return {
-                ...normalized,
-                sellerId,
-                buyerName: typeof item?.buyerName === 'string' ? item.buyerName : normalized.buyerName,
-            };
-        } catch {
-            const listingId = toNumber(item?.listingId) ?? 0;
-            return {
-                transactionId: requestId,
-                listingId,
-                buyerId: 0,
-                sellerId,
-                transactionType: (typeof item?.transactionType === 'string' && item.transactionType.toUpperCase() === 'DEPOSIT') ? 'DEPOSIT' : 'PURCHASE',
-                status: mapStatusToFrontend(item?.status),
-                desiredTime: new Date().toISOString(),
-                platformFee: 0,
-                inspectionFee: 0,
-                totalAmount: 0,
-                createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
-                updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
-                listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
-                listingImage: await fetchListingPrimaryImage(listingId),
-                buyerName: typeof item?.buyerName === 'string' ? item.buyerName : 'Khach hang',
-                sellerName: 'Ban',
-            } as TransactionWithDetails;
-        }
-    }));
-
-    const safe = mapped.filter((item): item is TransactionWithDetails => item !== null);
-    if (!status) {
-        return safe;
+        return safe.filter(item => item.status === mapStatusToFrontend(status));
+    } catch (error) {
+        console.error('Lỗi API Get Seller Transactions:', error);
+        return [];
     }
-
-    return safe.filter(item => item.status === mapStatusToFrontend(status));
 }
 
 export async function getBuyerTransactions(
@@ -470,43 +486,51 @@ export async function getBuyerTransactions(
         return mockTransactions.map(t => ({ ...t, buyerId }));
     }
 
-    const dataResponse = await apiCallGET<any[]>('/buyer/transactions');
-    if (!Array.isArray(dataResponse)) {
+    try {
+        const dataResponse = await apiCallGET<any[]>('/buyer/transactions');
+
+        const itemsArray = Array.isArray(dataResponse)
+            ? dataResponse
+            : (Array.isArray((dataResponse as any)?.content) ? (dataResponse as any).content : []);
+
+        validateArray(itemsArray, 'Buyer Transactions Array');
+
+        const mapped = await Promise.all(dataResponse.map(async (item) => {
+            const transactionId = toNumber(item?.requestId);
+            const listingId = toNumber(item?.listingId) ?? 0;
+            if (!transactionId) {
+                return null;
+            }
+
+            const explicitImage = resolveImageUrl(item?.listingImage);
+            const fallbackImage = explicitImage ? undefined : await fetchListingPrimaryImage(listingId);
+
+            return {
+                transactionId,
+                listingId,
+                buyerId: toNumber(item?.buyerId) ?? buyerId,
+                sellerId: toNumber(item?.sellerId) ?? 0,
+                transactionType: (typeof item?.transactionType === 'string' && item.transactionType.toUpperCase() === 'DEPOSIT') ? 'DEPOSIT' : 'PURCHASE',
+                status: mapStatusToFrontend(item?.status),
+                desiredTime: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                platformFee: 0,
+                inspectionFee: 0,
+                totalAmount: toNumber(item?.totalAmount) ?? 0,
+                createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
+                listingImage: explicitImage || fallbackImage,
+                buyerName: 'Ban',
+                sellerName: typeof item?.sellerName === 'string' ? item.sellerName : 'CycleX Seller',
+                sellerPhone: typeof item?.sellerPhone === 'string' ? item.sellerPhone : undefined,
+            } as TransactionWithDetails;
+        }));
+
+        return mapped.filter((item): item is TransactionWithDetails => item !== null);
+    } catch (error) {
+        console.error('Lỗi API Get Buyer Transactions:', error);
         return [];
     }
-
-    const mapped = await Promise.all(dataResponse.map(async (item) => {
-        const transactionId = toNumber(item?.requestId);
-        const listingId = toNumber(item?.listingId) ?? 0;
-        if (!transactionId) {
-            return null;
-        }
-
-        const explicitImage = resolveImageUrl(item?.listingImage);
-        const fallbackImage = explicitImage ? undefined : await fetchListingPrimaryImage(listingId);
-
-        return {
-            transactionId,
-            listingId,
-            buyerId: toNumber(item?.buyerId) ?? buyerId,
-            sellerId: toNumber(item?.sellerId) ?? 0,
-            transactionType: (typeof item?.transactionType === 'string' && item.transactionType.toUpperCase() === 'DEPOSIT') ? 'DEPOSIT' : 'PURCHASE',
-            status: mapStatusToFrontend(item?.status),
-            desiredTime: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
-            platformFee: 0,
-            inspectionFee: 0,
-            totalAmount: toNumber(item?.totalAmount) ?? 0,
-            createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
-            updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
-            listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
-            listingImage: explicitImage || fallbackImage,
-            buyerName: 'Ban',
-            sellerName: typeof item?.sellerName === 'string' ? item.sellerName : 'CycleX Seller',
-            sellerPhone: typeof item?.sellerPhone === 'string' ? item.sellerPhone : undefined,
-        } as TransactionWithDetails;
-    }));
-
-    return mapped.filter((item): item is TransactionWithDetails => item !== null);
 }
 
 export async function acceptTransaction(transactionId: number): Promise<boolean> {
@@ -521,8 +545,27 @@ export async function acceptTransaction(transactionId: number): Promise<boolean>
         return true;
     }
 
-    await apiCallPOST(`/seller/transactions/${transactionId}/confirm`, { note: 'Da xac nhan tu phia nguoi ban' });
-    return true;
+    try {
+        const response = await apiCallPOST<any>(`/seller/transactions/${transactionId}/confirm`, { note: 'Da xac nhan tu phia nguoi ban' });
+
+        if (response) {
+            validateObject(response, 'Accept Transaction Response');
+            if (response.status !== 'CONFIRMED' && response.status !== 'SELLER_CONFIRMED' && response.status !== 'BUYER_CONFIRMED') {
+                console.warn(`[API Warning] Received unexpectedly non-CONFIRMED status after accepting transaction: ${response.status}`);
+            }
+        }
+        return true;
+    } catch (error: any) {
+        console.error(`Lỗi API Accept Transaction ${transactionId}:`, error);
+
+        if (error.response?.status === 409) {
+            throw new Error('Giao dịch đã được xác nhận hoặc không thể xác nhận ở trạng thái hiện tại.');
+        } else if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy giao dịch trên hệ thống.');
+        }
+
+        throw error;
+    }
 }
 
 export async function cancelTransaction(transactionId: number): Promise<boolean> {
@@ -537,6 +580,25 @@ export async function cancelTransaction(transactionId: number): Promise<boolean>
         return true;
     }
 
-    await apiCallPOST(`/buyer/transactions/${transactionId}/cancel`, {});
-    return true;
+    try {
+        const response = await apiCallPOST<any>(`/buyer/transactions/${transactionId}/cancel`, {});
+
+        if (response) {
+            validateObject(response, 'Cancel Transaction Response');
+            if (response.status !== 'CANCELLED') {
+                console.warn(`[API Warning] Received unexpectedly non-CANCELLED status after cancelling transaction: ${response.status}`);
+            }
+        }
+        return true;
+    } catch (error: any) {
+        console.error(`Lỗi API Cancel Transaction ${transactionId}:`, error);
+
+        if (error.response?.status === 409) {
+            throw new Error('Giao dịch đã được huỷ trước đó hoặc không thể huỷ ở trạng thái hiện tại.');
+        } else if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy giao dịch trên hệ thống.');
+        }
+
+        throw error;
+    }
 }
