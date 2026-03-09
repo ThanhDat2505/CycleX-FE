@@ -275,46 +275,58 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
         throw new Error('Missing productId for purchase request');
     }
 
-    const payload: Record<string, unknown> = {
-        transactionType: data.transactionType,
-        desiredTransactionTime: toBackendDateTime(data.desiredTime),
-        note: data.note,
-    };
+    try {
+        const payload: Record<string, unknown> = {
+            transactionType: data.transactionType,
+            desiredTransactionTime: toBackendDateTime(data.desiredTime),
+            note: data.note,
+        };
 
-    const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
+        const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
 
-    if (dataResponse) {
-        validateObject(dataResponse, 'Purchase Request Response');
-    } else {
-        throw new Error('Invalid backend response: Expected purchase request object');
+        if (dataResponse) {
+            validateObject(dataResponse, 'Purchase Request Response');
+        } else {
+            throw new Error('Invalid backend response: Expected purchase request object');
+        }
+
+        const requestId = toNumber(dataResponse.requestId);
+        if (!requestId) {
+            throw new Error('Invalid backend response: Missing requestId');
+        }
+
+        return {
+            transactionId: requestId,
+            listingId: toNumber(dataResponse.listingId) ?? data.listingId,
+            buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
+            sellerId: 0,
+            transactionType: data.transactionType,
+            status: mapStatusToFrontend(dataResponse.status),
+            desiredTime: typeof dataResponse.desiredTransactionTime === 'string'
+                ? dataResponse.desiredTransactionTime
+                : toBackendDateTime(data.desiredTime),
+            receiverName: data.receiverName,
+            receiverPhone: data.receiverPhone,
+            receiverAddress: data.receiverAddress,
+            depositAmount: toNumber(dataResponse.depositAmount) ?? data.depositAmount,
+            note: typeof dataResponse.note === 'string' ? dataResponse.note : data.note,
+            platformFee: toNumber(dataResponse.platformFee) ?? 0,
+            inspectionFee: toNumber(dataResponse.inspectionFee) ?? 0,
+            totalAmount: calculateTotalAmount(dataResponse),
+            createdAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
+            updatedAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
+        };
+    } catch (error: any) {
+        console.error('Lỗi API Create Purchase Request:', error);
+        if (error.response?.status === 409) {
+            throw new Error('Rất tiếc, xe này vừa có người đặt giữ và đang chờ người bán xác nhận. Vui lòng quay lại sau!');
+        } else if (error.response?.status === 400) {
+            throw new Error('Dữ liệu yêu cầu đặt mua không hợp lệ, vui lòng kiểm tra lại.');
+        } else if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy tin đăng hoặc sản phẩm không còn tồn tại.');
+        }
+        throw error;
     }
-
-    const requestId = toNumber(dataResponse.requestId);
-    if (!requestId) {
-        throw new Error('Invalid backend response: Missing requestId');
-    }
-
-    return {
-        transactionId: requestId,
-        listingId: toNumber(dataResponse.listingId) ?? data.listingId,
-        buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
-        sellerId: 0,
-        transactionType: data.transactionType,
-        status: mapStatusToFrontend(dataResponse.status),
-        desiredTime: typeof dataResponse.desiredTransactionTime === 'string'
-            ? dataResponse.desiredTransactionTime
-            : toBackendDateTime(data.desiredTime),
-        receiverName: data.receiverName,
-        receiverPhone: data.receiverPhone,
-        receiverAddress: data.receiverAddress,
-        depositAmount: toNumber(dataResponse.depositAmount) ?? data.depositAmount,
-        note: typeof dataResponse.note === 'string' ? dataResponse.note : data.note,
-        platformFee: toNumber(dataResponse.platformFee) ?? 0,
-        inspectionFee: toNumber(dataResponse.inspectionFee) ?? 0,
-        totalAmount: calculateTotalAmount(dataResponse),
-        createdAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
-        updatedAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
-    };
 }
 
 export async function getTransactionDetail(
