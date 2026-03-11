@@ -135,6 +135,44 @@ export async function createDispute(data: CreateDisputeRequest): Promise<Dispute
 }
 
 /**
+ * Fetch a single dispute by its ID
+ * Requirement: Check if disputeId exists, handle errors
+ */
+export async function getDisputeById(disputeId: number): Promise<Dispute> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // Mock data for testing
+        if (disputeId === 999) {
+            throw new Error('Khiếu nại không tồn tại.');
+        }
+
+        return {
+            disputeId,
+            orderId: 108,
+            buyerId: 1,
+            sellerId: 2,
+            title: 'Sản phẩm không đúng mô tả',
+            content: 'Xe bị trầy xước nhiều chỗ mà người bán không nói rõ trong tin đăng. Tôi yêu cầu hoàn tiền hoặc giảm giá.',
+            reason: 'Sản phẩm không đúng mô tả',
+            status: disputeId % 2 === 0 ? 'SOLVED' : 'REJECTED',
+            evidenceUrls: [
+                'https://placehold.co/600x400?text=Scratch+1',
+                'https://placehold.co/600x400?text=Scratch+2'
+            ],
+            adminNote: disputeId % 2 === 0 
+                ? 'Chúng tôi đã xác nhận tình trạng xe và yêu cầu người bán hoàn trả 10% giá trị giao dịch cho bạn.' 
+                : 'Dựa trên hình ảnh đối chứng từ người bán, vết trầy xước này đã được hiển thị trong ảnh thứ 4 của bài đăng. Khiếu nại bị bác bỏ.',
+            resolvedAt: new Date().toISOString(),
+            createdAt: new Date(Date.now() - 86400000).toISOString(),
+            updatedAt: new Date().toISOString(),
+        };
+    }
+
+    return apiCallGET<Dispute>(`/disputes/${disputeId}`);
+}
+
+/**
  * Simple helper to check 24h window (for UI visibility)
  */
 export function canCreateDispute(status: string, updatedAt: string): boolean {

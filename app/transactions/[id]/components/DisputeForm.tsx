@@ -127,7 +127,17 @@ export default function DisputeForm({
             addToast('Gửi khiếu nại thành công. Chúng tôi sẽ xem xét và phản hồi sớm nhất.', 'success');
             onSuccess();
         } catch (error: any) {
-            addToast(error.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error');
+            // Handle structured validation errors (400)
+            if (error.errors) {
+                const firstError = Object.values(error.errors)[0];
+                if (Array.isArray(firstError)) {
+                    addToast(firstError[0], 'error');
+                } else {
+                    addToast('Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.', 'error');
+                }
+            } else {
+                addToast(error.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error');
+            }
         } finally {
             setIsSubmitting(false);
         }
@@ -318,10 +328,10 @@ export default function DisputeForm({
                 <Button 
                     type="submit" 
                     variant="primary" 
-                    className="flex-1 sm:flex-[2] bg-brand-primary hover:bg-brand-primary-hover rounded-2xl font-black py-4 shadow-orange-200 order-1 sm:order-2 tracking-wide uppercase text-sm" 
+                    className="flex-1 sm:flex-[2] bg-brand-primary hover:bg-brand-primary/90 text-white rounded-2xl font-black py-4 shadow-lg shadow-orange-100 ring-offset-2 active:scale-[0.98] transition-all order-1 sm:order-2 tracking-wide uppercase text-sm" 
                     loading={isSubmitting}
                 >
-                    {isSubmitting ? 'Đang gửi...' : 'Gửi yêu cầu khiếu nại'}
+                    {isSubmitting ? 'Đang xử lý...' : 'Xác nhận gửi khiếu nại'}
                 </Button>
             </div>
             

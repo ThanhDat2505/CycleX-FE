@@ -9,7 +9,7 @@
 
 export type ListingStatus =
     | 'DRAFT' | 'PENDING' | 'REVIEWING' | 'APPROVE' | 'REJECT' | 'ACTIVE' | 'SOLD'
-    | 'PENDING_SELLER_CONFIRM' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+    | 'PENDING_SELLER_CONFIRM' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'SOLVED' | 'REJECTED';
 
 export interface StatusColorConfig {
     bg: string;
@@ -73,6 +73,16 @@ export const STATUS_COLORS: Record<ListingStatus, StatusColorConfig> = {
         bg: 'bg-red-100',
         text: 'text-red-800',
         label: 'Đã hủy'
+    },
+    SOLVED: {
+        bg: 'bg-green-100',
+        text: 'text-green-800',
+        label: 'Đã giải quyết'
+    },
+    REJECTED: {
+        bg: 'bg-red-500',
+        text: 'text-white',
+        label: 'Bị từ chối'
     },
 } as const;
 

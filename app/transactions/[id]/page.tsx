@@ -229,6 +229,7 @@ export default function TransactionDetailPage() {
                 onClose={() => setIsDisputeModalOpen(false)}
                 title="Tạo khiếu nại đơn hàng"
                 size="lg"
+                footer={null}
             >
                 <DisputeForm
                     orderId={transaction.transactionId}

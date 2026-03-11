@@ -3,7 +3,7 @@
  * Used for S-70 (Dispute Creation)
  */
 
-export type DisputeStatus = 'PENDING' | 'RESOLVED' | 'CANCELLED';
+export type DisputeStatus = 'PENDING' | 'RESOLVED' | 'CANCELLED' | 'SOLVED' | 'REJECTED';
 
 export interface DisputeReason {
     reasonId: number;
@@ -31,6 +31,8 @@ export interface Dispute {
     reason: string;
     status: DisputeStatus;
     evidenceUrls: string[];
+    adminNote?: string;
+    resolvedAt?: string;
     createdAt: string;
     updatedAt: string;
 }

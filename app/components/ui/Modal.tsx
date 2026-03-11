@@ -8,7 +8,7 @@ interface ModalProps {
     onClose: () => void;
     title: string;
     children: ReactNode;
-    footer?: ReactNode;
+    footer?: ReactNode | null;
     size?: 'sm' | 'md' | 'lg' | 'xl';
 }
 
@@ -73,16 +73,18 @@ export function Modal({
                 </div>
 
                 {/* Footer */}
-                {footer ? (
-                    <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
-                        {footer}
-                    </div>
-                ) : (
-                    <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
-                        <Button variant="secondary" onClick={onClose}>
-                            Đóng
-                        </Button>
-                    </div>
+                {footer !== null && (
+                    footer ? (
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+                            {footer}
+                        </div>
+                    ) : (
+                        <div className="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex justify-end">
+                            <Button variant="secondary" onClick={onClose} className="rounded-xl px-6 font-bold">
+                                Đóng
+                            </Button>
+                        </div>
+                    )
                 )}
             </div>
         </div>
