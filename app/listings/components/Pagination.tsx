@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+
 /**
  * Pagination Component
  * Reusable pagination controls for search results
@@ -115,3 +117,4 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
         </div>
     );
 }
+

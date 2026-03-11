@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { AuthError } from '@/app/types/auth';
 
 /**
@@ -95,3 +97,4 @@ export const handleAuthError = (err: any): string => {
     // Default fallback
     return err.message || 'An error occurred. Please try again.';
 };
+

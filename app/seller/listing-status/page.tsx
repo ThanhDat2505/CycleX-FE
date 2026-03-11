@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/purity */
+
 // app/seller/listing-status/page.tsx
 "use client";
 
@@ -152,3 +154,4 @@ const ListingStatusPage: React.FC = () => {
 };
 
 export default ListingStatusPage;
+

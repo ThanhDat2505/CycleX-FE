@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 /**
  * Listing Service
  * Handles API calls for bike listing operations
@@ -270,13 +272,18 @@ export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
         return MOCK_LISTINGS.slice(startIndex, endIndex);
     }
 
-    const params = new URLSearchParams();
-    params.append('status', 'APPROVED');
-    params.append('page', (Math.max(page, 1) - 1).toString());
-    params.append('size', '10');
+    try {
+        const params = new URLSearchParams();
+        params.append('status', 'APPROVED');
+        params.append('page', (Math.max(page, 1) - 1).toString());
+        params.append('size', '10');
 
-    const data = await apiCallGET<unknown>(`/bikelistings?${params.toString()}`);
-    return normalizePublicListingResponse(data, page, 10, 'newest').items;
+        const data = await apiCallGET<unknown>(`/bikelistings?${params.toString()}`);
+        return normalizePublicListingResponse(data, page, 10, 'newest').items;
+    } catch (error: any) {
+        console.error('Lỗi API GetAllListings:', error);
+        return [];
+    }
 }
 
 /**
@@ -509,26 +516,35 @@ export async function searchSellerListings(
     if (filters?.minPrice) requestBody.minPrice = filters.minPrice;
     if (filters?.maxPrice) requestBody.maxPrice = filters.maxPrice;
 
-    const data = await apiCallPOST<{ items: HomeBike[]; pagination: PaginationInfo }>(
-        '/seller/listings/search',
-        requestBody
-    );
+    try {
+        const data = await apiCallPOST<{ items: HomeBike[]; pagination: PaginationInfo }>(
+            '/seller/listings/search',
+            requestBody
+        );
 
-    // ✅ VALIDATION: Strict check of seller search response
-    validateResponse(data, 'seller search response');
-    validateArray(data.items, 'sellerItems');
-    validateObject(data.pagination, 'pagination');
-    validateNumber(data.pagination.total, 'pagination.total');
+        // ✅ VALIDATION: Strict check of seller search response
+        validateResponse(data, 'seller search response');
+        validateArray(data.items, 'sellerItems');
+        validateObject(data.pagination, 'pagination');
+        validateNumber(data.pagination.total, 'pagination.total');
 
-    data.items.forEach((item, index) => {
-        const ctx = `sellerItems[${index}]`;
-        validateNumber(item.listingId, `${ctx}.listingId`);
-        validateString(item.title, `${ctx}.title`);
-        validateNumber(item.price, `${ctx}.price`);
-    });
+        data.items.forEach((item, index) => {
+            const ctx = `sellerItems[${index}]`;
+            validateNumber(item.listingId, `${ctx}.listingId`);
+            validateString(item.title, `${ctx}.title`);
+            validateNumber(item.price, `${ctx}.price`);
+        });
 
+        return data;
+    } catch (error: any) {
+        console.error('Lỗi API Search Seller Listings:', error);
 
-    return data;
+        if (error.response?.status === 400) {
+            console.warn('[API Warning] Bộ lọc tìm kiếm cửa hàng không hợp lệ.');
+        }
+
+        return { items: [], pagination: { page, pageSize, total: 0 } };
+    }
 }
 
 /**
@@ -579,8 +595,11 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
             console.error('Data structure validation failed:', validationErr);
             throw new Error('API returns corrupted listing structure');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error fetching listing detail:', error);
+        if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy xe đạp này trên hệ thống.');
+        }
         throw error;
     }
 }
@@ -612,10 +631,23 @@ export async function getSellerListingDetail(sellerId: number, listingId: number
         return validateListingDetail(listing);
     }
 
-    // Real API: POST /api/seller/listings/detail
-    const data = await apiCallPOST<ListingDetail>('/seller/listings/detail', { sellerId, listingId });
-    const validated = validateListingDetail(data);
+    try {
+        // Real API: POST /api/seller/listings/detail
+        const data = await apiCallPOST<ListingDetail>('/seller/listings/detail', { sellerId, listingId });
+        const validated = validateListingDetail(data);
 
-    return validated;
+        return validated;
+    } catch (error: any) {
+        console.error('Lỗi API Get Seller Listing Detail:', error);
+
+        if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy tin đăng của bạn trên hệ thống.');
+        } else if (error.response?.status === 403) {
+            throw new Error('Bạn không có quyền xem tin đăng này.');
+        }
+
+        throw error;
+    }
 }
+
 

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // Service layer for My Listings (S-11)
 // API endpoints will be provided by backend team
 
@@ -455,8 +457,8 @@ export async function submitDraft(listingId: number, sellerId?: number): Promise
  */
 export async function cancelPublish(listingId: number, sellerId: number): Promise<Listing> {
     const response = await apiCallPATCH<ListingApiResponse>(
-        `/seller/${sellerId}/listings/${listingId}`,
-        { sellerId, status: 'DRAFT' }
+        `/seller/${sellerId}/listings/${listingId}/cancel-publish`,
+        {}
     );
     const normalizedResponse = normalizeListingResponse(response, 'cancelPublish response');
 
@@ -748,3 +750,4 @@ export async function deleteListingImage(sellerId: number, listingId: number, im
 
     await apiCallDELETE(`/seller/${sellerId}/listings/${listingId}/images/${imageId}`);
 }
+

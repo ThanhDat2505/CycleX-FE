@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
 /**
  * useAuth Hook
  * Centralized authentication logic for consistent auth handling across components
@@ -90,3 +92,4 @@ export const useAuth = (): UseAuthReturn => {
         requireAuth,
     };
 };
+

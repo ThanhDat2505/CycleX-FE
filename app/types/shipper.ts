@@ -59,3 +59,26 @@ export interface DeliveryFailedRequest {
     reason: string;
     imageProof?: string;
 }
+
+export interface PaginatedResponse<T> {
+    items: T[];
+    page: number;
+    totalElements: number;
+}
+
+export interface DeliveryConfirmationInfo {
+    deliveryId: string;
+}
+
+export interface DeliveryFailureInfo {
+    deliveryId: string;
+    transactionId: string;
+    listingId: string;
+    buyerName: string;
+    buyerPhone: string;
+    sellerName: string;
+    deliveryAddress: string;
+    productName: string;
+    deliveryStatus: string;
+    transactionStatus: string;
+}

@@ -97,7 +97,6 @@ export const userService = {
                 };
             }
 
-            // Often PUT returns the updated object. Apply fallbacks.
             return {
                 userId: Number(response.userId || response.id || userId),
                 email: String(response.email || '---'),
@@ -143,8 +142,6 @@ export const userService = {
         try {
             const response = await apiCallPUT<any>(`/users/${userId}/password`, data);
 
-            // Logically we don't need data from response for password changes
-            // But we must catch nested BE structures like { error: "X" } disguised as 200 OK
             if (response && typeof response === 'object' && response.error) {
                 throw new Error(String(response.error));
             }
