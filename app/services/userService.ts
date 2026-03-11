@@ -45,6 +45,7 @@ export const userService = {
                 status: profile.status || 'ACTIVE',
                 cccd: String(profile.cccd || '---'),
                 avatarUrl: profile.avatarUrl ? String(profile.avatarUrl) : null,
+                address: profile.address ? String(profile.address) : undefined,
                 isVerify: Boolean(profile.isVerify)
             };
         } catch (error) {
@@ -88,6 +89,7 @@ export const userService = {
                     fullName: String(data.fullName),
                     phone: String(data.phone),
                     avatarUrl: data.avatarUrl ? String(data.avatarUrl) : null,
+                    address: data.address || undefined,
                     cccd: '---',
                     role: 'BUYER',
                     status: 'ACTIVE',
@@ -105,6 +107,7 @@ export const userService = {
                 status: response.status || 'ACTIVE',
                 cccd: String(response.cccd || '---'),
                 avatarUrl: response.avatarUrl ? String(response.avatarUrl) : data.avatarUrl || null,
+                address: response.address ? String(response.address) : data.address || undefined,
                 isVerify: Boolean(response.isVerify)
             };
 

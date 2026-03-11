@@ -23,6 +23,7 @@ interface FormErrors {
 export function ProfileInfoForm({ profile, isSubmitting, onSubmit, onImageError }: ProfileInfoFormProps) {
     const [fullName, setFullName] = useState(profile.fullName);
     const [phone, setPhone] = useState(profile.phone);
+    const [address, setAddress] = useState(profile.address || '');
     const [avatarPreview, setAvatarPreview] = useState<string | null>(profile.avatarUrl || null);
 
     const [errors, setErrors] = useState<FormErrors>({});
@@ -31,6 +32,7 @@ export function ProfileInfoForm({ profile, isSubmitting, onSubmit, onImageError 
     useEffect(() => {
         setFullName(profile.fullName);
         setPhone(profile.phone);
+        setAddress(profile.address || '');
         if (profile.avatarUrl) setAvatarPreview(profile.avatarUrl);
     }, [profile]);
 
@@ -84,10 +86,11 @@ export function ProfileInfoForm({ profile, isSubmitting, onSubmit, onImageError 
             onSubmit({
                 fullName: fullName.trim(),
                 phone: phone.trim(),
+                address: address.trim() || undefined,
                 avatarUrl: avatarPreview
             });
         }
-    }, [fullName, phone, avatarPreview, onSubmit]);
+    }, [fullName, phone, address, avatarPreview, onSubmit]);
 
     const clearNameError = () => {
         if (errors.fullName) setErrors(prev => ({ ...prev, fullName: undefined }));
@@ -185,6 +188,17 @@ export function ProfileInfoForm({ profile, isSubmitting, onSubmit, onImageError 
                     maxLength={10}
                     disabled={isSubmitting}
                     error={errors.phone}
+                />
+
+                {/* Address */}
+                <Input
+                    id="address"
+                    type="text"
+                    label={MESSAGES.S04_ADDRESS_LABEL}
+                    value={address}
+                    onChange={(val) => setAddress(val)}
+                    placeholder={MESSAGES.S04_ADDRESS_PLACEHOLDER}
+                    disabled={isSubmitting}
                 />
             </div>
 

@@ -1,6 +1,7 @@
 export interface UpdateProfileRequest {
     fullName: string;
     phone: string;
+    address?: string;
     avatarUrl?: string | null;
 }
 
@@ -19,6 +20,7 @@ export interface UserProfileResponse {
     fullName: string;
     status: "ACTIVE" | "INACTIVE" | "LOCKED";
     avatarUrl?: string | null;
+    address?: string;
     isVerify: boolean;
     createdAt?: string;
     updatedAt?: string;

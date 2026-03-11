@@ -264,6 +264,8 @@ export const MESSAGES = {
     S04_NAME_PLACEHOLDER: 'Nhập họ và tên',
     S04_PHONE_LABEL: 'Số điện thoại',
     S04_PHONE_PLACEHOLDER: 'Ví dụ: 0912345678',
+    S04_ADDRESS_LABEL: 'Địa chỉ',
+    S04_ADDRESS_PLACEHOLDER: 'Nhập địa chỉ của bạn',
     S04_AVATAR_LABEL: 'Ảnh đại diện',
     S04_AVATAR_UPLOAD_TEXT: 'Nhấn để thay đổi ảnh',
     S04_AVATAR_HINT: 'Định dạng JPG, PNG. Tối đa 2MB.',

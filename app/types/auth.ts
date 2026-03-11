@@ -28,6 +28,7 @@ export interface User {
     status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | null;
     cccd: string;
     avatarUrl: string | null;
+    address: string | null;
     createdAt: string;
     updatedAt: string;
     lastLogin: string | null;
