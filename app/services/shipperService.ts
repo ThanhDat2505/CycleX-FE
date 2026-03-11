@@ -219,31 +219,29 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
         if (!data) return null;
 
         validateObject(data, 'Shipper Delivery Detail API');
-        validateString(data.id || data.deliveryId, 'delivery.id');
-        validateString(data.status, 'delivery.status');
 
         return {
             id: String(data.id || data.deliveryId || deliveryId),
             orderId: String(data.orderId || '---'),
             status: (data.status as Delivery['status']) || 'ASSIGNED',
-            assignedDate: String(data.assignedDate || new Date().toISOString()),
-            scheduledDate: String(data.scheduledDate || new Date().toISOString()),
-            completedDate: data.completedDate ? String(data.completedDate) : undefined,
+            assignedDate: String(data.timeline?.assignedTime || data.assignedDate || new Date().toISOString()),
+            scheduledDate: String(data.timeline?.expectedDeliveryTime || data.scheduledDate || new Date().toISOString()),
+            completedDate: data.timeline?.completedTime ? String(data.timeline.completedTime) : undefined,
             codAmount: typeof data.codAmount === 'number' ? data.codAmount : undefined,
             note: data.note ? String(data.note) : undefined,
             bike: {
                 name: String(data.bike?.name || data.productName || 'Xe đạp'),
-                image: String(data.bike?.image || '/placeholder-bike.png')
+                image: String(data.bike?.image || data.productImage || '/placeholder-bike.png')
             },
             sender: {
-                name: String(data.sender?.name || data.seller || 'Khách gửi'),
-                phone: String(data.sender?.phone || '---'),
-                address: String(data.sender?.address || '---')
+                name: String(data.seller?.fullName || data.pickup?.contactName || 'Khách gửi'),
+                phone: String(data.seller?.phone || data.pickup?.contactPhone || '---'),
+                address: String(data.pickup?.address || data.seller?.address || '---')
             },
             receiver: {
-                name: String(data.receiver?.name || data.buyer || 'Khách nhận'),
-                phone: String(data.receiver?.phone || '---'),
-                address: String(data.receiver?.address || '---')
+                name: String(data.buyer?.fullName || data.delivery?.contactName || 'Khách nhận'),
+                phone: String(data.buyer?.phone || data.delivery?.contactPhone || '---'),
+                address: String(data.delivery?.address || data.buyer?.address || '---')
             }
         };
     } catch (error) {
