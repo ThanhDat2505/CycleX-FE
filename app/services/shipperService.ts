@@ -36,12 +36,15 @@ export async function getDeliverySummary(shipperId: number): Promise<DeliverySum
         const data = await apiCallGET<any>('/shipper/dashboard/summary');
         validateObject(data, 'Shipper Delivery Summary API Response');
 
+        // BE returns { counts: { assigned, inProgress, failed }, asOf } — handle both nested and flat
+        const counts = data.counts || data;
+
         // Safe Fallback Parsing: Do not trust Backend completely
         return {
-            assigned: typeof data.assigned === 'number' ? data.assigned : (typeof data.assignedCount === 'number' ? data.assignedCount : 0),
-            inProgress: typeof data.inProgress === 'number' ? data.inProgress : (typeof data.inProgressCount === 'number' ? data.inProgressCount : 0),
-            delivered: typeof data.delivered === 'number' ? data.delivered : (typeof data.deliveredCount === 'number' ? data.deliveredCount : 0),
-            failed: typeof data.failed === 'number' ? data.failed : (typeof data.failedCount === 'number' ? data.failedCount : 0)
+            assigned: typeof counts.assigned === 'number' ? counts.assigned : (typeof counts.assignedCount === 'number' ? counts.assignedCount : 0),
+            inProgress: typeof counts.inProgress === 'number' ? counts.inProgress : (typeof counts.inProgressCount === 'number' ? counts.inProgressCount : 0),
+            delivered: typeof counts.delivered === 'number' ? counts.delivered : (typeof counts.deliveredCount === 'number' ? counts.deliveredCount : 0),
+            failed: typeof counts.failed === 'number' ? counts.failed : (typeof counts.failedCount === 'number' ? counts.failedCount : 0)
         };
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu tổng hợp Shipper: ', error);
@@ -168,37 +171,29 @@ export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 
         const itemsArray = Array.isArray(dataResponse) ? dataResponse : (dataResponse?.items || []);
         validateArray(itemsArray, 'Shipper Deliveries API S-61');
 
-        // Deep loop validation 
-        itemsArray.forEach((d: any, i: number) => {
-            const ctx = `shipperDeliveries[${i}]`;
-            validateObject(d, ctx);
-            validateString(d.id || d.deliveryId, `${ctx}.id`);
-            validateString(d.status, `${ctx}.status`);
-        });
-
         // Safe Fallback Value mappings to assure standard display for UI component:
         return itemsArray.map((d: any) => ({
             id: String(d.id || d.deliveryId || ''),
             orderId: String(d.orderId || '---'),
             status: (d.status as Delivery['status']) || 'ASSIGNED',
-            assignedDate: String(d.assignedDate || new Date().toISOString()),
-            scheduledDate: String(d.scheduledDate || new Date().toISOString()),
+            assignedDate: String(d.assignedDate || d.scheduledTime || new Date().toISOString()),
+            scheduledDate: String(d.scheduledDate || d.scheduledTime || new Date().toISOString()),
             completedDate: d.completedDate ? String(d.completedDate) : undefined,
             codAmount: typeof d.codAmount === 'number' ? d.codAmount : undefined,
             note: d.note ? String(d.note) : undefined,
             bike: {
                 name: String(d.bike?.name || d.productName || 'Xe đạp'),
-                image: String(d.bike?.image || '/placeholder-bike.png')
+                image: String(d.bike?.image || d.productImage || '/placeholder-bike.png')
             },
             sender: {
-                name: String(d.sender?.name || d.seller || 'Khách gửi'),
-                phone: String(d.sender?.phone || '---'),
-                address: String(d.sender?.address || '---')
+                name: String(d.sender?.name || d.sellerName || 'Khách gửi'),
+                phone: String(d.sender?.phone || d.sellerPhone || '---'),
+                address: String(d.sender?.address || d.pickupAddress || '---')
             },
             receiver: {
-                name: String(d.receiver?.name || d.buyer || 'Khách nhận'),
-                phone: String(d.receiver?.phone || '---'),
-                address: String(d.receiver?.address || '---')
+                name: String(d.receiver?.name || d.buyerName || 'Khách nhận'),
+                phone: String(d.receiver?.phone || d.buyerPhone || '---'),
+                address: String(d.receiver?.address || d.dropoffAddress || '---')
             }
         }));
 
