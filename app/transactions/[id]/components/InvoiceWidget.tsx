@@ -40,7 +40,7 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                 <div className="space-y-2 text-sm">
                     {(transaction.depositAmount ?? 0) > 0 && (
                         <div className="flex justify-between">
-                            <span className="text-gray-500">Tiền cọc</span>
+                            <span className="text-gray-500">{isPurchase ? 'Giá trị đơn hàng' : 'Tiền cọc'}</span>
                             <span className="font-medium text-gray-900">{formatPrice(transaction.depositAmount ?? 0)}</span>
                         </div>
                     )}
