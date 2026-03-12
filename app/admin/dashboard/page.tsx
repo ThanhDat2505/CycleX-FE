@@ -12,6 +12,11 @@ import { useToast } from '../../contexts/ToastContext';
 import { formatPrice } from '../../utils/format';
 
 const AdminDashboardPage = () => {
+    // Set page title for browser tab
+    useEffect(() => {
+        document.title = "Admin Dashboard | CycleX";
+    }, []);
+
     const { addToast } = useToast();
     const [data, setData] = useState<AdminDashboardData | null>(null);
     const [loading, setLoading] = useState(true);

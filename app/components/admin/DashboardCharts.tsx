@@ -44,6 +44,7 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ userData = [], orderD
                                 <div key={idx} className="flex-1 flex flex-col items-center group">
                                     <div 
                                         className="w-full bg-blue-500/10 rounded-t-xl group-hover:bg-blue-600 transition-all duration-500 relative cursor-pointer"
+                                        aria-label={`${data.value} users on ${data.date}`}
                                         style={{ 
                                             height: `${Math.max((data.value / maxValueUser) * 100, 2)}%`,
                                             animation: `slideUp 1s ease-out ${idx * 100}ms forwards`,
