@@ -97,13 +97,10 @@ export default function DisputeResultPage() {
     );
   }
 
-  const isSolved = dispute.status === "SOLVED";
-  const isRejected = dispute.status === "REJECTED";
-  const isPending = dispute.status === "PENDING";
   const isSolved = dispute.status === "RESOLVED";
-  const isRejected = dispute.status === "REJECTED";
   const isPending =
     dispute.status === "OPEN" || dispute.status === "IN_PROGRESS";
+  const isRejected = dispute.status === "REJECTED";
 
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 animate-fade-in">
