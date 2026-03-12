@@ -35,23 +35,35 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
             <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
             <div className="space-y-6">
                 {activities.length === 0 ? (
-                    <p className="text-gray-500 text-center py-4">No recent activities found.</p>
+                    <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
+                        <div className="p-4 bg-gray-50 rounded-2xl mb-4 text-gray-300">
+                            <Bell size={32} />
+                        </div>
+                        <p className="text-gray-400 font-medium">No recent activities found.</p>
+                    </div>
                 ) : (
                     activities.map((activity, index) => (
-                        <div key={activity.id} className="flex group">
+                        <div 
+                            key={activity.id} 
+                            className="flex group animate-fade-in-up"
+                            style={{ animationDelay: `${(index + 2) * 150}ms` }}
+                        >
                             <div className="relative flex flex-col items-center mr-4">
-                                <div className={`z-10 p-2.5 rounded-full ${getBgColor(activity.type)} transition-transform group-hover:scale-110`}>
+                                <div className={`z-10 p-2.5 rounded-2xl ${getBgColor(activity.type)} transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg`}>
                                     {getIcon(activity.type)}
                                 </div>
                                 {index !== activities.length - 1 && (
-                                    <div className="w-0.5 bg-gray-100 h-full absolute top-10"></div>
+                                    <div className="w-0.5 bg-gray-100 h-full absolute top-12"></div>
                                 )}
                             </div>
-                            <div className="pb-6">
-                                <p className="text-sm font-semibold text-gray-900">{activity.description}</p>
-                                <p className="text-xs text-gray-500 mt-1">{formatTimestamp(activity.timestamp)}</p>
+                            <div className="pb-8">
+                                <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{activity.description}</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1.5">{formatTimestamp(activity.timestamp)}</p>
                                 {activity.user && (
-                                    <p className="text-xs font-medium text-blue-600 mt-1">by {activity.user}</p>
+                                    <div className="mt-2 flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                        <p className="text-[11px] font-bold text-blue-600 tracking-tight">{activity.user}</p>
+                                    </div>
                                 )}
                             </div>
                         </div>

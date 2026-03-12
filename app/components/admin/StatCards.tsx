@@ -20,7 +20,7 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
             value: summary.activeUsers.toLocaleString(),
             trend: null,
             icon: TrendingUp,
-            color: 'green'
+            color: 'emerald'
         },
         {
             label: 'Total Orders',
@@ -34,9 +34,16 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
             value: `${(summary.totalRevenue / 1000000).toFixed(1)}M`,
             trend: summary.revenueTrend,
             icon: DollarSign,
-            color: 'emerald'
+            color: 'amber'
         }
     ];
+
+    const colorVariants: Record<string, string> = {
+        blue: 'bg-blue-50 text-blue-600 border-blue-100',
+        emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+        purple: 'bg-purple-50 text-purple-600 border-purple-100',
+        amber: 'bg-amber-50 text-amber-600 border-amber-100'
+    };
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -45,21 +52,28 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
                 const isPositive = stat.trend && stat.trend > 0;
                 
                 return (
-                    <div key={index} className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-shadow">
-                        <div className="flex justify-between items-start mb-4">
-                            <div className={`p-3 rounded-xl bg-${stat.color}-50 text-${stat.color}-600`}>
-                                <Icon size={24} />
+                    <div 
+                        key={index} 
+                        className={`bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 animate-fade-in-up`}
+                        style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                        <div className="flex justify-between items-start mb-6">
+                            <div className={`p-3.5 rounded-2xl border ${colorVariants[stat.color]}`}>
+                                <Icon size={22} strokeWidth={2.5} />
                             </div>
                             {stat.trend !== null && (
-                                <div className={`flex items-center text-sm font-medium ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                                    {isPositive ? <TrendingUp size={16} className="mr-1" /> : <TrendingDown size={16} className="mr-1" />}
+                                <div className={`flex items-center px-2 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                                    {isPositive ? <TrendingUp size={14} className="mr-1" /> : <TrendingDown size={14} className="mr-1" />}
                                     {Math.abs(stat.trend)}%
                                 </div>
                             )}
                         </div>
                         <div>
-                            <p className="text-gray-500 text-sm font-medium uppercase tracking-wider">{stat.label}</p>
-                            <h3 className="text-2xl font-bold text-gray-900 mt-1">{stat.value}</h3>
+                            <p className="text-gray-400 text-xs font-black uppercase tracking-[0.15em] mb-1">{stat.label}</p>
+                            <div className="flex items-baseline gap-1">
+                                <h3 className="text-3xl font-black text-gray-900 tracking-tight">{stat.value}</h3>
+                                {stat.label === 'Total Revenue' && <span className="text-xs font-bold text-gray-400">VND</span>}
+                            </div>
                         </div>
                     </div>
                 );

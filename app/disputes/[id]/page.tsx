@@ -206,11 +206,18 @@ export default function DisputeResultPage() {
                                         href={url} 
                                         target="_blank" 
                                         rel="noopener noreferrer"
-                                        className="relative aspect-square rounded-2xl overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition-all group"
+                                        className="relative aspect-square rounded-2xl overflow-hidden border-2 border-white shadow-sm hover:shadow-xl transition-all group bg-gray-100"
                                     >
-                                        <img src={url} alt={`Evidence ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <img 
+                                            src={url} 
+                                            alt={`Evidence ${index + 1}`} 
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            onError={(e) => {
+                                                (e.target as HTMLImageElement).src = 'https://placehold.co/600x600?text=B%E1%BA%B1ng+ch%E1%BB%A9ng+'+(index+1);
+                                            }}
+                                        />
+                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                            <svg className="w-8 h-8 text-white scale-90 group-hover:scale-100 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
                                             </svg>
                                         </div>
