@@ -8,19 +8,23 @@ import ActivityFeed from '../../components/admin/ActivityFeed';
 import TimeRangeFilter from '../../components/admin/TimeRangeFilter';
 import { getAdminDashboardData } from '../../services/adminDashboardService';
 import { AdminDashboardData, TimeRange } from '../../types/adminDashboard';
+import { useToast } from '../../contexts/ToastContext';
+import { formatPrice } from '../../utils/format';
 
 const AdminDashboardPage = () => {
+    const { addToast } = useToast();
     const [data, setData] = useState<AdminDashboardData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('LAST_7_DAYS');
     const [refreshing, setRefreshing] = useState(false);
+    const [customDates, setCustomDates] = useState<{start?: string, end?: string}>({});
 
-    const fetchData = async (range: TimeRange) => {
+    const fetchData = React.useCallback(async (range: TimeRange, start?: string, end?: string) => {
         setRefreshing(true);
         setError(null);
         try {
-            const dashboardData = await getAdminDashboardData(range);
+            const dashboardData = await getAdminDashboardData(range, start, end);
             if (!dashboardData) throw new Error('No data received from server.');
             setData(dashboardData);
         } catch (error: any) {
@@ -30,14 +34,42 @@ const AdminDashboardPage = () => {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, []);
 
     useEffect(() => {
-        fetchData(timeRange);
-    }, [timeRange]);
+        if (timeRange === 'CUSTOM') {
+            if (customDates.start && customDates.end) {
+                fetchData(timeRange, customDates.start, customDates.end);
+            }
+        } else {
+            fetchData(timeRange);
+        }
+    }, [timeRange, customDates, fetchData]);
 
     const handleRefresh = () => {
-        fetchData(timeRange);
+        fetchData(timeRange, customDates.start, customDates.end);
+    };
+
+    const handleRangeChange = (range: TimeRange, start?: string, end?: string) => {
+        if (range === 'CUSTOM') {
+            if (start && end) {
+                const startDate = new Date(start);
+                const endDate = new Date(end);
+                
+                if (startDate > endDate) {
+                    addToast('Start date cannot be after end date', 'error');
+                    return;
+                }
+                
+                setTimeRange(range);
+                setCustomDates({ start, end });
+            } else {
+                setTimeRange(range);
+            }
+        } else {
+            setTimeRange(range);
+            setCustomDates({});
+        }
     };
 
     if (loading) {
@@ -105,7 +137,7 @@ const AdminDashboardPage = () => {
                 <div className="mb-8 flex justify-end">
                     <TimeRangeFilter 
                         currentRange={timeRange} 
-                        onRangeChange={(range) => setTimeRange(range)} 
+                        onRangeChange={handleRangeChange} 
                     />
                 </div>
 
@@ -129,7 +161,7 @@ const AdminDashboardPage = () => {
                                 <div>
                                     <p className="text-emerald-700 text-sm font-medium">Completed Revenue</p>
                                     <p className="text-2xl font-bold text-emerald-900 mt-1">
-                                        {(data.orderStats.completedRevenue / 1000000).toLocaleString()}M VND
+                                        {formatPrice(data.orderStats.completedRevenue)}
                                     </p>
                                 </div>
                                 <div className="text-right">

@@ -34,26 +34,34 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ userData = [], orderD
                 </div>
                 <div className="relative h-48 mt-4">
                     <ChartGrid />
-                    <div className="flex items-end justify-between h-full gap-3 relative z-10 px-2">
-                        {userData.map((data, idx) => (
-                            <div key={idx} className="flex-1 flex flex-col items-center group">
-                                <div 
-                                    className="w-full bg-blue-500/10 rounded-t-xl group-hover:bg-blue-600 transition-all duration-500 relative cursor-pointer"
-                                    style={{ 
-                                        height: `${(data.value / maxValueUser) * 100}%`,
-                                        animation: `slideUp 1s ease-out ${idx * 100}ms forwards`,
-                                        opacity: 0
-                                    }}
-                                >
-                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-20 shadow-xl translate-y-2 group-hover:translate-y-0">
-                                        {data.value} users
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    {safeUserData.length === 0 ? (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No data available</p>
+                        </div>
+                    ) : (
+                        <div className="flex items-end justify-between h-full gap-3 relative z-10 px-2">
+                            {safeUserData.map((data, idx) => (
+                                <div key={idx} className="flex-1 flex flex-col items-center group">
+                                    <div 
+                                        className="w-full bg-blue-500/10 rounded-t-xl group-hover:bg-blue-600 transition-all duration-500 relative cursor-pointer"
+                                        style={{ 
+                                            height: `${Math.max((data.value / maxValueUser) * 100, 2)}%`,
+                                            animation: `slideUp 1s ease-out ${idx * 100}ms forwards`,
+                                            opacity: 0
+                                        }}
+                                    >
+                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-20 shadow-xl translate-y-2 group-hover:translate-y-0 pointer-events-none">
+                                            {data.value.toLocaleString()} users
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                        </div>
                                     </div>
+                                    <span className="text-[10px] font-bold text-gray-400 mt-3 truncate w-full text-center">
+                                        {data.date ? data.date.split('-').slice(2).join('/') : '--'}
+                                    </span>
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-400 mt-3 truncate w-full text-center">{data.date.split('-').slice(2).join('/')}</span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -66,26 +74,34 @@ const DashboardCharts: React.FC<DashboardChartsProps> = ({ userData = [], orderD
                 </div>
                 <div className="relative h-48 mt-4">
                     <ChartGrid />
-                    <div className="flex items-end justify-between h-full gap-3 relative z-10 px-2">
-                        {orderData.map((data, idx) => (
-                            <div key={idx} className="flex-1 flex flex-col items-center group">
-                                <div 
-                                    className="w-full bg-purple-500/10 rounded-t-xl group-hover:bg-purple-600 transition-all duration-500 relative cursor-pointer"
-                                    style={{ 
-                                        height: `${(data.value / maxValueOrder) * 100}%`,
-                                        animation: `slideUp 1s ease-out ${(idx + 3) * 100}ms forwards`,
-                                        opacity: 0
-                                    }}
-                                >
-                                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-20 shadow-xl translate-y-2 group-hover:translate-y-0">
-                                        {data.value} orders
-                                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                    {safeOrderData.length === 0 ? (
+                        <div className="absolute inset-0 flex items-center justify-center bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">No data available</p>
+                        </div>
+                    ) : (
+                        <div className="flex items-end justify-between h-full gap-3 relative z-10 px-2">
+                            {safeOrderData.map((data, idx) => (
+                                <div key={idx} className="flex-1 flex flex-col items-center group">
+                                    <div 
+                                        className="w-full bg-purple-500/10 rounded-t-xl group-hover:bg-purple-600 transition-all duration-500 relative cursor-pointer"
+                                        style={{ 
+                                            height: `${Math.max((data.value / maxValueOrder) * 100, 2)}%`,
+                                            animation: `slideUp 1s ease-out ${(idx + 3) * 100}ms forwards`,
+                                            opacity: 0
+                                        }}
+                                    >
+                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 whitespace-nowrap z-20 shadow-xl translate-y-2 group-hover:translate-y-0 pointer-events-none">
+                                            {data.value.toLocaleString()} orders
+                                            <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                        </div>
                                     </div>
+                                    <span className="text-[10px] font-bold text-gray-400 mt-3 truncate w-full text-center">
+                                        {data.date ? data.date.split('-').slice(2).join('/') : '--'}
+                                    </span>
                                 </div>
-                                <span className="text-[10px] font-bold text-gray-400 mt-3 truncate w-full text-center">{data.date.split('-').slice(2).join('/')}</span>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

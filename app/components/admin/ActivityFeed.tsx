@@ -1,6 +1,7 @@
 import React from 'react';
 import { UserPlus, ShoppingCart, RefreshCcw, Bell } from 'lucide-react';
 import { RecentActivity } from '../../types/adminDashboard';
+import { formatDate } from '../../utils/format';
 
 interface ActivityFeedProps {
     activities: RecentActivity[];
@@ -27,11 +28,6 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
         }
     };
 
-    const formatTimestamp = (isoString: string) => {
-        const date = new Date(isoString);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + date.toLocaleDateString();
-    };
-
     return (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
@@ -44,7 +40,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
                         <p className="text-gray-400 font-medium">No recent activities found.</p>
                     </div>
                 ) : (
-                    activities.map((activity, index) => (
+                    safeActivities.map((activity, index) => (
                         <div 
                             key={activity.id} 
                             className="flex group animate-fade-in-up"
@@ -60,7 +56,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
                             </div>
                             <div className="pb-8">
                                 <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{activity.description}</p>
-                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1.5">{formatTimestamp(activity.timestamp)}</p>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1.5">{formatDate(activity.timestamp)}</p>
                                 {activity.user && (
                                     <div className="mt-2 flex items-center gap-1.5">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Users, ShoppingBag, DollarSign, TrendingUp, TrendingDown } from 'lucide-react';
+import { Users, TrendingUp, ShoppingBag, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
 import { SummaryMetrics } from '../../types/adminDashboard';
+import { formatNumber, formatCompactNumber } from '../../utils/format';
 
 interface StatCardsProps {
     summary: SummaryMetrics;
@@ -10,28 +11,28 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
     const stats = [
         {
             label: 'Total Users',
-            value: (summary?.totalUsers || 0).toLocaleString(),
+            value: formatNumber(summary?.totalUsers || 0),
             trend: summary?.userTrend || 0,
             icon: Users,
             color: 'blue'
         },
         {
             label: 'Active Users',
-            value: (summary?.activeUsers || 0).toLocaleString(),
+            value: formatNumber(summary?.activeUsers || 0),
             trend: null,
             icon: TrendingUp,
             color: 'emerald'
         },
         {
             label: 'Total Orders',
-            value: (summary?.totalOrders || 0).toLocaleString(),
+            value: formatNumber(summary?.totalOrders || 0),
             trend: summary?.orderTrend || 0,
             icon: ShoppingBag,
             color: 'purple'
         },
         {
             label: 'Total Revenue',
-            value: `${((summary?.totalRevenue || 0) / 1000000).toFixed(1)}M`,
+            value: formatCompactNumber(summary?.totalRevenue || 0),
             trend: summary?.revenueTrend || 0,
             icon: DollarSign,
             color: 'amber'
@@ -62,9 +63,13 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
                                 <Icon size={22} strokeWidth={2.5} />
                             </div>
                             {stat.trend !== null && (
-                                <div className={`flex items-center px-2 py-1 rounded-lg text-xs font-bold ${isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                                    {isPositive ? <TrendingUp size={14} className="mr-1" /> : <TrendingDown size={14} className="mr-1" />}
-                                    {Math.abs(stat.trend)}%
+                                <div className={`mt-4 flex items-center gap-1.5 ${stat.trend >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    <div className={`p-1 rounded-lg ${stat.trend >= 0 ? 'bg-emerald-50' : 'bg-rose-50'}`}>
+                                        {stat.trend >= 0 ? <ArrowUpRight size={14} strokeWidth={3} /> : <ArrowDownRight size={14} strokeWidth={3} />}
+                                    </div>
+                                    <span className="text-[13px] font-black tracking-tight">
+                                        {stat.trend >= 0 ? '+' : ''}{stat.trend}%
+                                    </span>
                                 </div>
                             )}
                         </div>
