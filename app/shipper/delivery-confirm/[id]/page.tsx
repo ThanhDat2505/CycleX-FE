@@ -88,6 +88,19 @@ export default function DeliveryConfirmPage({ params }: DeliveryConfirmPageProps
         const file = event.target.files?.[0];
         if (!file) return;
 
+        // check file type
+        if (!file.type.startsWith('image/')) {
+            addToast("Chỉ được phép chọn file ảnh!", "error");
+            event.target.value = "";
+            return;
+        }
+
+        // check image file
+        if (file.size > 5 * 1024 * 1024) {
+            addToast("Kích thước ảnh quá lớn (tối đa 5MB)", "error");
+            return;
+        }
+
         const reader = new FileReader();
         reader.onloadend = () => {
             setSignaturePreview(reader.result as string);
