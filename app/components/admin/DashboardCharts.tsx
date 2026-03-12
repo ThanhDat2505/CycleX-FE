@@ -6,10 +6,14 @@ interface DashboardChartsProps {
     orderData: ChartDataPoint[];
 }
 
-const DashboardCharts: React.FC<DashboardChartsProps> = ({ userData, orderData }) => {
+const DashboardCharts: React.FC<DashboardChartsProps> = ({ userData = [], orderData = [] }) => {
+    // Ensure arrays are defined
+    const safeUserData = userData || [];
+    const safeOrderData = orderData || [];
+
     // Simple bar chart logic
-    const maxValueUser = Math.max(...userData.map(d => d.value), 10);
-    const maxValueOrder = Math.max(...orderData.map(d => d.value), 10);
+    const maxValueUser = safeUserData.length > 0 ? Math.max(...safeUserData.map(d => d.value), 10) : 10;
+    const maxValueOrder = safeOrderData.length > 0 ? Math.max(...safeOrderData.map(d => d.value), 10) : 10;
 
     const ChartGrid = () => (
         <div className="absolute inset-x-0 inset-y-0 flex flex-col justify-between pointer-events-none">

@@ -6,7 +6,9 @@ interface ActivityFeedProps {
     activities: RecentActivity[];
 }
 
-const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
+const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
+    const safeActivities = Array.isArray(activities) ? activities : [];
+
     const getIcon = (type: string) => {
         switch (type) {
             case 'USER_REGISTER': return <UserPlus size={18} className="text-blue-600" />;
@@ -34,7 +36,7 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities }) => {
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
             <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
             <div className="space-y-6">
-                {activities.length === 0 ? (
+                {safeActivities.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
                         <div className="p-4 bg-gray-50 rounded-2xl mb-4 text-gray-300">
                             <Bell size={32} />

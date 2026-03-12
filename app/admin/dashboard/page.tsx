@@ -12,16 +12,20 @@ import { AdminDashboardData, TimeRange } from '../../types/adminDashboard';
 const AdminDashboardPage = () => {
     const [data, setData] = useState<AdminDashboardData | null>(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
     const [timeRange, setTimeRange] = useState<TimeRange>('LAST_7_DAYS');
     const [refreshing, setRefreshing] = useState(false);
 
     const fetchData = async (range: TimeRange) => {
         setRefreshing(true);
+        setError(null);
         try {
             const dashboardData = await getAdminDashboardData(range);
+            if (!dashboardData) throw new Error('No data received from server.');
             setData(dashboardData);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch dashboard data:', error);
+            setError(error.message || 'An unexpected error occurred while loading the dashboard.');
         } finally {
             setLoading(false);
             setRefreshing(false);
@@ -41,7 +45,27 @@ const AdminDashboardPage = () => {
             <div className="flex items-center justify-center min-h-screen bg-gray-50">
                 <div className="flex flex-col items-center">
                     <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <p className="mt-4 text-gray-600 font-medium">Loading Dashboard...</p>
+                    <p className="mt-4 text-gray-600 font-bold uppercase tracking-widest text-xs animate-pulse">Loading Analytics...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (error) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4">
+                <div className="max-w-md w-full bg-white rounded-3xl p-8 shadow-xl border border-gray-100 text-center animate-scale-in">
+                    <div className="w-20 h-20 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <RefreshCw size={40} />
+                    </div>
+                    <h2 className="text-2xl font-black text-gray-900 mb-2">Connection Error</h2>
+                    <p className="text-gray-500 mb-8 leading-relaxed font-medium">{error}</p>
+                    <button 
+                        onClick={() => fetchData(timeRange)}
+                        className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-[0.98]"
+                    >
+                        Try Again
+                    </button>
                 </div>
             </div>
         );

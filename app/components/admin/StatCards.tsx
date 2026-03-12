@@ -10,29 +10,29 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
     const stats = [
         {
             label: 'Total Users',
-            value: summary.totalUsers.toLocaleString(),
-            trend: summary.userTrend,
+            value: (summary?.totalUsers || 0).toLocaleString(),
+            trend: summary?.userTrend || 0,
             icon: Users,
             color: 'blue'
         },
         {
             label: 'Active Users',
-            value: summary.activeUsers.toLocaleString(),
+            value: (summary?.activeUsers || 0).toLocaleString(),
             trend: null,
             icon: TrendingUp,
             color: 'emerald'
         },
         {
             label: 'Total Orders',
-            value: summary.totalOrders.toLocaleString(),
-            trend: summary.orderTrend,
+            value: (summary?.totalOrders || 0).toLocaleString(),
+            trend: summary?.orderTrend || 0,
             icon: ShoppingBag,
             color: 'purple'
         },
         {
             label: 'Total Revenue',
-            value: `${(summary.totalRevenue / 1000000).toFixed(1)}M`,
-            trend: summary.revenueTrend,
+            value: `${((summary?.totalRevenue || 0) / 1000000).toFixed(1)}M`,
+            trend: summary?.revenueTrend || 0,
             icon: DollarSign,
             color: 'amber'
         }
