@@ -97,6 +97,9 @@ export default function DisputeResultPage() {
     );
   }
 
+  const isSolved = dispute.status === "SOLVED";
+  const isRejected = dispute.status === "REJECTED";
+  const isPending = dispute.status === "PENDING";
   const isSolved = dispute.status === "RESOLVED";
   const isRejected = dispute.status === "REJECTED";
   const isPending =
