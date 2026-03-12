@@ -20,7 +20,7 @@ import {
 } from '../utils/apiValidation';
 
 
-// Check if we should use mock API (for developmen)
+// Check if we should use mock API (for development)
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 type PublicListingApiResponse = {
