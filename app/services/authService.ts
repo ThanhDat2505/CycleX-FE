@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import {
     LoginRequest,
     LoginResponse,
@@ -91,7 +93,15 @@ export const authService = {
             }
 
             return data;
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Lỗi API Login:', error);
+
+            if (error.response?.status === 401) {
+                throw new Error('Email hoặc mật khẩu không chính xác.');
+            } else if (error.response?.status === 403) {
+                throw new Error('Tài khoản của bạn đã bị khóa hoặc chưa được kích hoạt.');
+            }
+
             throw error;
         }
     },
@@ -152,7 +162,15 @@ export const authService = {
             validateUser(data.user);
 
             return data;
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Lỗi API Register:', error);
+
+            if (error.response?.status === 409) {
+                throw new Error('Email hoặc số điện thoại này đã được đăng ký.');
+            } else if (error.response?.status === 400) {
+                throw new Error('Dữ liệu đăng ký không hợp lệ, vui lòng kiểm tra lại.');
+            }
+
             throw error;
         }
     },
@@ -216,7 +234,17 @@ export const authService = {
             // ✅ User must login after verification (BR-14)
 
             return data;
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Lỗi API Verify OTP:', error);
+
+            if (error.response?.status === 400) {
+                throw new Error('Mã OTP không hợp lệ hoặc đã hết hạn.');
+            } else if (error.response?.status === 404) {
+                throw new Error('Tài khoản không tồn tại trên hệ thống.');
+            } else if (error.response?.status === 423) {
+                throw new Error('Tài khoản đã bị khoá do nhập sai quá nhiều lần.');
+            }
+
             throw error;
         }
     },
@@ -248,7 +276,15 @@ export const authService = {
             validateString(data.message, 'message');
 
             return data;
-        } catch (error) {
+        } catch (error: any) {
+            console.error('Lỗi API Send OTP:', error);
+
+            if (error.response?.status === 404) {
+                throw new Error('Không tìm thấy tài khoản để gửi OTP.');
+            } else if (error.response?.status === 429) {
+                throw new Error('Vui lòng đợi một lát trước khi yêu cầu mã OTP mới.');
+            }
+
             throw error;
         }
     },
@@ -316,3 +352,4 @@ export const authService = {
         return !!authService.getToken();
     },
 };
+

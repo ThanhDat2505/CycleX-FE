@@ -1935,7 +1935,13 @@ body {
 .filterLabel {
   font-size: 12px;
   font-weight: 900;
-  color: var(--muted);
+  color: #000000 !important;
+}
+
+.filterCard .filterLabel,
+.filterField > .filterLabel,
+label.filterLabel {
+  color: #000000 !important;
 }
 
 .filterInput {
@@ -1946,6 +1952,25 @@ body {
   background: #fff;
   outline: none;
   font-size: 14px;
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.filterInput::placeholder {
+  color: #6b7280;
+  opacity: 1;
+  font-weight: 600;
+}
+
+select.filterInput {
+  color: #6b7280;
+  font-weight: 700;
+}
+
+select.filterInput option {
+  color: #6b7280;
+  background: #ffffff;
+  font-weight: 700;
 }
 
 .filterInput:focus {
@@ -2347,6 +2372,159 @@ body {
   background: #f3f4f6;
   color: #111827;
   transition: all 0.25s ease;
+}
+
+.btn-primary {
+  background: #111827;
+  color: #fff;
+  border: 1px solid #111827;
+}
+
+.btn-primary:hover {
+  opacity: 0.92;
+}
+
+.disputeTableHeader,
+.disputeTableRow {
+  grid-template-columns: 1fr 1fr 1.8fr 1fr 1.8fr 1fr 1.2fr 1.2fr;
+}
+
+.disputePaginationBar {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: #374151;
+  font-size: 14px;
+}
+
+.disputePaginationActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.disputePageSizeLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.disputePageSizeLabel .filterInput {
+  width: 80px;
+}
+
+.disputeHeaderBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.disputeGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.disputeGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.disputeListingCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.disputeListingThumb {
+  width: 110px;
+  height: 84px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f9fafb;
+}
+
+.disputeListingThumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.disputeEvidenceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.disputeEvidenceCard {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  min-height: 52px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #111827;
+  background: #fff;
+  text-decoration: none;
+}
+
+.disputeResolutionGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.disputeResolutionHint {
+  margin-top: 8px;
+  background: #f9fafb;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 12px;
+  color: #374151;
+}
+
+.disputeResolutionActions {
+  margin-top: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+@media (max-width: 1200px) {
+  .disputeTableHeader,
+  .disputeTableRow {
+    grid-template-columns: 1fr 1fr 1.5fr 1fr 1.5fr 1fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 960px) {
+  .disputeHeaderBar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .disputeGrid2,
+  .disputeGrid3 {
+    grid-template-columns: 1fr;
+  }
+
+  .disputeListingCard {
+    align-items: flex-start;
+  }
 }
 
 .action-btn:hover {

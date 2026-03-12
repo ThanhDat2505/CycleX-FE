@@ -1,5 +1,5 @@
-import { DeliverySummary, Delivery, DeliveryFilter } from '@/app/types/shipper';
-import { apiCallGET } from '../utils/apiHelpers';
+import { DeliverySummary, Delivery, DeliveryFilter, DeliveryConfirmRequest, DeliveryFailedRequest, PaginatedResponse, DeliveryConfirmationInfo, DeliveryFailureInfo } from '@/app/types/shipper';
+import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
 import { validateObject, validateArray, validateString } from '../utils/apiValidation';
 
 // USE_MOCK_API can be imported or assumed globally if configured
@@ -36,12 +36,15 @@ export async function getDeliverySummary(shipperId: number): Promise<DeliverySum
         const data = await apiCallGET<any>('/shipper/dashboard/summary');
         validateObject(data, 'Shipper Delivery Summary API Response');
 
+        // BE returns { counts: { assigned, inProgress, failed }, asOf } — handle both nested and flat
+        const counts = data.counts || data;
+
         // Safe Fallback Parsing: Do not trust Backend completely
         return {
-            assigned: typeof data.assigned === 'number' ? data.assigned : 0,
-            inProgress: typeof data.inProgress === 'number' ? data.inProgress : 0,
-            delivered: typeof data.delivered === 'number' ? data.delivered : 0,
-            failed: typeof data.failed === 'number' ? data.failed : 0
+            assigned: typeof counts.assigned === 'number' ? counts.assigned : (typeof counts.assignedCount === 'number' ? counts.assignedCount : 0),
+            inProgress: typeof counts.inProgress === 'number' ? counts.inProgress : (typeof counts.inProgressCount === 'number' ? counts.inProgressCount : 0),
+            delivered: typeof counts.delivered === 'number' ? counts.delivered : (typeof counts.deliveredCount === 'number' ? counts.deliveredCount : 0),
+            failed: typeof counts.failed === 'number' ? counts.failed : (typeof counts.failedCount === 'number' ? counts.failedCount : 0)
         };
     } catch (error) {
         console.error('Lỗi khi lấy dữ liệu tổng hợp Shipper: ', error);
@@ -141,10 +144,10 @@ const MOCK_DELIVERIES: Delivery[] = [
 ];
 
 /**
- * Get assigned deliveries for a shipper
- * Mock implementation for S-61
+ * Get deliveries for a shipper
+ * Mock implementation for S-61 list directly from query
  */
-export async function getAssignedDeliveries(shipperId: number, filter: DeliveryFilter = 'ALL'): Promise<Delivery[]> {
+export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 'ALL', page: number = 0, size: number = 20): Promise<Delivery[]> {
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, 600));
 
@@ -153,39 +156,44 @@ export async function getAssignedDeliveries(shipperId: number, filter: DeliveryF
     }
 
     try {
-        // E.g. /api/shipper/deliveries/assigned?page=0&pageSize=10
-        const queryParams = filter !== 'ALL' ? `?status=${filter}&page=0&pageSize=20` : '?page=0&pageSize=20';
-        const dataResponse = await apiCallGET<any>(`/shipper/deliveries/assigned${queryParams}`);
+        // Build query string
+        const params = new URLSearchParams({
+            page: page.toString(),
+            size: size.toString()
+        });
+        if (filter !== 'ALL') {
+            params.append('status', filter); // Support BE filtering like S-61.F2
+        }
+
+        const dataResponse = await apiCallGET<any>(`/shipper/deliveries?${params.toString()}`);
 
         // Handle pagination arrays from Response payload 
         const itemsArray = Array.isArray(dataResponse) ? dataResponse : (dataResponse?.items || []);
-        validateArray(itemsArray, 'Shipper Deliveries Assigned API');
-
-        // Deep loop validation 
-        itemsArray.forEach((d: any, i: number) => {
-            const ctx = `shipperDeliveries[${i}]`;
-            validateObject(d, ctx);
-            validateString(d.id || d.deliveryId, `${ctx}.id`);
-            validateString(d.status, `${ctx}.status`);
-        });
+        validateArray(itemsArray, 'Shipper Deliveries API S-61');
 
         // Safe Fallback Value mappings to assure standard display for UI component:
         return itemsArray.map((d: any) => ({
-            ...d,
-            id: d.id || d.deliveryId,
+            id: String(d.id || d.deliveryId || ''),
+            orderId: String(d.orderId || '---'),
+            status: (d.status as Delivery['status']) || 'ASSIGNED',
+            assignedDate: String(d.assignedDate || d.scheduledTime || new Date().toISOString()),
+            scheduledDate: String(d.scheduledDate || d.scheduledTime || new Date().toISOString()),
+            completedDate: d.completedDate ? String(d.completedDate) : undefined,
+            codAmount: typeof d.codAmount === 'number' ? d.codAmount : undefined,
+            note: d.note ? String(d.note) : undefined,
             bike: {
-                name: d.bike?.name || `Xe đạp`,
-                image: d.bike?.image || '/placeholder-bike.png'
+                name: String(d.bike?.name || d.productName || 'Xe đạp'),
+                image: String(d.bike?.image || d.productImage || '/placeholder-bike.png')
             },
             sender: {
-                name: d.sender?.name || 'Khách gửi',
-                phone: d.sender?.phone || '---',
-                address: d.sender?.address || '---'
+                name: String(d.sender?.name || d.sellerName || 'Khách gửi'),
+                phone: String(d.sender?.phone || d.sellerPhone || '---'),
+                address: String(d.sender?.address || d.pickupAddress || '---')
             },
             receiver: {
-                name: d.receiver?.name || 'Khách nhận',
-                phone: d.receiver?.phone || '---',
-                address: d.receiver?.address || '---'
+                name: String(d.receiver?.name || d.buyerName || 'Khách nhận'),
+                phone: String(d.receiver?.phone || d.buyerPhone || '---'),
+                address: String(d.receiver?.address || d.dropoffAddress || '---')
             }
         }));
 
@@ -211,29 +219,219 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
         if (!data) return null;
 
         validateObject(data, 'Shipper Delivery Detail API');
-        validateString(data.id || data.deliveryId, 'delivery.id');
-        validateString(data.status, 'delivery.status');
 
         return {
-            ...data,
-            id: data.id || data.deliveryId,
+            id: String(data.id || data.deliveryId || deliveryId),
+            orderId: String(data.orderId || '---'),
+            status: (data.status as Delivery['status']) || 'ASSIGNED',
+            assignedDate: String(data.timeline?.assignedTime || data.assignedDate || new Date().toISOString()),
+            scheduledDate: String(data.timeline?.expectedDeliveryTime || data.scheduledDate || new Date().toISOString()),
+            completedDate: data.timeline?.completedTime ? String(data.timeline.completedTime) : undefined,
+            codAmount: typeof data.codAmount === 'number' ? data.codAmount : undefined,
+            note: data.note ? String(data.note) : undefined,
             bike: {
-                name: data.bike?.name || `Xe đạp`,
-                image: data.bike?.image || '/placeholder-bike.png'
+                name: String(data.bike?.name || data.productName || 'Xe đạp'),
+                image: String(data.bike?.image || data.productImage || '/placeholder-bike.png')
             },
             sender: {
-                name: data.sender?.name || 'Khách gửi',
-                phone: data.sender?.phone || '---',
-                address: data.sender?.address || '---'
+                name: String(data.seller?.fullName || data.pickup?.contactName || 'Khách gửi'),
+                phone: String(data.seller?.phone || data.pickup?.contactPhone || '---'),
+                address: String(data.pickup?.address || data.seller?.address || '---')
             },
             receiver: {
-                name: data.receiver?.name || 'Khách nhận',
-                phone: data.receiver?.phone || '---',
-                address: data.receiver?.address || '---'
+                name: String(data.buyer?.fullName || data.delivery?.contactName || 'Khách nhận'),
+                phone: String(data.buyer?.phone || data.delivery?.contactPhone || '---'),
+                address: String(data.delivery?.address || data.buyer?.address || '---')
             }
         };
     } catch (error) {
         console.error('Lỗi API Shipper Delivery Detail: ', error);
+        throw error;
+    }
+}
+
+/**
+ * Get delivery confirmation info
+ * S-63.A: GET /api/shipper/deliveries/{deliveryId}/confirmation
+ */
+export async function getDeliveryConfirmationInfo(deliveryId: string): Promise<DeliveryConfirmationInfo> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return { deliveryId };
+    }
+    const data = await apiCallGET<any>(`/shipper/deliveries/${deliveryId}/confirmation`);
+    validateObject(data, 'Delivery Confirmation Info');
+    return {
+        deliveryId: String(data.deliveryId || deliveryId)
+    };
+}
+
+/**
+ * Get delivery failure report info
+ * S-64.A: GET /api/shipper/deliveries/{deliveryId}/failure-report
+ */
+export async function getDeliveryFailureReportInfo(deliveryId: string): Promise<DeliveryFailureInfo> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return {
+            deliveryId,
+            transactionId: 'TX-1',
+            listingId: 'L-1',
+            buyerName: 'Khách nhận',
+            buyerPhone: '0901234567',
+            sellerName: 'Khách gửi',
+            deliveryAddress: '---',
+            productName: 'Xe đạp',
+            deliveryStatus: 'IN_PROGRESS',
+            transactionStatus: 'IN_PROGRESS'
+        };
+    }
+    const data = await apiCallGET<any>(`/shipper/deliveries/${deliveryId}/failure-report`);
+    validateObject(data, 'Delivery Failure Report Info');
+
+    return {
+        deliveryId: String(data.deliveryId || deliveryId),
+        transactionId: String(data.transactionId || ''),
+        listingId: String(data.listingId || ''),
+        buyerName: String(data.buyerName || ''),
+        buyerPhone: String(data.buyerPhone || ''),
+        sellerName: String(data.sellerName || ''),
+        deliveryAddress: String(data.deliveryAddress || ''),
+        productName: String(data.productName || ''),
+        deliveryStatus: String(data.deliveryStatus || ''),
+        transactionStatus: String(data.transactionStatus || '')
+    };
+}
+
+/**
+ * Start delivery (ASSIGNED → IN_PROGRESS)
+ * Shipper confirms pickup and begins delivery
+ * endpoint: POST /api/shipper/deliveries/{deliveryId}/start
+ */
+export async function startDelivery(deliveryId: string): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 600));
+
+        const mockDelivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        if (!mockDelivery || mockDelivery.status !== 'ASSIGNED') {
+            throw { status: 400, message: 'Delivery is not in ASSIGNED status' };
+        }
+        mockDelivery.status = 'IN_PROGRESS';
+        return;
+    }
+
+    try {
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/start`, {});
+
+        // Strict Validation: Don't trust Backend completely
+        if (response) {
+            validateObject(response, 'Start Delivery Response');
+            // Check if BE actually changed the state
+            if (response.deliveryStatus !== 'IN_PROGRESS') {
+                console.warn(`[API Warning] Received unexpectedly non-IN_PROGRESS status after starting delivery: ${response.deliveryStatus}`);
+            }
+        }
+    } catch (error: any) {
+        console.error('Lỗi API Start Delivery: ', error);
+
+        // Enhance explicit error mapping based on Postman docs
+        if (error.response?.status === 409) {
+            throw new Error('Đơn hàng đã được bắt đầu giao trước đó hoặc trạng thái không hợp lệ.');
+        } else if (error.response?.status === 403) {
+            throw new Error('Bạn không có quyền thực hiện giao đơn hàng này.');
+        } else if (error.response?.status === 404) {
+            throw new Error('Không tìm thấy đơn hàng trên hệ thống.');
+        }
+
+        throw error;
+    }
+}
+
+/**
+ * Confirm delivery as completed (S-63 / BP6)
+ * Backend will: delivery → DELIVERED, transaction → COMPLETED, listing → SOLD
+ * endpoint: POST /api/shipper/deliveries/{deliveryId}/confirm
+ */
+export async function confirmDelivery(
+    deliveryId: string,
+    payload: DeliveryConfirmRequest
+): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        // Mock: simulate BP6 lifecycle — delivery → DELIVERED
+        const mockDelivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        if (!mockDelivery || mockDelivery.status !== 'IN_PROGRESS') {
+            throw { status: 400, message: 'Delivery is not in IN_PROGRESS status' };
+        }
+        mockDelivery.status = 'DELIVERED';
+        mockDelivery.completedDate = new Date().toISOString();
+        return;
+    }
+
+    try {
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/confirm`, payload);
+
+        // Strict Validation: Don't trust Backend completely
+        if (response) {
+            validateObject(response, 'Confirm Delivery Response');
+            // Check if BE actually changed the state
+            if (response.deliveryStatus !== 'DELIVERED') {
+                console.warn(`[API Warning] Received unexpectedly non-DELIVERED status after confirming delivery: ${response.deliveryStatus}`);
+            }
+        }
+    } catch (error: any) {
+        console.error('Lỗi API Confirm Delivery: ', error);
+
+        // Enhance explicit error mapping based on Postman docs
+        if (error.response?.status === 409) {
+            throw new Error('Đơn hàng đã được xác nhận thành công trước đó.');
+        } else if (error.response?.status === 400) {
+            throw new Error('Dữ liệu xác nhận không hợp lệ.');
+        }
+
+        throw error;
+    }
+}
+
+/**
+ * S-64: Report delivery failed
+ */
+export async function reportDeliveryFailed(deliveryId: string, payload: DeliveryFailedRequest): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 800));
+
+        const delivery = MOCK_DELIVERIES.find(d => d.id === deliveryId);
+        if (!delivery) throw new Error('Delivery not found');
+        if (delivery.status !== 'IN_PROGRESS') throw new Error('Status not IN_PROGRESS');
+
+        // S-64-BR04
+        delivery.status = 'FAILED';
+        delivery.note = payload.reason;
+        return;
+    }
+
+    try {
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/failure-report`, payload);
+
+        // Strict Validation: Don't trust Backend completely
+        if (response) {
+            validateObject(response, 'Failure Report Response');
+            // Check if BE actually changed the state
+            if (response.deliveryStatus !== 'FAILED') {
+                console.warn(`[API Warning] Received unexpectedly non-FAILED status after reporting failure: ${response.deliveryStatus}`);
+            }
+        }
+    } catch (error: any) {
+        console.error(`Lỗi API Report Failed Delivery ${deliveryId}:`, error);
+
+        // Enhance explicit error mapping based on Postman docs
+        if (error.response?.status === 409) {
+            throw new Error('Đơn hàng đã được báo cáo thất bại trước đó.');
+        } else if (error.response?.status === 400) {
+            throw new Error('Lý do thất bại không hợp lệ hoặc bị trống.');
+        }
+
         throw error;
     }
 }

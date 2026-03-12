@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import type {
   Listing as DashboardListing,
   ListingStatus as DashboardListingStatus,
@@ -673,3 +675,4 @@ export const inspectorService = {
     );
   },
 };
+

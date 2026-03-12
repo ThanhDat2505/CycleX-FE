@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/purity */
+
 // app/inquiries/page.tsx
 "use client";
 
@@ -101,3 +103,4 @@ const InquiriesPage: React.FC = () => {
 };
 
 export default InquiriesPage;
+

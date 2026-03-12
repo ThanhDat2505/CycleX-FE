@@ -26,11 +26,6 @@ export default function PendingTransactionsPage() {
                 return;
             }
             if (role !== 'SELLER') {
-                // Not authorized
-                // In a real app, might show a nice 403 page
-                // For now, redirect home with a toast (if we can use toast here)
-                // Since this component uses useAuth, we can assume it's Client Component
-                // We'll trust the user to be redirected
                 router.push('/');
                 return;
             }
