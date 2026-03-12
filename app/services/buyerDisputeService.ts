@@ -3,11 +3,32 @@
  * Handles API calls for dispute creation and management.
  */
 
-import { CreateDisputeRequest, Dispute, DisputeReason } from '../types/dispute';
+import { CreateDisputeRequest, Dispute, DisputeReason, DisputeDetailResponse } from '../types/dispute';
 import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
 import { uploadMultipleImages } from './imageUploadService';
 
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
+
+/**
+ * Map BE DisputeDetailResponse → FE Dispute type
+ */
+function mapToDispute(res: DisputeDetailResponse): Dispute {
+    return {
+        disputeId: res.id,
+        orderId: res.transaction?.id ?? 0,
+        buyerId: res.buyer?.id ?? 0,
+        sellerId: res.seller?.id ?? 0,
+        title: res.reasonText || '',
+        content: res.description || '',
+        reason: res.reasonText || '',
+        status: (res.status as Dispute['status']) || 'OPEN',
+        evidenceUrls: res.evidence?.filter(e => e.type === 'IMAGE').map(e => e.url) ?? [],
+        adminNote: res.resolutionNote,
+        resolvedAt: res.resolvedAt,
+        createdAt: res.createdAt,
+        updatedAt: res.updatedAt,
+    };
+}
 
 /**
  * Validate dispute data before submission
@@ -116,22 +137,20 @@ export async function checkDisputeEligibility(orderId: number, buyerId: number, 
  * Create a new dispute for an order
  */
 export async function createDispute(data: CreateDisputeRequest): Promise<Dispute> {
-    // Note: Validation should ideally be called before calling this from the component
-    // but we add it here as a safety measure if reasons are provided.
-    
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, 1500));
         return {
             disputeId: Math.floor(Math.random() * 1000),
             ...data,
-            reason: 'Lý do khiếu nại', // In real API, this would come from backend mapping
-            status: 'PENDING',
+            reason: 'Lý do khiếu nại',
+            status: 'OPEN',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
         };
     }
 
-    return apiCallPOST<Dispute>('/disputes', data);
+    const res = await apiCallPOST<DisputeDetailResponse>('/disputes', data);
+    return mapToDispute(res);
 }
 
 /**
@@ -142,7 +161,6 @@ export async function getDisputeById(disputeId: number): Promise<Dispute> {
     if (USE_MOCK_API) {
         await new Promise(resolve => setTimeout(resolve, 800));
         
-        // Mock data for testing
         if (disputeId === 999) {
             throw new Error('Khiếu nại không tồn tại.');
         }
@@ -155,7 +173,7 @@ export async function getDisputeById(disputeId: number): Promise<Dispute> {
             title: 'Sản phẩm không đúng mô tả',
             content: 'Xe bị trầy xước nhiều chỗ mà người bán không nói rõ trong tin đăng. Tôi yêu cầu hoàn tiền hoặc giảm giá.',
             reason: 'Sản phẩm không đúng mô tả',
-            status: disputeId % 2 === 0 ? 'SOLVED' : 'REJECTED',
+            status: disputeId % 2 === 0 ? 'RESOLVED' : 'REJECTED',
             evidenceUrls: [
                 'https://placehold.co/600x400?text=Scratch+1',
                 'https://placehold.co/600x400?text=Scratch+2'
@@ -169,7 +187,8 @@ export async function getDisputeById(disputeId: number): Promise<Dispute> {
         };
     }
 
-    return apiCallGET<Dispute>(`/disputes/${disputeId}`);
+    const res = await apiCallGET<DisputeDetailResponse>(`/disputes/${disputeId}`);
+    return mapToDispute(res);
 }
 
 /**

@@ -14,7 +14,7 @@ const STATUS_OPTIONS = [
   { value: "OPEN", label: "Đang mở" },
   { value: "IN_PROGRESS", label: "Đang xử lý" },
   { value: "RESOLVED", label: "Đã giải quyết" },
-  { value: "CLOSED", label: "Đã đóng" },
+  { value: "REJECTED", label: "Đã từ chối" },
 ];
 
 const SORT_OPTIONS = [
@@ -37,7 +37,7 @@ function statusBadgeClass(status: string): string {
   if (normalized === "RESOLVED") return "badge badgeApproved";
   if (normalized === "OPEN") return "badge badgeDanger";
   if (normalized === "IN_PROGRESS") return "badge badgeInfo";
-  if (normalized === "CLOSED") return "badge";
+  if (normalized === "REJECTED") return "badge";
   return "badge";
 }
 

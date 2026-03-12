@@ -59,8 +59,8 @@ export default function DisputeResolutionClient({
         if (!mounted) return;
         setDetail(data);
 
-        if (data.status === "RESOLVED" || data.status === "CLOSED") {
-          setError("Dispute nay da duoc xu ly. Khong the resolve lai.");
+        if (data.status === "RESOLVED" || data.status === "REJECTED") {
+          setError("Dispute này đã được xử lý. Không thể resolve lại.");
         }
       } catch (err: unknown) {
         if (!mounted) return;
