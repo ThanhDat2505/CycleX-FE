@@ -13,6 +13,9 @@ import OrderTimeline from './components/OrderTimeline';
 import ContactInfoCard from './components/ContactInfoCard';
 import VehicleInfoCard from './components/VehicleInfoCard';
 import InvoiceWidget from './components/InvoiceWidget';
+import { Modal } from '@/app/components/ui';
+import DisputeForm from './components/DisputeForm';
+import { canCreateDispute } from '@/app/services/disputeServices';
 
 export default function TransactionDetailPage() {
     const params = useParams();
@@ -24,6 +27,7 @@ export default function TransactionDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
     const timeoutIds = useRef<NodeJS.Timeout[]>([]);
 
     useEffect(() => {
@@ -212,10 +216,34 @@ export default function TransactionDetailPage() {
                             isProcessing={isProcessing}
                             onAccept={handleAccept}
                             onCancel={handleCancel}
+                            onDispute={() => setIsDisputeModalOpen(true)}
+                            canDispute={canCreateDispute(transaction.status, transaction.updatedAt)}
                         />
                     </div>
                 </div>
             </div>
+
+            {/* Dispute Modal */}
+            <Modal
+                isOpen={isDisputeModalOpen}
+                onClose={() => setIsDisputeModalOpen(false)}
+                title="Tạo khiếu nại đơn hàng"
+                size="lg"
+                footer={null}
+            >
+                <DisputeForm
+                    orderId={transaction.transactionId}
+                    buyerId={user?.userId || 0}
+                    sellerId={transaction.sellerId}
+                    orderStatus={transaction.status}
+                    completedAt={transaction.updatedAt}
+                    onSuccess={() => {
+                        setIsDisputeModalOpen(false);
+                        // Refresh transaction status if needed
+                    }}
+                    onCancel={() => setIsDisputeModalOpen(false)}
+                />
+            </Modal>
 
             {/* Mobile Sticky Action Bar (Only if Pending) */}
             {transaction.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM && (

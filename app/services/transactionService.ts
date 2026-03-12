@@ -416,6 +416,27 @@ let mockTransactions: TransactionWithDetails[] = [
         createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
         updatedAt: new Date().toISOString(),
     },
+    {
+        transactionId: 108,
+        listingId: 8,
+        buyerId: 2,
+        sellerId: 3,
+        transactionType: 'PURCHASE',
+        status: 'COMPLETED',
+        desiredTime: new Date(Date.now() - 86400000).toISOString(),
+        listingTitle: 'Giant Escape 3 2023',
+        listingImage: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=500',
+        buyerName: 'Nguyen Van A',
+        sellerName: 'CycleX Verified Seller',
+        platformFee: 50000,
+        inspectionFee: 100000,
+        totalAmount: 8500000,
+        receiverName: 'Nguyen Van A',
+        receiverPhone: '0987654321',
+        receiverAddress: '456 Le Loi, Da Nang',
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 3600000).toISOString(), // Completed 1h ago
+    },
 ];
 
 export async function getSellerTransactions(
