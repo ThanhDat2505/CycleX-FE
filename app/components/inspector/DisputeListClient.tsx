@@ -6,7 +6,7 @@ import {
   disputeService,
   type DisputeListResult,
   type DisputeListRow,
-} from "@/app/services/disputeService";
+} from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
 
 const STATUS_OPTIONS = [
