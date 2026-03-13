@@ -9,7 +9,7 @@ import {
   cancelTransaction,
 } from "@/app/services/transactionService";
 import { TransactionWithDetails } from "@/app/types/transaction";
-import { LoadingSpinner, Button, StatusBadge, ConfirmModal } from "@/app/components/ui";
+import { LoadingSpinner, Button, StatusBadge, ConfirmModal, PageLoading } from "@/app/components/ui";
 import { formatDate } from "@/app/utils/format";
 import { useToast } from "@/app/contexts/ToastContext";
 import { TRANSACTION_STATUS } from "@/app/constants/transactionStatus";
@@ -158,11 +158,7 @@ export default function TransactionDetailPage() {
   };
 
   if (isAuthLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <PageLoading message="Đang tải chi tiết giao dịch..." />;
   }
 
   if (error || !transaction) {

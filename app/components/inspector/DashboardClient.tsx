@@ -8,6 +8,7 @@ import {
   inspectorService,
   type InspectorDashboardStats,
 } from "@/app/services/inspectorService";
+import { PageLoading } from "@/app/components/ui";
 
 export default function DashboardClient() {
   const [stats, setStats] = useState<InspectorDashboardStats>({
@@ -125,7 +126,7 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      {loading && <div className="text-gray-500">Đang tải dữ liệu...</div>}
+      {loading && <PageLoading message="Đang tải số liệu thống kê..." />}
       {!loading && error && <div className="text-red-600">{error}</div>}
 
       {/* Stats Grid */}

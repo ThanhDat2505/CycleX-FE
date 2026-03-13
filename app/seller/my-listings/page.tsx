@@ -12,6 +12,7 @@ import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
 import Pagination from '../../listings/components/Pagination';
 import { ITEMS_PER_PAGE } from "@/app/constants";
+import { PageLoading } from "@/app/components/ui";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -95,7 +96,7 @@ function MyListingsContent() {
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
   if (authLoading) {
-    return <div className="p-8 text-center">Loading...</div>;
+    return <PageLoading message="Đang xác thực tài khoản..." />;
   }
 
   return (
@@ -153,10 +154,7 @@ function MyListingsContent() {
 
       {/* Listings Grid */}
       {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF8A00]"></div>
-          <p className="text-gray-600 mt-4">Loading listings...</p>
-        </div>
+        <PageLoading message="Đang tải danh sách tin đăng..." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {listings.map((listing) => (

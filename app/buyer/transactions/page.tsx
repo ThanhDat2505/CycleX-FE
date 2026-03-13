@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getBuyerTransactions, cancelTransaction } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
-import { LoadingSpinner, EmptyState, Button, StatusBadge, ConfirmModal } from '@/app/components/ui';
+import { LoadingSpinner, EmptyState, Button, StatusBadge, ConfirmModal, PageLoading } from '@/app/components/ui';
 import { formatPrice, formatDate } from '@/app/utils/format';
 import Link from 'next/link';
 import { useToast } from '@/app/contexts/ToastContext';
@@ -95,7 +95,7 @@ export default function BuyerTransactionsPage() {
         }
     };
 
-    if (isAuthLoading || isLoading) return <div className="p-12 flex justify-center"><LoadingSpinner /></div>;
+    if (isAuthLoading || isLoading) return <PageLoading message="Đang tải danh sách đơn hàng..." />;
 
     return (
         <div className="min-h-screen bg-gray-50">

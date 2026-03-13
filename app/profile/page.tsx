@@ -4,13 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { userService } from "@/app/services/userService";
-import {
-  UserProfileResponse,
-  UpdateProfileRequest,
-  ChangePasswordRequest,
-} from "@/app/types/user";
+import { UserProfileResponse, UpdateProfileRequest, ChangePasswordRequest } from "@/app/types/user";
 import { MESSAGES } from "@/app/constants/messages";
 import { useToast } from "@/app/contexts/ToastContext";
+import { LoadingSpinner, PageLoading } from "@/app/components/ui";
 import { ProfileInfoForm } from "./components/ProfileInfoForm";
 import { ChangePasswordForm } from "./components/ChangePasswordForm";
 import { User, Lock, ChevronRight, MapPin } from "lucide-react";
@@ -92,14 +89,7 @@ export default function ProfilePage() {
   };
 
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex justify-center items-center">
-        <span className="flex items-center gap-2">
-          <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          Đang tải...
-        </span>
-      </div>
-    );
+    return <PageLoading message="Đang tải hồ sơ của bạn..." />;
   }
 
   if (!user || !profile) return null; // Prevent UI flash before redirect

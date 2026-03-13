@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getSellerTransactions } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
-import { LoadingSpinner, EmptyState, Button } from '@/app/components/ui';
+import { LoadingSpinner, EmptyState, Button, PageLoading } from '@/app/components/ui';
 import MiniTimeline from '@/app/components/ui/MiniTimeline';
 import { formatPrice, formatDate } from '@/app/utils/format';
 import { useToast } from '@/app/contexts/ToastContext';
@@ -104,7 +104,7 @@ export default function TransactionHistoryPage() {
         return TRANSACTION_STATUS_LABELS[status as keyof typeof TRANSACTION_STATUS_LABELS] || status;
     }, []);
 
-    if (isAuthLoading) return <div className="flex justify-center p-12"><LoadingSpinner /></div>;
+    if (isAuthLoading) return <PageLoading message="Đang xác thực thông tin..." />;
 
     return (
         <div className="min-h-screen bg-gray-50 pb-12">
@@ -179,7 +179,7 @@ export default function TransactionHistoryPage() {
 
                     {/* Table */}
                     {isLoading ? (
-                        <div className="p-12 flex justify-center"><LoadingSpinner /></div>
+                        <PageLoading message="Đang tải dữ liệu giao dịch..." />
                     ) : filteredTransactions.length === 0 ? (
                         <EmptyState
                             title="Không tìm thấy đơn hàng nào"
