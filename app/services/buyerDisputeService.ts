@@ -201,3 +201,19 @@ export function canCreateDispute(status: string, updatedAt: string): boolean {
     const diffInHours = (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60);
     return diffInHours <= 24;
 }
+
+/**
+ * S-83 Admin Dispute Override
+ * Allows BP7 to force resolve a dispute
+ */
+export async function overrideDispute(disputeId: number, action: 'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT', reason: string): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log(`[MOCK] Dispute ${disputeId} overridden by Admin. Action: ${action}. Reason: ${reason}`);
+        // In a real app, this would notify the buyer and seller via WebSockets or push notifications
+        return;
+    }
+
+    await apiCallPOST(`/admin/disputes/${disputeId}/override`, { action, reason });
+}
+
