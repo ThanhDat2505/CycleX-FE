@@ -72,7 +72,7 @@ export default function SearchFilters({
         onFiltersChange({ ...filters, brands: newBrands });
     };
 
-    const handleConditionToggle = (condition: 'new' | 'used') => {
+    const handleConditionToggle = (condition: string) => {
         const currentConditions = filters.conditions || [];
         const newConditions = currentConditions.includes(condition)
             ? currentConditions.filter(c => c !== condition)
@@ -145,14 +145,14 @@ export default function SearchFilters({
                 <h4 className={STYLES.sectionTitle}>{MESSAGES.FILTER_BIKE_TYPE}</h4>
                 <div className={STYLES.checkboxGroup}>
                     {displayedTypes.map((type) => (
-                        <label key={type} className={STYLES.checkboxLabel}>
+                        <label key={type.value} className={STYLES.checkboxLabel}>
                             <input
                                 type="checkbox"
-                                checked={filters.bikeTypes?.includes(type) || false}
-                                onChange={() => handleBikeTypeToggle(type)}
+                                checked={filters.bikeTypes?.includes(type.value) || false}
+                                onChange={() => handleBikeTypeToggle(type.value)}
                                 className={STYLES.checkbox}
                             />
-                            <span className={STYLES.checkboxText}>{type}</span>
+                            <span className={STYLES.checkboxText}>{type.label}</span>
                         </label>
                     ))}
                 </div>
@@ -204,8 +204,8 @@ export default function SearchFilters({
                         <label key={option.value} className={STYLES.checkboxLabel}>
                             <input
                                 type="checkbox"
-                                checked={filters.conditions?.includes(option.value as 'new' | 'used') || false}
-                                onChange={() => handleConditionToggle(option.value as 'new' | 'used')}
+                                checked={filters.conditions?.includes(option.value) || false}
+                                onChange={() => handleConditionToggle(option.value)}
                                 className={STYLES.checkbox}
                             />
                             <span className={STYLES.checkboxText}>{option.label}</span>
