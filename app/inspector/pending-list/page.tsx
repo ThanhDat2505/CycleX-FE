@@ -6,14 +6,12 @@ import "@/app/components/inspector/inspector.css";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-white">
-      <InspectorHeroLayout
-        title="Tin Chờ"
-        highlightTitle="Duyệt"
-        description="Danh sách các tin đăng mới cần được kiểm định và phê duyệt."
-      >
-        <PendingListClient />
-      </InspectorHeroLayout>
-    </div>
+    <InspectorHeroLayout
+      title="Tin Chờ"
+      highlightTitle="Duyệt"
+      description="Danh sách các tin đăng mới cần được kiểm định và phê duyệt."
+    >
+      <PendingListClient />
+    </InspectorHeroLayout>
   );
 }

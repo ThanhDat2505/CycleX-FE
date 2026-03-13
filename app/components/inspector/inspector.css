@@ -1953,24 +1953,31 @@ label.filterLabel {
   outline: none;
   font-size: 14px;
   color: #6b7280;
-  font-weight: 700;
+  font-weight: 400;
+  font-family: inherit;
 }
 
 .filterInput::placeholder {
   color: #6b7280;
   opacity: 1;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
 }
 
 select.filterInput {
   color: #6b7280;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
 }
 
 select.filterInput option {
   color: #6b7280;
   background: #ffffff;
-  font-weight: 700;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
 }
 
 .filterInput:focus {
