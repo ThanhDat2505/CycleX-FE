@@ -1,48 +1,26 @@
-export interface SummaryMetrics {
+export type TimeRange = 'TODAY' | 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'CUSTOM';
+
+export interface UserManagementStats {
     totalUsers: number;
-    totalOrders: number;
+    activeUsers: number;
+    bannedSuspendedUsers: number;
+    newUsersInRange: number; // users created in the selected time range
+}
+
+export interface DisputeManagementStats {
     totalDisputes: number;
-    totalRevenue: number;
-    userTrend: number;
-    orderTrend: number;
-    disputeTrend: number;
-    revenueTrend: number;
+    pendingDisputes: number;
+    resolvedDisputes: number;
+    newDisputesInRange: number; // disputes created in the selected time range
 }
 
-export interface ChartDataPoint {
-    date: string;
-    value: number;
-}
-
-export interface UserStats {
-    daily: ChartDataPoint[];
-    weekly: ChartDataPoint[];
-}
-
-export interface OrderStats {
-    totalOrders: number;
-    completedRevenue: number;
-    orderHistory: ChartDataPoint[];
-    revenueHistory: ChartDataPoint[];
-}
-
-export type ActivityType = 'USER_REGISTER' | 'ORDER_CREATE' | 'DATA_UPDATE' | 'SYSTEM';
-
-export interface RecentActivity {
-    id: string;
-    type: ActivityType;
-    description: string;
-    timestamp: string;
-    user?: string;
+export interface TransactionStats {
+    totalSuccessfulTransactions: number;
+    successfulRevenue: number;
 }
 
 export interface AdminDashboardData {
-    summary: SummaryMetrics;
-    userStats: UserStats;
-    orderStats: OrderStats;
-    recentActivities: RecentActivity[];
-    recentDisputes: RecentActivity[];
-    recentUsers: RecentActivity[];
+    userManagement: UserManagementStats;
+    disputeManagement: DisputeManagementStats;
+    transactions: TransactionStats;
 }
-
-export type TimeRange = 'TODAY' | 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'CUSTOM';
