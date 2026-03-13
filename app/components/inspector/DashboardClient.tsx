@@ -107,13 +107,6 @@ export default function DashboardClient() {
         <div className="absolute inset-0 bg-gradient-to-r from-brand-bg via-brand-bg/90 to-transparent" />
         <div className="relative z-10 container mx-auto px-6 md:px-12 lg:px-20 py-14">
           <div className="max-w-3xl animate-slide-up">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 mb-6 shadow-xl">
-              <span className="text-brand-primary animate-pulse">🔍</span>
-              <span className="text-sm font-semibold tracking-wide uppercase">
-                Bảng Điều Khiển Kiểm Định
-              </span>
-            </div>
-
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight tracking-tight">
               Inspector{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-amber-400">
