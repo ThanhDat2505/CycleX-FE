@@ -15,9 +15,23 @@ function buildQuery(query?: ApiRequestOptions["query"]): string {
   return text ? `?${text}` : "";
 }
 
-function buildHeaders(extra?: Record<string, string>): Record<string, string> {
+function isBodyInitLike(value: unknown): value is BodyInit {
+  return (
+    value instanceof FormData ||
+    value instanceof URLSearchParams ||
+    typeof value === "string" ||
+    value instanceof Blob ||
+    value instanceof ArrayBuffer ||
+    ArrayBuffer.isView(value)
+  );
+}
+
+function buildHeaders(
+  extra?: Record<string, string>,
+  includeJsonContentType: boolean = true,
+): Record<string, string> {
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(includeJsonContentType ? { "Content-Type": "application/json" } : {}),
     ...extra,
   };
 
@@ -35,12 +49,21 @@ export async function backendRequest<TResponse>(
   endpoint: string,
   options: ApiRequestOptions = {},
 ): Promise<TResponse> {
-  const { method = "GET", body, query, headers } = options;
+  const { method = "GET", body, query, headers, credentials } = options;
+
+  const isFormData = body instanceof FormData;
+  const requestBody =
+    body === undefined
+      ? undefined
+      : isBodyInitLike(body)
+        ? body
+        : JSON.stringify(body);
 
   const response = await fetch(`${BASE_PATH}${endpoint}${buildQuery(query)}`, {
     method,
-    headers: buildHeaders(headers),
-    body: body !== undefined ? JSON.stringify(body) : undefined,
+    headers: buildHeaders(headers, !isFormData),
+    body: requestBody,
+    credentials,
   });
 
   if (!response.ok) {

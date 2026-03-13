@@ -11,6 +11,7 @@ export interface ApiRequestOptions {
   query?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
   headers?: Record<string, string>;
+  credentials?: RequestCredentials;
 }
 
 export interface BackendErrorShape {

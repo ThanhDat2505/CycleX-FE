@@ -10,6 +10,7 @@ import {
   toRecord,
   type JsonRecord,
 } from "@/app/services/dataAdapter";
+import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 
 type DisputeListOptions = {
   status?: string;
@@ -345,47 +346,27 @@ function mapDetail(raw: JsonRecord): DisputeDetail {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const token = getAuthToken();
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (token) headers.Authorization = `Bearer ${token}`;
-
-  const response = await fetch(`/backend/api${path}`, {
-    method: init?.method ?? "GET",
-    headers,
-    body: init?.body,
-    credentials: "omit",
-  });
-
-  if (!response.ok) {
-    let message = `Server error: ${response.status} ${response.statusText}`;
-    try {
-      const text = await response.text();
-      if (text) {
-        try {
-          const parsed: unknown = JSON.parse(text);
-          const parsedRecord = toRecord(parsed);
-          message = getString(
-            firstDefined(
-              parsedRecord.message,
-              parsedRecord.error,
-              parsedRecord.detail,
-            ),
-            message,
-          );
-        } catch {
-          message = text;
-        }
-      }
-    } catch {
-      // Ignore parse error.
-    }
+  try {
+    return await backendRequest<T>(path, {
+      method:
+        (init?.method?.toUpperCase() as
+          | "GET"
+          | "POST"
+          | "PUT"
+          | "PATCH"
+          | "DELETE") ?? "GET",
+      body: init?.body,
+      credentials: "omit",
+    });
+  } catch (error: unknown) {
+    const backendError = error as BackendErrorShape | undefined;
+    const fallback = "Khong the ket noi den API dispute";
+    const message = getString(
+      firstDefined(backendError?.message, (error as Error)?.message),
+      fallback,
+    );
     throw new Error(message);
   }
-
-  if (response.status === 204) return undefined as T;
-  return (await response.json()) as T;
 }
 
 async function tryFirstSuccess<T>(
