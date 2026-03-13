@@ -114,27 +114,42 @@ export default function PendingListClient() {
 
   return (
     <div className="page">
-      <div className="toolbar">
-        <div className="field fieldGrow">
-          <label className="label">Tìm kiếm</label>
-          <input
-            className="input"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Tìm theo tên sản phẩm, cửa hàng, #ID..."
-          />
+      <div className="filterCard">
+        <div className="filterRow">
+          <div className="filterField filterGrow">
+            <label className="filterLabel">Tìm kiếm</label>
+            <input
+              className="filterInput"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Tìm theo tên sản phẩm, cửa hàng, #ID..."
+            />
+          </div>
+
+          <div className="filterField" style={{ minWidth: 260 }}>
+            <label className="filterLabel">Sắp xếp</label>
+            <select
+              className="filterInput"
+              value={sort}
+              onChange={(e) => setSort(e.target.value as "new" | "old")}
+            >
+              <option value="new">Mới nhất</option>
+              <option value="old">Cũ nhất</option>
+            </select>
+          </div>
         </div>
 
-        <div className="field fieldSort">
-          <label className="label">Sắp xếp</label>
-          <select
-            className="select"
-            value={sort}
-            onChange={(e) => setSort(e.target.value as "new" | "old")}
+        <div className="filterActions">
+          <button
+            className="btn btnGhost"
+            type="button"
+            onClick={() => {
+              setQ("");
+              setSort("new");
+            }}
           >
-            <option value="new">Mới nhất</option>
-            <option value="old">Cũ nhất</option>
-          </select>
+            Xóa bộ lọc
+          </button>
         </div>
       </div>
 
