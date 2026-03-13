@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Download, Filter } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import StatCards from '../../components/admin/StatCards';
 import DashboardCharts from '../../components/admin/DashboardCharts';
 import ActivityFeed from '../../components/admin/ActivityFeed';
@@ -127,14 +127,6 @@ const AdminDashboardPage = () => {
                         >
                             <RefreshCw size={20} />
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-all">
-                            <Download size={18} />
-                            <span>Export</span>
-                        </button>
-                        <button className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 border border-blue-600 rounded-xl text-white font-medium hover:bg-blue-700 transition-all shadow-sm shadow-blue-200">
-                            <Filter size={18} />
-                            <span>Advanced</span>
-                        </button>
                     </div>
                 </div>
 
@@ -151,40 +143,46 @@ const AdminDashboardPage = () => {
                     <StatCards summary={data.summary} />
                 </div>
 
-                {/* Charts and Activity */}
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                    <div className="xl:col-span-2">
-                        <DashboardCharts 
-                            userData={data.userStats.daily} 
-                            orderData={data.orderStats.orderHistory} 
-                        />
-                        
-                        {/* Summary Details or Additional Chart */}
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Revenue Overview</h3>
-                            <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-100 mb-4">
-                                <div>
-                                    <p className="text-emerald-700 text-sm font-medium">Completed Revenue</p>
-                                    <p className="text-2xl font-bold text-emerald-900 mt-1">
-                                        {formatPrice(data.orderStats.completedRevenue)}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-emerald-600 text-xs uppercase font-bold tracking-wider">Target: 500M</p>
-                                    <div className="w-32 h-2 bg-emerald-200 rounded-full mt-2 overflow-hidden text-transparent">
-                                        <div className="bg-emerald-600 h-full" style={{ width: '82%' }}>.</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <p className="text-sm text-gray-500">
-                                This reflects all orders marked as "Completed" in the selected time range.
+                {/* Charts Section */}
+                <div className="mb-8">
+                    <DashboardCharts 
+                        userData={data.userStats.daily} 
+                        orderData={data.orderStats.orderHistory} 
+                    />
+                </div>
+
+                {/* Lists Section: Recent Disputes & Users */}
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+                    <ActivityFeed 
+                        activities={data.recentDisputes} 
+                        title="5 Recent Disputes" 
+                    />
+                    <ActivityFeed 
+                        activities={data.recentUsers} 
+                        title="5 Recent Registered Users" 
+                    />
+                </div>
+
+                {/* Additional Stats Section */}
+                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Revenue Overview</h3>
+                    <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-xl border border-emerald-100 mb-4">
+                        <div>
+                            <p className="text-emerald-700 text-sm font-medium">Completed Revenue</p>
+                            <p className="text-2xl font-bold text-emerald-900 mt-1">
+                                {formatPrice(data.orderStats.completedRevenue)}
                             </p>
                         </div>
+                        <div className="text-right">
+                            <p className="text-emerald-600 text-xs uppercase font-bold tracking-wider">Target: 500M</p>
+                            <div className="w-32 h-2 bg-emerald-200 rounded-full mt-2 overflow-hidden text-transparent">
+                                <div className="bg-emerald-600 h-full" style={{ width: '82%' }}>.</div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div className="xl:col-span-1">
-                        <ActivityFeed activities={data.recentActivities} />
-                    </div>
+                    <p className="text-sm text-gray-500">
+                        This reflects all orders marked as "Completed" in the selected time range.
+                    </p>
                 </div>
             </div>
         </div>

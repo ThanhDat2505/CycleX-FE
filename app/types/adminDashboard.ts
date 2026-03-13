@@ -1,11 +1,12 @@
 export interface SummaryMetrics {
     totalUsers: number;
-    activeUsers: number;
     totalOrders: number;
+    totalDisputes: number;
     totalRevenue: number;
-    userTrend: number; // Percentage change
-    orderTrend: number; // Percentage change
-    revenueTrend: number; // Percentage change
+    userTrend: number;
+    orderTrend: number;
+    disputeTrend: number;
+    revenueTrend: number;
 }
 
 export interface ChartDataPoint {
@@ -40,6 +41,8 @@ export interface AdminDashboardData {
     userStats: UserStats;
     orderStats: OrderStats;
     recentActivities: RecentActivity[];
+    recentDisputes: RecentActivity[];
+    recentUsers: RecentActivity[];
 }
 
 export type TimeRange = 'TODAY' | 'LAST_7_DAYS' | 'LAST_30_DAYS' | 'CUSTOM';

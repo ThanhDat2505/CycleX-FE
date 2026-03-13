@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, TrendingUp, ShoppingBag, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { Users, TrendingUp, ShoppingBag, DollarSign, ArrowUpRight, ArrowDownRight, Bell } from 'lucide-react';
 import { SummaryMetrics } from '../../types/adminDashboard';
 import { formatNumber, formatCompactNumber } from '../../utils/format';
 
@@ -17,21 +17,21 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
             color: 'blue'
         },
         {
-            label: 'Active Users',
-            value: formatNumber(summary?.activeUsers || 0),
-            trend: null,
-            icon: TrendingUp,
-            color: 'emerald'
-        },
-        {
-            label: 'Total Orders',
+            label: 'Total Transactions',
             value: formatNumber(summary?.totalOrders || 0),
             trend: summary?.orderTrend || 0,
             icon: ShoppingBag,
             color: 'purple'
         },
         {
-            label: 'Total Revenue',
+            label: 'Total Disputes',
+            value: formatNumber(summary?.totalDisputes || 0),
+            trend: summary?.disputeTrend || 0,
+            icon: Bell, // Using Bell for disputes
+            color: 'rose'
+        },
+        {
+            label: 'System Revenue',
             value: formatCompactNumber(summary?.totalRevenue || 0),
             trend: summary?.revenueTrend || 0,
             icon: DollarSign,
@@ -43,7 +43,8 @@ const StatCards: React.FC<StatCardsProps> = ({ summary }) => {
         blue: 'bg-blue-50 text-blue-600 border-blue-100',
         emerald: 'bg-emerald-50 text-emerald-600 border-emerald-100',
         purple: 'bg-purple-50 text-purple-600 border-purple-100',
-        amber: 'bg-amber-50 text-amber-600 border-amber-100'
+        amber: 'bg-amber-50 text-amber-600 border-amber-100',
+        rose: 'bg-rose-50 text-rose-600 border-rose-100'
     };
 
     return (
