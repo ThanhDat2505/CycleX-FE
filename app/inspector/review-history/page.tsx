@@ -117,9 +117,9 @@ export default function ReviewHistoryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-white">
       <InspectorNav />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 md:px-12 lg:px-20 py-8">
         <h1 className="page-title">Review History</h1>
 
         <div className="filterCard">
@@ -213,4 +213,3 @@ export default function ReviewHistoryPage() {
     </div>
   );
 }
-

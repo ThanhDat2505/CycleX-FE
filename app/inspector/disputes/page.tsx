@@ -8,7 +8,7 @@ export const metadata = {
 
 export default function DisputeListPage() {
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-white">
       <InspectorNav />
       <DisputeListClient />
     </div>

@@ -4,11 +4,9 @@ import "@/app/components/inspector/inspector.css";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-white">
       <InspectorNav />
-      <div className="container mx-auto px-4 py-8">
-        <DashboardClient />
-      </div>
+      <DashboardClient />
     </div>
   );
 }
