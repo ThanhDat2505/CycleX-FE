@@ -143,8 +143,6 @@ export default function DisputeListClient() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="page-title">Dispute Queue</h1>
-
       <div className="filterCard">
         <div className="filterRow">
           <div className="filterField">

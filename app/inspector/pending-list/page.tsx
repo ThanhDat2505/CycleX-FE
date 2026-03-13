@@ -1,18 +1,19 @@
-import PendingListClient from "@/app/components/inspector/PendingListClient";
-import InspectorNav from "@/app/components/inspector/InspectorNav";
-import "@/app/components/inspector/inspector.css";
+"use client";
 
-export const metadata = {
-  title: "CycleX - Pending List",
-};
+import PendingListClient from "@/app/components/inspector/PendingListClient";
+import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
+import "@/app/components/inspector/inspector.css";
 
 export default function Page() {
   return (
     <div className="min-h-screen bg-white">
-      <InspectorNav />
-      <div className="container mx-auto px-6 md:px-12 lg:px-20 py-8">
+      <InspectorHeroLayout
+        title="Tin Chờ"
+        highlightTitle="Duyệt"
+        description="Danh sách các tin đăng mới cần được kiểm định và phê duyệt."
+      >
         <PendingListClient />
-      </div>
+      </InspectorHeroLayout>
     </div>
   );
 }

@@ -114,10 +114,6 @@ export default function PendingListClient() {
 
   return (
     <div className="page">
-      <header className="pageHeader">
-        <h1 className="page-title">Danh sách chờ duyệt</h1>
-      </header>
-
       <div className="toolbar">
         <div className="field fieldGrow">
           <label className="label">Tìm kiếm</label>

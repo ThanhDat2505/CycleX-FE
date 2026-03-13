@@ -161,9 +161,9 @@ export default function DashboardClient() {
           {/* Dashboard heading + CTA */}
           <div className="max-w-3xl animate-slide-up">
             <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight tracking-tight">
-              Inspector{" "}
+              Trang{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-amber-400">
-                Dashboard
+                Tổng Quan
               </span>
             </h1>
 

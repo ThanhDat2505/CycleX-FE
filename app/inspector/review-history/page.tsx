@@ -4,7 +4,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import InspectorNav from "@/app/components/inspector/InspectorNav";
+import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
 import "@/app/components/inspector/inspector.css";
 import {
   inspectorService,
@@ -118,10 +118,11 @@ export default function ReviewHistoryPage() {
 
   return (
     <div className="min-h-screen bg-white">
-      <InspectorNav />
-      <div className="container mx-auto px-6 md:px-12 lg:px-20 py-8">
-        <h1 className="page-title">Review History</h1>
-
+      <InspectorHeroLayout
+        title="Lịch Sử"
+        highlightTitle="Duyệt"
+        description="Xem lại toàn bộ lịch sử kiểm định và phê duyệt tin đăng."
+      >
         <div className="filterCard">
           <div className="filterRow">
             <div className="filterField filterGrow">
@@ -209,7 +210,7 @@ export default function ReviewHistoryPage() {
             </div>
           )}
         </div>
-      </div>
+      </InspectorHeroLayout>
     </div>
   );
 }

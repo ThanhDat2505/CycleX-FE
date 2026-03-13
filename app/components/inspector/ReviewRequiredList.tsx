@@ -89,10 +89,6 @@ export default function ReviewRequiredList() {
 
   return (
     <div className="page">
-      <header className="pageHeader">
-        <h1 className="page-title">Listings to review</h1>
-      </header>
-
       <div className="toolbar">
         <div className="field fieldGrow">
           <label className="label">Tìm kiếm</label>
