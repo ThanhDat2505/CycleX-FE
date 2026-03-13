@@ -9,7 +9,7 @@ export default function Page() {
     <InspectorHeroLayout
       title="Tin Cần"
       highlightTitle="Xem Xét"
-      description="Các tin đăng đang trong quá trình xem xét, cần hành động từ bạn."
+      description="Các tin đăng đang trong quá trình xem xét, cần hành động."
     >
       <ReviewRequiredList />
     </InspectorHeroLayout>

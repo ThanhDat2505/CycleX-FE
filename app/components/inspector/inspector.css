@@ -1985,6 +1985,38 @@ select.filterInput option {
   border-color: rgba(15, 23, 42, 0.35);
 }
 
+.disputeFilterRow {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.disputeFilterField {
+  min-width: 0;
+}
+
+.disputeFilterField .filterInput {
+  width: 100%;
+}
+
+@media (max-width: 1280px) {
+  .disputeFilterRow {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .disputeFilterRow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .disputeFilterRow {
+    grid-template-columns: 1fr;
+  }
+}
+
 .filterActions {
   display: flex;
   justify-content: flex-end;
