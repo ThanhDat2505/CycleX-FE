@@ -24,11 +24,12 @@ export async function getAdminDashboardData(
         return {
             summary: {
                 totalUsers: 1250,
-                activeUsers: 845,
                 totalOrders: 328,
-                totalRevenue: 450000000, // 450M VND
+                totalDisputes: 15,
+                totalRevenue: 450000000,
                 userTrend: 12.5,
                 orderTrend: -5.2,
+                disputeTrend: 2.1,
                 revenueTrend: 8.7,
             },
             userStats: {
@@ -54,26 +55,20 @@ export async function getAdminDashboardData(
                 }))
             },
             recentActivities: [
-                {
-                    id: '1',
-                    type: 'USER_REGISTER',
-                    description: 'New user "Nguyen Van A" registered',
-                    timestamp: new Date().toISOString(),
-                    user: 'Nguyen Van A'
-                },
-                {
-                    id: '2',
-                    type: 'ORDER_CREATE',
-                    description: 'Order #ORD-2024-001 created for "Trek FX 2"',
-                    timestamp: new Date(Date.now() - 3600000).toISOString(),
-                    user: 'Tran Thi B'
-                },
-                {
-                    id: '3',
-                    type: 'DATA_UPDATE',
-                    description: 'System updated cycling categories',
-                    timestamp: new Date(Date.now() - 7200000).toISOString()
-                }
+                { id: '1', type: 'USER_REGISTER', description: 'New user "Nguyen Van A" registered', timestamp: new Date().toISOString(), user: 'Nguyen Van A' },
+                { id: '2', type: 'ORDER_CREATE', description: 'Order #ORD-2024-001 created', timestamp: new Date(Date.now() - 3600000).toISOString(), user: 'Tran Thi B' }
+            ],
+            recentDisputes: [
+                { id: 'd1', type: 'SYSTEM', description: 'Dispute #DISP-101: Item not as described', timestamp: new Date(Date.now() - 10800000).toISOString(), user: 'Nguyen Van C' },
+                { id: 'd2', type: 'SYSTEM', description: 'Dispute #DISP-102: Late delivery', timestamp: new Date(Date.now() - 86400000).toISOString(), user: 'Pham Van D' },
+                { id: 'd3', type: 'SYSTEM', description: 'Dispute #DISP-103: Damage during shipping', timestamp: new Date(Date.now() - 172800000).toISOString(), user: 'Le Thi E' }
+            ],
+            recentUsers: [
+                { id: 'u1', type: 'USER_REGISTER', description: 'Hoang Van F joined CycleX', timestamp: new Date().toISOString() },
+                { id: 'u2', type: 'USER_REGISTER', description: 'Bui Thi G joined CycleX', timestamp: new Date(Date.now() - 3600000).toISOString() },
+                { id: 'u3', type: 'USER_REGISTER', description: 'Vo Van H joined CycleX', timestamp: new Date(Date.now() - 7200000).toISOString() },
+                { id: 'u4', type: 'USER_REGISTER', description: 'Dang Van I joined CycleX', timestamp: new Date(Date.now() - 10800000).toISOString() },
+                { id: 'u5', type: 'USER_REGISTER', description: 'Ngo Thi K joined CycleX', timestamp: new Date(Date.now() - 14400000).toISOString() }
             ]
         };
     }

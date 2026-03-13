@@ -5,9 +5,10 @@ import { formatDate } from '../../utils/format';
 
 interface ActivityFeedProps {
     activities: RecentActivity[];
+    title?: string;
 }
 
-const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
+const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [], title = "Recent Activity" }) => {
     const safeActivities = Array.isArray(activities) ? activities : [];
 
     const getIcon = (type: string) => {
@@ -29,8 +30,8 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">Recent Activity</h3>
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 h-full">
+            <h3 className="text-lg font-bold text-gray-900 mb-6">{title}</h3>
             <div className="space-y-6">
                 {safeActivities.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
@@ -68,9 +69,6 @@ const ActivityFeed: React.FC<ActivityFeedProps> = ({ activities = [] }) => {
                     ))
                 )}
             </div>
-            <button className="w-full mt-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors border border-gray-100">
-                View All Activities
-            </button>
         </div>
     );
 };
