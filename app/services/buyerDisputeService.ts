@@ -25,6 +25,7 @@ function mapToDispute(res: DisputeDetailResponse): Dispute {
         evidenceUrls: res.evidence?.filter(e => e.type === 'IMAGE').map(e => e.url) ?? [],
         adminNote: res.resolutionNote,
         resolvedAt: res.resolvedAt,
+        isOverridden: !!res.resolutionAction,
         createdAt: res.createdAt,
         updatedAt: res.updatedAt,
     };
@@ -181,6 +182,7 @@ export async function getDisputeById(disputeId: number): Promise<Dispute> {
             adminNote: disputeId % 2 === 0 
                 ? 'Chúng tôi đã xác nhận tình trạng xe và yêu cầu người bán hoàn trả 10% giá trị giao dịch cho bạn.' 
                 : 'Dựa trên hình ảnh đối chứng từ người bán, vết trầy xước này đã được hiển thị trong ảnh thứ 4 của bài đăng. Khiếu nại bị bác bỏ.',
+            isOverridden: disputeId % 3 === 0, // Mock: Every 3rd dispute is overridden
             resolvedAt: new Date().toISOString(),
             createdAt: new Date(Date.now() - 86400000).toISOString(),
             updatedAt: new Date().toISOString(),

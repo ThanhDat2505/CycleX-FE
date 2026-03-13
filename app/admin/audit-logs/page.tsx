@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-    Search, FileText, Filter, Calendar, Info, 
-    RefreshCw, ChevronLeft, ChevronRight, XCircle, Shield
+    FileText, Filter, Calendar, Info, 
+    RefreshCw, ChevronLeft, ChevronRight, X, Shield,
+    Terminal, Hash, Database, Clock, Fingerprint
 } from 'lucide-react';
 import { auditLogService } from '../../services/auditLogService';
 import { AuditLog, AuditLogQuery, AuditLogAction } from '../../types/auditLog';
@@ -12,7 +13,7 @@ import { formatDate } from '../../utils/format';
 
 export default function AuditLogsPage() {
     useEffect(() => {
-        document.title = "Audit Logs | Admin | CycleX";
+        document.title = "Audit Logs | CycleX Admin";
     }, []);
 
     const { addToast } = useToast();
@@ -23,13 +24,14 @@ export default function AuditLogsPage() {
     const [query, setQuery] = useState<AuditLogQuery>({ page: 1, pageSize: 15 });
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [refreshing, setRefreshing] = useState(false);
 
     // Modal State
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     const fetchLogs = useCallback(async (currentQuery: AuditLogQuery) => {
-        setLoading(true);
+        setRefreshing(true);
         try {
             const data = await auditLogService.getLogs(currentQuery);
             setLogs(data.items);
@@ -37,9 +39,10 @@ export default function AuditLogsPage() {
             setTotalPages(data.totalPages);
             setQuery(currentQuery);
         } catch (error: any) {
-            addToast(error.message || 'Failed to load audit logs', 'error');
+            addToast(error.message || 'Không thể tải nhật ký hệ thống', 'error');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, [addToast]);
 
@@ -63,240 +66,311 @@ export default function AuditLogsPage() {
         setIsDetailModalOpen(true);
     };
 
-    const getActionBadge = (action: AuditLogAction) => {
+    const getActionStyle = (action: AuditLogAction) => {
         switch (action) {
-            case 'UPDATE_USER': return 'bg-blue-50 text-blue-600 border-blue-100';
-            case 'UPDATE_ROLE': return 'bg-purple-50 text-purple-600 border-purple-100';
-            case 'UPDATE_STATUS': return 'bg-amber-50 text-amber-600 border-amber-100';
-            case 'OVERRIDE_DISPUTE': return 'bg-rose-50 text-rose-600 border-rose-100';
-            case 'REFUND_ISSUE': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'DELETE_POST': return 'bg-gray-100 text-gray-700 border-gray-200';
-            default: return 'bg-gray-50 text-gray-500 border-gray-100';
+            case 'UPDATE_USER': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+            case 'UPDATE_ROLE': return 'text-purple-400 bg-purple-500/10 border-purple-500/20';
+            case 'UPDATE_STATUS': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
+            case 'OVERRIDE_DISPUTE': return 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+            case 'REFUND_ISSUE': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+            case 'DELETE_POST': return 'text-gray-400 bg-white/5 border-white/10';
+            default: return 'text-gray-400 bg-white/5 border-white/10';
         }
     };
 
+    if (loading && !refreshing) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-brand-bg">
+                <div className="flex flex-col items-center">
+                    <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-gray-500 font-bold uppercase tracking-widest text-[10px]">Đang truy xuất nhật ký...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
+        <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Audit Logs</h1>
-                        <p className="text-gray-500 mt-1">Track system events and administrative actions.</p>
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-white/5">
+                    <div className="animate-slide-up">
+                        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-4 shadow-xl">
+                            <Fingerprint size={12} className="text-brand-primary" />
+                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400">Security & Systems Audit</span>
+                        </div>
+                        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none mb-4">
+                            Audit <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">Logs</span>
+                        </h1>
+                        <p className="text-gray-400 text-lg max-w-xl font-medium">
+                            Giám sát toàn bộ hoạt động quản trị, thay đổi dữ liệu và các hành động nhạy cảm trên hệ thống.
+                        </p>
                     </div>
-                    <button 
-                        onClick={() => fetchLogs(query)}
-                        className={`p-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50 transition-all ${loading ? 'animate-spin' : ''}`}
-                        title="Refresh Logs"
-                    >
-                        <RefreshCw size={20} />
-                    </button>
+                    <div>
+                        <button 
+                            onClick={() => fetchLogs(query)}
+                            className={`flex items-center gap-3 px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-white hover:bg-white/10 transition-all ${refreshing ? 'cursor-not-allowed opacity-50' : ''}`}
+                        >
+                            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+                            Refresh logs
+                        </button>
+                    </div>
                 </div>
 
-                {/* Filters */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Action Type</label>
-                        <div className="relative">
+                {/* Filters Bar */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Loại hành động</label>
+                        <div className="relative group">
                             <select 
                                 onChange={(e) => handleFilterChange('actionType', e.target.value)}
                                 value={query.actionType || ''}
-                                className="w-full appearance-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:border-blue-500 cursor-pointer"
+                                className="w-full appearance-none px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-[11px] font-bold uppercase tracking-wider text-gray-300 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
                             >
-                                <option value="">All Actions</option>
-                                <option value="UPDATE_USER">Update User</option>
-                                <option value="UPDATE_ROLE">Change Role</option>
-                                <option value="UPDATE_STATUS">Change Status</option>
-                                <option value="OVERRIDE_DISPUTE">Override Dispute</option>
-                                <option value="REFUND_ISSUE">Refund Issue</option>
-                                <option value="DELETE_POST">Delete Post</option>
+                                <option value="" className="bg-brand-bg">Tất cả hành động</option>
+                                <option value="UPDATE_USER" className="bg-brand-bg">Update User</option>
+                                <option value="UPDATE_ROLE" className="bg-brand-bg">Change Role</option>
+                                <option value="UPDATE_STATUS" className="bg-brand-bg">Change Status</option>
+                                <option value="OVERRIDE_DISPUTE" className="bg-brand-bg text-rose-400">Override Dispute</option>
+                                <option value="REFUND_ISSUE" className="bg-brand-bg text-emerald-400">Refund Issue</option>
+                                <option value="DELETE_POST" className="bg-brand-bg">Delete Post</option>
                             </select>
-                            <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+                            <Filter className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={14} />
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">Filter by Admin ID</label>
-                        <div className="relative">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Mã Quản trị (Admin ID)</label>
+                        <div className="relative group">
                             <input 
                                 type="number" 
-                                placeholder="Admin ID..." 
+                                placeholder="Nhập Admin ID..." 
                                 value={query.adminId || ''}
                                 onChange={(e) => handleFilterChange('adminId', e.target.value ? Number(e.target.value) : undefined)}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+                                className="w-full px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-gray-700"
                             />
-                            <Shield className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
+                            <Shield className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={16} />
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">From Date</label>
-                        <div className="relative">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Từ ngày</label>
+                        <div className="relative group">
                             <input 
                                 type="date" 
                                 value={query.startDate || ''}
                                 onChange={(e) => handleFilterChange('startDate', e.target.value)}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700"
+                                className="w-full px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-[11px] font-bold text-gray-300 focus:outline-none focus:border-brand-primary/50 transition-all [color-scheme:dark]"
                             />
-                            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-gray-400 uppercase tracking-widest pl-1">To Date</label>
-                        <div className="relative">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">Đến ngày</label>
+                        <div className="relative group">
                             <input 
                                 type="date" 
                                 value={query.endDate || ''}
                                 onChange={(e) => handleFilterChange('endDate', e.target.value)}
-                                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-700"
+                                className="w-full px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-[11px] font-bold text-gray-300 focus:outline-none focus:border-brand-primary/50 transition-all [color-scheme:dark]"
                             />
-                            <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
                         </div>
                     </div>
                 </div>
 
-                {/* Logs Table */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center p-20">
-                            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="mt-4 text-gray-500 font-medium text-sm">Loading logs...</p>
-                        </div>
-                    ) : logs.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-20 text-center">
-                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300">
-                                <FileText size={32} />
+                {/* Table Section */}
+                <div className="relative bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl animate-fade-in mb-10">
+                    <div className="overflow-x-auto min-h-[400px]">
+                        {logs.length === 0 && !refreshing ? (
+                            <div className="flex flex-col items-center justify-center py-32 text-center">
+                                <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
+                                    <FileText size={48} />
+                                </div>
+                                <h3 className="text-2xl font-black text-white mb-2 tracking-tight">Không có nhật ký nào</h3>
+                                <p className="text-gray-500 font-medium">Thử điều chỉnh điều kiện lọc hoặc ngày giới hạn.</p>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">No execution logs found</h3>
-                            <p className="text-gray-500 text-sm">Try adjusting your date or target filters.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
+                        ) : (
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50/80 border-b border-gray-100 whitespace-nowrap">
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Date & Time</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Admin Details</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Action</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Target ID</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Details</th>
+                                    <tr className="border-b border-white/5">
+                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Thời gian</th>
+                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Quản trị viên</th>
+                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Hành động</th>
+                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Đối tượng</th>
+                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">Chi tiết</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-50">
+                                <tbody className="divide-y divide-white/5">
                                     {logs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-gray-50/50 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm font-bold text-gray-900">{formatDate(log.createdAt)}</p>
-                                                <p className="text-xs text-gray-400 font-medium truncate w-32">{log.id}</p>
+                                        <tr key={log.id} className="group hover:bg-white/[0.02] transition-colors">
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[11px] font-black text-white group-hover:text-brand-primary transition-colors">{formatDate(log.createdAt).split(' ')[0]}</span>
+                                                    <span className="text-[10px] font-bold text-gray-600 mt-1 uppercase tracking-tighter">{formatDate(log.createdAt).split(' ').slice(1).join(' ')}</span>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm font-bold text-gray-900">{log.adminName}</p>
-                                                <p className="text-xs text-gray-500">ID: {log.adminId}</p>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-gray-400 group-hover:scale-110 transition-transform origin-left">
+                                                        {log.adminName.charAt(0)}
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-sm font-black text-white">{log.adminName}</p>
+                                                        <p className="text-[10px] font-bold text-gray-500 tracking-widest uppercase">ID: {log.adminId}</p>
+                                                    </div>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase border ${getActionBadge(log.actionType)}`}>
+                                            <td className="px-8 py-6">
+                                                <span className={`inline-flex px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${getActionStyle(log.actionType)}`}>
                                                     {log.actionType.replace('_', ' ')}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm text-gray-700 font-medium bg-gray-100 px-2 py-1 rounded w-fit">{log.targetId}</p>
+                                            <td className="px-8 py-6">
+                                                <div className="flex items-center gap-2">
+                                                    <Hash size={12} className="text-gray-600" />
+                                                    <span className="text-sm font-bold text-gray-300 font-mono tracking-tighter bg-white/5 px-3 py-1 rounded-lg border border-white/5 group-hover:border-white/10 transition-colors">{log.targetId}</span>
+                                                </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-8 py-6 text-right">
                                                 <button 
                                                     onClick={() => openModal(log)}
-                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 hover:text-blue-600 transition-colors font-bold text-xs shadow-sm"
+                                                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
                                                 >
-                                                    <Info size={14} /> View
+                                                    <Info size={14} /> Kiểm tra
                                                 </button>
                                             </td>
                                         </tr>
                                     ))}
                                 </tbody>
                             </table>
-                        </div>
-                    )}
+                        )}
+                    </div>
 
                     {/* Pagination */}
                     {!loading && totalPages > 1 && (
-                        <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
-                            <p className="text-xs text-gray-500 font-medium">
-                                Showing <span className="font-bold text-gray-900">{(query.page! - 1) * query.pageSize! + 1}</span> to <span className="font-bold text-gray-900">{Math.min(query.page! * query.pageSize!, total)}</span> of <span className="font-bold text-gray-900">{total}</span> logs
+                        <div className="px-8 py-6 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
+                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                                Hiển thị <span className="text-white">{(query.page! - 1) * query.pageSize! + 1}</span> - <span className="text-white">{Math.min(query.page! * query.pageSize!, total)}</span> / <span className="text-white">{total}</span> Nhật ký
                             </p>
-                            <div className="flex gap-2">
+                            <div className="flex gap-4">
                                 <button 
                                     onClick={() => handlePageChange(query.page! - 1)}
                                     disabled={query.page === 1}
-                                    className="p-1.5 rounded-lg border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white"
+                                    className="p-3 rounded-2xl border border-white/10 text-gray-400 disabled:opacity-20 hover:bg-white/5 hover:text-white transition-all"
                                 >
-                                    <ChevronLeft size={16} />
+                                    <ChevronLeft size={20} />
                                 </button>
-                                <span className="px-3 py-1.5 text-sm font-bold text-gray-900 bg-white border border-gray-200 rounded-lg">
-                                    {query.page} / {totalPages}
-                                </span>
                                 <button 
                                     onClick={() => handlePageChange(query.page! + 1)}
                                     disabled={query.page === totalPages}
-                                    className="p-1.5 rounded-lg border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white"
+                                    className="p-3 rounded-2xl border border-white/10 text-gray-400 disabled:opacity-20 hover:bg-white/5 hover:text-white transition-all"
                                 >
-                                    <ChevronRight size={16} />
+                                    <ChevronRight size={20} />
                                 </button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* Detail Modal */}
+                {/* --- TERMINAL STYLE DETAIL MODAL --- */}
                 {isDetailModalOpen && selectedLog && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white rounded-3xl p-8 max-w-lg w-full shadow-2xl relative animate-scale-in">
-                            <button onClick={() => setIsDetailModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900">
-                                <XCircle size={24} />
-                            </button>
-                            <div className="mb-8 border-b border-gray-100 pb-4">
-                                <h2 className="text-xl font-black text-gray-900 mb-1">Audit Log Details</h2>
-                                <p className="text-xs text-gray-500 font-medium">{selectedLog.id}</p>
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in selection:bg-emerald-500/30">
+                        <div className="bg-[#0A0F14] border border-white/10 rounded-[2.5rem] w-full max-w-2xl shadow-2xl animate-scale-in relative overflow-hidden flex flex-col max-h-[90vh]">
+                            {/* Terminal Top Bar */}
+                            <div className="flex items-center justify-between px-10 py-6 border-b border-white/10 bg-white/[0.02]">
+                                <div className="flex items-center gap-4">
+                                    <div className="flex gap-2">
+                                        <div className="w-3 h-3 rounded-full bg-rose-500/50" />
+                                        <div className="w-3 h-3 rounded-full bg-amber-500/50" />
+                                        <div className="w-3 h-3 rounded-full bg-emerald-500/50" />
+                                    </div>
+                                    <div className="flex items-center gap-2 ml-4">
+                                        <Terminal size={16} className="text-emerald-500 animate-pulse" />
+                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Log Inspection System v1.02</span>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={() => setIsDetailModalOpen(false)}
+                                    className="p-2 hover:bg-white/10 rounded-full transition-colors group"
+                                >
+                                    <X size={20} className="text-gray-500 group-hover:text-white" />
+                                </button>
+                            </div>
+
+                            {/* Inspection Info Bar */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5 border-b border-white/10">
+                                <div className="p-6 bg-[#0A0F14]">
+                                    <div className="flex items-center gap-2 mb-2 text-gray-500">
+                                        <Clock size={12} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Timestamp</span>
+                                    </div>
+                                    <p className="text-[11px] font-bold">{formatDate(selectedLog.createdAt)}</p>
+                                </div>
+                                <div className="p-6 bg-[#0A0F14]">
+                                    <div className="flex items-center gap-2 mb-2 text-gray-500">
+                                        <Database size={12} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Reference ID</span>
+                                    </div>
+                                    <p className="text-[11px] font-bold text-brand-primary">{selectedLog.id}</p>
+                                </div>
+                                <div className="p-6 bg-[#0A0F14]">
+                                    <div className="flex items-center gap-2 mb-2 text-gray-500">
+                                        <Shield size={12} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Authority</span>
+                                    </div>
+                                    <p className="text-[11px] font-bold">{selectedLog.adminName}</p>
+                                </div>
+                                <div className="p-6 bg-[#0A0F14]">
+                                    <div className="flex items-center gap-2 mb-2 text-gray-500">
+                                        <Hash size={12} />
+                                        <span className="text-[9px] font-black uppercase tracking-widest">Target Object</span>
+                                    </div>
+                                    <p className="text-[11px] font-bold text-emerald-400">{selectedLog.targetId}</p>
+                                </div>
                             </div>
                             
-                            <div className="space-y-5">
-                                <div className="grid grid-cols-2 gap-4">
+                            {/* Deep Content - Terminal Body */}
+                            <div className="flex-1 overflow-y-auto p-10 font-mono scrollbar-thin scrollbar-thumb-white/10">
+                                <div className="space-y-6">
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Admin Executor</p>
-                                        <p className="text-sm font-bold text-gray-900">{selectedLog.adminName}</p>
-                                        <p className="text-xs text-gray-500">ID: {selectedLog.adminId}</p>
+                                        <p className="text-emerald-500 text-[10px] font-black uppercase mb-3 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 
+                                            Action Metadata
+                                        </p>
+                                        <div className="p-6 bg-white/[0.03] border border-white/5 rounded-2xl relative">
+                                            <span className={`inline-block px-3 py-1 rounded-lg text-[10px] font-black tracking-[0.1em] uppercase border mb-4 ${getActionStyle(selectedLog.actionType)}`}>
+                                                {selectedLog.actionType}
+                                            </span>
+                                            <p className="text-gray-400 text-sm leading-relaxed mb-4 ">
+                                                &gt; Process started by auth token verify: 256-bit AES
+                                            </p>
+                                        </div>
                                     </div>
+
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Execution Date</p>
-                                        <p className="text-sm font-medium text-gray-900">{formatDate(selectedLog.createdAt)}</p>
+                                        <p className="text-emerald-500 text-[10px] font-black uppercase mb-3 flex items-center gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> 
+                                            Execution Description
+                                        </p>
+                                        <div className="p-8 bg-emerald-500/[0.02] border border-emerald-500/10 rounded-2xl text-emerald-100/80 leading-relaxed text-sm">
+                                            {selectedLog.details}
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Action Category</p>
-                                        <span className={`inline-flex px-2 py-1 rounded text-[10px] font-black tracking-widest uppercase border ${getActionBadge(selectedLog.actionType)}`}>
-                                            {selectedLog.actionType.replace('_', ' ')}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Target Resource</p>
-                                        <p className="text-sm text-gray-700 font-medium bg-gray-50 border border-gray-100 px-2 py-1 rounded w-fit">{selectedLog.targetId}</p>
-                                    </div>
-                                </div>
-                                
-                                <div className="mt-6">
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Deep Inspection Details</p>
-                                    <div className="bg-gray-900 text-green-400 p-4 rounded-xl font-mono text-xs overflow-x-auto shadow-inner leading-relaxed">
-                                        {selectedLog.details}
+
+                                    <div className="pt-10 border-t border-white/5 text-[9px] text-gray-600 font-bold uppercase tracking-[0.2em] flex items-center justify-between">
+                                        <span>System Integrity: Verified</span>
+                                        <span className="animate-pulse">_ TERMINAL_READY</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="mt-8">
+                            {/* Modal Footer */}
+                            <div className="p-8 border-t border-white/10 bg-white/[0.01] flex justify-end">
                                 <button 
                                     onClick={() => setIsDetailModalOpen(false)}
-                                    className="w-full py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors"
+                                    className="px-10 py-4 bg-emerald-600/10 text-emerald-500 border border-emerald-500/20 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all active:scale-[0.98] shadow-glow-emerald"
                                 >
-                                    Close Inspection
+                                    End Inspection Session
                                 </button>
                             </div>
                         </div>

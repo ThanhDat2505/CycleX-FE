@@ -88,6 +88,7 @@ export interface Dispute {
     evidenceUrls: string[];
     adminNote?: string;
     resolvedAt?: string;
+    isOverridden?: boolean;
     createdAt: string;
     updatedAt: string;
 }

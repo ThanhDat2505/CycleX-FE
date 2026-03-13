@@ -17,7 +17,7 @@ let mockUsers: AdminUser[] = Array.from({ length: 50 }).map((_, i) => ({
     phone: `0900000${(i + 1).toString().padStart(3, '0')}`,
     fullName: `Nguyễn Văn ${String.fromCharCode(65 + (i % 26))}${i + 1}`,
     role: i === 0 ? 'ADMIN' : (i % 3 === 0 ? 'SELLER' : 'BUYER'),
-    status: i % 10 === 0 ? 'SUSPENDED' : (i % 15 === 0 ? 'BANNED' : 'ACTIVE'),
+    status: i % 10 === 0 ? 'SUSPENDED' : 'ACTIVE',
     isVerify: i % 5 !== 0,
     createdAt: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
 }));

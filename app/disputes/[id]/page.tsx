@@ -1,497 +1,351 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button, LoadingSpinner } from "@/app/components/ui";
-import { Dispute } from "@/app/types/dispute";
+import { 
+    ChevronLeft, Loader2, AlertTriangle, CheckCircle, 
+    XCircle, ShieldAlert, History, MessageSquare, 
+    Image as ImageIcon, ExternalLink, Zap
+} from "lucide-react";
 import { getDisputeById, overrideDispute } from "@/app/services/buyerDisputeService";
+import { Dispute } from "@/app/types/dispute";
 import { useToast } from "@/app/contexts/ToastContext";
 import { formatDate } from "@/app/utils/format";
 
 export default function DisputeResultPage() {
-  const params = useParams();
-  const router = useRouter();
-  const { addToast } = useToast();
-  const [dispute, setDispute] = useState<Dispute | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const params = useParams();
+    const router = useRouter();
+    const { addToast } = useToast();
+    const [dispute, setDispute] = useState<Dispute | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  const disputeId = Number(params.id);
+    const disputeId = Number(params.id);
 
-  // --- S-83 Override State ---
-  const [isAdmin] = useState(true); // Mocking Admin role for BP7 Demo
-  const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
-  const [overrideAction, setOverrideAction] = useState<'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT'>('BUYER_WIN');
-  const [overrideReason, setOverrideReason] = useState('');
-  const [isOverriding, setIsOverriding] = useState(false);
+    // --- S-83 Override State ---
+    const [isAdmin] = useState(true); // Mocking Admin role for BP7 Demo
+    const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
+    const [overrideAction, setOverrideAction] = useState<'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT'>('BUYER_WIN');
+    const [overrideReason, setOverrideReason] = useState('');
+    const [isOverriding, setIsOverriding] = useState(false);
 
-  const handleOverrideSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!overrideReason.trim()) {
-        addToast('Vui lòng nhập lý do (Reason).', 'error');
-        return;
+    const fetchDispute = React.useCallback(async () => {
+        if (isNaN(disputeId)) {
+            setError("Mã khiếu nại không hợp lệ.");
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const data = await getDisputeById(disputeId);
+            setDispute(data);
+        } catch (err: any) {
+            setError(err.message || "Không tìm thấy thông tin khiếu nại.");
+        } finally {
+            setLoading(false);
+        }
+    }, [disputeId]);
+
+    useEffect(() => {
+        document.title = "Chi tiết khiếu nại | CycleX Admin";
+        fetchDispute();
+    }, [fetchDispute]);
+
+    const handleOverrideSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!overrideReason.trim()) {
+            addToast('Vui lòng nhập lý do ghi đè (Reason).', 'error');
+            return;
+        }
+        setIsOverriding(true);
+        try {
+            await overrideDispute(disputeId, overrideAction, overrideReason);
+            addToast('Đã ghi đè kết quả thành công! Thông báo đã gửi tới Buyer & Seller.', 'success');
+            setIsOverrideModalOpen(false);
+            setOverrideReason('');
+            fetchDispute(); // Reload data
+        } catch (err: any) {
+            addToast(err.message || 'Lỗi khi ghi đè dispute.', 'error');
+        } finally {
+            setIsOverriding(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-brand-bg">
+                <div className="flex flex-col items-center">
+                    <Loader2 className="w-12 h-12 text-brand-primary animate-spin" />
+                    <p className="mt-4 text-gray-400 font-bold uppercase tracking-widest text-xs">Đang tải chi tiết mã #{disputeId}...</p>
+                </div>
+            </div>
+        );
     }
-    setIsOverriding(true);
-    try {
-        await overrideDispute(disputeId, overrideAction, overrideReason);
-        addToast('Đã ghi đè kết quả thành công! Thông báo đã gửi đến Buyer & Seller.', 'success');
-        setIsOverrideModalOpen(false);
-        setOverrideReason('');
-        // Reload dispute data
-        const data = await getDisputeById(disputeId);
-        setDispute(data);
-    } catch (err: any) {
-        addToast(err.message || 'Lỗi khi ghi đè dispute.', 'error');
-    } finally {
-        setIsOverriding(false);
-    }
-  };
 
-  useEffect(() => {
-    async function fetchDispute() {
-      if (isNaN(disputeId)) {
-        setError("Mã khiếu nại không hợp lệ.");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        const data = await getDisputeById(disputeId);
-        setDispute(data);
-      } catch (err: any) {
-        setError(err.message || "Không tìm thấy thông tin khiếu nại.");
-      } finally {
-        setIsLoading(false);
-      }
+    if (error || !dispute) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-brand-bg p-4 text-white">
+                <div className="max-w-md w-full bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 text-center animate-scale-in">
+                    <div className="w-20 h-20 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                        <AlertTriangle size={40} />
+                    </div>
+                    <h2 className="text-2xl font-black mb-2 tracking-tight">Truy Cập Thất Bại</h2>
+                    <p className="text-gray-400 mb-8 leading-relaxed font-medium">{error || "Khiếu nại không tồn tại."}</p>
+                    <button 
+                        onClick={() => router.push('/admin/dashboard')}
+                        className="w-full py-4 bg-brand-primary text-white font-black rounded-2xl shadow-lg shadow-brand-primary/20 hover:bg-brand-primary-hover transition-all active:scale-[0.98]"
+                    >
+                        Quay lại Dashboard
+                    </button>
+                </div>
+            </div>
+        );
     }
 
-    fetchDispute();
-  }, [disputeId]);
+    const isSolved = dispute.status === "RESOLVED";
+    const isRejected = dispute.status === "REJECTED";
 
-  if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-50">
-        <LoadingSpinner size="lg" />
-        <p className="mt-4 text-gray-500 font-bold animate-pulse uppercase tracking-wider text-xs">
-          Đang tải kết quả khiếu nại...
-        </p>
-      </div>
-    );
-  }
-
-  if (error || !dispute) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
-        <div className="max-w-md w-full bg-white rounded-3xl shadow-xl p-8 text-center animate-scale-in border border-gray-100">
-          <div className="w-20 h-20 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-600">
-            <svg
-              className="w-10 h-10"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
-            </svg>
-          </div>
-          <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">
-            Lỗi truy cập
-          </h2>
-          <p className="text-gray-500 mb-8 leading-relaxed">
-            {error ||
-              "Khiếu nại này không tồn tại hoặc bạn không có quyền truy cập."}
-          </p>
-          <div className="flex flex-col gap-3">
-            <Button
-              variant="primary"
-              onClick={() => window.location.reload()}
-              className="w-full py-4 rounded-2xl font-bold shadow-lg shadow-orange-100"
-            >
-              Thử lại
-            </Button>
-            <Button
-              variant="outline"
-              onClick={() => router.push("/transactions")}
-              className="w-full py-4 rounded-2xl font-bold border-gray-200 text-gray-500"
-            >
-              Quay lại giao dịch
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const isSolved = dispute.status === "RESOLVED";
-  const isPending =
-    dispute.status === "OPEN" || dispute.status === "IN_PROGRESS";
-  const isRejected = dispute.status === "REJECTED";
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8 animate-fade-in">
-      <div className="max-w-3xl mx-auto">
-        {/* Header Navigation */}
-        <button
-          onClick={() => router.back()}
-          className="group flex items-center gap-2 text-gray-400 hover:text-gray-900 transition-colors mb-8 font-bold text-sm uppercase tracking-widest"
-        >
-          <svg
-            className="w-5 h-5 transition-transform group-hover:-translate-x-1"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2.5}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Quay lại
-        </button>
-
-        {/* Status Card */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden mb-8 border border-gray-100">
-          <div
-            className={`p-8 text-center ${
-              isSolved
-                ? "bg-green-50"
-                : isRejected
-                  ? "bg-red-50"
-                  : "bg-orange-50"
-            }`}
-          >
-            <div
-              className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm ${
-                isSolved
-                  ? "bg-green-100 text-green-600"
-                  : isRejected
-                    ? "bg-red-100 text-red-600"
-                    : "bg-orange-100 text-brand-primary"
-              }`}
-            >
-              {isSolved ? (
-                <svg
-                  className="w-10 h-10"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              ) : isRejected ? (
-                <svg
-                  className="w-10 h-10"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="w-10 h-10"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              )}
-            </div>
-            <h1
-              className={`text-3xl font-black tracking-tight mb-2 ${
-                isSolved
-                  ? "text-green-900"
-                  : isRejected
-                    ? "text-red-900"
-                    : "text-orange-900"
-              }`}
-            >
-              {isSolved
-                ? "Khiếu nại được chấp nhận"
-                : isRejected
-                  ? "Khiếu nại bị từ chối"
-                  : "Đang chờ giải quyết"}
-            </h1>
-            <p
-              className={`text-sm font-bold uppercase tracking-widest opacity-70 ${
-                isSolved
-                  ? "text-green-700"
-                  : isRejected
-                    ? "text-red-700"
-                    : "text-orange-700"
-              }`}
-            >
-              Mã khiếu nại: #{dispute.disputeId}
-            </p>
-          </div>
-
-          {/* Admin Result Note */}
-          {(isSolved || isRejected) && dispute.adminNote && (
-            <div className="p-8 bg-white border-t border-gray-100">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-brand-primary/10 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-brand-primary"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest">
-                  Quyết định từ CycleX
-                </h4>
-              </div>
-              <div className="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                <p className="text-gray-700 leading-relaxed font-medium">
-                  {dispute.adminNote}
-                </p>
-                {dispute.resolvedAt && (
-                  <p className="mt-4 text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
-                    Giải quyết lúc: {formatDate(dispute.resolvedAt)}
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Dispute Details Card */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-gray-100 p-8 space-y-8">
-          {/* Header Info */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-gray-100">
-            <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-                {dispute.title}
-              </h2>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="bg-gray-100 text-gray-600 text-[10px] font-black px-2 py-1 rounded-md uppercase tracking-widest">
-                  {dispute.reason}
-                </span>
-                <span className="text-gray-300">•</span>
-                <span className="text-gray-400 text-xs font-bold uppercase tracking-tighter">
-                  Gửi lúc: {formatDate(dispute.createdAt)}
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
-                  Đơn hàng
-                </p>
-                <p className="text-sm font-black text-gray-900 leading-tight">
-                  #{dispute.orderId}
-                </p>
-              </div>
-              {isAdmin && (
-                  <button 
-                      onClick={() => setIsOverrideModalOpen(true)}
-                      className="ml-2 sm:ml-4 px-3 sm:px-4 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-300 transition-colors rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-purple-200 shadow-sm whitespace-nowrap"
-                  >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                      Admin Override
-                  </button>
-              )}
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                <svg
-                  className="w-4 h-4 text-gray-500"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest">
-                Nội dung chi tiết
-              </h4>
-            </div>
-            <p className="text-gray-600 leading-relaxed font-medium bg-gray-50/50 p-6 rounded-2xl border border-gray-50 italic">
-              &quot;{dispute.content}&quot;
-            </p>
-          </div>
-
-          {/* Evidence */}
-          {dispute.evidenceUrls && dispute.evidenceUrls.length > 0 && (
-            <div className="space-y-4 pt-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <svg
-                    className="w-4 h-4 text-gray-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest">
-                  Bằng chứng hình ảnh
-                </h4>
-              </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {dispute.evidenceUrls.map((url, index) => (
-                  <a
-                    key={index}
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="relative aspect-square rounded-2xl overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition-all group"
-                  >
-                    <img
-                      src={url}
-                      alt={`Evidence ${index + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6 text-white"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                        />
-                      </svg>
-                    </div>
-                  </a>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Footer Info */}
-        <div className="mt-12 text-center space-y-6">
-          <p className="text-gray-400 text-[11px] font-bold uppercase tracking-[0.2em] max-w-sm mx-auto leading-loose">
-            CycleX đảm bảo tính minh bạch và công bằng cho mọi giao dịch. Quyết
-            định của Ban quản trị là quyết định cuối cùng.
-          </p>
-          <div className="flex justify-center gap-4">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/")}
-              className="rounded-2xl px-8 border-gray-200 text-gray-500 hover:bg-white hover:shadow-md transition-all"
-            >
-              Về Trang Chủ
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => router.push("/transactions")}
-              className="rounded-2xl px-8 shadow-lg shadow-orange-100"
-            >
-              Xem Lịch Sử Giao Dịch
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* S-83 Admin Override Modal */}
-      {isOverrideModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in border-t-8 border-t-purple-500 relative">
-                <button onClick={() => setIsOverrideModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
-                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-                <div className="mb-6 flex items-center gap-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                    </div>
-                    <div>
-                        <h2 className="text-xl font-black text-gray-900">Dispute Override</h2>
-                        <p className="text-xs text-gray-500 font-medium mt-0.5">BP7 Admin Level Action</p>
-                    </div>
-                </div>
-
-                <form onSubmit={handleOverrideSubmit} className="space-y-5">
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Resolution Action</label>
-                        <select 
-                            value={overrideAction} 
-                            onChange={(e) => setOverrideAction(e.target.value as any)}
-                            className="w-full appearance-none px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 font-bold focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 cursor-pointer"
+        <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
+            <div className="max-w-4xl mx-auto">
+                {/* Header Phase */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-white/5">
+                    <div className="animate-slide-up">
+                        <button 
+                            onClick={() => router.back()}
+                            className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6 font-bold text-xs uppercase tracking-[0.2em] group"
                         >
-                            <option value="BUYER_WIN">Hoàn tiền cho Buyer (Buyer Win)</option>
-                            <option value="SELLER_WIN">Chuyển tiền cho Seller (Seller Win)</option>
-                            <option value="SPLIT">Chia đôi tiền (Refund 50/50)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Override Reason <span className="text-red-500">*</span></label>
-                        <textarea 
-                            value={overrideReason} 
-                            onChange={(e) => setOverrideReason(e.target.value)}
-                            rows={4}
-                            required
-                            placeholder="Nhập lý do để thông báo cho Buyer và Seller..."
-                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-gray-900 resize-none"
-                        ></textarea>
-                    </div>
-
-                    <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 flex gap-3 text-orange-800">
-                        <svg className="w-5 h-5 shrink-0 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        <p className="text-[11px] font-medium leading-relaxed">
-                            <strong>Lưu ý:</strong> Hành động này sẽ ngay lập tức thay đổi kết quả khiếu nại và tự động gửi thông báo (email/SMS) cho cả Buyer và Seller kèm theo lý do trên.
-                        </p>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <button type="button" onClick={() => setIsOverrideModalOpen(false)} disabled={isOverriding} className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50">Hủy</button>
-                        <button type="submit" disabled={isOverriding} className="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2 disabled:opacity-50">
-                            {isOverriding ? (
-                                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Xử lý...</>
-                            ) : (
-                                "Xác Nhận Override"
+                            <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                            Quay lại
+                        </button>
+                        <div className="flex items-center gap-4 mb-4">
+                            <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+                                Dispute <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">Details</span>
+                            </h1>
+                            {dispute.isOverridden && (
+                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-500/20 border border-purple-500/40 rounded-lg animate-pulse shadow-glow-purple">
+                                    <Zap size={12} className="text-purple-400" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest text-purple-400">Admin Intervened</span>
+                                </div>
                             )}
+                        </div>
+                        <p className="text-[11px] font-black text-gray-500 tracking-[0.3em] uppercase">Mã khiếu nại: #{dispute.disputeId}</p>
+                    </div>
+
+                    {isAdmin && (
+                        <button 
+                            onClick={() => setIsOverrideModalOpen(true)}
+                            className="group flex items-center gap-3 px-6 py-4 bg-white/5 border border-purple-500/30 hover:border-purple-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] text-purple-400 hover:text-white hover:bg-purple-600 transition-all shadow-xl active:scale-95"
+                        >
+                            <Zap size={16} className="group-hover:animate-bounce" />
+                            Admin Override (BP7)
+                        </button>
+                    )}
+                </div>
+
+                {/* Main Content Sections */}
+                <div className="space-y-10">
+                    {/* Status Section */}
+                    <div className="animate-fade-in">
+                        <div className={`relative overflow-hidden bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 text-center shadow-2xl`}>
+                            {/* Visual Background Glow */}
+                            <div className={`absolute -top-24 -left-24 w-48 h-48 blur-[80px] rounded-full opacity-20 ${
+                                isSolved ? 'bg-emerald-500' : isRejected ? 'bg-rose-500' : 'bg-brand-primary'
+                            }`} />
+                            
+                            <div className={`w-24 h-24 rounded-3xl mx-auto mb-8 flex items-center justify-center border-2 transition-transform hover:scale-110 duration-500 ${
+                                isSolved 
+                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-glow-emerald" 
+                                    : isRejected 
+                                        ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-glow-red" 
+                                        : "bg-brand-primary/10 text-brand-primary border-brand-primary/20 shadow-glow-orange"
+                            }`}>
+                                {isSolved ? <CheckCircle size={40} strokeWidth={2.5} /> : isRejected ? <XCircle size={40} strokeWidth={2.5} /> : <History size={40} strokeWidth={2.5} />}
+                            </div>
+                            
+                            <h2 className={`text-4xl font-black tracking-tight mb-4 ${
+                                isSolved ? "text-emerald-400" : isRejected ? "text-rose-400" : "text-brand-primary"
+                            }`}>
+                                {isSolved ? "Khiếu nại được chấp nhận" : isRejected ? "Khiếu nại bị từ chối" : "Đang được xem xét"}
+                            </h2>
+                            
+                            <div className="flex items-center justify-center gap-3 text-gray-500 text-xs font-bold uppercase tracking-widest">
+                                <span>Order #{dispute.orderId}</span>
+                                <span className="w-1 h-1 rounded-full bg-gray-700"></span>
+                                <span>{formatDate(dispute.createdAt)}</span>
+                            </div>
+
+                            {/* Admin Note if resolved */}
+                            {(isSolved || isRejected) && dispute.adminNote && (
+                                <div className="mt-10 pt-10 border-t border-white/5 text-left bg-white/[0.02] -mx-10 px-10 rounded-b-[2.5rem]">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <MessageSquare size={16} className="text-brand-primary" />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Quyết định từ CycleX Support</h4>
+                                    </div>
+                                    <p className="text-lg font-medium text-gray-300 leading-relaxed italic">
+                                        &ldquo;{dispute.adminNote}&rdquo;
+                                    </p>
+                                    <p className="mt-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest">Ghi nhận lúc: {formatDate(dispute.resolvedAt || '')}</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Dispute Info Sections */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+                        {/* Details Card */}
+                        <div className="lg:col-span-12 space-y-8">
+                            <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-xl animate-fade-in delay-100">
+                                <div className="flex items-center gap-4 mb-8">
+                                    <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shadow-glow-orange">
+                                        <ShieldAlert size={24} strokeWidth={2.5} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black tracking-tight">Chi tiết phản hồi</h3>
+                                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{dispute.reason}</span>
+                                    </div>
+                                </div>
+                                <div className="p-8 bg-black/20 rounded-2xl border border-white/5">
+                                    <p className="text-lg font-medium text-gray-300 leading-relaxed">
+                                        {dispute.content}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Evidence Section */}
+                        {dispute.evidenceUrls && dispute.evidenceUrls.length > 0 && (
+                            <div className="lg:col-span-12 space-y-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                                        <ImageIcon size={18} />
+                                    </div>
+                                    <h3 className="text-lg font-black tracking-tight uppercase tracking-[0.1em]">Bằng chứng hình ảnh</h3>
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in delay-200">
+                                    {dispute.evidenceUrls.map((url, idx) => (
+                                        <a 
+                                            key={idx} 
+                                            href={url} 
+                                            target="_blank" 
+                                            rel="noopener noreferrer"
+                                            className="group relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg hover:border-brand-primary/50 transition-all cursor-zoom-in"
+                                        >
+                                            <img src={url} alt={`Evidence ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                            <div className="absolute inset-0 bg-brand-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <ExternalLink size={20} className="text-white drop-shadow-lg" />
+                                            </div>
+                                        </a>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Footer Footer Section */}
+                <div className="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+                    <p className="text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em]">
+                        CycleX System • Dispute Module 3.0
+                    </p>
+                    <div className="flex gap-4">
+                        <button 
+                            onClick={() => router.push('/admin/dashboard')}
+                            className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+                        >
+                            Quay lại Dashboard
                         </button>
                     </div>
-                </form>
+                </div>
             </div>
+
+            {/* S-83 REDESIGNED OVERRIDE MODAL */}
+            {isOverrideModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in">
+                    <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-scale-in relative overflow-hidden">
+                        <div className="absolute top-0 inset-x-0 h-2 bg-purple-500 shadow-glow-purple" />
+                        
+                        <button 
+                            onClick={() => setIsOverrideModalOpen(false)}
+                            className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+                        >
+                            <XCircle size={24} />
+                        </button>
+
+                        <div className="text-center mb-8">
+                            <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center bg-purple-500/20 text-purple-400 shadow-glow-purple">
+                                <Zap size={40} strokeWidth={2.5} />
+                            </div>
+                            <h2 className="text-3xl font-black text-white mb-2 tracking-tight">Admin Dispute Override</h2>
+                            <p className="text-xs text-purple-400 font-black uppercase tracking-widest">Thao tác cấp quyền quản trị cao cấp (BP7)</p>
+                        </div>
+
+                        <form onSubmit={handleOverrideSubmit} className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Kết quả bàn giao mới</label>
+                                <div className="grid grid-cols-1 gap-3">
+                                    {[
+                                        { id: 'BUYER_WIN', label: 'Buyer Thắng - Hoàn trả toàn bộ tiền' },
+                                        { id: 'SELLER_WIN', label: 'Seller Thắng - Giải phóng thanh toán' },
+                                        { id: 'SPLIT', label: 'Phân chia 50/50 - Mỗi bên nhận một nửa' }
+                                    ].map((opt) => (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            onClick={() => setOverrideAction(opt.id as any)}
+                                            className={`w-full px-6 py-4 rounded-2xl text-left border transition-all flex items-center justify-between ${
+                                                overrideAction === opt.id 
+                                                    ? 'bg-purple-500/10 border-purple-500/50 text-white shadow-lg' 
+                                                    : 'bg-white/5 border-white/10 text-gray-400 hover:bg-white/10'
+                                            }`}
+                                        >
+                                            <span className="text-sm font-bold">{opt.label}</span>
+                                            {overrideAction === opt.id && <CheckCircle size={14} className="text-purple-400" />}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Lý do ghi đè (Reason)</label>
+                                <textarea 
+                                    value={overrideReason} 
+                                    onChange={(e) => setOverrideReason(e.target.value)}
+                                    rows={4}
+                                    required
+                                    placeholder="Tại sao bạn muốn ghi đè kết quả của Inspector? Lý do này sẽ được gửi trực tiếp tới Buyer và Seller..."
+                                    className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-white placeholder:text-gray-600 resize-none min-h-[120px]"
+                                />
+                            </div>
+
+                            <div className="bg-amber-500/10 p-5 rounded-2xl border border-amber-500/20 flex gap-4">
+                                <AlertTriangle size={24} className="text-amber-500 shrink-0" />
+                                <p className="text-[11px] font-bold text-amber-500/80 leading-relaxed uppercase tracking-tight">
+                                    Thao tác này sẽ ghi đè quyết định trước đó của Inspector. Hệ thống sẽ tự động gửi thông báo điều chỉnh tới cả hai bên và ghi nhật ký hệ thống.
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 pt-4">
+                                <button 
+                                    type="button"
+                                    onClick={() => setIsOverrideModalOpen(false)}
+                                    disabled={isOverriding}
+                                    className="py-4 bg-white/5 text-gray-400 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-white/10 transition-all disabled:opacity-50"
+                                >
+                                    Hủy bỏ
+                                </button>
+                                <button 
+                                    type="submit"
+                                    disabled={isOverriding}
+                                    className="py-4 bg-purple-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-xl shadow-purple-900/20 hover:bg-purple-500 active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {isOverriding ? <><Loader2 size={14} className="animate-spin" /> Đang cập nhật...</> : "Xác nhận Override"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }

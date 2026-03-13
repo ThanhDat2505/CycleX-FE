@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
-    Search, User, MoreVertical, Edit2, Shield, AlertTriangle, 
-    CheckCircle, XCircle, RefreshCw, ChevronLeft, ChevronRight, Filter
+    Search, User, Shield, AlertTriangle, 
+    CheckCircle, RefreshCw, ChevronLeft, ChevronRight, 
+    Filter, Loader2, Ban, ShieldCheck, UserCog, X
 } from 'lucide-react';
 import { adminUserService } from '../../services/adminUserService';
 import { AdminUser, AdminUserQuery, UserRole, UserStatus } from '../../types/adminUser';
 import { useToast } from '../../contexts/ToastContext';
-import { formatDate } from '../../utils/format';
 
 export default function AdminUsersPage() {
     useEffect(() => {
-        document.title = "User Management | Admin | CycleX";
+        document.title = "User Management | CycleX Admin";
     }, []);
 
     const { addToast } = useToast();
@@ -24,19 +24,18 @@ export default function AdminUsersPage() {
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const [searchInput, setSearchInput] = useState('');
+    const [refreshing, setRefreshing] = useState(false);
 
-    // Modal States
+    // Modal/Action States
     const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
-    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-    const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
-    const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-
-    // Active dropdown row
-    const [activeDropdown, setActiveDropdown] = useState<number | null>(null);
+    const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState<{
+        type: 'BAN' | 'UNBAN' | 'CHANGE_ROLE';
+        newRole?: UserRole;
+    } | null>(null);
 
     const fetchUsers = useCallback(async (currentQuery: AdminUserQuery) => {
-        setLoading(true);
+        setRefreshing(true);
         try {
             const data = await adminUserService.getUsers(currentQuery);
             setUsers(data.items);
@@ -44,17 +43,17 @@ export default function AdminUsersPage() {
             setTotalPages(data.totalPages);
             setQuery(currentQuery);
         } catch (error: any) {
-            addToast(error.message || 'Failed to load users', 'error');
+            addToast(error.message || 'Không thể tải danh sách người dùng', 'error');
         } finally {
             setLoading(false);
+            setRefreshing(false);
         }
     }, [addToast]);
 
     useEffect(() => {
         fetchUsers(query);
-    }, [fetchUsers]); // Intentionally omitting query to avoid loops, search handles updates manually
+    }, [fetchUsers]);
 
-    // --- Actions ---
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
         fetchUsers({ ...query, search: searchInput, page: 1 });
@@ -78,420 +77,309 @@ export default function AdminUsersPage() {
         fetchUsers({ ...query, status: newStatus, page: 1 });
     };
 
-    const openModal = (user: AdminUser, type: 'view' | 'edit' | 'role' | 'status') => {
+    const triggerAction = (user: AdminUser, type: 'BAN' | 'UNBAN' | 'CHANGE_ROLE', newRole?: UserRole) => {
+        if (type === 'CHANGE_ROLE' && !newRole) return;
         setSelectedUser(user);
-        setActiveDropdown(null);
-        if (type === 'view') setIsViewModalOpen(true);
-        if (type === 'edit') setIsEditModalOpen(true);
-        if (type === 'role') setIsRoleModalOpen(true);
-        if (type === 'status') setIsStatusModalOpen(true);
+        setConfirmAction({ type, newRole });
+        setIsConfirmModalOpen(true);
     };
 
-    // --- Update Handlers ---
-    const handleUpdateUser = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!selectedUser) return;
-        
-        const formData = new FormData(e.currentTarget);
-        const fullName = formData.get('fullName') as string;
-        const email = formData.get('email') as string;
-        const phone = formData.get('phone') as string;
+    const executeAction = async () => {
+        if (!selectedUser || !confirmAction) return;
 
+        setRefreshing(true);
         try {
-            await adminUserService.updateUser(selectedUser.userId, { fullName, email, phone });
-            addToast('User details updated successfully', 'success');
-            setIsEditModalOpen(false);
+            if (confirmAction.type === 'BAN') {
+                await adminUserService.updateStatus(selectedUser.userId, { status: 'SUSPENDED' });
+                addToast(`Đã khóa tài khoản ${selectedUser.fullName}`, 'success');
+            } else if (confirmAction.type === 'UNBAN') {
+                await adminUserService.updateStatus(selectedUser.userId, { status: 'ACTIVE' });
+                addToast(`Đã mở khóa tài khoản ${selectedUser.fullName}`, 'success');
+            } else if (confirmAction.type === 'CHANGE_ROLE' && confirmAction.newRole) {
+                await adminUserService.updateRole(selectedUser.userId, { role: confirmAction.newRole });
+                addToast(`Đã cập nhật vai trò ${confirmAction.newRole} cho ${selectedUser.fullName}`, 'success');
+            }
+            
+            setIsConfirmModalOpen(false);
+            setConfirmAction(null);
             fetchUsers(query);
         } catch (error: any) {
-            addToast(error.message || 'Failed to update user', 'error');
+            addToast(error.message || 'Thực hiện thao tác thất bại', 'error');
+        } finally {
+            setRefreshing(false);
         }
     };
 
-    const handleUpdateRole = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!selectedUser) return;
-        
-        const formData = new FormData(e.currentTarget);
-        const role = formData.get('role') as UserRole;
-
-        try {
-            await adminUserService.updateRole(selectedUser.userId, { role });
-            addToast('User role updated successfully', 'success');
-            setIsRoleModalOpen(false);
-            fetchUsers(query);
-        } catch (error: any) {
-            addToast(error.message || 'Failed to update role', 'error');
-        }
-    };
-
-    const handleUpdateStatus = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        if (!selectedUser) return;
-        
-        const formData = new FormData(e.currentTarget);
-        const status = formData.get('status') as UserStatus;
-
-        try {
-            await adminUserService.updateStatus(selectedUser.userId, { status });
-            addToast('User status updated successfully', 'success');
-            setIsStatusModalOpen(false);
-            fetchUsers(query);
-        } catch (error: any) {
-            addToast(error.message || 'Failed to update status', 'error');
-        }
-    };
-
-    // --- Helpers ---
     const getStatusStyle = (status: UserStatus) => {
         switch (status) {
-            case 'ACTIVE': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
-            case 'SUSPENDED': return 'bg-amber-50 text-amber-600 border-amber-100';
-            case 'BANNED': return 'bg-rose-50 text-rose-600 border-rose-100';
-            case 'LOCKED': return 'bg-gray-100 text-gray-600 border-gray-200';
-            default: return 'bg-gray-50 text-gray-500 border-gray-100';
+            case 'ACTIVE': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
+            case 'SUSPENDED': return 'text-rose-400 bg-rose-500/10 border-rose-500/20';
+            default: return 'text-gray-400 bg-gray-500/10 border-gray-500/20';
         }
     };
 
-    const getRoleBorder = (role: UserRole) => {
-        switch (role) {
-            case 'ADMIN': return 'border-l-4 border-l-rose-500';
-            case 'SELLER': return 'border-l-4 border-l-purple-500';
-            case 'INSPECTOR': return 'border-l-4 border-l-amber-500';
-            case 'SHIPPER': return 'border-l-4 border-l-blue-500';
-            default: return 'border-l-4 border-l-emerald-500';
-        }
+    const getRoleBadge = (role: UserRole) => {
+        const roles = {
+            ADMIN: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
+            SELLER: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+            INSPECTOR: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+            SHIPPER: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+            BUYER: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+        };
+        return roles[role] || roles.BUYER;
     };
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-brand-bg">
+                <div className="flex flex-col items-center">
+                    <Loader2 className="w-12 h-12 text-brand-primary animate-spin" />
+                    <p className="mt-4 text-gray-400 font-bold uppercase tracking-widest text-xs">Đang tải người dùng...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50/50 p-4 lg:p-8">
+        <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
             <div className="max-w-7xl mx-auto">
-                {/* Header */}
-                <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">User Management</h1>
-                        <p className="text-gray-500 mt-1">Manage accounts, roles, and system access.</p>
+                {/* Header Section */}
+                <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-white/5">
+                    <div className="animate-slide-up">
+                        <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-4 shadow-xl">
+                            <span className="text-brand-primary text-xs animate-pulse">●</span>
+                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400">Quản trị hệ thống CycleX</span>
+                        </div>
+                        <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none mb-4">
+                            User <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">Management</span>
+                        </h1>
+                        <p className="text-gray-400 text-lg max-w-xl font-medium">
+                            Kiểm soát quyền truy cập, thay đổi vai trò và giám sát trạng thái tài khoản người dùng bảo mật cao.
+                        </p>
                     </div>
-                    <div className="flex items-center gap-3">
+                </div>
+
+                {/* Filters & Actions Bar */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-10 items-center">
+                    <form onSubmit={handleSearch} className="lg:col-span-5 relative group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-brand-primary transition-colors" size={20} />
+                        <input 
+                            type="text" 
+                            placeholder="Tìm kiếm Email hoặc Tên..." 
+                            value={searchInput}
+                            onChange={(e) => setSearchInput(e.target.value)}
+                            className="w-full pl-14 pr-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 transition-all placeholder:text-gray-600"
+                        />
+                    </form>
+
+                    <div className="lg:col-span-4 grid grid-cols-2 gap-4">
+                        <div className="relative">
+                            <select 
+                                onChange={handleRoleFilter}
+                                value={query.role || ''}
+                                className="w-full appearance-none px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-400 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
+                            >
+                                <option value="" className="bg-brand-bg">Tất cả vai trò</option>
+                                {['BUYER', 'SELLER', 'SHIPPER', 'INSPECTOR', 'ADMIN'].map(r => (
+                                    <option key={r} value={r} className="bg-brand-bg">{r}</option>
+                                ))}
+                            </select>
+                            <Filter className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={14} />
+                        </div>
+                        <div className="relative">
+                            <select 
+                                onChange={handleStatusFilter}
+                                value={query.status || ''}
+                                className="w-full appearance-none px-6 py-4 bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-400 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
+                            >
+                                <option value="" className="bg-brand-bg">Tất cả trạng thái</option>
+                                <option value="ACTIVE" className="bg-brand-bg text-emerald-400">ACTIVE</option>
+                                <option value="SUSPENDED" className="bg-brand-bg text-rose-400">SUSPENDED</option>
+                            </select>
+                            <Filter className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none" size={14} />
+                        </div>
+                    </div>
+
+                    <div className="lg:col-span-3 flex justify-end">
                         <button 
                             onClick={() => fetchUsers(query)}
-                            className={`p-2.5 bg-white border border-gray-200 rounded-xl text-gray-600 hover:text-blue-600 hover:border-blue-100 hover:bg-blue-50 transition-all ${loading ? 'animate-spin' : ''}`}
-                            title="Refresh Data"
+                            disabled={refreshing}
+                            className={`flex items-center gap-3 px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-300 hover:text-white hover:bg-white/10 transition-all ${refreshing ? 'cursor-not-allowed opacity-50' : ''}`}
                         >
-                            <RefreshCw size={20} />
+                            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+                            Làm mới
                         </button>
                     </div>
                 </div>
 
-                {/* Filters & Search */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-6 flex flex-col lg:flex-row gap-4 justify-between items-center">
-                    <form onSubmit={handleSearch} className="relative w-full lg:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-                        <input 
-                            type="text" 
-                            placeholder="Search by name or email..." 
-                            value={searchInput}
-                            onChange={(e) => setSearchInput(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
-                        />
-                    </form>
-
-                    <div className="flex w-full lg:w-auto gap-4">
-                        <div className="relative w-1/2 lg:w-40">
-                            <select 
-                                onChange={handleRoleFilter}
-                                value={query.role || ''}
-                                className="w-full appearance-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:border-blue-500 cursor-pointer"
-                            >
-                                <option value="">All Roles</option>
-                                <option value="BUYER">Buyer</option>
-                                <option value="SELLER">Seller</option>
-                                <option value="ADMIN">Admin</option>
-                                <option value="INSPECTOR">Inspector</option>
-                                <option value="SHIPPER">Shipper</option>
-                            </select>
-                            <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
-                        </div>
-                        <div className="relative w-1/2 lg:w-40">
-                            <select 
-                                onChange={handleStatusFilter}
-                                value={query.status || ''}
-                                className="w-full appearance-none px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 font-medium focus:outline-none focus:border-blue-500 cursor-pointer"
-                            >
-                                <option value="">All Statuses</option>
-                                <option value="ACTIVE">Active</option>
-                                <option value="INACTIVE">Inactive</option>
-                                <option value="SUSPENDED">Suspended</option>
-                                <option value="BANNED">Banned</option>
-                                <option value="LOCKED">Locked</option>
-                            </select>
-                            <Filter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Users Table */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible min-h-[400px]">
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center p-20">
-                            <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                            <p className="mt-4 text-gray-500 font-medium text-sm">Loading users...</p>
-                        </div>
-                    ) : users.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center p-20 text-center">
-                            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 text-gray-300">
-                                <User size={32} />
-                            </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">No users found</h3>
-                            <p className="text-gray-500 text-sm">Try adjusting your search criteria or filters.</p>
-                        </div>
-                    ) : (
-                        <div className="overflow-visible sm:overflow-x-auto min-h-[200px] pb-24">
-                            <table className="w-full text-left border-collapse">
-                                <thead>
-                                    <tr className="bg-gray-50/80 border-b border-gray-100 rounded-t-2xl">
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest rounded-tl-2xl">User</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Contact</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Role</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right rounded-tr-2xl">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-50">
-                                    {users.map((user) => (
-                                        <tr key={user.userId} className={`hover:bg-gray-50/50 transition-colors group ${getRoleBorder(user.role)}`}>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm shrink-0">
-                                                        {user.fullName.charAt(0).toUpperCase()}
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors">{user.fullName}</p>
-                                                        <p className="text-xs text-gray-500">ID: #{user.userId}</p>
-                                                    </div>
+                {/* Table Section */}
+                <div className="relative bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl animate-fade-in mb-10">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-white/5">
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Người dùng</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Vai trò</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">Trạng thái</th>
+                                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {users.map((user) => (
+                                    <tr key={user.userId} className="group hover:bg-white/[0.02] transition-colors">
+                                        <td className="px-8 py-6">
+                                            <div className="flex items-center gap-5">
+                                                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-white flex items-center justify-center font-black text-sm group-hover:scale-110 transition-transform origin-left">
+                                                    {user.fullName.charAt(0).toUpperCase()}
                                                 </div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <p className="text-sm text-gray-700">{user.email}</p>
-                                                <p className="text-xs text-gray-500">{user.phone}</p>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className="inline-flex px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-[10px] font-black tracking-widest uppercase border border-gray-200">
-                                                    {user.role}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest border uppercase ${getStatusStyle(user.status)}`}>
-                                                    {user.status === 'ACTIVE' && <CheckCircle size={10} strokeWidth={3} />}
-                                                    {(user.status === 'SUSPENDED' || user.status === 'BANNED') && <AlertTriangle size={10} strokeWidth={3} />}
-                                                    {user.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right relative">
-                                                <button 
-                                                    onClick={() => setActiveDropdown(activeDropdown === user.userId ? null : user.userId)}
-                                                    className="p-1.5 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-200 transition-colors"
+                                                <div>
+                                                    <p className="text-sm font-black text-white group-hover:text-brand-primary transition-colors">{user.fullName}</p>
+                                                    <p className="text-[11px] font-bold text-gray-500 mt-0.5 tracking-tight">{user.email}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <div className="relative group/role">
+                                                <select 
+                                                    value={user.role} 
+                                                    onChange={(e) => triggerAction(user, 'CHANGE_ROLE', e.target.value as UserRole)}
+                                                    className={`appearance-none px-4 py-1.5 rounded-xl border text-[10px] font-black tracking-widest uppercase transition-all focus:outline-none cursor-pointer pr-8 ${getRoleBadge(user.role)}`}
                                                 >
-                                                    <MoreVertical size={18} />
-                                                </button>
-                                                
-                                                {/* Dropdown Menu */}
-                                                {activeDropdown === user.userId && (
-                                                    <div className="absolute right-6 top-10 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-20 py-1 overflow-hidden animate-fade-in origin-top-right">
-                                                        <button 
-                                                            onClick={() => openModal(user, 'view')}
-                                                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                                        >
-                                                            <User size={14} className="text-gray-400" /> View Details
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => openModal(user, 'edit')}
-                                                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                                        >
-                                                            <Edit2 size={14} className="text-blue-500" /> Edit Info
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => openModal(user, 'role')}
-                                                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                                        >
-                                                            <Shield size={14} className="text-purple-500" /> Change Role
-                                                        </button>
-                                                        <div className="h-px bg-gray-100 my-1"></div>
-                                                        <button 
-                                                            onClick={() => openModal(user, 'status')}
-                                                            className="w-full text-left px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                                        >
-                                                            <AlertTriangle size={14} className="text-amber-500" /> Manage Status
-                                                        </button>
-                                                    </div>
+                                                    {['BUYER', 'SELLER', 'SHIPPER', 'INSPECTOR', 'ADMIN'].map(r => (
+                                                        <option key={r} value={r} className="bg-brand-bg text-white">{r}</option>
+                                                    ))}
+                                                </select>
+                                                <UserCog size={10} className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none" />
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-6">
+                                            <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest border uppercase transition-all ${getStatusStyle(user.status)}`}>
+                                                <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+                                                {user.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-6 text-right">
+                                            <div className="flex justify-end gap-2">
+                                                {user.status === 'ACTIVE' ? (
+                                                    <button 
+                                                        onClick={() => triggerAction(user, 'BAN')}
+                                                        className="p-3 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-glow-red active:scale-95"
+                                                        title="Khóa tài khoản"
+                                                    >
+                                                        <Ban size={18} strokeWidth={2.5} />
+                                                    </button>
+                                                ) : (
+                                                    <button 
+                                                        onClick={() => triggerAction(user, 'UNBAN')}
+                                                        className="p-3 bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 rounded-2xl hover:bg-emerald-500 hover:text-white transition-all shadow-glow-emerald active:scale-95"
+                                                        title="Mở khóa tài khoản"
+                                                    >
+                                                        <ShieldCheck size={18} strokeWidth={2.5} />
+                                                    </button>
                                                 )}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Empty State */}
+                    {!refreshing && users.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-32 text-center">
+                            <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
+                                <User size={48} />
+                            </div>
+                            <h3 className="text-2xl font-black text-white mb-2">Không tìm thấy kết quả</h3>
+                            <p className="text-gray-500 font-medium">Thử điều chỉnh điều kiện lọc hoặc từ khóa tìm kiếm.</p>
                         </div>
                     )}
 
-                    {/* Pagination */}
+                    {/* Pagination Bar */}
                     {!loading && totalPages > 1 && (
-                        <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
-                            <p className="text-xs text-gray-500 font-medium">
-                                Showing <span className="font-bold text-gray-900">{(query.page! - 1) * query.pageSize! + 1}</span> to <span className="font-bold text-gray-900">{Math.min(query.page! * query.pageSize!, total)}</span> of <span className="font-bold text-gray-900">{total}</span> users
+                        <div className="px-8 py-6 border-t border-white/5 flex items-center justify-between bg-white/[0.01]">
+                            <p className="text-[10px] text-gray-500 font-black uppercase tracking-widest">
+                                Trang <span className="text-white">{query.page}</span> / <span className="text-white">{totalPages}</span> ({total} Kết quả)
                             </p>
-                            <div className="flex gap-2">
+                            <div className="flex gap-4">
                                 <button 
                                     onClick={() => handlePageChange(query.page! - 1)}
                                     disabled={query.page === 1}
-                                    className="p-1.5 rounded-lg border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white"
+                                    className="p-3 rounded-2xl border border-white/10 text-gray-400 disabled:opacity-20 hover:bg-white/5 hover:text-white transition-all"
                                 >
-                                    <ChevronLeft size={16} />
+                                    <ChevronLeft size={20} />
                                 </button>
-                                <span className="px-3 py-1.5 text-sm font-bold text-gray-900 bg-white border border-gray-200 rounded-lg">
-                                    {query.page} / {totalPages}
-                                </span>
                                 <button 
                                     onClick={() => handlePageChange(query.page! + 1)}
                                     disabled={query.page === totalPages}
-                                    className="p-1.5 rounded-lg border border-gray-200 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-white"
+                                    className="p-3 rounded-2xl border border-white/10 text-gray-400 disabled:opacity-20 hover:bg-white/5 hover:text-white transition-all"
                                 >
-                                    <ChevronRight size={16} />
+                                    <ChevronRight size={20} />
                                 </button>
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* --- MODALS --- */}
-                {/* 1. View Detail Modal */}
-                {isViewModalOpen && selectedUser && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative animate-scale-in">
-                            <button onClick={() => setIsViewModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900">
-                                <XCircle size={24} />
+                {/* CONFIRMATION MODAL */}
+                {isConfirmModalOpen && selectedUser && confirmAction && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in shadow-glow-orange cursor-default">
+                        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl animate-scale-in relative overflow-hidden">
+                            {/* Accent Decoration */}
+                            <div className={`absolute top-0 inset-x-0 h-2 ${
+                                confirmAction.type === 'BAN' ? 'bg-rose-500' : 
+                                confirmAction.type === 'UNBAN' ? 'bg-emerald-500' : 'bg-brand-primary'
+                            }`} />
+                            
+                            <button 
+                                onClick={() => setIsConfirmModalOpen(false)}
+                                className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+                            >
+                                <X size={24} />
                             </button>
-                            <div className="flex items-center gap-4 mb-8">
-                                <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-2xl">
-                                    {selectedUser.fullName.charAt(0).toUpperCase()}
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-black text-gray-900">{selectedUser.fullName}</h2>
-                                    <p className="text-sm font-medium text-gray-500">{selectedUser.email}</p>
-                                </div>
-                            </div>
-                            <div className="space-y-4">
-                                <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Role & Status</p>
-                                    <div className="flex gap-2">
-                                        <span className="inline-flex px-2.5 py-1 rounded-lg bg-gray-100 text-gray-700 text-[10px] font-black tracking-widest uppercase border border-gray-200">{selectedUser.role}</span>
-                                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-black tracking-widest border uppercase ${getStatusStyle(selectedUser.status)}`}>{selectedUser.status}</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Phone Number</p>
-                                    <p className="text-sm font-medium text-gray-900">{selectedUser.phone || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">CCCD (Identity ID)</p>
-                                    <p className="text-sm font-medium text-gray-900">{selectedUser.cccd || 'N/A'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Verified Status</p>
-                                    <p className="text-sm font-medium text-gray-900">{selectedUser.isVerify ? 'Verified Account' : 'Unverified'}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Joined Date</p>
-                                    <p className="text-sm font-medium text-gray-900">{formatDate(selectedUser.createdAt)}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
-                {/* 2. Edit Info Modal */}
-                {isEditModalOpen && selectedUser && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in">
-                            <div className="mb-6">
-                                <h2 className="text-xl font-black text-gray-900">Edit User Info</h2>
-                                <p className="text-xs text-gray-500 mt-1">Update basic contact information for #{selectedUser.userId}</p>
-                            </div>
-                            <form onSubmit={handleUpdateUser} className="space-y-4">
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Full Name</label>
-                                    <input type="text" name="fullName" defaultValue={selectedUser.fullName} required autoFocus
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 font-medium" />
+                            <div className="text-center">
+                                <div className={`w-20 h-20 rounded-3xl mx-auto mb-8 flex items-center justify-center ${
+                                    confirmAction.type === 'BAN' ? 'bg-rose-500/20 text-rose-500 shadow-glow-red' : 
+                                    confirmAction.type === 'UNBAN' ? 'bg-emerald-500/20 text-emerald-500 shadow-glow-emerald' : 'bg-brand-primary/20 text-brand-primary shadow-glow-orange'
+                                }`}>
+                                    {confirmAction.type === 'BAN' && <Ban size={40} strokeWidth={2.5} />}
+                                    {confirmAction.type === 'UNBAN' && <ShieldCheck size={40} strokeWidth={2.5} />}
+                                    {confirmAction.type === 'CHANGE_ROLE' && <UserCog size={40} strokeWidth={2.5} />}
                                 </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Email Address</label>
-                                    <input type="email" name="email" defaultValue={selectedUser.email} required
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 font-medium" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Phone Number</label>
-                                    <input type="text" name="phone" defaultValue={selectedUser.phone} required
-                                        className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-gray-900 font-medium" />
-                                </div>
-                                <div className="flex gap-3 pt-4">
-                                    <button type="button" onClick={() => setIsEditModalOpen(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
-                                    <button type="submit" className="flex-1 py-2.5 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200">Save Changes</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
 
-                {/* 3. Change Role Modal */}
-                {isRoleModalOpen && selectedUser && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-scale-in">
-                            <div className="mb-6 flex items-center justify-center gap-3">
-                                <Shield className="text-purple-500" size={24} />
-                                <h2 className="text-xl font-black text-gray-900">Change Role</h2>
-                            </div>
-                            <form onSubmit={handleUpdateRole} className="space-y-4">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 text-center mb-4">Select a new role for <span className="font-bold text-gray-900">{selectedUser.fullName}</span></p>
-                                    <select name="role" defaultValue={selectedUser.role} className="w-full appearance-none px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 font-bold focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 cursor-pointer text-center">
-                                        <option value="BUYER">BUYER</option>
-                                        <option value="SELLER">SELLER</option>
-                                        <option value="INSPECTOR">INSPECTOR</option>
-                                        <option value="SHIPPER">SHIPPER</option>
-                                        <option value="ADMIN">ADMIN</option>
-                                    </select>
-                                </div>
-                                <div className="flex gap-3 pt-4">
-                                    <button type="button" onClick={() => setIsRoleModalOpen(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
-                                    <button type="submit" className="flex-1 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-colors shadow-lg shadow-purple-200">Update Role</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
+                                <h2 className="text-3xl font-black text-white mb-4 tracking-tight leading-tight">
+                                    {confirmAction.type === 'BAN' && "Khóa tài khoản?"}
+                                    {confirmAction.type === 'UNBAN' && "Mở khóa tài khoản?"}
+                                    {confirmAction.type === 'CHANGE_ROLE' && "Thay đổi vai trò?"}
+                                </h2>
+                                
+                                <p className="text-gray-400 font-medium mb-10 leading-relaxed text-sm">
+                                    {confirmAction.type === 'BAN' && <span>Bạn có chắc chắn muốn khóa tài khoản của <b>{selectedUser.fullName}</b>? Người dùng này sẽ không thể đăng nhập.</span>}
+                                    {confirmAction.type === 'UNBAN' && <span>Khôi phục quyền truy cập cho <b>{selectedUser.fullName}</b>?</span>}
+                                    {confirmAction.type === 'CHANGE_ROLE' && <span>Cập nhật vai trò từ <b>{selectedUser.role}</b> thành <b className="text-brand-primary">{confirmAction.newRole}</b> cho người dùng này?</span>}
+                                </p>
 
-                {/* 4. Change Status Modal */}
-                {isStatusModalOpen && selectedUser && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
-                        <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl animate-scale-in border-t-8 border-t-amber-500">
-                            <div className="mb-6 flex items-center justify-center gap-3">
-                                <AlertTriangle className="text-amber-500" size={24} />
-                                <h2 className="text-xl font-black text-gray-900">Manage Status</h2>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button 
+                                        onClick={() => setIsConfirmModalOpen(false)}
+                                        className="py-4 bg-white/5 text-gray-400 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-white/10 transition-all active:scale-[0.98]"
+                                    >
+                                        Hủy bỏ
+                                    </button>
+                                    <button 
+                                        onClick={executeAction}
+                                        className={`py-4 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-xl active:scale-[0.98] ${
+                                            confirmAction.type === 'BAN' ? 'bg-rose-600 text-white shadow-rose-900/20 hover:bg-rose-500' : 
+                                            confirmAction.type === 'UNBAN' ? 'bg-emerald-600 text-white shadow-emerald-900/20 hover:bg-emerald-500' : 
+                                            'bg-brand-primary text-white shadow-brand-primary/20 hover:bg-brand-primary-hover'
+                                        }`}
+                                    >
+                                        Xác nhận
+                                    </button>
+                                </div>
                             </div>
-                            <form onSubmit={handleUpdateStatus} className="space-y-4">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-600 text-center mb-4">Set system access status for <span className="font-bold text-gray-900">{selectedUser.fullName}</span></p>
-                                    <select name="status" defaultValue={selectedUser.status} className="w-full appearance-none px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 font-bold focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 cursor-pointer text-center">
-                                        <option value="ACTIVE">ACTIVE - Full Access</option>
-                                        <option value="INACTIVE">INACTIVE</option>
-                                        <option value="SUSPENDED">SUSPENDED - Temporarily Blocked</option>
-                                        <option value="BANNED">BANNED - Permanently Blocked</option>
-                                        <option value="LOCKED">LOCKED - Requires verification</option>
-                                    </select>
-                                </div>
-                                <div className="flex gap-3 pt-4">
-                                    <button type="button" onClick={() => setIsStatusModalOpen(false)} className="flex-1 py-2.5 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors">Cancel</button>
-                                    <button type="submit" className="flex-1 py-2.5 bg-amber-600 text-white font-bold rounded-xl hover:bg-amber-700 transition-colors shadow-lg shadow-amber-200">Confirm Status</button>
-                                </div>
-                            </form>
                         </div>
                     </div>
                 )}

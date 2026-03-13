@@ -1,5 +1,5 @@
 export type UserRole = "BUYER" | "SELLER" | "ADMIN" | "INSPECTOR" | "SHIPPER";
-export type UserStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "BANNED" | "LOCKED";
+export type UserStatus = "ACTIVE" | "SUSPENDED";
 
 export interface AdminUser {
     userId: number;
