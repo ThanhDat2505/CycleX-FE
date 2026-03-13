@@ -217,7 +217,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  🔎 Inspector Dashboard
+                  📊 Inspector Dashboard
+                </Link>
+                <Link
+                  href="/inspector/disputes"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                >
+                  ⚖️ Dispute Queue
                 </Link>
                 <Link
                   href="/inspector/pending-list"
@@ -225,6 +232,39 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
                   📋 Tin chờ duyệt
+                </Link>
+              </>
+            )}
+
+            {userRole === "ADMIN" && (
+              <>
+                <Link
+                  href="/admin/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                >
+                  ⚡ Admin Dashboard
+                </Link>
+                <Link
+                  href="/admin/users"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                >
+                  👥 User Management
+                </Link>
+                <Link
+                  href="/admin/audit-logs"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                >
+                  🔍 Audit Logs
+                </Link>
+                <Link
+                  href="/inspector/disputes"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                >
+                  ⚖️ All Disputes
                 </Link>
               </>
             )}

@@ -11,6 +11,7 @@ import { getDisputeById, overrideDispute } from "@/app/services/buyerDisputeServ
 import { Dispute } from "@/app/types/dispute";
 import { useToast } from "@/app/contexts/ToastContext";
 import { formatDate } from "@/app/utils/format";
+import { useAuth } from "@/app/hooks/useAuth";
 
 export default function DisputeResultPage() {
     const params = useParams();
@@ -23,7 +24,8 @@ export default function DisputeResultPage() {
     const disputeId = Number(params.id);
 
     // --- S-83 Override State ---
-    const [isAdmin] = useState(true); // Mocking Admin role for BP7 Demo
+    const { role } = useAuth();
+    const isAdmin = role === 'ADMIN';
     const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
     const [overrideAction, setOverrideAction] = useState<'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT'>('BUYER_WIN');
     const [overrideReason, setOverrideReason] = useState('');
