@@ -208,16 +208,18 @@ export function ProfileInfoForm({
           error={errors.phone}
         />
 
-        {/* Address */}
-        <Input
-          id="address"
-          type="text"
-          label={MESSAGES.S04_ADDRESS_LABEL}
-          value={address}
-          onChange={(val) => setAddress(val)}
-          placeholder={MESSAGES.S04_ADDRESS_PLACEHOLDER}
-          disabled={isSubmitting}
-        />
+        {/* Address - Now managed in separate tab */}
+        {address && (
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-100">
+            <label className="block text-gray-700 font-medium mb-1 text-sm">
+              {MESSAGES.S04_ADDRESS_LABEL}
+            </label>
+            <p className="text-sm text-gray-600">{address}</p>
+            <p className="text-xs text-gray-400 mt-1">
+              Quản lý địa chỉ tại tab &quot;Địa chỉ&quot;
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="pt-4 flex justify-end">
