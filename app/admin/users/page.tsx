@@ -230,7 +230,7 @@ export default function AdminUsersPage() {
                 </div>
 
                 {/* Users Table */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden min-h-[400px]">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-visible min-h-[400px]">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center p-20">
                             <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
@@ -245,15 +245,15 @@ export default function AdminUsersPage() {
                             <p className="text-gray-500 text-sm">Try adjusting your search criteria or filters.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-visible sm:overflow-x-auto min-h-[200px] pb-24">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50/80 border-b border-gray-100">
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">User</th>
+                                    <tr className="bg-gray-50/80 border-b border-gray-100 rounded-t-2xl">
+                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest rounded-tl-2xl">User</th>
                                         <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Contact</th>
                                         <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Role</th>
                                         <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Status</th>
-                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                        <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest text-right rounded-tr-2xl">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-50">
