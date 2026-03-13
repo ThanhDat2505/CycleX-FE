@@ -130,7 +130,7 @@ export function FailedReasonForm({
                 <button
                     type="submit"
                     disabled={isDisabled || isSubmitting}
-                    className="hidden" // Invisible proxy button if we want to submit externally
+                    className="hidden"
                     id="trigger-submit"
                 />
             </div>

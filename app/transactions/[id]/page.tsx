@@ -9,7 +9,7 @@ import {
   cancelTransaction,
 } from "@/app/services/transactionService";
 import { TransactionWithDetails } from "@/app/types/transaction";
-import { LoadingSpinner, Button, StatusBadge } from "@/app/components/ui";
+import { LoadingSpinner, Button, StatusBadge, ConfirmModal } from "@/app/components/ui";
 import { formatDate } from "@/app/utils/format";
 import { useToast } from "@/app/contexts/ToastContext";
 import { TRANSACTION_STATUS } from "@/app/constants/transactionStatus";
@@ -34,6 +34,7 @@ export default function TransactionDetailPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const timeoutIds = useRef<NodeJS.Timeout[]>([]);
 
   useEffect(() => {
@@ -128,25 +129,24 @@ export default function TransactionDetailPage() {
     }
   };
 
-  const handleCancel = async () => {
+  const handleCancel = () => {
     if (!transaction) return;
     if (transaction.status !== TRANSACTION_STATUS.PENDING_SELLER_CONFIRM) {
       addToast("Không thể hủy giao dịch ở trạng thái này.", "error");
       return;
     }
 
-    if (
-      !confirm(
-        "Bạn có chắc chắn muốn hủy yêu cầu này không? Hành động này không thể hoàn tác.",
-      )
-    )
-      return;
+    setIsCancelModalOpen(true);
+  };
 
+  const handleCancelConfirm = async () => {
+    if (!transaction) return;
     try {
       setIsProcessing(true);
       const success = await cancelTransaction(transaction.transactionId);
 
       if (success) {
+        setIsCancelModalOpen(false);
         addToast("Đã hủy yêu cầu thành công.", "success");
         router.push("/buyer/transactions");
       }
@@ -239,7 +239,7 @@ export default function TransactionDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
         {/* Timeline */}
         <div className="animate-fade-in-up">
           <OrderTimeline
@@ -277,13 +277,12 @@ export default function TransactionDetailPage() {
         </div>
       </div>
 
-      {/* Dispute Modal */}
+      {/* Modals outside the animated container to avoid stacking context issues */}
       <Modal
         isOpen={isDisputeModalOpen}
         onClose={() => setIsDisputeModalOpen(false)}
         title="Tạo khiếu nại đơn hàng"
         size="lg"
-        footer={null}
       >
         <DisputeForm
           orderId={transaction.transactionId}
@@ -298,6 +297,18 @@ export default function TransactionDetailPage() {
           onCancel={() => setIsDisputeModalOpen(false)}
         />
       </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelConfirm}
+        title="Xác nhận hủy yêu cầu"
+        message="Bạn có chắc chắn muốn hủy yêu cầu này không? Mọi thông tin giao dịch sẽ được đóng lại."
+        confirmLabel="Xác nhận hủy"
+        variant="danger"
+        isLoading={isProcessing}
+      />
 
       {/* Mobile Sticky Action Bar (Only if Pending) */}
       {transaction.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM && (
