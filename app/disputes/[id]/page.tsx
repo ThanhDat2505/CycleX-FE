@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button, LoadingSpinner } from "@/app/components/ui";
 import { Dispute } from "@/app/types/dispute";
-import { getDisputeById } from "@/app/services/buyerDisputeService";
+import { getDisputeById, overrideDispute } from "@/app/services/buyerDisputeService";
 import { useToast } from "@/app/contexts/ToastContext";
 import { formatDate } from "@/app/utils/format";
 
@@ -17,6 +17,35 @@ export default function DisputeResultPage() {
   const [error, setError] = useState<string | null>(null);
 
   const disputeId = Number(params.id);
+
+  // --- S-83 Override State ---
+  const [isAdmin] = useState(true); // Mocking Admin role for BP7 Demo
+  const [isOverrideModalOpen, setIsOverrideModalOpen] = useState(false);
+  const [overrideAction, setOverrideAction] = useState<'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT'>('BUYER_WIN');
+  const [overrideReason, setOverrideReason] = useState('');
+  const [isOverriding, setIsOverriding] = useState(false);
+
+  const handleOverrideSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!overrideReason.trim()) {
+        addToast('Vui lòng nhập lý do (Reason).', 'error');
+        return;
+    }
+    setIsOverriding(true);
+    try {
+        await overrideDispute(disputeId, overrideAction, overrideReason);
+        addToast('Đã ghi đè kết quả thành công! Thông báo đã gửi đến Buyer & Seller.', 'success');
+        setIsOverrideModalOpen(false);
+        setOverrideReason('');
+        // Reload dispute data
+        const data = await getDisputeById(disputeId);
+        setDispute(data);
+    } catch (err: any) {
+        addToast(err.message || 'Lỗi khi ghi đè dispute.', 'error');
+    } finally {
+        setIsOverriding(false);
+    }
+  };
 
   useEffect(() => {
     async function fetchDispute() {
@@ -280,6 +309,15 @@ export default function DisputeResultPage() {
                   #{dispute.orderId}
                 </p>
               </div>
+              {isAdmin && (
+                  <button 
+                      onClick={() => setIsOverrideModalOpen(true)}
+                      className="ml-2 sm:ml-4 px-3 sm:px-4 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-300 transition-colors rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest flex items-center gap-2 border border-purple-200 shadow-sm whitespace-nowrap"
+                  >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                      Admin Override
+                  </button>
+              )}
             </div>
           </div>
 
@@ -389,6 +427,71 @@ export default function DisputeResultPage() {
           </div>
         </div>
       </div>
+
+      {/* S-83 Admin Override Modal */}
+      {isOverrideModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl animate-scale-in border-t-8 border-t-purple-500 relative">
+                <button onClick={() => setIsOverrideModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                <div className="mb-6 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center text-purple-600">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                    </div>
+                    <div>
+                        <h2 className="text-xl font-black text-gray-900">Dispute Override</h2>
+                        <p className="text-xs text-gray-500 font-medium mt-0.5">BP7 Admin Level Action</p>
+                    </div>
+                </div>
+
+                <form onSubmit={handleOverrideSubmit} className="space-y-5">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Resolution Action</label>
+                        <select 
+                            value={overrideAction} 
+                            onChange={(e) => setOverrideAction(e.target.value as any)}
+                            className="w-full appearance-none px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 font-bold focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 cursor-pointer"
+                        >
+                            <option value="BUYER_WIN">Hoàn tiền cho Buyer (Buyer Win)</option>
+                            <option value="SELLER_WIN">Chuyển tiền cho Seller (Seller Win)</option>
+                            <option value="SPLIT">Chia đôi tiền (Refund 50/50)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2">Override Reason <span className="text-red-500">*</span></label>
+                        <textarea 
+                            value={overrideReason} 
+                            onChange={(e) => setOverrideReason(e.target.value)}
+                            rows={4}
+                            required
+                            placeholder="Nhập lý do để thông báo cho Buyer và Seller..."
+                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-gray-900 resize-none"
+                        ></textarea>
+                    </div>
+
+                    <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 flex gap-3 text-orange-800">
+                        <svg className="w-5 h-5 shrink-0 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                        <p className="text-[11px] font-medium leading-relaxed">
+                            <strong>Lưu ý:</strong> Hành động này sẽ ngay lập tức thay đổi kết quả khiếu nại và tự động gửi thông báo (email/SMS) cho cả Buyer và Seller kèm theo lý do trên.
+                        </p>
+                    </div>
+
+                    <div className="flex gap-3 pt-2">
+                        <button type="button" onClick={() => setIsOverrideModalOpen(false)} disabled={isOverriding} className="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors disabled:opacity-50">Hủy</button>
+                        <button type="submit" disabled={isOverriding} className="flex-1 py-3 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-2 disabled:opacity-50">
+                            {isOverriding ? (
+                                <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span> Xử lý...</>
+                            ) : (
+                                "Xác Nhận Override"
+                            )}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
