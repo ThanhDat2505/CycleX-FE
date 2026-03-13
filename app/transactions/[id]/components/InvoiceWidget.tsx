@@ -33,7 +33,7 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                 {/* Transaction Type */}
                 <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                     <span className="text-gray-600 text-sm">Loại giao dịch</span>
-                    <span className={`font-bold px-3 py-1 rounded-full text-xs ${isPurchase ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
+                    <span className={`font-bold px-3 py-1 rounded-full text-xs ${isPurchase ? 'bg-orange-50 text-brand-primary' : 'bg-orange-100 text-orange-800'}`}>
                         {typeLabel.toUpperCase()}
                     </span>
                 </div>
@@ -60,7 +60,7 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                 <div className="pt-4 border-t border-gray-100">
                     <div className="flex justify-between items-end">
                         <span className="text-sm font-bold text-gray-900">Tổng cộng</span>
-                        <span className="text-2xl font-extrabold text-blue-600 leading-none">{formatPrice(transaction.totalAmount)}</span>
+                        <span className="text-2xl font-extrabold text-brand-primary leading-none">{formatPrice(transaction.totalAmount)}</span>
                     </div>
                     <p className="text-xs text-gray-400 text-right mt-1">Đã bao gồm VAT nếu có</p>
                 </div>

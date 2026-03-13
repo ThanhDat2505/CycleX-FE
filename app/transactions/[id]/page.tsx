@@ -183,7 +183,7 @@ export default function TransactionDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white pt-10 pb-20 px-4 sm:px-6 lg:px-8 shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-brand-primary to-[#FF8A00] text-white pt-10 pb-20 px-4 sm:px-6 lg:px-8 shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/3 -translate-y-1/3">
           <svg width="400" height="400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
@@ -192,7 +192,7 @@ export default function TransactionDetailPage() {
         <div className="max-w-5xl mx-auto relative z-10">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-blue-100 hover:text-white transition-colors mb-6 group font-medium"
+            className="flex items-center text-orange-100 hover:text-white transition-colors mb-6 group font-medium"
           >
             <svg
               className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform"
@@ -214,7 +214,7 @@ export default function TransactionDetailPage() {
               <h1 className="text-3xl font-extrabold tracking-tight">
                 Chi tiết đơn hàng #{transaction.transactionId}
               </h1>
-              <p className="text-blue-100 mt-2 flex items-center text-sm font-medium">
+              <p className="text-orange-100 mt-2 flex items-center text-sm font-medium">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"

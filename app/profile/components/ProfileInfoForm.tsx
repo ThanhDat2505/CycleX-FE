@@ -149,7 +149,7 @@ export function ProfileInfoForm({
           <p className="text-sm text-gray-500 mb-3">
             {MESSAGES.S04_AVATAR_HINT}
           </p>
-          <label className="inline-flex items-center justify-center px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium text-blue-600 bg-white hover:bg-blue-50 cursor-pointer transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+          <label className="inline-flex items-center justify-center px-4 py-2 border border-brand-primary rounded-lg text-sm font-medium text-brand-primary bg-white hover:bg-orange-50 cursor-pointer transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand-primary">
             <Upload className="w-4 h-4 mr-2" />
             {MESSAGES.S04_AVATAR_UPLOAD_TEXT}
             <input
