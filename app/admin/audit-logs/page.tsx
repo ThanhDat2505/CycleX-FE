@@ -175,7 +175,7 @@ export default function AuditLogsPage() {
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
                                 <thead>
-                                    <tr className="bg-gray-50/80 border-b border-gray-100">
+                                    <tr className="bg-gray-50/80 border-b border-gray-100 whitespace-nowrap">
                                         <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Date & Time</th>
                                         <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Admin Details</th>
                                         <th className="px-6 py-4 text-xs font-black text-gray-400 uppercase tracking-widest">Action</th>
@@ -253,7 +253,7 @@ export default function AuditLogsPage() {
                             <button onClick={() => setIsDetailModalOpen(false)} className="absolute top-6 right-6 text-gray-400 hover:text-gray-900">
                                 <XCircle size={24} />
                             </button>
-                            <div className="mb-6 mb-8 border-b border-gray-100 pb-4">
+                            <div className="mb-8 border-b border-gray-100 pb-4">
                                 <h2 className="text-xl font-black text-gray-900 mb-1">Audit Log Details</h2>
                                 <p className="text-xs text-gray-500 font-medium">{selectedLog.id}</p>
                             </div>
