@@ -1,6 +1,7 @@
 "use client";
 
-import React, { Suspense } from "react";
+import Link from "next/link";
+import React, { Suspense, useCallback } from "react";
 import { CREATE_LISTING_STEPS } from "./constants";
 import { useCreateListing } from "./hooks/useCreateListing";
 
@@ -28,6 +29,15 @@ const CreateListingPageContent: React.FC = () => {
     readOnlyMessage,
     canCancelPublish,
   } = state;
+
+  const handleFormKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLFormElement>) => {
+      if (e.key === "Enter" && step !== CREATE_LISTING_STEPS.PREVIEW) {
+        e.preventDefault();
+      }
+    },
+    [step],
+  );
 
   if (isLoading) {
     return (
@@ -103,11 +113,7 @@ const CreateListingPageContent: React.FC = () => {
       {/* Form */}
       <form
         onSubmit={actions.handleSubmit}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" && step !== CREATE_LISTING_STEPS.PREVIEW) {
-            e.preventDefault();
-          }
-        }}
+        onKeyDown={handleFormKeyDown}
         className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm"
       >
         {isReadOnly ? (
@@ -176,12 +182,12 @@ const CreateListingPageContent: React.FC = () => {
                 {isCancellingPublish ? "Cancelling..." : "Cancel Publish"}
               </button>
             )}
-            <a
+            <Link
               href="/seller/my-listings"
               className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
             >
               Back to My Listings
-            </a>
+            </Link>
           </div>
         ) : (
           <div className="flex gap-4 mt-8 justify-between">
