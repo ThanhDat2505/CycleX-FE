@@ -88,8 +88,8 @@ export const authService = {
             }
             // Save token and user data if login successful
             if (data.accessToken) {
-                authService.saveToken(data.accessToken); // lưu token vào localStorage
-                authService.saveUser(data.user); // ✅ lưu user data vào localStorage để giữ session khi reload
+                authService.saveToken(data.accessToken, rememberMe); 
+                authService.saveUser(data.user, rememberMe); 
             }
 
             return data;
@@ -293,10 +293,13 @@ export const authService = {
      * Save authentication token to localStorage
      * @param token - JWT token from backend
      */
-    saveToken: (token: string): void => {
+    saveToken: (token: string, remember: boolean = true): void => {
         if (typeof window !== 'undefined') {
-
-            localStorage.setItem('authToken', token);
+            if (remember) {
+                localStorage.setItem('authToken', token);
+            } else {
+                sessionStorage.setItem('authToken', token);
+            }
         }
     },
 
@@ -304,10 +307,14 @@ export const authService = {
      * Save user data to localStorage
      * @param user - User object from login response
      */
-    saveUser: (user: User): void => {
+    saveUser: (user: User, remember: boolean = true): void => {
         if (typeof window !== 'undefined') {
-
-            localStorage.setItem('userData', JSON.stringify(user));
+            const userData = JSON.stringify(user);
+            if (remember) {
+                localStorage.setItem('userData', userData);
+            } else {
+                sessionStorage.setItem('userData', userData);
+            }
         }
     },
 
@@ -317,19 +324,19 @@ export const authService = {
      */
     getUser: (): User | null => {
         if (typeof window !== 'undefined') {
-            const userData = localStorage.getItem('userData');
+            const userData = localStorage.getItem('userData') || sessionStorage.getItem('userData');
             return userData ? JSON.parse(userData) : null;
         }
         return null;
     },
 
     /**
-     * Get authentication token from localStorage
+     * Get authentication token from localStorage or sessionStorage
      * @returns Token string or null
      */
     getToken: (): string | null => {
         if (typeof window !== 'undefined') {
-            return localStorage.getItem('authToken');
+            return localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
         }
         return null;
     },
@@ -341,6 +348,8 @@ export const authService = {
         if (typeof window !== 'undefined') {
             localStorage.removeItem('authToken');
             localStorage.removeItem('userData');
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('userData');
         }
     },
 
