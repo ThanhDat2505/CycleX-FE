@@ -3,7 +3,7 @@ import { AdminDashboardData, TimeRange } from '../types/adminDashboard';
 import { API_DELAY_MS } from '../constants';
 
 /**
- * Get Admi Dashboard data including metrics and activities.
+ * Get Admin Dashboard data including metrics and activities.
  * 
  * API Endpoint: GET /api/admin/dashboard
  * @param timeRange The range to filter data (TODAY, LAST_7_DAYS, etc.)
