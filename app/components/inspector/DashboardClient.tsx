@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
@@ -91,27 +91,38 @@ export default function DashboardClient() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-            Inspector Dashboard
-          </h1>
-          <p className="text-gray-600 mt-2 text-lg">
-            Chào mừng trở lại! Bạn có{" "}
-            <span className="font-bold text-orange-600">{pendingTotal}</span>{" "}
-            tin cần duyệt hôm nay.
-          </p>
+      {/* Header Section - Refined to match Shipper style */}
+      <div className="bg-white border-b border-gray-200 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 -mt-8 py-6 mb-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <span>Chào mừng trở lại, Inspector!</span>
+              <span className="text-2xl">👋</span>
+            </h1>
+            <p className="mt-1 text-gray-500 text-sm">
+              {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+            <p className="mt-2 text-gray-600">
+              Bạn có <span className="font-bold text-brand-primary">{pendingTotal}</span> tin cần duyệt hôm nay.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => window.location.reload()}
+              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">refresh</span>
+              Làm mới
+            </button>
+            <Link
+              href="/inspector/pending-list"
+              className="flex items-center justify-center gap-2 px-6 py-2 bg-brand-primary text-white rounded-lg font-bold hover:shadow-lg transition-all"
+            >
+              <span className="material-symbols-outlined">format_list_bulleted</span>
+              Vào danh sách
+            </Link>
+          </div>
         </div>
-        <Link
-          href="/inspector/pending-list"
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 hover:shadow-lg transition-all"
-        >
-          <span className="material-symbols-outlined">
-            format_list_bulleted
-          </span>
-          Vào danh sách chờ duyệt
-        </Link>
       </div>
 
       {loading && <div className="text-gray-500">Đang tải dữ liệu...</div>}

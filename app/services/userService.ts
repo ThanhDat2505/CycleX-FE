@@ -2,6 +2,7 @@ import { UpdateProfileRequest, ChangePasswordRequest, UserProfileResponse } from
 import { apiCallGET, apiCallPUT } from '../utils/apiHelpers';
 import { validateObject, validateString } from '../utils/apiValidation';
 import { getMockUser, updateMockUser, changeMockUserPassword } from '../mocks';
+import { authService } from './authService';
 
 // USE_MOCK_API can be imported or assumed globally if configured
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
@@ -14,13 +15,10 @@ export const userService = {
     getUserProfile: async (userId: number | string): Promise<UserProfileResponse | null> => {
         if (USE_MOCK_API) {
             await new Promise(resolve => setTimeout(resolve, 800));
-            if (typeof window !== 'undefined') {
-                const userData = localStorage.getItem('userData');
-                if (userData) {
-                    const parsed = JSON.parse(userData);
-                    const mockUser = getMockUser(parsed.email);
-                    if (mockUser) return mockUser as unknown as UserProfileResponse;
-                }
+            const userData = authService.getUser();
+            if (userData) {
+                const mockUser = getMockUser(userData.email);
+                if (mockUser) return mockUser as unknown as UserProfileResponse;
             }
             return null;
         }
@@ -62,17 +60,14 @@ export const userService = {
         if (USE_MOCK_API) {
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            if (typeof window !== 'undefined') {
-                const userDataStr = localStorage.getItem('userData');
-                if (userDataStr) {
-                    const parsed = JSON.parse(userDataStr);
-                    const updatedUser = updateMockUser(parsed.email, data);
+            const userData = authService.getUser();
+            if (userData) {
+                const updatedUser = updateMockUser(userData.email, data);
 
-                    // Update session
-                    localStorage.setItem('userData', JSON.stringify(updatedUser));
+                // Update session
+                authService.saveUser(updatedUser as any); 
 
-                    return updatedUser as unknown as UserProfileResponse;
-                }
+                return updatedUser as unknown as UserProfileResponse;
             }
             throw new Error("Không tìm thấy user session để cập nhật (Mock)");
         }
@@ -125,16 +120,13 @@ export const userService = {
         if (USE_MOCK_API) {
             await new Promise(resolve => setTimeout(resolve, 1200));
 
-            if (typeof window !== 'undefined') {
-                const userDataStr = localStorage.getItem('userData');
-                if (userDataStr) {
-                    const parsed = JSON.parse(userDataStr);
-                    const success = changeMockUserPassword(parsed.email, data.oldPassword!, data.newPassword!);
-                    if (!success) {
-                        throw { status: 400, message: "Mật khẩu hiện tại không đúng" };
-                    }
-                    return;
+            const userData = authService.getUser();
+            if (userData) {
+                const success = changeMockUserPassword(userData.email, data.oldPassword!, data.newPassword!);
+                if (!success) {
+                    throw { status: 400, message: "Mật khẩu hiện tại không đúng" };
                 }
+                return;
             }
             throw new Error("Không tìm thấy user session (Mock)");
         }

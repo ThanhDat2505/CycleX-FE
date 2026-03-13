@@ -52,7 +52,7 @@ export default function InspectorNav() {
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap
                   ${
                     active
-                      ? "bg-blue-50 text-blue-600 ring-1 ring-blue-200"
+                      ? "bg-orange-50 text-brand-primary ring-1 ring-orange-200"
                       : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
                   }`}
               >

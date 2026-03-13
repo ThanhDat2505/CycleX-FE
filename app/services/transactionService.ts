@@ -9,30 +9,23 @@ import { validateObject, validateArray } from '../utils/apiValidation';
 
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
+import { authService } from './authService';
+
 type CurrentUserSnapshot = {
     userId?: number;
     role?: string;
 };
 
 function getCurrentUserSnapshot(): CurrentUserSnapshot {
-    if (typeof window === 'undefined') {
+    const userData = authService.getUser();
+    if (!userData) {
         return {};
     }
 
-    try {
-        const raw = localStorage.getItem('userData');
-        if (!raw) {
-            return {};
-        }
-
-        const parsed = JSON.parse(raw) as { userId?: number; role?: string };
-        return {
-            userId: typeof parsed.userId === 'number' ? parsed.userId : undefined,
-            role: typeof parsed.role === 'string' ? parsed.role : undefined,
-        };
-    } catch {
-        return {};
-    }
+    return {
+        userId: userData.userId,
+        role: userData.role,
+    };
 }
 
 function toNumber(value: unknown): number | undefined {
