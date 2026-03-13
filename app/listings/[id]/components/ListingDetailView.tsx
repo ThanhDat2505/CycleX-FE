@@ -82,6 +82,9 @@ export default function ListingDetailView({ listing, userRole }: ListingDetailVi
     const hasInspection = listing.inspectionStatus || listing.inspectionDate || listing.inspectionNotes;
     const inspectionStyles = getInspectionStatusStyles(listing.inspectionStatus || '');
     const isSeller = userRole === 'SELLER';
+    const purchaseHref = listing.productId
+        ? `/purchase-request?listingId=${listing.listingId}&productId=${listing.productId}`
+        : `/purchase-request?listingId=${listing.listingId}`;
 
     return (
         <div className={STYLES.wrapper}>
@@ -176,7 +179,7 @@ export default function ListingDetailView({ listing, userRole }: ListingDetailVi
                     {!isSeller && (
                         <div className={STYLES.ctaSection}>
                             <Link
-                                href={`/purchase-request?listingId=${listing.listingId}`}
+                                href={purchaseHref}
                                 className={STYLES.ctaButton}
                             >
                                 {MESSAGES.DETAIL_PURCHASE_BUTTON}
@@ -193,7 +196,7 @@ export default function ListingDetailView({ listing, userRole }: ListingDetailVi
             {!isSeller && (
                 <div className={STYLES.mobileStickyCta}>
                     <Link
-                        href={`/purchase-request?listingId=${listing.listingId}`}
+                        href={purchaseHref}
                         className={STYLES.mobileCtaButton}
                     >
                         {MESSAGES.DETAIL_PURCHASE_BUTTON} - {formatPrice(listing.price)}

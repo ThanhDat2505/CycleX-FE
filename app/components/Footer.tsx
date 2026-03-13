@@ -23,7 +23,7 @@ export default function Footer() {
   }
 
   const handleHomeClick = () => {
-    // Check if we're already on home page
+    // Check if we're already on home pag
     if (window.location.pathname === "/") {
       // Scroll to hero section using utility
       scrollToElementById(ELEMENT_IDS.HERO_SECTION);

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
+import { useToast } from '@/app/contexts/ToastContext';
 import { searchListings } from '@/app/services/listingService';
 import { HomeBike, SearchFilters, SortOption, PaginationInfo } from '@/app/types/listing';
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE } from '@/app/constants';
@@ -39,6 +40,7 @@ export function useListings(): UseListingsReturn {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { user, isLoading: isAuthLoading } = useAuth();
+    const { addToast } = useToast();
 
     // Data state
     const [listings, setListings] = useState<HomeBike[]>([]);
@@ -84,13 +86,15 @@ export function useListings(): UseListingsReturn {
 
     // Redirect restricted roles away from listings page
     useEffect(() => {
-        if (!isAuthLoading && user?.role === 'SHIPPER') {
-            router.replace('/shipper');
+        if (!isAuthLoading) {
+            if (user?.role === 'SHIPPER') {
+                router.replace('/shipper');
+            } else if (user?.role === 'SELLER') {
+                addToast('Bạn không có quyền truy cập trang này', 'error');
+                router.replace('/seller/dashboard');
+            }
         }
-        if (!isAuthLoading && user?.role === 'SELLER') {
-            router.replace('/seller/dashboard');
-        }
-    }, [user, isAuthLoading, router]);
+    }, [user, isAuthLoading, router, addToast]);
 
     // Fetch listings with AbortController to prevent race conditions (MEM-01)
     useEffect(() => {

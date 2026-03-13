@@ -23,6 +23,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: 'ACTIVE',
         cccd: '001234567890',
         avatarUrl: null,
+        address: null,
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -38,6 +39,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: null,
         cccd: '001234567891',
         avatarUrl: null,
+        address: null,
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -53,6 +55,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: 'ACTIVE',
         cccd: '001234567892',
         avatarUrl: null,
+        address: null,
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -68,6 +71,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: 'ACTIVE',
         cccd: '001234567896',
         avatarUrl: 'https://i.pravatar.cc/150?u=shipper',
+        address: '123 Nguyễn Huệ, Q.1, TP.HCM',
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -83,6 +87,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: null,
         cccd: '001234567893',
         avatarUrl: null,
+        address: null,
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -98,6 +103,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: 'SUSPENDED',
         cccd: '001234567894',
         avatarUrl: null,
+        address: null,
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -113,6 +119,7 @@ export const mockUsers: Record<string, User & { password: string }> = {
         status: 'INACTIVE',
         cccd: '001234567895',
         avatarUrl: null,
+        address: null,
         createdAt: '2026-01-25T16:38:24.814248',
         updatedAt: '2026-01-25T16:38:24.814248',
         lastLogin: null,
@@ -232,6 +239,7 @@ export const registerMockUser = (
         status: null,
         cccd: cccd,
         avatarUrl: null,
+        address: null,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         lastLogin: null,
@@ -276,4 +284,39 @@ export const validateMockLogin = (email: string, password: string): User | null 
 
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
+};
+
+/**
+ * Update mock user profile
+ */
+export const updateMockUser = (email: string, data: any): User => {
+    const user = mockUsers[email];
+    if (!user) throw new Error("User not found in mock DB");
+
+    user.fullName = data.fullName;
+    user.phone = data.phone;
+    if (data.address !== undefined) {
+        user.address = data.address;
+    }
+    if (data.avatarUrl !== undefined) {
+        user.avatarUrl = data.avatarUrl;
+    }
+
+    const { password: _, ...userWithoutPassword } = user;
+    return userWithoutPassword;
+};
+
+/**
+ * Change mock user password
+ */
+export const changeMockUserPassword = (email: string, oldPass: string, newPass: string): boolean => {
+    const user = mockUsers[email];
+    if (!user) return false;
+
+    if (user.password !== oldPass) {
+        return false;
+    }
+
+    user.password = newPass;
+    return true;
 };

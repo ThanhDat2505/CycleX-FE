@@ -2,44 +2,43 @@
 // API endpoint: GET /api/seller/dashboard/stats
 
 import {
-  validateResponse,
-  validateArray,
-  validateObject,
-  validateNumber,
-  validateString,
-  validatePositiveNumber,
-} from "../utils/apiValidation";
-import { apiCallGET } from "../utils/apiHelpers";
-import { API_DELAY_MS, TOP_LISTINGS_LIMIT } from "../constants";
-import { ENDPOINTS } from "./backend";
+    validateResponse,
+    validateArray,
+    validateObject,
+    validateNumber,
+    validateString,
+    validatePositiveNumber
+} from '../utils/apiValidation';
+import { apiCallGET } from '../utils/apiHelpers';
+import { API_DELAY_MS, TOP_LISTINGS_LIMIT } from '../constants';
 
 export interface DashboardStats {
-  activeListings: number;
-  pendingListings: number;
-  rejectedListings: number;
-  totalTransactions: number;
-  totalViews: number;
-  newInquiries: number;
+    activeListings: number;
+    pendingListings: number;
+    rejectedListings: number;
+    totalTransactions: number;
+    totalViews: number;
+    newInquiries: number;
 }
 
 export interface TopListing {
-  id: number;
-  brand: string;
-  model: string;
-  price: number;
-  views: number;
-  inquiries: number;
-  status: string;
+    id: number;
+    brand: string;
+    model: string;
+    price: number;
+    views: number;
+    inquiries: number;
+    status: string;
 }
 
 export interface DashboardData {
-  stats: DashboardStats;
-  topListings: TopListing[];
+    stats: DashboardStats;
+    topListings: TopListing[];
 }
 
 /**
  * Get seller's dashboard statistics and top performing listings
- *
+ * 
  * API Endpoint: GET /api/seller/dashboard
  * Authentication: Required (authToken in headers)
  *
@@ -78,104 +77,93 @@ export interface DashboardData {
  * const data = await response.json();
  * return data;
  */
-export async function getDashboardData(): Promise<DashboardData> {
-  const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === "true";
+export async function getDashboardData(sellerId: number): Promise<DashboardData> {
+    const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
-  if (USE_MOCK_API) {
-    // ⚠️ MOCK IMPLEMENTATION - For development only
-    const mockListings: TopListing[] = [
-      {
-        id: 1,
-        brand: "Giant",
-        model: "Escape 3",
-        status: "ACTIVE",
-        price: 8500000,
-        views: 120,
-        inquiries: 2,
-      },
-      {
-        id: 2,
-        brand: "Trek",
-        model: "FX 2",
-        status: "ACTIVE",
-        price: 12000000,
-        views: 85,
-        inquiries: 1,
-      },
-      {
-        id: 3,
-        brand: "Specialized",
-        model: "Sirrus X",
-        status: "PENDING",
-        price: 15500000,
-        views: 45,
-        inquiries: 0,
-      },
-      {
-        id: 4,
-        brand: "Cannondale",
-        model: "Trail 5",
-        status: "REJECTED",
-        price: 9500000,
-        views: 12,
-        inquiries: 0,
-      },
-    ];
+    if (USE_MOCK_API) {
+        // ⚠️ MOCK IMPLEMENTATION - For development only
+        const mockListings: TopListing[] = [
+            {
+                id: 1,
+                brand: "Giant",
+                model: "Escape 3",
+                status: "ACTIVE",
+                price: 8500000,
+                views: 120,
+                inquiries: 2,
+            },
+            {
+                id: 2,
+                brand: "Trek",
+                model: "FX 2",
+                status: "ACTIVE",
+                price: 12000000,
+                views: 85,
+                inquiries: 1,
+            },
+            {
+                id: 3,
+                brand: "Specialized",
+                model: "Sirrus X",
+                status: "PENDING",
+                price: 15500000,
+                views: 45,
+                inquiries: 0,
+            },
+            {
+                id: 4,
+                brand: "Cannondale",
+                model: "Trail 5",
+                status: "REJECTED",
+                price: 9500000,
+                views: 12,
+                inquiries: 0,
+            },
+        ];
 
-    // Calculate stats from mock data
-    const activeListings = mockListings.filter(
-      (l) => l.status === "ACTIVE",
-    ).length;
-    const pendingListings = mockListings.filter(
-      (l) => l.status === "PENDING",
-    ).length;
-    const rejectedListings = mockListings.filter(
-      (l) => l.status === "REJECTED",
-    ).length;
+        // Calculate stats from mock data
+        const activeListings = mockListings.filter(l => l.status === "ACTIVE").length;
+        const pendingListings = mockListings.filter(l => l.status === "PENDING").length;
+        const rejectedListings = mockListings.filter(l => l.status === "REJECTED").length;
 
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, API_DELAY_MS));
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
 
-    return {
-      stats: {
-        activeListings,
-        pendingListings,
-        rejectedListings,
-        totalTransactions: 5,
-        totalViews: 1245,
-        newInquiries: 3,
-      },
-      topListings: mockListings.slice(0, TOP_LISTINGS_LIMIT),
+        return {
+            stats: {
+                activeListings,
+                pendingListings,
+                rejectedListings,
+                totalTransactions: 5,
+                totalViews: 1245,
+                newInquiries: 3,
+            },
+            topListings: mockListings.slice(0, TOP_LISTINGS_LIMIT),
+        };
+    }
+
+    // ✅ REAL API: GET /api/seller/{sellerId}/dashboard/stats
+    // BE returns flat: { approvedCount, pendingCount, rejectedCount, totalListings, totalViews }
+    const raw = await apiCallGET<{
+        approvedCount: number;
+        pendingCount: number;
+        rejectedCount: number;
+        totalListings: number;
+        totalViews: number;
+    }>(`/seller/${sellerId}/dashboard/stats`);
+
+    // Map BE response to FE DashboardData shape
+    const result: DashboardData = {
+        stats: {
+            activeListings: raw.approvedCount ?? 0,
+            pendingListings: raw.pendingCount ?? 0,
+            rejectedListings: raw.rejectedCount ?? 0,
+            totalTransactions: raw.totalListings ?? 0,
+            totalViews: raw.totalViews ?? 0,
+            newInquiries: 0, // BE doesn't return this yet
+        },
+        topListings: [], // BE doesn't return top listings yet
     };
-  }
 
-  // ✅ REAL API: GET /api/seller/dashboard/stats
-  const data = await apiCallGET<DashboardData>(
-    ENDPOINTS.listings.sellerDashboardStatsLegacy,
-  );
-
-  // ✅ VALIDATION: Validate response structure
-  validateResponse(data);
-  validateObject(data.stats, "stats");
-  validateNumber(data.stats.activeListings, "stats.activeListings");
-  validateNumber(data.stats.pendingListings, "stats.pendingListings");
-  validateNumber(data.stats.rejectedListings, "stats.rejectedListings");
-  validateNumber(data.stats.totalTransactions, "stats.totalTransactions");
-  validateNumber(data.stats.totalViews, "stats.totalViews");
-  validateNumber(data.stats.newInquiries, "stats.newInquiries");
-  validateArray(data.topListings, "topListings");
-
-  // Validate each listing
-  data.topListings.forEach((listing, index) => {
-    const context = `topListings[${index}]`;
-    validateNumber(listing.id, `${context}.id`);
-    validateString(listing.brand, `${context}.brand`);
-    validateString(listing.model, `${context}.model`);
-    validatePositiveNumber(listing.price, `${context}.price`);
-    validateNumber(listing.views, `${context}.views`);
-    validateNumber(listing.inquiries, `${context}.inquiries`);
-    validateString(listing.status, `${context}.status`);
-  });
-
-  return data;
+    return result;
 }

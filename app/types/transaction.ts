@@ -28,6 +28,7 @@ export interface PurchaseRequestForm {
  * Request payload to create transaction
  */
 export interface CreateTransactionRequest {
+    productId?: number;
     listingId: number;
     buyerId: number;
     transactionType: TransactionType;

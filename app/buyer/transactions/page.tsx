@@ -50,6 +50,9 @@ export default function BuyerTransactionsPage() {
                     setTransactions(data);
                 }
             } catch (error) {
+                if (isMounted) {
+                    addToast('Không thể tải danh sách đơn hàng. Vui lòng thử lại.', 'error');
+                }
             } finally {
                 if (isMounted) setIsLoading(false);
             }

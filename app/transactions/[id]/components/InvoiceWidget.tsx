@@ -9,9 +9,11 @@ interface InvoiceWidgetProps {
     isProcessing: boolean;
     onAccept: () => void;
     onCancel: () => void;
+    onDispute: () => void;
+    canDispute: boolean;
 }
 
-export default function InvoiceWidget({ transaction, viewerRole, isProcessing, onAccept, onCancel }: InvoiceWidgetProps) {
+export default function InvoiceWidget({ transaction, viewerRole, isProcessing, onAccept, onCancel, onDispute, canDispute }: InvoiceWidgetProps) {
     const isPending = transaction.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM;
     const isConfirmed = transaction.status === TRANSACTION_STATUS.CONFIRMED;
     const isPurchase = transaction.transactionType === TRANSACTION_TYPE.PURCHASE;
@@ -107,6 +109,25 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                         </div>
                         <p className="text-xs text-green-600 opacity-80">
                             Vui lòng chuẩn bị xe để giao.
+                        </p>
+                    </div>
+                )}
+
+                {/* Dispute Action (Buyer Only) */}
+                {viewerRole === 'BUYER' && canDispute && (
+                    <div className="pt-4 border-t border-gray-100 mt-2">
+                        <Button
+                            onClick={onDispute}
+                            variant="secondary"
+                            className="w-full text-red-500 bg-red-50/50 border-red-100 hover:bg-red-50 hover:border-red-200 transition-all font-bold py-3 flex items-center justify-center gap-2 rounded-xl group"
+                        >
+                            <svg className="w-4 h-4 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Khiếu nại đơn hàng
+                        </Button>
+                        <p className="text-[10px] text-gray-400 mt-3 text-center italic font-medium">
+                            Yêu cầu hỗ trợ trong 24h sau khi nhận xe
                         </p>
                     </div>
                 )}

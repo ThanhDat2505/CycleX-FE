@@ -6,7 +6,7 @@ import {
   disputeService,
   type DisputeDetail,
   type DisputeEvidence,
-} from "@/app/services/disputeService";
+} from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
 
 function evidenceIcon(type: DisputeEvidence["type"]): string {
@@ -28,9 +28,9 @@ export default function DisputeDetailClient({
   const [detail, setDetail] = useState<DisputeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openingEvidenceIndex, setOpeningEvidenceIndex] = useState<number | null>(
-    null,
-  );
+  const [openingEvidenceIndex, setOpeningEvidenceIndex] = useState<
+    number | null
+  >(null);
 
   const handleOpenEvidence = async (item: DisputeEvidence, index: number) => {
     if (!item.url) return;

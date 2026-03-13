@@ -6,35 +6,34 @@
  * Used by authService and listingService
  */
 
-import { backendRequest, type BackendErrorShape } from "../services/backend";
-
-export interface ApiError {
-  status: number;
-  message: string;
-  errors?: Record<string, string[]>;
+/**
+ * Lấy JWT token từ localStorage để gắn vào Authorization header.
+ * Trả về null nếu chưa đăng nhập hoặc đang chạy trên server (SSR).
+ */
+function getAuthToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('authToken');
 }
 
-function normalizeError(error: unknown): ApiError {
-  const apiError = error as BackendErrorShape | undefined;
-  const status = apiError?.status ?? 500;
-  const rawMessage = apiError?.message || "Unknown error";
+export interface ApiError {
+    status: number;
+    message: string;
+    errors?: Record<string, string[]>;
+}
 
-  if (
-    rawMessage === "Failed to fetch" ||
-    String((error as any)?.name || "") === "TypeError"
-  ) {
-    return {
-      status: 503,
-      message:
-        "Cannot connect to server. Please check if backend is running or if you have internet connection.",
+/**
+ * Get auth headers from localStorage token
+ * Returns Authorization header if token exists
+ */
+function getAuthHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
     };
-  }
-
-  return {
-    status,
-    message: rawMessage,
-    errors: apiError?.errors,
-  };
+    const token = getAuthToken();
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
 }
 
 /**
@@ -47,17 +46,43 @@ function normalizeError(error: unknown): ApiError {
 // → Gửi đến: /backend/api/auth/login
 // → Trả về: LoginResponse
 export async function apiCallPOST<T>(
-  endpoint: string,
-  body: object,
+    endpoint: string,
+    body: object
 ): Promise<T> {
-  try {
-    return await backendRequest<T>(endpoint, {
-      method: "POST",
-      body,
-    });
-  } catch (error: unknown) {
-    throw normalizeError(error);
-  }
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            // Try to parse error from backend
+            try {
+                const error: ApiError = await response.json(); // parse lỗi từ server thành json
+                throw error; // ném lỗi ra ngoài
+            } catch (parseError) {
+                // If can't parse JSON, throw generic error with status code
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) { // ở đây là bắt lỗi mạng khi server không chạy hoặc không kết nối được
+        // Handle network errors (server down, no internet, CORS, etc.)
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+
+        // Re-throw other errors (from backend or parsing)
+        throw error;
+    }
 }
 
 /**
@@ -66,11 +91,39 @@ export async function apiCallPOST<T>(
  * @returns Promise with parsed JSON response
  */
 export async function apiCallGET<T>(endpoint: string): Promise<T> {
-  try {
-    return await backendRequest<T>(endpoint, { method: "GET" });
-  } catch (error: unknown) {
-    throw normalizeError(error);
-  }
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'GET',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            // Try to parse error from backend
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                // If can't parse JSON, throw generic error with status code
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        // Handle network errors (server down, no internet, CORS, etc.)
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+
+        // Re-throw other errors (from backend or parsing)
+        throw error;
+    }
 }
 
 /**
@@ -80,17 +133,38 @@ export async function apiCallGET<T>(endpoint: string): Promise<T> {
  * @returns Promise with parsed JSON response
  */
 export async function apiCallPUT<T>(
-  endpoint: string,
-  body: object,
+    endpoint: string,
+    body: object
 ): Promise<T> {
-  try {
-    return await backendRequest<T>(endpoint, {
-      method: "PUT",
-      body,
-    });
-  } catch (error: unknown) {
-    throw normalizeError(error);
-  }
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'PUT',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
 }
 
 /**
@@ -100,17 +174,38 @@ export async function apiCallPUT<T>(
  * @returns Promise with parsed JSON response
  */
 export async function apiCallPATCH<T>(
-  endpoint: string,
-  body: object,
+    endpoint: string,
+    body: object
 ): Promise<T> {
-  try {
-    return await backendRequest<T>(endpoint, {
-      method: "PATCH",
-      body,
-    });
-  } catch (error: unknown) {
-    throw normalizeError(error);
-  }
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'PATCH',
+            headers: getAuthHeaders(),
+            body: JSON.stringify(body),
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        return await response.json();
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
 }
 
 /**
@@ -118,10 +213,38 @@ export async function apiCallPATCH<T>(
  * @param endpoint - API endpoint (e.g., '/seller/{sellerId}/drafts/1')
  * @returns Promise with parsed JSON response
  */
-export async function apiCallDELETE<T>(endpoint: string): Promise<T> {
-  try {
-    return await backendRequest<T>(endpoint, { method: "DELETE" });
-  } catch (error: unknown) {
-    throw normalizeError(error);
-  }
+export async function apiCallDELETE<T>(
+    endpoint: string
+): Promise<T> {
+    try {
+        const response = await fetch(`/backend/api${endpoint}`, {
+            method: 'DELETE',
+            headers: getAuthHeaders(),
+        });
+
+        if (!response.ok) {
+            try {
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
+            }
+        }
+
+        // Some DELETE endpoints return empty body
+        const text = await response.text();
+        return text ? JSON.parse(text) : ({} as T);
+    } catch (error: any) {
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            throw {
+                status: 503,
+                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+            };
+        }
+        throw error;
+    }
 }
+

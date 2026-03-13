@@ -32,6 +32,7 @@ interface UsePurchaseRequestReturn {
     isListingLoading: boolean;
     isAuthLoading: boolean;
     isLoggedIn: boolean;
+    isSellerBlocked: boolean;
     error: string | null;
     submitError: string | null;
     validationErrors: Partial<Record<keyof PurchaseRequestForm, string>>;
@@ -52,11 +53,13 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
     const { isLoggedIn, isLoading: isAuthLoading, user, requireAuth, role } = useAuth();
 
     const listingId = searchParams.get('listingId');
+    const productId = searchParams.get('productId');
 
     // State
     const [currentStep, setCurrentStep] = useState(1);
     const [listing, setListing] = useState<ListingDetail | null>(null);
     const [isListingLoading, setIsListingLoading] = useState(true);
+    const [isSellerBlocked, setIsSellerBlocked] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [submitError, setSubmitError] = useState<string | null>(null);
     const [validationErrors, setValidationErrors] = useState<Partial<Record<keyof PurchaseRequestForm, string>>>({});
@@ -85,7 +88,12 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         }
 
         if (role && role !== 'BUYER') {
-            setError(MESSAGES.S50_ERROR_ROLE);
+            if (role === 'SELLER') {
+                addToast('Bạn không có quyền thực hiện chức năng này', 'error');
+                router.replace('/seller/dashboard');
+            } else {
+                setError(MESSAGES.S50_ERROR_ROLE);
+            }
             return;
         }
 
@@ -115,7 +123,12 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
 
             try {
                 if (isMounted) setIsListingLoading(true);
-                const data = await getListingDetail(Number(listingId));
+                const parsedListingId = Number(listingId);
+                if (!Number.isFinite(parsedListingId) || parsedListingId <= 0) {
+                    throw new Error('Invalid listingId');
+                }
+
+                const data = await getListingDetail(parsedListingId);
 
                 if (!isMounted) return;
 
@@ -229,7 +242,18 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
             setIsSubmitting(true);
             setSubmitError(null);
 
+            const parsedProductId = productId ? Number(productId) : undefined;
+            const resolvedProductId =
+                (Number.isFinite(parsedProductId) && (parsedProductId as number) > 0)
+                    ? (parsedProductId as number)
+                    : listing.productId;
+
+            if (!resolvedProductId) {
+                throw new Error('Không tìm thấy productId cho sản phẩm này. Vui lòng tải lại trang và thử lại.');
+            }
+
             const transaction = await createPurchaseRequest({
+                productId: resolvedProductId,
                 listingId: listing.listingId,
                 buyerId: user.userId,
                 transactionType: formData.transactionType,
@@ -250,7 +274,7 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         } finally {
             setIsSubmitting(false);
         }
-    }, [listing, user, formData, router, validateStep1, addToast]);
+    }, [listing, user, formData, router, validateStep1, addToast, productId]);
 
     return {
         currentStep,
@@ -258,6 +282,7 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         isListingLoading,
         isAuthLoading,
         isLoggedIn,
+        isSellerBlocked,
         error,
         submitError,
         validationErrors,
