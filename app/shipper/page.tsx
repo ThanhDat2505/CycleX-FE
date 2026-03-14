@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getDeliverySummary } from '@/app/services/shipperService';
 import { DeliverySummary } from '@/app/types/shipper';
-import { LoadingSpinner, Button } from '@/app/components/ui';
+import { LoadingSpinner, Button, PageLoading } from '@/app/components/ui';
 import { useToast } from '@/app/contexts/ToastContext';
 import { MESSAGES } from '@/app/constants/messages';
 import { RefreshCw } from 'lucide-react';
@@ -67,11 +67,7 @@ export default function ShipperDashboardPage() {
     }, [router]);
 
     if (isAuthLoading || (isLoading && !summary)) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <LoadingSpinner />
-            </div>
-        );
+        return <PageLoading message="Đang tải dữ liệu vận chuyển..." />;
     }
 
     if (!summary) return null;

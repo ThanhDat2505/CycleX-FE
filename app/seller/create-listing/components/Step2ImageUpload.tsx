@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React from "react";
 import { LISTING_CONFIG } from "../constants";
 
 interface Step2ImageUploadProps {
@@ -22,8 +22,6 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
   onSetPrimary,
   error,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
@@ -50,11 +48,13 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
         }`}
         onDrop={!isUploading ? onDrop : undefined}
         onDragOver={!isUploading ? onDragOver : undefined}
-        onClick={() => !isUploading && fileInputRef.current?.click()}
+        onClick={() =>
+          !isUploading && document.getElementById("fileInput")?.click()
+        }
       >
         <input
           type="file"
-          ref={fileInputRef}
+          id="fileInput"
           multiple
           accept="image/*"
           className="hidden"
@@ -97,8 +97,8 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
           {imageUrls.map((url, index) => (
             <div
-              key={`${url}-${index}`}
-              className={`relative group aspect-w-4 aspect-h-3 bg-gray-100 rounded-lg overflow-hidden border ${
+              key={index}
+              className={`relative group aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden border ${
                 index === 0
                   ? "border-brand-primary ring-2 ring-brand-primary ring-opacity-50"
                   : "border-gray-200"

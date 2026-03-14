@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { getBuyerTransactions, cancelTransaction } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
-import { LoadingSpinner, EmptyState, Button, StatusBadge } from '@/app/components/ui';
+import { LoadingSpinner, EmptyState, Button, StatusBadge, ConfirmModal, PageLoading } from '@/app/components/ui';
 import { formatPrice, formatDate } from '@/app/utils/format';
 import Link from 'next/link';
 import { useToast } from '@/app/contexts/ToastContext';
@@ -19,6 +19,8 @@ export default function BuyerTransactionsPage() {
 
     const [transactions, setTransactions] = useState<TransactionWithDetails[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState<TransactionWithDetails | null>(null);
 
     useEffect(() => {
         // Auth & Role check
@@ -65,17 +67,23 @@ export default function BuyerTransactionsPage() {
 
     // Removed getStatusBadge block as we use StatusBadge component now
 
-    const handleQuickCancel = async (transactionId: number) => {
-        if (!confirm('Bạn có chắc chắn muốn hủy yêu cầu này không? Hành động này không thể hoàn tác.')) return;
+    const handleQuickCancel = (transaction: TransactionWithDetails) => {
+        setSelectedTransaction(transaction);
+        setIsCancelModalOpen(true);
+    };
+
+    const handleConfirmCancel = async () => {
+        if (!selectedTransaction || !user?.userId) return;
 
         try {
-            setActionLoading(transactionId);
-            const success = await cancelTransaction(transactionId);
+            setActionLoading(selectedTransaction.transactionId);
+            const success = await cancelTransaction(selectedTransaction.transactionId);
 
             if (success) {
                 addToast('Đã hủy yêu cầu thành công.', 'success');
+                setIsCancelModalOpen(false);
                 // Refresh list
-                const data = await getBuyerTransactions(user!.userId);
+                const data = await getBuyerTransactions(user.userId);
                 data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
                 setTransactions(data);
             }
@@ -83,13 +91,15 @@ export default function BuyerTransactionsPage() {
             addToast('Có lỗi xảy ra khi hủy yêu cầu.', 'error');
         } finally {
             setActionLoading(null);
+            setSelectedTransaction(null);
         }
     };
 
-    if (isAuthLoading || isLoading) return <div className="p-12 flex justify-center"><LoadingSpinner /></div>;
+    if (isAuthLoading || isLoading) return <PageLoading message="Đang tải danh sách đơn hàng..." />;
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
+        <div className="min-h-screen bg-gray-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Đơn mua của tôi</h1>
 
             {transactions.length === 0 ? (
@@ -153,7 +163,7 @@ export default function BuyerTransactionsPage() {
                                                         variant="danger"
                                                         size="sm"
                                                         loading={actionLoading === t.transactionId}
-                                                        onClick={() => handleQuickCancel(t.transactionId)}
+                                                        onClick={() => handleQuickCancel(t)}
                                                         className="px-3"
                                                     >
                                                         Hủy
@@ -177,6 +187,38 @@ export default function BuyerTransactionsPage() {
                     </div>
                 </div>
             )}
+            </div>
+
+            <ConfirmModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={handleConfirmCancel}
+                title="Xác nhận hủy yêu cầu"
+                message={
+                    <div className="space-y-4">
+                        <p>Bạn có chắc chắn muốn hủy yêu cầu mua xe này không?</p>
+                        {selectedTransaction && (
+                            <div className="flex items-center gap-4 bg-gray-50 p-3 rounded-2xl border border-gray-100 text-left">
+                                <div className="w-16 h-16 rounded-xl overflow-hidden shadow-sm flex-shrink-0">
+                                    <img 
+                                        src={selectedTransaction.listingImage || '/placeholder-bike.png'} 
+                                        alt={selectedTransaction.listingTitle}
+                                        className="w-full h-full object-cover"
+                                    />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-gray-900 truncate">{selectedTransaction.listingTitle}</p>
+                                    <p className="text-xs text-gray-500 mt-0.5">Mã đơn: #{selectedTransaction.transactionId}</p>
+                                    <p className="text-sm font-black text-brand-primary mt-1">{formatPrice(selectedTransaction.totalAmount)}</p>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                }
+                confirmLabel="Xác nhận hủy"
+                variant="danger"
+                isLoading={actionLoading !== null}
+            />
         </div>
     );
 }

@@ -27,9 +27,9 @@ const STYLES = {
   loadingText: "ml-3 text-gray-600 font-medium",
   errorWrapper: "min-h-screen bg-gray-50 flex items-center justify-center",
   errorButton:
-    "px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium",
+    "px-4 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-primary-hover font-medium",
   pageWrapper:
-    "min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 relative overflow-hidden",
+    "min-h-screen bg-gradient-to-br from-gray-50 to-orange-50/30 relative overflow-hidden",
   container: "max-w-4xl mx-auto px-4 py-12 relative z-10",
   headerPart: "mb-12 animate-slide-up",
   pageTitle: "text-4xl font-black text-gray-900 mb-3 tracking-tight",
@@ -40,7 +40,7 @@ const STYLES = {
   bgDecorative1:
     "fixed -top-24 -left-24 w-96 h-96 bg-brand-primary/5 rounded-full blur-[120px] -z-0",
   bgDecorative2:
-    "fixed top-1/2 -right-24 w-80 h-80 bg-blue-400/5 rounded-full blur-[100px] -z-0",
+    "fixed top-1/2 -right-24 w-80 h-80 bg-brand-primary/5 rounded-full blur-[100px] -z-0",
 } as const;
 
 export default function PurchaseRequestPage() {

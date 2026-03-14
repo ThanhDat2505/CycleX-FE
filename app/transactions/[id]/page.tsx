@@ -9,7 +9,7 @@ import {
   cancelTransaction,
 } from "@/app/services/transactionService";
 import { TransactionWithDetails } from "@/app/types/transaction";
-import { LoadingSpinner, Button, StatusBadge } from "@/app/components/ui";
+import { LoadingSpinner, Button, StatusBadge, ConfirmModal, PageLoading } from "@/app/components/ui";
 import { formatDate } from "@/app/utils/format";
 import { useToast } from "@/app/contexts/ToastContext";
 import { TRANSACTION_STATUS } from "@/app/constants/transactionStatus";
@@ -34,6 +34,7 @@ export default function TransactionDetailPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const timeoutIds = useRef<NodeJS.Timeout[]>([]);
 
   useEffect(() => {
@@ -128,25 +129,24 @@ export default function TransactionDetailPage() {
     }
   };
 
-  const handleCancel = async () => {
+  const handleCancel = () => {
     if (!transaction) return;
     if (transaction.status !== TRANSACTION_STATUS.PENDING_SELLER_CONFIRM) {
       addToast("Không thể hủy giao dịch ở trạng thái này.", "error");
       return;
     }
 
-    if (
-      !confirm(
-        "Bạn có chắc chắn muốn hủy yêu cầu này không? Hành động này không thể hoàn tác.",
-      )
-    )
-      return;
+    setIsCancelModalOpen(true);
+  };
 
+  const handleCancelConfirm = async () => {
+    if (!transaction) return;
     try {
       setIsProcessing(true);
       const success = await cancelTransaction(transaction.transactionId);
 
       if (success) {
+        setIsCancelModalOpen(false);
         addToast("Đã hủy yêu cầu thành công.", "success");
         router.push("/buyer/transactions");
       }
@@ -158,11 +158,7 @@ export default function TransactionDetailPage() {
   };
 
   if (isAuthLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <LoadingSpinner size="lg" />
-      </div>
-    );
+    return <PageLoading message="Đang tải chi tiết giao dịch..." />;
   }
 
   if (error || !transaction) {
@@ -183,7 +179,7 @@ export default function TransactionDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       {/* Hero Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white pt-10 pb-20 px-4 sm:px-6 lg:px-8 shadow-lg relative overflow-hidden">
+      <div className="bg-gradient-to-r from-brand-primary to-[#FF8A00] text-white pt-10 pb-20 px-4 sm:px-6 lg:px-8 shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 opacity-10 transform translate-x-1/3 -translate-y-1/3">
           <svg width="400" height="400" fill="currentColor" viewBox="0 0 24 24">
             <path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
@@ -192,7 +188,7 @@ export default function TransactionDetailPage() {
         <div className="max-w-5xl mx-auto relative z-10">
           <button
             onClick={() => router.back()}
-            className="flex items-center text-blue-100 hover:text-white transition-colors mb-6 group font-medium"
+            className="flex items-center text-orange-100 hover:text-white transition-colors mb-6 group font-medium"
           >
             <svg
               className="w-5 h-5 mr-2 transform group-hover:-translate-x-1 transition-transform"
@@ -214,7 +210,7 @@ export default function TransactionDetailPage() {
               <h1 className="text-3xl font-extrabold tracking-tight">
                 Chi tiết đơn hàng #{transaction.transactionId}
               </h1>
-              <p className="text-blue-100 mt-2 flex items-center text-sm font-medium">
+              <p className="text-orange-100 mt-2 flex items-center text-sm font-medium">
                 <svg
                   className="w-4 h-4 mr-2"
                   fill="none"
@@ -239,7 +235,7 @@ export default function TransactionDetailPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 -mt-10 relative z-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up">
         {/* Timeline */}
         <div className="animate-fade-in-up">
           <OrderTimeline
@@ -277,13 +273,12 @@ export default function TransactionDetailPage() {
         </div>
       </div>
 
-      {/* Dispute Modal */}
+      {/* Modals outside the animated container to avoid stacking context issues */}
       <Modal
         isOpen={isDisputeModalOpen}
         onClose={() => setIsDisputeModalOpen(false)}
         title="Tạo khiếu nại đơn hàng"
         size="lg"
-        footer={null}
       >
         <DisputeForm
           orderId={transaction.transactionId}
@@ -298,6 +293,18 @@ export default function TransactionDetailPage() {
           onCancel={() => setIsDisputeModalOpen(false)}
         />
       </Modal>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
+        onConfirm={handleCancelConfirm}
+        title="Xác nhận hủy yêu cầu"
+        message="Bạn có chắc chắn muốn hủy yêu cầu này không? Mọi thông tin giao dịch sẽ được đóng lại."
+        confirmLabel="Xác nhận hủy"
+        variant="danger"
+        isLoading={isProcessing}
+      />
 
       {/* Mobile Sticky Action Bar (Only if Pending) */}
       {transaction.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM && (

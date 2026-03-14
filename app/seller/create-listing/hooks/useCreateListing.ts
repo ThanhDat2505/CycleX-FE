@@ -12,6 +12,7 @@ import {
   getListingDetail,
   getListingImages,
   cancelPublish,
+  setImageAsPrimary,
 } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import {
@@ -62,6 +63,7 @@ export const useCreateListing = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageIds, setImageIds] = useState<(number | null)[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   // Draft-First: Store listingId after draft creation
@@ -183,11 +185,11 @@ export const useCreateListing = () => {
           shipping: false,
         });
 
-        const sortedImageUrls = [...images]
-          .sort((a, b) => (a.imageOrder ?? 0) - (b.imageOrder ?? 0))
-          .map((image) => resolveImageUrl(image.imagePath));
+        const sortedImages = [...images]
+          .sort((a, b) => (a.imageOrder ?? 0) - (b.imageOrder ?? 0));
 
-        setImageUrls(sortedImageUrls);
+        setImageUrls(sortedImages.map((image) => resolveImageUrl(image.imagePath)));
+        setImageIds(sortedImages.map((image) => image.imageId ?? image.id ?? null));
 
         if (shouldReadOnly) {
           setStep(CREATE_LISTING_STEPS.PREVIEW);
@@ -461,48 +463,75 @@ export const useCreateListing = () => {
         if (filesToUpload.length === 0) return;
       }
 
-      setIsUploading(true);
-      try {
-        // Draft-First: Pass listingId to uploadImage for correct folder structure
-        const uploadPromises = filesToUpload.map((file) =>
-          uploadImage(file, listingId),
-        );
-        const newUrls = await Promise.all(uploadPromises);
+    setIsUploading(true);
+    try {
+      // Upload files to disk - use allSettled so partial failures don't lose all uploads
+      const uploadResults = await Promise.allSettled(
+        filesToUpload.map((file) => uploadImage(file, listingId)),
+      );
 
-        // Persist uploaded image paths to BE listing-images table (S-13).
-        await Promise.all(
-          newUrls.map((url, index) =>
-            uploadListingImage(
-              user.userId,
-              listingId,
-              url,
-              imageUrls.length + index + 1,
-            ),
-          ),
-        );
-
-        // Only update state if component is still mounted
-        if (isMountedRef.current) {
-          setImageUrls((prev) => [...prev, ...newUrls]);
-        }
-      } catch (error) {
-        if (isMountedRef.current) {
-          setUploadError("Failed to upload some images. Please try again.");
-        }
-      } finally {
-        if (isMountedRef.current) {
-          setIsUploading(false);
+      const successfulUrls: string[] = [];
+      let failedCount = 0;
+      for (const result of uploadResults) {
+        if (result.status === "fulfilled") {
+          successfulUrls.push(result.value);
+        } else {
+          failedCount++;
         }
       }
+
+      if (successfulUrls.length === 0) {
+        if (isMountedRef.current) {
+          setUploadError("Tải ảnh thất bại. Vui lòng thử lại.");
+        }
+        return;
+      }
+
+      // Persist uploaded image paths to BE listing-images table (S-13).
+      const persistResults = await Promise.allSettled(
+        successfulUrls.map((url, index) =>
+          uploadListingImage(
+            user.userId,
+            listingId,
+            url,
+            imageUrls.length + index + 1,
+          ),
+        ),
+      );
+
+      const savedUrls: string[] = [];
+      const savedIds: (number | null)[] = [];
+      for (let i = 0; i < persistResults.length; i++) {
+        const result = persistResults[i];
+        if (result.status === "fulfilled") {
+          savedUrls.push(successfulUrls[i]);
+          savedIds.push(result.value.imageId ?? result.value.id ?? null);
+        } else {
+          failedCount++;
+        }
+      }
+
+      // Only update state if component is still mounted
+      if (isMountedRef.current) {
+        if (savedUrls.length > 0) {
+          setImageUrls((prev) => [...prev, ...savedUrls]);
+          setImageIds((prev) => [...prev, ...savedIds]);
+        }
+        if (failedCount > 0) {
+          setUploadError(`${failedCount} ảnh tải thất bại. Các ảnh còn lại đã tải thành công.`);
+        }
+      }
+    } catch (error) {
+      if (isMountedRef.current) {
+        setUploadError("Tải ảnh thất bại. Vui lòng thử lại.");
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setIsUploading(false);
+      }
+    }
     },
-    [
-      imageUrls.length,
-      isReadOnly,
-      listingId,
-      readOnlyMessage,
-      user?.userId,
-      validateFile,
-    ],
+    [isReadOnly, readOnlyMessage, listingId, user?.userId, imageUrls.length, validateFile],
   );
 
   const onFileChange = useCallback(
@@ -530,21 +559,51 @@ export const useCreateListing = () => {
       setImageUrls((prev) =>
         prev.filter((_, index) => index !== indexToRemove),
       );
+      setImageIds((prev) =>
+        prev.filter((_, index) => index !== indexToRemove),
+      );
     },
     [isReadOnly],
   );
 
   const handleSetPrimary = useCallback(
-    (index: number) => {
+    async (index: number) => {
       if (isReadOnly) return;
       if (index === 0) return;
+
+      // Swap locally first for instant feedback
       setImageUrls((prev) => {
         const newUrls = [...prev];
         [newUrls[0], newUrls[index]] = [newUrls[index], newUrls[0]];
         return newUrls;
       });
+      setImageIds((prev) => {
+        const newIds = [...prev];
+        [newIds[0], newIds[index]] = [newIds[index], newIds[0]];
+        return newIds;
+      });
+
+      // Persist to BE if we have the imageId and listingId
+      const targetImageId = imageIds[index];
+      if (targetImageId && listingId && user?.userId) {
+        try {
+          await setImageAsPrimary(user.userId, listingId, targetImageId);
+        } catch {
+          // Revert on failure
+          setImageUrls((prev) => {
+            const newUrls = [...prev];
+            [newUrls[0], newUrls[index]] = [newUrls[index], newUrls[0]];
+            return newUrls;
+          });
+          setImageIds((prev) => {
+            const newIds = [...prev];
+            [newIds[0], newIds[index]] = [newIds[index], newIds[0]];
+            return newIds;
+          });
+        }
+      }
     },
-    [isReadOnly],
+    [isReadOnly, imageIds, listingId, user?.userId],
   );
 
   const handleSaveDraft = async () => {
@@ -576,9 +635,18 @@ export const useCreateListing = () => {
         const draft = await saveDraft(payload);
         setListingId(draft.id);
       }
+      addToast("Đã lưu bản nháp thành công!", "success");
       router.push("/seller/my-listings");
-    } catch (error) {
-      setSubmitError("Failed to save draft. Please try again.");
+    } catch (error: any) {
+      // If the API call itself worked (data saved to DB) but response parsing
+      // failed, still redirect. Only block redirect for actual network/API errors.
+      const msg = String(error?.message || "");
+      if (msg.includes("Invalid response") || msg.includes("must be a number")) {
+        addToast("Đã lưu bản nháp thành công!", "success");
+        router.push("/seller/my-listings");
+      } else {
+        setSubmitError("Failed to save draft. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }

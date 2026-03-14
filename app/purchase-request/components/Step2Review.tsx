@@ -17,7 +17,7 @@ const STYLES = {
     card: 'bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-slide-up',
     header: 'bg-gradient-to-br from-gray-900 via-gray-800 to-brand-primary/20 p-8 text-white relative overflow-hidden',
     headerTitle: 'text-2xl font-black flex items-center gap-3 tracking-tight',
-    headerSubtitle: 'text-blue-200/80 text-sm mt-2 font-medium max-w-md',
+    headerSubtitle: 'text-orange-200/80 text-sm mt-2 font-medium max-w-md',
     content: 'p-6 md:p-10 bg-gray-50/30',
     grid: 'grid grid-cols-1 lg:grid-cols-5 gap-10',
     leftCol: 'lg:col-span-3 space-y-8',
@@ -28,7 +28,7 @@ const STYLES = {
     rowBetween: 'flex justify-between items-center py-1.5',
     labelText: 'text-gray-500 font-medium',
     valueText: 'font-bold text-gray-900',
-    typeBadge: 'px-3 py-1 bg-blue-50 text-brand-primary rounded-full text-xs font-black shadow-sm border border-blue-100',
+    typeBadge: 'px-3 py-1 bg-orange-50 text-brand-primary rounded-full text-xs font-black shadow-sm border border-orange-100',
     noteBox: 'mt-6 pt-5 border-t border-dashed border-gray-100',
     noteLabel: 'flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider mb-2',
     noteValue: 'text-gray-700 italic bg-gray-50/50 p-4 rounded-xl border border-gray-100/50 leading-relaxed text-sm',
@@ -39,7 +39,7 @@ const STYLES = {
     priceText: 'text-brand-primary font-black text-xl mt-3 flex items-baseline gap-1',
     sellerCard: 'flex items-center gap-4 p-4 rounded-2xl border border-gray-100/50 bg-white shadow-sm hover:shadow-md transition-shadow',
     sellerAvatar: 'w-12 h-12 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 flex items-center justify-center text-gray-800 font-black shadow-inner',
-    receiverBox: 'bg-white p-6 rounded-2xl border border-blue-50/50 shadow-sm relative overflow-hidden space-y-3 before:absolute before:left-0 before:top-0 before:w-1 before:h-full before:bg-blue-400',
+    receiverBox: 'bg-white p-6 rounded-2xl border border-orange-50/50 shadow-sm relative overflow-hidden space-y-3 before:absolute before:left-0 before:top-0 before:w-1 before:h-full before:bg-brand-primary',
     feeBox: 'bg-white border-2 border-gray-100/70 border-dashed rounded-2xl p-6 shadow-sm relative',
     feeRow: 'flex justify-between items-center text-gray-500 font-medium py-1 gap-4',
     feeValue: 'text-gray-900 font-bold break-all text-right min-w-0 flex-1',
@@ -51,7 +51,7 @@ const STYLES = {
     termsLink: 'text-brand-primary hover:text-brand-primary-hover font-bold decoration-dotted underline underline-offset-4',
     actions: 'flex flex-col sm:flex-row justify-between gap-5 mt-10 pt-8 border-t border-gray-100/80',
     btnBack: '!w-full sm:!w-auto px-10 py-3.5 text-base font-bold text-gray-400 hover:text-gray-800 transition-colors',
-    btnConfirm: '!w-full sm:!w-auto px-12 py-4 text-lg font-black bg-brand-primary hover:bg-brand-primary-hover text-white shadow-xl shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-1 active:translate-y-0 transition-all rounded-2xl flex items-center justify-center gap-3',
+    btnConfirm: '!w-full sm:!w-auto px-12 py-4 text-lg font-black bg-brand-primary hover:bg-brand-primary-hover text-white shadow-xl shadow-orange-100 hover:shadow-orange-200 hover:-translate-y-1 active:translate-y-0 transition-all rounded-2xl flex items-center justify-center gap-3',
 } as const;
 
 interface Step2ReviewProps {

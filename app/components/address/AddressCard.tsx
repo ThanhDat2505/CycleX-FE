@@ -31,17 +31,16 @@ export default function AddressCard({
         <span
           className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
             address.isDefault
-              ? "bg-blue-100 text-blue-700"
+              ? "bg-orange-100 text-orange-700"
               : "bg-gray-100 text-gray-600"
           }`}
         >
           {address.label}
         </span>
         {address.isDefault && (
-          <span className="flex items-center gap-1 text-xs font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-            <Star className="w-3 h-3 fill-amber-500" />
-            Mặc định
-          </span>
+                <span className="text-[10px] font-bold text-brand-primary bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100 uppercase tracking-wider">
+                  Mặc định
+                </span>
         )}
       </div>
 

@@ -8,9 +8,30 @@ import {
   type DisputeListRow,
 } from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
+import {
+  Filter,
+  Calendar,
+  Shield,
+  Hash,
+  Search,
+  Info,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight,
+  Gavel,
+  Clock,
+  Tag,
+  User,
+  ExternalLink,
+  AlertCircle,
+  LayoutDashboard,
+  ClipboardList,
+  History,
+} from "lucide-react";
+import { formatDate } from "@/app/utils/format";
 
 const STATUS_OPTIONS = [
-  { value: "ALL", label: "Tất cả" },
+  { value: "ALL", label: "Tất cả trạng thái" },
   { value: "OPEN", label: "Đang mở" },
   { value: "IN_PROGRESS", label: "Đang xử lý" },
   { value: "RESOLVED", label: "Đã giải quyết" },
@@ -18,32 +39,16 @@ const STATUS_OPTIONS = [
 ];
 
 const SORT_OPTIONS = [
-  { value: "createdAt:DESC", label: "Mới nhất" },
-  { value: "createdAt:ASC", label: "Cũ nhất" },
+  { value: "createdAt:DESC", label: "Mới nhất trước" },
+  { value: "createdAt:ASC", label: "Cũ nhất trước" },
   { value: "updatedAt:DESC", label: "Cập nhật gần đây" },
   { value: "status:ASC", label: "Trạng thái A-Z" },
-  { value: "disputeId:DESC", label: "Dispute ID giam dan" },
 ];
-
-function localizeErrorMessage(message: string): string {
-  if (message.trim().toLowerCase() === "internal server error") {
-    return "Internal server error";
-  }
-  return message;
-}
-
-function statusBadgeClass(status: string): string {
-  const normalized = String(status).toUpperCase();
-  if (normalized === "RESOLVED") return "badge badgeApproved";
-  if (normalized === "OPEN") return "badge badgeDanger";
-  if (normalized === "IN_PROGRESS") return "badge badgeInfo";
-  if (normalized === "REJECTED") return "badge";
-  return "badge";
-}
 
 export default function DisputeListClient() {
   const [items, setItems] = useState<DisputeListRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [status, setStatus] = useState("ALL");
@@ -76,48 +81,43 @@ export default function DisputeListClient() {
     const timeoutId = window.setTimeout(() => {
       setQDebounced(qInput);
     }, 400);
-
     return () => window.clearTimeout(timeoutId);
   }, [qInput]);
 
+  const load = async (isManualRefresh = false) => {
+    try {
+      if (isManualRefresh) setRefreshing(true);
+      else setLoading(true);
+
+      setError(null);
+      const result: DisputeListResult = await disputeService.getDisputes({
+        status,
+        createdFrom,
+        createdTo,
+        assigneeId: isAdmin ? assigneeId : undefined,
+        q: qDebounced.trim() || undefined,
+        sortBy,
+        sortDir,
+        page,
+        limit: pageSize,
+      });
+
+      setItems(result.items);
+      setPage(result.page);
+      setPageSize(result.pageSize);
+      setTotalItems(result.totalItems);
+      setTotalPages(Math.max(1, result.totalPages));
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Không tải được danh sách tranh chấp"));
+      setItems([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
   useEffect(() => {
-    let mounted = true;
-
-    const load = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const result: DisputeListResult = await disputeService.getDisputes({
-          status,
-          createdFrom,
-          createdTo,
-          assigneeId: isAdmin ? assigneeId : undefined,
-          q: qDebounced.trim() || undefined,
-          sortBy,
-          sortDir,
-          page,
-          limit: pageSize,
-        });
-
-        if (!mounted) return;
-        setItems(result.items);
-        setPage(result.page);
-        setPageSize(result.pageSize);
-        setTotalItems(result.totalItems);
-        setTotalPages(Math.max(1, result.totalPages));
-      } catch (err: unknown) {
-        if (!mounted) return;
-        setError(getErrorMessage(err, "Khong tai duoc danh sach tranh chap"));
-        setItems([]);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
     load();
-    return () => {
-      mounted = false;
-    };
   }, [
     status,
     createdFrom,
@@ -131,191 +131,306 @@ export default function DisputeListClient() {
     isAdmin,
   ]);
 
-  const assigneeSuggestions = useMemo(() => {
-    const unique = new Set<string>();
-    items.forEach((item) => {
-      if (item.assigneeName && item.assigneeName !== "Chua phan cong") {
-        unique.add(item.assigneeName);
-      }
-    });
-    return Array.from(unique);
-  }, [items]);
+  const statusStyle = (status: string) => {
+    const s = String(status).toUpperCase();
+    if (s === "RESOLVED")
+      return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+    if (s === "OPEN") return "text-rose-400 bg-rose-500/10 border-rose-500/20";
+    if (s === "IN_PROGRESS")
+      return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+    return "text-gray-400 bg-white/5 border-white/10";
+  };
+
+  if (loading && !refreshing) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 bg-brand-bg min-h-[60vh]">
+        <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] animate-pulse">
+          Syncing cases...
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="filterCard">
-        <div className="filterRow disputeFilterRow">
-          <div className="filterField disputeFilterField">
-            <label className="filterLabel">Trạng thái</label>
-            <select
-              className="filterInput"
-              value={status}
-              onChange={(e) => {
-                setPage(0);
-                setStatus(e.target.value);
+    <div className="bg-white min-h-screen text-gray-900 p-4 lg:p-10 font-sans">
+      <div className="max-w-7xl mx-auto">
+        {/* Đã xóa toàn bộ phần tiêu đề theo yêu cầu */}
+
+        {/* Filter Bar giống hình gửi */}
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-4 shadow-sm">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+            {/* Trạng thái */}
+            <div>
+              <label className="block text-xs font-bold mb-1">Trạng thái</label>
+              <select
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
+                {STATUS_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {/* Từ ngày tạo */}
+            <div>
+              <label className="block text-xs font-bold mb-1">
+                Từ ngày tạo
+              </label>
+              <input
+                type="date"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                value={createdFrom}
+                onChange={(e) => setCreatedFrom(e.target.value)}
+              />
+            </div>
+            {/* Đến ngày tạo */}
+            <div>
+              <label className="block text-xs font-bold mb-1">
+                Đến ngày tạo
+              </label>
+              <input
+                type="date"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                value={createdTo}
+                onChange={(e) => setCreatedTo(e.target.value)}
+              />
+            </div>
+            {/* Tìm theo ID */}
+            <div>
+              <label className="block text-xs font-bold mb-1">
+                Tìm theo ID
+              </label>
+              <input
+                type="text"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                placeholder="disputeId / transactionId / li"
+                value={qInput}
+                onChange={(e) => setQInput(e.target.value)}
+              />
+            </div>
+            {/* Sắp xếp */}
+            <div>
+              <label className="block text-xs font-bold mb-1">Sắp xếp</label>
+              <select
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-2">
+            <div className="flex justify-center md:justify-end gap-2">
+              <div className="w-full flex justify-end gap-2">
+                <button
+                  className="font-extrabold text-base text-gray-900 py-2 px-6 rounded-lg border border-gray-300 bg-gray-100 hover:bg-gray-200 transition"
+                  type="button"
+                  onClick={() => {
+                    setStatus("ALL");
+                    setCreatedFrom("");
+                    setCreatedTo("");
+                    setAssigneeId("");
+                    setQInput("");
+                    setQDebounced("");
+                    setSort("createdAt:DESC");
+                    setPage(0);
+                  }}
+                >
+                  XÓA BỘ LỌC
+                </button>
+                <button
+                  onClick={() => load(true)}
+                  className="flex items-center gap-3 px-6 py-2 bg-gray-100 border border-gray-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-black hover:bg-gray-200 transition-all active:scale-95"
+                >
+                  <RefreshCw
+                    size={16}
+                    className={
+                      refreshing ? "animate-spin text-brand-primary" : ""
+                    }
+                  />
+                  Refresh
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* List Content */}
+        <div className="relative bg-gray-50 border border-gray-200 rounded-[2.5rem] overflow-hidden shadow animate-fade-in mb-10">
+          <div className="overflow-x-auto min-h-[400px]">
+            {items.filter((row) => row.status?.toLowerCase() === "dispute")
+              .length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-32 text-center">
+                <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
+                  <Gavel size={48} />
+                </div>
+                <h3 className="text-2xl font-black text-black mb-2 tracking-tight">
+                  Hàng chờ trống
+                </h3>
+                <p className="text-gray-500 font-medium">
+                  Không có tranh chấp nào khớp với yêu cầu của bạn.
+                </p>
+              </div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                      ID
+                    </th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                      Transaction & Listing
+                    </th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-center">
+                      Trạng thái
+                    </th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                      Khởi tạo
+                    </th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                      Assignee
+                    </th>
+                    <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">
+                      Chi tiết
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {items
+                    .filter((row) => row.status?.toLowerCase() === "dispute")
+                    .map((row) => (
+                      <tr
+                        key={row.id}
+                        className="group hover:bg-white/[0.02] transition-colors"
+                      >
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                              #{row.id}
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div>
+                            <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
+                              {row.listingTitle}
+                            </p>
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                                TX-{row.transactionId}
+                              </span>
+                              <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
+                                {row.reason}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-center">
+                          <span
+                            className={`inline-flex px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
+                          >
+                            {row.status}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-white">
+                              {row.createdAt.split("T")[0]}
+                            </span>
+                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
+                              {row.createdAt.split("T")[1]?.split(".")[0] ||
+                                "Unknown"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
+                              <User size={12} className="text-gray-500" />
+                            </div>
+                            <span className="text-xs font-bold text-gray-400">
+                              {row.assigneeName || "Chưa phân công"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <Link
+                            href={`/inspector/disputes/${encodeURIComponent(row.id)}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
+                          >
+                            <ExternalLink size={14} /> View Details
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {/* Pagination số ở góc phải dưới bảng */}
+          {totalPages > 1 && (
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: 18,
               }}
             >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="filterField disputeFilterField">
-            <label className="filterLabel">Từ ngày tạo</label>
-            <input
-              className="filterInput"
-              type="date"
-              value={createdFrom}
-              onChange={(e) => {
-                setPage(0);
-                setCreatedFrom(e.target.value);
-              }}
-            />
-          </div>
-
-          <div className="filterField disputeFilterField">
-            <label className="filterLabel">Đến ngày tạo</label>
-            <input
-              className="filterInput"
-              type="date"
-              value={createdTo}
-              onChange={(e) => {
-                setPage(0);
-                setCreatedTo(e.target.value);
-              }}
-            />
-          </div>
-
-          {isAdmin && (
-            <div className="filterField disputeFilterField">
-              <label className="filterLabel">Người phụ trách</label>
-              <input
-                list="dispute-assignee-suggestions"
-                className="filterInput"
-                placeholder="Assignee ID (Admin)"
-                value={assigneeId}
-                onChange={(e) => {
-                  setPage(0);
-                  setAssigneeId(e.target.value);
+              <div
+                style={{
+                  display: "flex",
+                  gap: 6,
+                  background: "#fff",
+                  borderRadius: 12,
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                  padding: "8px 18px",
                 }}
-              />
-              <datalist id="dispute-assignee-suggestions">
-                {assigneeSuggestions.map((name) => (
-                  <option key={name} value={name} />
+              >
+                {Array.from({ length: totalPages }).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setPage(idx)}
+                    style={{
+                      minWidth: 36,
+                      height: 36,
+                      borderRadius: 8,
+                      border:
+                        idx === page
+                          ? "2px solid #FF8A00"
+                          : "1px solid #e5e7eb",
+                      background: idx === page ? "#FFFAF0" : "#fff",
+                      color: idx === page ? "#FF8A00" : "#374151",
+                      fontWeight: 700,
+                      fontSize: 16,
+                      cursor: idx === page ? "default" : "pointer",
+                      boxShadow:
+                        idx === page
+                          ? "0 2px 8px rgba(255,138,0,0.08)"
+                          : "none",
+                      outline: "none",
+                      transition: "all 0.15s",
+                      borderColor: idx === page ? "#FF8A00" : "#e5e7eb",
+                    }}
+                    disabled={idx === page}
+                  >
+                    {idx + 1}
+                  </button>
                 ))}
-              </datalist>
+              </div>
             </div>
           )}
-          <div className="filterField disputeFilterField">
-            <label className="filterLabel">Tìm theo ID</label>
-            <input
-              className="filterInput"
-              placeholder="disputeId / transactionId / listingId"
-              value={qInput}
-              onChange={(e) => {
-                setPage(0);
-                setQInput(e.target.value);
-              }}
-            />
-          </div>
-
-          <div className="filterField disputeFilterField">
-            <label className="filterLabel">Sắp xếp</label>
-            <select
-              className="filterInput"
-              value={sort}
-              onChange={(e) => {
-                setPage(0);
-                setSort(e.target.value);
-              }}
-            >
-              {SORT_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="filterActions">
-          <button
-            className="btn btnGhost"
-            type="button"
-            onClick={() => {
-              setStatus("ALL");
-              setCreatedFrom("");
-              setCreatedTo("");
-              setAssigneeId("");
-              setQInput("");
-              setQDebounced("");
-              setSort("createdAt:DESC");
-              setPage(0);
-            }}
-          >
-            Xóa bộ lọc
-          </button>
         </div>
       </div>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 32,
-          fontWeight: 700,
-          color: "#374151",
-        }}
-      >
-        {/* Đã xóa dòng tổng số tranh chấp */}
-      </div>
-
-      {/* Pagination số ở góc phải dưới bảng */}
-      {totalPages > 1 && (
-        <div
-          style={{ display: "flex", justifyContent: "flex-end", marginTop: 18 }}
-        >
-          <div
-            style={{
-              display: "flex",
-              gap: 6,
-              background: "#fff",
-              borderRadius: 12,
-              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
-              padding: "8px 18px",
-            }}
-          >
-            {Array.from({ length: totalPages }).map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setPage(idx)}
-                style={{
-                  minWidth: 36,
-                  height: 36,
-                  borderRadius: 8,
-                  border:
-                    idx === page ? "2px solid #FF8A00" : "1px solid #e5e7eb",
-                  background: idx === page ? "#FFFAF0" : "#fff",
-                  color: idx === page ? "#FF8A00" : "#374151",
-                  fontWeight: 700,
-                  fontSize: 16,
-                  cursor: idx === page ? "default" : "pointer",
-                  boxShadow:
-                    idx === page ? "0 2px 8px rgba(255,138,0,0.08)" : "none",
-                  outline: "none",
-                  transition: "all 0.15s",
-                  borderColor: idx === page ? "#FF8A00" : "#e5e7eb",
-                }}
-                disabled={idx === page}
-              >
-                {idx + 1}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -34,12 +34,12 @@ const STYLES = {
     locationBadge: 'absolute bottom-3 left-3 flex items-center gap-1.5 bg-black/50 backdrop-blur-md text-white text-[11px] px-2.5 py-1 rounded-lg',
     locationIcon: 'w-3 h-3 text-brand-primary',
     content: 'p-5 flex flex-col flex-grow',
-    title: 'text-gray-800 font-bold leading-snug line-clamp-2 group-hover:text-brand-primary transition-colors min-h-[2.75rem] mb-4',
-    bottomRow: 'mt-auto flex items-end justify-between gap-4',
-    priceLabel: 'text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5',
-    priceValue: 'text-xl font-black text-brand-primary tracking-tight',
-    purchaseButton: 'flex items-center gap-2 px-5 py-2.5 bg-brand-bg text-white text-sm font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-brand-primary/20 group/btn active:scale-95',
-    purchaseIcon: 'w-4 h-4 group-hover/btn:rotate-12 transition-transform',
+    title: 'text-gray-800 font-bold leading-snug line-clamp-2 group-hover:text-brand-primary transition-colors h-[48px] mb-4',
+    bottomRow: 'mt-auto flex items-center justify-between gap-3 pt-2 border-t border-gray-50',
+    priceLabel: 'text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5 whitespace-nowrap',
+    priceValue: 'text-lg font-black text-brand-primary tracking-tight whitespace-nowrap',
+    purchaseButton: 'flex items-center gap-2 px-4 py-2 bg-brand-bg text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-brand-primary/20 group/btn active:scale-95 whitespace-nowrap flex-shrink-0',
+    purchaseIcon: 'w-3.5 h-3.5 group-hover/btn:rotate-12 transition-transform',
 } as const;
 
 interface FeaturedBikeCardProps {
