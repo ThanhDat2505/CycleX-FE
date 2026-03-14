@@ -260,108 +260,62 @@ export default function DisputeListClient() {
           </button>
         </div>
       </div>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "center",
+          marginTop: 32,
+          fontWeight: 700,
+          color: "#374151",
+        }}
+      >
+        {/* Đã xóa dòng tổng số tranh chấp */}
+      </div>
 
-      <div className="dataTable">
-        {loading && <div className="p-5">Dang tai dispute...</div>}
-        {!loading && error && (
-          <div className="p-5 text-red-700">{localizeErrorMessage(error)}</div>
-        )}
-
-        {!loading && !error && (
-          <div className="historyTable">
-            <div className="tableHeader disputeTableHeader">
-              <span>Dispute ID</span>
-              <span>Transaction</span>
-              <span>Listing</span>
-              <span className="center">Trang thai</span>
-              <span>Ly do</span>
-              <span>Ngay tao</span>
-              <span>Nguoi phu trach</span>
-              <span className="right">Hanh dong</span>
-            </div>
-
-            {items.map((row) => (
-              <div key={row.id} className="tableRow disputeTableRow">
-                <div className="cell font-bold">#{row.id}</div>
-                <div className="cell">TX-{row.transactionId}</div>
-                <div className="cell name">{row.listingTitle}</div>
-                <div className="cell center">
-                  <span className={statusBadgeClass(row.status)}>
-                    {row.status}
-                  </span>
-                </div>
-                <div className="cell noteCell">{row.reason}</div>
-                <div className="cell">{row.createdAt}</div>
-                <div className="cell">{row.assigneeName}</div>
-                <div className="cell right">
-                  <Link
-                    href={`/inspector/disputes/${encodeURIComponent(row.id)}`}
-                    className="actionLink"
-                  >
-                    Xem chi tiet
-                  </Link>
-                </div>
-              </div>
-            ))}
-
-            {!items.length && (
-              <div
-                style={{ padding: 24, textAlign: "center", color: "#6b7280" }}
+      {/* Pagination số ở góc phải dưới bảng */}
+      {totalPages > 1 && (
+        <div
+          style={{ display: "flex", justifyContent: "flex-end", marginTop: 18 }}
+        >
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              background: "#fff",
+              borderRadius: 12,
+              boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+              padding: "8px 18px",
+            }}
+          >
+            {Array.from({ length: totalPages }).map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setPage(idx)}
+                style={{
+                  minWidth: 36,
+                  height: 36,
+                  borderRadius: 8,
+                  border:
+                    idx === page ? "2px solid #FF8A00" : "1px solid #e5e7eb",
+                  background: idx === page ? "#FFFAF0" : "#fff",
+                  color: idx === page ? "#FF8A00" : "#374151",
+                  fontWeight: 700,
+                  fontSize: 16,
+                  cursor: idx === page ? "default" : "pointer",
+                  boxShadow:
+                    idx === page ? "0 2px 8px rgba(255,138,0,0.08)" : "none",
+                  outline: "none",
+                  transition: "all 0.15s",
+                  borderColor: idx === page ? "#FF8A00" : "#e5e7eb",
+                }}
+                disabled={idx === page}
               >
-                Khong co dispute nao phu hop bo loc hien tai.
-              </div>
-            )}
+                {idx + 1}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
-
-      <div className="disputePaginationBar">
-        <div>
-          Tổng <strong>{totalItems}</strong> tranh chấp
         </div>
-
-        <div className="disputePaginationActions">
-          <label className="disputePageSizeLabel">
-            Mỗi trang
-            <select
-              className="filterInput"
-              value={pageSize}
-              onChange={(e) => {
-                setPage(0);
-                setPageSize(Number(e.target.value) || 10);
-              }}
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-          </label>
-
-          <button
-            type="button"
-            className="btn btnGhost"
-            onClick={() =>
-              canPrevious && setPage((prev) => Math.max(prev - 1, 0))
-            }
-            disabled={!canPrevious}
-          >
-            Trước
-          </button>
-
-          <span>
-            Trang <strong>{page + 1}</strong> / {Math.max(totalPages, 1)}
-          </span>
-
-          <button
-            type="button"
-            className="btn btnGhost"
-            onClick={() => canNext && setPage((prev) => prev + 1)}
-            disabled={!canNext}
-          >
-            Sau
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
