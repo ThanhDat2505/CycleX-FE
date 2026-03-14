@@ -40,20 +40,20 @@ export default function InspectorNav() {
   };
 
   return (
-    <nav className="bg-white border-b border-gray-200 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center space-x-8 overflow-x-auto no-scrollbar py-4">
+    <nav className="bg-brand-bg border-b border-white/10 shadow-lg">
+      <div className="container mx-auto px-4 md:px-12 lg:px-20">
+        <div className="flex items-center space-x-2 overflow-x-auto no-scrollbar py-3">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap
                   ${
                     active
-                      ? "bg-blue-50 text-blue-600 ring-1 ring-blue-200"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                      ? "bg-brand-primary text-white shadow-glow-orange"
+                      : "text-gray-300 hover:text-white hover:bg-white/10"
                   }`}
               >
                 <span className="material-symbols-outlined text-[20px]">

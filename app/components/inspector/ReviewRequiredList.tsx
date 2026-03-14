@@ -89,32 +89,43 @@ export default function ReviewRequiredList() {
 
   return (
     <div className="page">
-      <header className="pageHeader">
-        <h1 className="page-title">Listings to review</h1>
-      </header>
+      <div className="filterCard">
+        <div className="filterRow">
+          <div className="filterField filterGrow">
+            <label className="filterLabel">Tìm kiếm</label>
+            <input
+              className="filterInput"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Nhập mã tin / cửa hàng / tên sản phẩm..."
+            />
+          </div>
 
-      <div className="toolbar">
-        <div className="field fieldGrow">
-          <label className="label">Tìm kiếm</label>
-          <input
-            className="input"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Nhập mã tin / cửa hàng / tên sản phẩm..."
-          />
+          <div className="filterField" style={{ minWidth: 260 }}>
+            <label className="filterLabel">Số lượng: {filtered.length}</label>
+            <select
+              className="filterInput"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value as FilterKey)}
+            >
+              <option value="ALL">Tất cả</option>
+              <option value="DISPUTE">Cần xem xét</option>
+              <option value="NEED_MORE_INFO">Cần bổ sung</option>
+            </select>
+          </div>
         </div>
 
-        <div className="field fieldSort">
-          <label className="label">{`Số lượng: ${filtered.length}`}</label>
-          <select
-            className="select"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value as FilterKey)}
+        <div className="filterActions">
+          <button
+            className="btn btnGhost"
+            type="button"
+            onClick={() => {
+              setQ("");
+              setFilter("ALL");
+            }}
           >
-            <option value="ALL">Tất cả</option>
-            <option value="DISPUTE">Cần xem xét</option>
-            <option value="NEED_MORE_INFO">Cần bổ sung</option>
-          </select>
+            Xóa bộ lọc
+          </button>
         </div>
       </div>
 

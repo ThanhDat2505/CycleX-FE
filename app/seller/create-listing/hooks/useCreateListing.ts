@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useToast } from "@/app/contexts/ToastContext";
@@ -22,6 +22,32 @@ import {
 } from "../constants";
 import { ListingFormData } from "../types";
 import type { CreateListingPayload } from "@/app/services/myListingsService";
+
+const READ_ONLY_STATUSES = new Set([
+  "PENDING",
+  "REVIEWING",
+  "WAITING_INSPECTOR_REVIEW",
+  "APPROVED",
+  "ARCHIVED",
+]);
+
+const CANCELLABLE_STATUSES = new Set([
+  "PENDING",
+  "REVIEWING",
+  "WAITING_INSPECTOR_REVIEW",
+]);
+
+const normalizeStatus = (status?: string | null) =>
+  (status || "").toUpperCase().trim();
+
+const resolveImageUrl = (imagePath: string): string => {
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+  if (imagePath.startsWith("/public/")) return imagePath;
+  if (imagePath.startsWith("/uploads/")) return `/backend${imagePath}`;
+  return imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+};
 
 export const useCreateListing = () => {
   const router = useRouter();
@@ -50,6 +76,23 @@ export const useCreateListing = () => {
     null,
   );
   const [isReadOnly, setIsReadOnly] = useState(false);
+
+  const normalizedLoadedStatus = useMemo(
+    () => normalizeStatus(loadedListingStatus),
+    [loadedListingStatus],
+  );
+
+  const canCancelPublish = useMemo(
+    () => CANCELLABLE_STATUSES.has(normalizedLoadedStatus),
+    [normalizedLoadedStatus],
+  );
+
+  const readOnlyMessage = useMemo(() => {
+    if (canCancelPublish) {
+      return "Listing đang ở trạng thái PENDING. Bạn cần Cancel Publish trước khi chỉnh sửa.";
+    }
+    return "Listing đang ở chế độ chỉ xem.";
+  }, [canCancelPublish]);
 
   // Ref to track if component is mounted (prevents memory leaks)
   const isMountedRef = useRef(true);
@@ -114,19 +157,11 @@ export const useCreateListing = () => {
         if (!isMountedRef.current || cancelled) return;
 
         setListingId(draft.listingId);
-        const normalizedStatus = (draft.status || "").toUpperCase();
+        const normalizedStatus = normalizeStatus(draft.status as string);
         setLoadedListingStatus(normalizedStatus || null);
 
-        const readOnlyStatuses = new Set([
-          "PENDING",
-          "REVIEWING",
-          "WAITING_INSPECTOR_REVIEW",
-          "APPROVED",
-          "ARCHIVED",
-        ]);
-
         const shouldReadOnly =
-          isViewMode || readOnlyStatuses.has(normalizedStatus);
+          isViewMode || READ_ONLY_STATUSES.has(normalizedStatus);
         setIsReadOnly(shouldReadOnly);
 
         setFormData({
@@ -192,7 +227,7 @@ export const useCreateListing = () => {
       const timer = setTimeout(() => setUploadError(null), 5000);
       return () => clearTimeout(timer);
     }
-  }, [uploadError, imageUrls]);
+  }, [uploadError]);
 
   // Auto clear submit error after 5 seconds
   useEffect(() => {
@@ -203,7 +238,7 @@ export const useCreateListing = () => {
   }, [submitError]);
 
   // Validation
-  const validateStep1 = () => {
+  const validateStep1 = useCallback(() => {
     const newErrors: Record<string, string> = {};
     if (!formData.title.trim()) newErrors.title = "Title is required";
     if (!formData.brand.trim()) newErrors.brand = "Brand is required";
@@ -220,9 +255,9 @@ export const useCreateListing = () => {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
+  }, [formData]);
 
-  const validateStep2 = () => {
+  const validateStep2 = useCallback(() => {
     if (imageUrls.length < LISTING_CONFIG.MIN_IMAGES) {
       setUploadError(
         `Please upload at least ${LISTING_CONFIG.MIN_IMAGES} images.`,
@@ -230,7 +265,7 @@ export const useCreateListing = () => {
       return false;
     }
     return true;
-  };
+  }, [imageUrls.length]);
 
   // Handlers (wrapped with useCallback for performance)
   const handleInputChange = useCallback(
@@ -261,27 +296,6 @@ export const useCreateListing = () => {
     [isReadOnly],
   );
 
-  const getReadOnlyMessage = useCallback(() => {
-    const status = (loadedListingStatus || "").toUpperCase();
-    if (
-      status === "PENDING" ||
-      status === "REVIEWING" ||
-      status === "WAITING_INSPECTOR_REVIEW"
-    ) {
-      return "Listing đang ở trạng thái PENDING. Bạn cần Cancel Publish trước khi chỉnh sửa.";
-    }
-    return "Listing đang ở chế độ chỉ xem.";
-  }, [loadedListingStatus]);
-
-  const canCancelPublish = useCallback(() => {
-    const status = (loadedListingStatus || "").toUpperCase();
-    return (
-      status === "PENDING" ||
-      status === "REVIEWING" ||
-      status === "WAITING_INSPECTOR_REVIEW"
-    );
-  }, [loadedListingStatus]);
-
   const handleCancelPublish = useCallback(async () => {
     if (!user?.userId) {
       setSubmitError("You must be logged in to cancel publish.");
@@ -293,7 +307,7 @@ export const useCreateListing = () => {
       return;
     }
 
-    if (!canCancelPublish()) {
+    if (!canCancelPublish) {
       setSubmitError("Cancel publish is only available for pending listings.");
       return;
     }
@@ -328,7 +342,30 @@ export const useCreateListing = () => {
     }
   }, [addToast, canCancelPublish, listingId, user?.userId]);
 
-  const handleNext = async () => {
+  const getPayload = useCallback((): CreateListingPayload => {
+    if (!user || !user.userId) {
+      throw new Error("User not identified. Please try logging in again.");
+    }
+
+    return {
+      sellerId: user.userId,
+      title: formData.title,
+      description: formData.description,
+      bikeType: formData.category,
+      brand: formData.brand,
+      model: formData.model,
+      manufactureYear: Number(formData.year),
+      condition: formData.condition,
+      usageTime: formData.usageTime || undefined,
+      reasonForSale: formData.reasonForSale || undefined,
+      price: Number(formData.price),
+      locationCity: formData.location,
+      pickupAddress: formData.pickupAddress || formData.location,
+      saveDraft: true,
+    };
+  }, [formData, user]);
+
+  const handleNext = useCallback(async () => {
     if (isReadOnly) return;
 
     if (step === CREATE_LISTING_STEPS.VEHICLE_INFO) {
@@ -359,17 +396,17 @@ export const useCreateListing = () => {
         } catch (error) {}
       }
 
-      setStep(step + 1);
+      setStep((prev) => prev + 1);
       window.scrollTo(0, 0);
     } else if (step === CREATE_LISTING_STEPS.UPLOAD_IMAGES) {
       if (validateStep2()) {
-        setStep(step + 1);
+        setStep((prev) => prev + 1);
         window.scrollTo(0, 0);
       }
     } else {
-      setStep(step + 1);
+      setStep((prev) => prev + 1);
     }
-  };
+  }, [getPayload, isReadOnly, listingId, step, validateStep1, validateStep2]);
 
   const handleBack = useCallback(() => {
     if (isReadOnly) return;
@@ -377,7 +414,7 @@ export const useCreateListing = () => {
   }, [isReadOnly]);
 
   // Image Logic
-  const validateFile = (file: File): string | null => {
+  const validateFile = useCallback((file: File): string | null => {
     if (
       !(LISTING_CONFIG.ACCEPTED_IMAGE_TYPES as readonly string[]).includes(
         file.type,
@@ -389,52 +426,53 @@ export const useCreateListing = () => {
       return `File "${file.name}" exceeds the 5MB size limit.`;
     }
     return null;
-  };
+  }, []);
 
-  const handleFileUpload = async (files: FileList | null) => {
-    if (isReadOnly) {
-      setUploadError(getReadOnlyMessage());
-      return;
-    }
-
-    if (!files || files.length === 0) return;
-    setUploadError(null);
-
-    if (!listingId) {
-      setUploadError(
-        "Draft not ready yet. Please complete Step 1 and try again.",
-      );
-      return;
-    }
-
-    if (!user?.userId) {
-      setUploadError("You must be logged in to upload images.");
-      return;
-    }
-
-    if (imageUrls.length + files.length > LISTING_CONFIG.MAX_IMAGES) {
-      setUploadError(
-        `You can only upload a maximum of ${LISTING_CONFIG.MAX_IMAGES} images.`,
-      );
-      return;
-    }
-
-    const filesToUpload: File[] = [];
-    const validationErrors: string[] = [];
-
-    Array.from(files).forEach((file) => {
-      const error = validateFile(file);
-      if (error) {
-        validationErrors.push(error);
-      } else {
-        filesToUpload.push(file);
+  const handleFileUpload = useCallback(
+    async (files: FileList | null) => {
+      if (isReadOnly) {
+        setUploadError(readOnlyMessage);
+        return;
       }
-    });
 
-    if (validationErrors.length > 0) {
-      setUploadError(validationErrors[0]);
-      if (filesToUpload.length === 0) return;
-    }
+      if (!files || files.length === 0) return;
+      setUploadError(null);
+
+      if (!listingId) {
+        setUploadError(
+          "Draft not ready yet. Please complete Step 1 and try again.",
+        );
+        return;
+      }
+
+      if (!user?.userId) {
+        setUploadError("You must be logged in to upload images.");
+        return;
+      }
+
+      if (imageUrls.length + files.length > LISTING_CONFIG.MAX_IMAGES) {
+        setUploadError(
+          `You can only upload a maximum of ${LISTING_CONFIG.MAX_IMAGES} images.`,
+        );
+        return;
+      }
+
+      const filesToUpload: File[] = [];
+      const validationErrors: string[] = [];
+
+      Array.from(files).forEach((file) => {
+        const error = validateFile(file);
+        if (error) {
+          validationErrors.push(error);
+        } else {
+          filesToUpload.push(file);
+        }
+      });
+
+      if (validationErrors.length > 0) {
+        setUploadError(validationErrors[0]);
+        if (filesToUpload.length === 0) return;
+      }
 
     setIsUploading(true);
     try {
@@ -505,15 +543,24 @@ export const useCreateListing = () => {
     }
   };
 
-  const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    handleFileUpload(e.target.files);
+  const onFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      void handleFileUpload(e.target.files);
+    },
+    [handleFileUpload],
+  );
 
-  const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
+  const onDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      void handleFileUpload(e.dataTransfer.files);
+    },
+    [handleFileUpload],
+  );
+
+  const onDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    handleFileUpload(e.dataTransfer.files);
-  };
-
-  const onDragOver = (e: React.DragEvent<HTMLDivElement>) => e.preventDefault();
+  }, []);
 
   const removeImage = useCallback(
     (indexToRemove: number) => {
@@ -594,7 +641,7 @@ export const useCreateListing = () => {
 
   const handleSaveDraft = async () => {
     if (isReadOnly) {
-      setSubmitError(getReadOnlyMessage());
+      setSubmitError(readOnlyMessage);
       return;
     }
 
@@ -642,7 +689,7 @@ export const useCreateListing = () => {
     if (e) e.preventDefault();
 
     if (isReadOnly) {
-      setSubmitError(getReadOnlyMessage());
+      setSubmitError(readOnlyMessage);
       return;
     }
 
@@ -685,8 +732,8 @@ export const useCreateListing = () => {
       isCancellingPublish,
       submitError,
       isReadOnly,
-      readOnlyMessage: isReadOnly ? getReadOnlyMessage() : null,
-      canCancelPublish: canCancelPublish(),
+      readOnlyMessage: isReadOnly ? readOnlyMessage : null,
+      canCancelPublish,
     },
     actions: {
       setStep,

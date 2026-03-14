@@ -13,7 +13,7 @@ type PageProps = {
 export default async function DisputeDetailPage({ params }: PageProps) {
   const resolvedParams = await params;
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-white">
       <InspectorNav />
       <DisputeDetailClient disputeId={resolvedParams.id} />
     </div>

@@ -143,11 +143,9 @@ export default function DisputeListClient() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="page-title">Dispute Queue</h1>
-
       <div className="filterCard">
-        <div className="filterRow">
-          <div className="filterField">
+        <div className="filterRow disputeFilterRow">
+          <div className="filterField disputeFilterField">
             <label className="filterLabel">Trạng thái</label>
             <select
               className="filterInput"
@@ -165,7 +163,7 @@ export default function DisputeListClient() {
             </select>
           </div>
 
-          <div className="filterField">
+          <div className="filterField disputeFilterField">
             <label className="filterLabel">Từ ngày tạo</label>
             <input
               className="filterInput"
@@ -178,7 +176,7 @@ export default function DisputeListClient() {
             />
           </div>
 
-          <div className="filterField">
+          <div className="filterField disputeFilterField">
             <label className="filterLabel">Đến ngày tạo</label>
             <input
               className="filterInput"
@@ -192,7 +190,7 @@ export default function DisputeListClient() {
           </div>
 
           {isAdmin && (
-            <div className="filterField filterGrow">
+            <div className="filterField disputeFilterField">
               <label className="filterLabel">Người phụ trách</label>
               <input
                 list="dispute-assignee-suggestions"
@@ -211,7 +209,7 @@ export default function DisputeListClient() {
               </datalist>
             </div>
           )}
-          <div className="filterField filterGrow">
+          <div className="filterField disputeFilterField">
             <label className="filterLabel">Tìm theo ID</label>
             <input
               className="filterInput"
@@ -224,7 +222,7 @@ export default function DisputeListClient() {
             />
           </div>
 
-          <div className="filterField">
+          <div className="filterField disputeFilterField">
             <label className="filterLabel">Sắp xếp</label>
             <select
               className="filterInput"

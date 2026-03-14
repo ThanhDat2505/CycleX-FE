@@ -1,18 +1,17 @@
-import ReviewRequiredList from "@/app/components/inspector/ReviewRequiredList";
-import InspectorNav from "@/app/components/inspector/InspectorNav";
-import "@/app/components/inspector/inspector.css";
+"use client";
 
-export const metadata = {
-  title: "CycleX - Review Required",
-};
+import ReviewRequiredList from "@/app/components/inspector/ReviewRequiredList";
+import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
+import "@/app/components/inspector/inspector.css";
 
 export default function Page() {
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      <InspectorNav />
-      <div className="container mx-auto px-4 py-8">
-        <ReviewRequiredList />
-      </div>
-    </div>
+    <InspectorHeroLayout
+      title="Tin Cần"
+      highlightTitle="Xem Xét"
+      description="Các tin đăng đang trong quá trình xem xét, cần hành động."
+    >
+      <ReviewRequiredList />
+    </InspectorHeroLayout>
   );
 }
