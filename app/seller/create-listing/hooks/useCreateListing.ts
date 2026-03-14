@@ -185,17 +185,6 @@ export const useCreateListing = () => {
           shipping: false,
         });
 
-        const resolveImageUrl = (imagePath: string): string => {
-          if (
-            imagePath.startsWith("http://") ||
-            imagePath.startsWith("https://")
-          )
-            return imagePath;
-          if (imagePath.startsWith("/public/")) return imagePath;
-          if (imagePath.startsWith("/uploads/")) return `/backend${imagePath}`;
-          return imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
-        };
-
         const sortedImages = [...images]
           .sort((a, b) => (a.imageOrder ?? 0) - (b.imageOrder ?? 0));
 
@@ -541,7 +530,9 @@ export const useCreateListing = () => {
         setIsUploading(false);
       }
     }
-  };
+    },
+    [isReadOnly, readOnlyMessage, listingId, user?.userId, imageUrls.length, validateFile],
+  );
 
   const onFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -614,30 +605,6 @@ export const useCreateListing = () => {
     },
     [isReadOnly, imageIds, listingId, user?.userId],
   );
-
-  // Submission Logic
-  const getPayload = (): CreateListingPayload => {
-    if (!user || !user.userId) {
-      throw new Error("User not identified. Please try logging in again.");
-    }
-
-    return {
-      sellerId: user.userId,
-      title: formData.title,
-      description: formData.description,
-      bikeType: formData.category,
-      brand: formData.brand,
-      model: formData.model,
-      manufactureYear: Number(formData.year),
-      condition: formData.condition,
-      usageTime: formData.usageTime || undefined,
-      reasonForSale: formData.reasonForSale || undefined,
-      price: Number(formData.price),
-      locationCity: formData.location,
-      pickupAddress: formData.pickupAddress || formData.location,
-      saveDraft: true,
-    };
-  };
 
   const handleSaveDraft = async () => {
     if (isReadOnly) {
