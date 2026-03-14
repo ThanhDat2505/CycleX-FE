@@ -311,7 +311,7 @@ export async function searchListings(
         maxPrice?: number;
         bikeTypes?: string[];
         brands?: string[];
-        conditions?: ('new' | 'used')[];
+        conditions?: string[];
     },
     page: number = 1,
     pageSize: number = 12,

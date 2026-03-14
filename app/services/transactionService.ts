@@ -212,6 +212,9 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         ? 'DEPOSIT'
         : 'PURCHASE';
 
+    const productPrice = toNumber(source.productPrice);
+    const totalAmount = productPrice ?? toNumber(source.totalAmount) ?? calculateTotalAmount(source);
+
     return {
         transactionId: requestId,
         listingId,
@@ -227,7 +230,7 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         note: typeof source.note === 'string' ? source.note : undefined,
         platformFee: toNumber(source.platformFee) ?? 0,
         inspectionFee: toNumber(source.inspectionFee) ?? 0,
-        totalAmount: calculateTotalAmount(source),
+        totalAmount,
         createdAt: typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString(),
         updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : (typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString()),
         listingTitle: typeof source.listingTitle === 'string' ? source.listingTitle : `Xe #${listingId}`,
@@ -280,26 +283,29 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             transactionType: data.transactionType,
             desiredTransactionTime: toBackendDateTime(data.desiredTime),
             note: data.note,
+            receiverName: data.receiverName,
+            receiverPhone: data.receiverPhone,
+            receiverAddress: data.receiverAddress,
         };
 
-        const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
+        const dataResponse = await apiCallPOST<any>(`/orders?productId=${productId}`, payload);
 
         if (dataResponse) {
-            validateObject(dataResponse, 'Purchase Request Response');
+            validateObject(dataResponse, 'Order Response');
         } else {
-            throw new Error('Invalid backend response: Expected purchase request object');
+            throw new Error('Invalid backend response: Expected order object');
         }
 
-        const requestId = toNumber(dataResponse.requestId);
-        if (!requestId) {
-            throw new Error('Invalid backend response: Missing requestId');
+        const orderId = toNumber(dataResponse.orderId) ?? toNumber(dataResponse.requestId);
+        if (!orderId) {
+            throw new Error('Invalid backend response: Missing orderId');
         }
 
         return {
-            transactionId: requestId,
+            transactionId: orderId,
             listingId: toNumber(dataResponse.listingId) ?? data.listingId,
             buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
-            sellerId: 0,
+            sellerId: toNumber(dataResponse.sellerId) ?? 0,
             transactionType: data.transactionType,
             status: mapStatusToFrontend(dataResponse.status),
             desiredTime: typeof dataResponse.desiredTransactionTime === 'string'
@@ -309,10 +315,10 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             receiverPhone: data.receiverPhone,
             receiverAddress: data.receiverAddress,
             depositAmount: toNumber(dataResponse.depositAmount) ?? data.depositAmount,
-            note: typeof dataResponse.note === 'string' ? dataResponse.note : data.note,
+            note: typeof dataResponse.buyerNote === 'string' ? dataResponse.buyerNote : data.note,
             platformFee: toNumber(dataResponse.platformFee) ?? 0,
             inspectionFee: toNumber(dataResponse.inspectionFee) ?? 0,
-            totalAmount: calculateTotalAmount(dataResponse),
+            totalAmount: toNumber(dataResponse.productPrice) ?? toNumber(dataResponse.totalAmount) ?? calculateTotalAmount(dataResponse),
             createdAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
             updatedAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
         };
@@ -463,14 +469,14 @@ export async function getSellerTransactions(
         validateArray(itemsArray, 'Seller Transactions Array');
 
         const mapped = await Promise.all(itemsArray.map(async (item: any) => {
-            const requestId = toNumber(item?.requestId);
-            if (!requestId) {
+            const orderId = toNumber(item?.orderId) ?? toNumber(item?.requestId);
+            if (!orderId) {
                 return null;
             }
 
             try {
-                const detail = await apiCallGET<any>(`/seller/transactions/${requestId}`);
-                const normalized = await normalizeSellerTransactionDetail(detail, requestId);
+                const detail = await apiCallGET<any>(`/seller/transactions/${orderId}`);
+                const normalized = await normalizeSellerTransactionDetail(detail, orderId);
                 return {
                     ...normalized,
                     sellerId,
@@ -478,8 +484,9 @@ export async function getSellerTransactions(
                 };
             } catch {
                 const listingId = toNumber(item?.listingId) ?? 0;
+                const productPrice = toNumber(item?.productPrice) ?? 0;
                 return {
-                    transactionId: requestId,
+                    transactionId: orderId,
                     listingId,
                     buyerId: 0,
                     sellerId,
@@ -488,7 +495,7 @@ export async function getSellerTransactions(
                     desiredTime: new Date().toISOString(),
                     platformFee: 0,
                     inspectionFee: 0,
-                    totalAmount: 0,
+                    totalAmount: productPrice,
                     createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
                     updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
                     listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,

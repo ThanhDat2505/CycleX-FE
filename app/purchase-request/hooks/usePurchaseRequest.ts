@@ -138,6 +138,12 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
                     return;
                 }
 
+                if (data.productStatus && data.productStatus !== 'AVAILABLE') {
+                    setError('Sản phẩm này đã có người đặt mua và đang chờ xác nhận. Vui lòng quay lại sau!');
+                    setIsListingLoading(false);
+                    return;
+                }
+
                 setListing(data);
                 setError(null);
             } catch {

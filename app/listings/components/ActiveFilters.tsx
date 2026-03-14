@@ -3,7 +3,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import { SearchFilters } from '../../types/listing';
-import { MESSAGES } from '../../constants';
+import { MESSAGES, BIKE_TYPES, CONDITION_OPTIONS } from '../../constants';
 
 interface ActiveFiltersProps {
     filters: SearchFilters;
@@ -62,7 +62,7 @@ export function ActiveFilters({ filters, onRemoveFilter, onClearAll }: ActiveFil
             {/* Bike Types */}
             {filters.bikeTypes?.map((type) => (
                 <div key={`type-${type}`} className={STYLES.chip}>
-                    <span className={STYLES.chipText}>{type}</span>
+                    <span className={STYLES.chipText}>{BIKE_TYPES.find(t => t.value === type)?.label || type}</span>
                     <button
                         onClick={() => onRemoveFilter('bikeTypes', type)}
                         className={STYLES.removeBtn}
@@ -88,7 +88,7 @@ export function ActiveFilters({ filters, onRemoveFilter, onClearAll }: ActiveFil
             {/* Conditions */}
             {filters.conditions?.map((cond) => (
                 <div key={`cond-${cond}`} className={STYLES.chip}>
-                    <span className={STYLES.chipText}>{cond === 'new' ? 'Mới' : 'Đã sử dụng'}</span>
+                    <span className={STYLES.chipText}>{CONDITION_OPTIONS.find(o => o.value === cond)?.label || cond}</span>
                     <button
                         onClick={() => onRemoveFilter('conditions', cond)}
                         className={STYLES.removeBtn}

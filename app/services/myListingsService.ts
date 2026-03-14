@@ -751,3 +751,16 @@ export async function deleteListingImage(sellerId: number, listingId: number, im
     await apiCallDELETE(`/seller/${sellerId}/listings/${listingId}/images/${imageId}`);
 }
 
+/**
+ * Set an image as primary (order = 1)
+ * Endpoint: PATCH /api/seller/{sellerId}/listings/{listingId}/images/{imageId}/set-primary
+ */
+export async function setImageAsPrimary(sellerId: number, listingId: number, imageId: number): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return;
+    }
+
+    await apiCallPATCH(`/seller/${sellerId}/listings/${listingId}/images/${imageId}/set-primary`, {});
+}
+
