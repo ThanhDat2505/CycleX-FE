@@ -57,7 +57,7 @@ export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTim
 
                 {/* Active Line (Progress) */}
                 <div
-                    className="absolute top-1/2 left-0 h-1 bg-blue-600 -z-0 transform -translate-y-1/2 rounded-full transition-all duration-700 ease-out"
+                    className="absolute top-1/2 left-0 h-1 bg-brand-primary -z-0 transform -translate-y-1/2 rounded-full transition-all duration-700 ease-out"
                     style={{ width: `${(currentStepIndex / (STEPS.length - 1)) * 100}%` }}
                 ></div>
 
@@ -71,9 +71,9 @@ export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTim
                                 className={`
                                     w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-4 transition-all duration-300
                                     ${isCompleted
-                                        ? 'bg-blue-600 border-blue-600 text-white scale-110 shadow-lg shadow-blue-200'
+                                        ? 'bg-brand-primary border-brand-primary text-white scale-110 shadow-lg shadow-orange-100'
                                         : 'bg-white border-gray-200 text-gray-300'}
-                                    ${isCurrent ? 'ring-4 ring-blue-100' : ''}
+                                    ${isCurrent ? 'ring-4 ring-orange-50' : ''}
                                 `}
                             >
                                 {isCompleted ? (
@@ -88,7 +88,7 @@ export default function OrderTimeline({ status, createdAt, updatedAt }: OrderTim
                                 </p>
                                 {/* Show timestamp for current/completed steps if available - Logic simplified for now */}
                                 {index === 0 && <p className="text-[10px] text-gray-500 mt-1">{formatDate(createdAt).split(' ')[0]}</p>}
-                                {index === currentStepIndex && index !== 0 && <p className="text-[10px] text-blue-600 mt-1 font-medium">Hiện tại</p>}
+                                {index === currentStepIndex && index !== 0 && <p className="text-[10px] text-brand-primary mt-1 font-medium">Hiện tại</p>}
                             </div>
                         </div>
                     );

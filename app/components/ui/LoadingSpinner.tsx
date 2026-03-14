@@ -14,7 +14,7 @@ const sizes = {
 };
 
 const colors = {
-    primary: 'border-orange-600 border-t-transparent',
+    primary: 'border-brand-primary border-t-transparent',
     white: 'border-white border-t-transparent',
     gray: 'border-gray-400 border-t-transparent',
 };

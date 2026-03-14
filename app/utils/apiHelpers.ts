@@ -10,9 +10,10 @@
  * Lấy JWT token từ localStorage để gắn vào Authorization header.
  * Trả về null nếu chưa đăng nhập hoặc đang chạy trên server (SSR).
  */
+import { authService } from '@/app/services/authService';
+
 function getAuthToken(): string | null {
-    if (typeof window === 'undefined') return null;
-    return localStorage.getItem('authToken');
+    return authService.getToken();
 }
 
 export interface ApiError {

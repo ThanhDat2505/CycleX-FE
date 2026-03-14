@@ -7,6 +7,8 @@ import type {
 import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 
+import { authService } from "./authService";
+
 type RawObject = Record<string, any>;
 
 const inFlightInspectorRequests = new Map<string, Promise<unknown>>();
@@ -72,8 +74,7 @@ function parseJsonSafe(value: string | null): RawObject | null {
 }
 
 function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("authToken");
+  return authService.getToken();
 }
 
 function getJwtPayload(token: string | null): RawObject | null {
@@ -100,9 +101,7 @@ function pickPositiveNumber(values: unknown[]): number | null {
 }
 
 function getInspectorId(): number {
-  if (typeof window === "undefined") return 0;
-
-  const token = localStorage.getItem("authToken");
+  const token = authService.getToken();
   const payload = getJwtPayload(token);
   const tokenInspectorId = pickPositiveNumber([
     payload?.userId,
@@ -113,7 +112,7 @@ function getInspectorId(): number {
     return tokenInspectorId;
   }
 
-  const fromUserData = parseJsonSafe(localStorage.getItem("userData"));
+  const fromUserData = authService.getUser() as any;
   const userDataInspectorId = pickPositiveNumber([
     fromUserData?.userId,
     fromUserData?.id,

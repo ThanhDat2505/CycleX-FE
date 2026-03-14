@@ -5,7 +5,7 @@ import { useAuth } from '@/app/hooks/useAuth';
 import { getSellerTransactions } from '@/app/services/transactionService';
 import { TransactionWithDetails } from '@/app/types/transaction';
 import TransactionCard from '../components/TransactionCard';
-import { LoadingSpinner, EmptyState } from '@/app/components/ui';
+import { LoadingSpinner, EmptyState, PageLoading } from '@/app/components/ui';
 import { useRouter } from 'next/navigation';
 import { formatPrice } from '@/app/utils/format';
 
@@ -86,11 +86,7 @@ export default function PendingTransactionsPage() {
     const totalValue = transactions.reduce((sum, t) => sum + t.totalAmount, 0);
 
     if (isAuthLoading || isLoading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30 flex items-center justify-center">
-                <LoadingSpinner size="lg" />
-            </div>
-        );
+        return <PageLoading message="Đang tải các yêu cầu mua xe..." />;
     }
 
     return (

@@ -11,6 +11,7 @@ import {
   type JsonRecord,
 } from "@/app/services/dataAdapter";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
+import { authService } from "./authService";
 
 type DisputeListOptions = {
   status?: string;
@@ -113,8 +114,7 @@ function parseJsonSafe(value: string | null): JsonRecord | null {
 }
 
 function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("authToken");
+  return authService.getToken();
 }
 
 function getJwtPayload(token: string | null): JsonRecord | null {
@@ -140,12 +140,8 @@ function pickPositiveNumber(values: unknown[]): number | null {
 }
 
 function getCurrentUserContext(): CurrentUserContext {
-  if (typeof window === "undefined") {
-    return { role: "INSPECTOR", userId: 0 };
-  }
-
-  const userData = parseJsonSafe(localStorage.getItem("userData"));
-  const token = localStorage.getItem("authToken");
+  const userData = authService.getUser() as any;
+  const token = authService.getToken();
   const payload = getJwtPayload(token);
 
   const authorities = getArray(payload?.authorities);

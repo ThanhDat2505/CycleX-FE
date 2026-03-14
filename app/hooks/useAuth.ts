@@ -10,6 +10,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { User } from '@/app/types/auth';
+import { authService } from '@/app/services/authService';
 
 interface AuthState {
     isLoggedIn: boolean;
@@ -31,23 +32,13 @@ export const useAuth = (): UseAuthReturn => {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<string | null>(null);
     useEffect(() => {
-        const userData = localStorage.getItem('userData');
-        const token = localStorage.getItem('authToken');
+        const userData = authService.getUser();
+        const token = authService.getToken();
 
         if (token && userData) {
-            try {
-                const parsedUser: User = JSON.parse(userData);
-                setUser(parsedUser);
-                setRole(parsedUser.role);
-                setIsLoggedIn(true);
-            } catch {
-                // Corrupted data - clear and force re-login
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                setUser(null);
-                setRole(null);
-                setIsLoggedIn(false);
-            }
+            setUser(userData);
+            setRole(userData.role);
+            setIsLoggedIn(true);
         } else {
             // No auth data - reset state
             setUser(null);
@@ -59,8 +50,7 @@ export const useAuth = (): UseAuthReturn => {
     }, [pathname]);
 
     const logout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('userData');
+        authService.logout();
         setUser(null);
         setRole(null);
         setIsLoggedIn(false);

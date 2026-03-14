@@ -25,14 +25,14 @@ const STYLES = {
   sectionTitle:
     "text-3xl font-extrabold text-gray-900 mb-8 flex items-center gap-3",
   titleBar:
-    "w-1.5 h-10 bg-brand-primary rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]",
+    "w-1.5 h-10 bg-brand-primary rounded-full shadow-[0_0_10px_rgba(255,107,0,0.5)]",
   paymentGrid: "grid grid-cols-1 md:grid-cols-2 gap-6",
   paymentOption: (isSelected: boolean) => `
         relative p-6 border-2 rounded-2xl cursor-pointer transition-all duration-400 ease-out group overflow-hidden
         ${
           isSelected
-            ? "border-brand-primary bg-blue-50/50 shadow-lg ring-1 ring-brand-primary scale-[1.03]"
-            : "border-gray-100 bg-gray-50/30 hover:border-blue-200 hover:bg-white hover:shadow-xl hover:-translate-y-1.5"
+            ? "border-brand-primary bg-orange-50/50 shadow-lg ring-1 ring-brand-primary scale-[1.03]"
+            : "border-gray-100 bg-gray-50/30 hover:border-orange-200 hover:bg-white hover:shadow-xl hover:-translate-y-1.5"
         }
     `,
   paymentIcon: (isSelected: boolean) => `
@@ -40,11 +40,11 @@ const STYLES = {
         ${
           isSelected
             ? "bg-brand-primary text-white shadow-lg rotate-3 scale-110"
-            : "bg-white text-gray-400 shadow-sm group-hover:bg-blue-50 group-hover:text-brand-primary group-hover:rotate-0"
+            : "bg-white text-gray-400 shadow-sm group-hover:bg-orange-50 group-hover:text-brand-primary group-hover:rotate-0"
         }
     `,
   paymentTitle: (isSelected: boolean) =>
-    `text-lg font-bold transition-colors duration-300 ${isSelected ? "text-blue-900" : "text-gray-800"}`,
+    `text-lg font-bold transition-colors duration-300 ${isSelected ? "text-orange-900" : "text-gray-800"}`,
   paymentDesc:
     "text-sm text-gray-500 mt-2 leading-relaxed opacity-80 group-hover:opacity-100 transition-opacity",
   checkIcon:
@@ -55,10 +55,10 @@ const STYLES = {
   comingSoonBadge:
     "text-[10px] uppercase font-bold tracking-wider bg-gray-200 text-gray-600 px-3 py-1 rounded-full",
   receiverSection:
-    "mb-10 p-8 bg-gradient-to-br from-blue-50/50 to-white rounded-2xl border border-blue-100/50 shadow-inner-sm",
-  receiverTitle: "text-xl font-bold text-blue-900 mb-8 flex items-center gap-3",
+    "mb-10 p-8 bg-gradient-to-br from-orange-50/50 to-white rounded-2xl border border-orange-100/50 shadow-inner-sm",
+  receiverTitle: "text-xl font-bold text-orange-900 mb-8 flex items-center gap-3",
   receiverIcon:
-    "bg-blue-600 p-2.5 rounded-xl text-white shadow-md shadow-blue-200",
+    "bg-brand-primary p-2.5 rounded-xl text-white shadow-md shadow-orange-200",
   fieldGrid: "grid grid-cols-1 md:grid-cols-2 gap-8",
   hint: "text-xs text-gray-500 mt-2 pl-1 font-medium italic opacity-70",
   hintBlue:
@@ -69,7 +69,7 @@ const STYLES = {
   btnAuto:
     "!w-auto px-10 py-3 text-base font-semibold transition-all duration-300",
   btnPrimary:
-    "!w-auto px-12 py-3 text-base font-bold bg-brand-primary hover:bg-brand-primary-hover shadow-lg shadow-blue-100 hover:shadow-blue-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300",
+    "!w-auto px-12 py-3 text-base font-bold bg-brand-primary hover:bg-brand-primary-hover shadow-lg shadow-orange-100 hover:shadow-orange-200 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300",
 } as const;
 
 /** Calculate min date for date input */
@@ -308,7 +308,7 @@ export default function Step1InputForm({
               onClick={() => setAddressMode("saved")}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 addressMode === "saved"
-                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  ? "bg-orange-50 text-orange-700 border border-orange-200"
                   : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
               }`}
             >
@@ -320,7 +320,7 @@ export default function Step1InputForm({
               onClick={() => setAddressMode("manual")}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 addressMode === "manual"
-                  ? "bg-blue-50 text-blue-700 border border-blue-200"
+                  ? "bg-orange-50 text-orange-700 border border-orange-200"
                   : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
               }`}
             >

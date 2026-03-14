@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, MapPin } from "lucide-react";
 import { UserAddress, CreateAddressRequest } from "@/app/types/address";
 import { addressService } from "@/app/services/addressService";
@@ -20,6 +20,8 @@ export default function AddressManagement({
 }: AddressManagementProps) {
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
+  const errorRef = useRef<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<UserAddress | null>(
     null,
@@ -29,10 +31,18 @@ export default function AddressManagement({
   const fetchAddresses = useCallback(async () => {
     try {
       setIsLoading(true);
+      setFetchError(null);
       const data = await addressService.getAddresses(userId);
       setAddresses(data);
+      errorRef.current = null; // Reset on success
     } catch {
-      onError("Không thể tải danh sách địa chỉ");
+      const msg = "Không thể tải danh sách địa chỉ";
+      setFetchError(msg);
+      // Only call external onError once to prevent toast spam
+      if (errorRef.current !== msg) {
+        onError(msg);
+        errorRef.current = msg;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +133,7 @@ export default function AddressManagement({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <MapPin className="w-5 h-5 text-blue-600" />
+          <MapPin className="w-5 h-5 text-brand-primary" />
           <h3 className="text-lg font-bold text-gray-900">Địa chỉ của tôi</h3>
           <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">
             {addresses.length}/10
@@ -132,7 +142,7 @@ export default function AddressManagement({
         {addresses.length < 10 && (
           <button
             onClick={openCreate}
-            className="flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-medium px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
+            className="flex items-center gap-1.5 text-sm text-brand-primary hover:text-brand-primary-hover font-medium px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors"
           >
             <Plus className="w-4 h-4" />
             Thêm địa chỉ
@@ -156,13 +166,21 @@ export default function AddressManagement({
       ) : addresses.length === 0 ? (
         <div className="p-8 rounded-xl border-2 border-dashed border-gray-200 text-center">
           <MapPin className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500 text-sm mb-3">Bạn chưa có địa chỉ nào</p>
+          <p className="text-gray-500 text-sm mb-3">
+            {fetchError ? "Không thể kết nối máy chủ" : "Bạn chưa có địa chỉ nào"}
+          </p>
           <button
-            onClick={openCreate}
-            className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:text-blue-700 font-semibold px-4 py-2 rounded-lg bg-blue-50 hover:bg-blue-100 transition-colors"
+            onClick={fetchError ? () => fetchAddresses() : openCreate}
+            className="inline-flex items-center gap-1.5 text-sm text-brand-primary hover:text-brand-primary-hover font-semibold px-4 py-2 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors"
           >
-            <Plus className="w-4 h-4" />
-            Thêm địa chỉ đầu tiên
+            {fetchError ? (
+              <>Thử lại</>
+            ) : (
+              <>
+                <Plus className="w-4 h-4" />
+                Thêm địa chỉ đầu tiên
+              </>
+            )}
           </button>
         </div>
       ) : (

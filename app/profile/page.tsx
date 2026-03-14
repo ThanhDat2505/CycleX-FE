@@ -4,13 +4,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { userService } from "@/app/services/userService";
-import {
-  UserProfileResponse,
-  UpdateProfileRequest,
-  ChangePasswordRequest,
-} from "@/app/types/user";
+import { UserProfileResponse, UpdateProfileRequest, ChangePasswordRequest } from "@/app/types/user";
 import { MESSAGES } from "@/app/constants/messages";
 import { useToast } from "@/app/contexts/ToastContext";
+import { LoadingSpinner, PageLoading } from "@/app/components/ui";
 import { ProfileInfoForm } from "./components/ProfileInfoForm";
 import { ChangePasswordForm } from "./components/ChangePasswordForm";
 import { User, Lock, ChevronRight, MapPin } from "lucide-react";
@@ -92,14 +89,7 @@ export default function ProfilePage() {
   };
 
   if (authLoading || isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 pt-24 pb-12 flex justify-center items-center">
-        <span className="flex items-center gap-2">
-          <span className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-          Đang tải...
-        </span>
-      </div>
-    );
+    return <PageLoading message="Đang tải hồ sơ của bạn..." />;
   }
 
   if (!user || !profile) return null; // Prevent UI flash before redirect
@@ -109,7 +99,7 @@ export default function ProfilePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Breadcrumbs */}
         <nav className="flex items-center text-sm text-gray-500 mb-6">
-          <Link href="/" className="hover:text-blue-600 transition-colors">
+          <Link href="/" className="hover:text-brand-primary transition-colors">
             Trang chủ
           </Link>
           <ChevronRight className="w-4 h-4 mx-2" />
@@ -130,12 +120,12 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab("info")}
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                     activeTab === "info"
-                      ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-700/10"
+                      ? "bg-orange-50 text-brand-primary shadow-sm ring-1 ring-brand-primary/10"
                       : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm"
                   }`}
                 >
                   <User
-                    className={`w-5 h-5 mr-3 ${activeTab === "info" ? "text-blue-600" : "text-gray-400"}`}
+                    className={`w-5 h-5 mr-3 ${activeTab === "info" ? "text-brand-primary" : "text-gray-400"}`}
                   />
                   {MESSAGES.S04_TAB_INFO}
                 </button>
@@ -144,12 +134,12 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab("security")}
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                     activeTab === "security"
-                      ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-700/10"
+                      ? "bg-orange-50 text-brand-primary shadow-sm ring-1 ring-brand-primary/10"
                       : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm"
                   }`}
                 >
                   <Lock
-                    className={`w-5 h-5 mr-3 ${activeTab === "security" ? "text-blue-600" : "text-gray-400"}`}
+                    className={`w-5 h-5 mr-3 ${activeTab === "security" ? "text-brand-primary" : "text-gray-400"}`}
                   />
                   {MESSAGES.S04_TAB_SECURITY}
                 </button>
@@ -158,12 +148,12 @@ export default function ProfilePage() {
                   onClick={() => setActiveTab("addresses")}
                   className={`w-full flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all ${
                     activeTab === "addresses"
-                      ? "bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-700/10"
+                      ? "bg-orange-50 text-brand-primary shadow-sm ring-1 ring-brand-primary/10"
                       : "text-gray-600 hover:bg-white hover:text-gray-900 hover:shadow-sm"
                   }`}
                 >
                   <MapPin
-                    className={`w-5 h-5 mr-3 ${activeTab === "addresses" ? "text-blue-600" : "text-gray-400"}`}
+                    className={`w-5 h-5 mr-3 ${activeTab === "addresses" ? "text-brand-primary" : "text-gray-400"}`}
                   />
                   Địa chỉ
                 </button>
