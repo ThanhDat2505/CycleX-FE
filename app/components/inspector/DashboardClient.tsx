@@ -168,6 +168,8 @@ export default function DashboardClient() {
     }
   }, [listings, activeFilter]);
 
+  // Đưa ô "Tất cả" ra ngoài cùng bên phải, kế ô "Tin chờ duyệt"
+  // Đưa ô "Tất cả" sang bên trái của ô "Tin chờ duyệt"
   const STAT_CARDS: {
     key: FilterKey;
     label: string;
@@ -176,6 +178,14 @@ export default function DashboardClient() {
     iconWrapClass: string;
     iconClass: string;
   }[] = [
+    {
+      key: "all",
+      label: "Tất cả",
+      count: counts.pendingAll,
+      icon: "select_all",
+      iconWrapClass: "bg-[#eef0f3]",
+      iconClass: "text-[#111827]",
+    },
     {
       key: "pending",
       label: "Tin chờ duyệt",
@@ -199,14 +209,6 @@ export default function DashboardClient() {
       icon: "warning",
       iconWrapClass: "bg-[#faedf1]",
       iconClass: "text-[#e15845]",
-    },
-    {
-      key: "flagged",
-      label: "Bị flag",
-      count: counts.flagged,
-      icon: "outlined_flag",
-      iconWrapClass: "bg-[#eef0f3]",
-      iconClass: "text-[#111827]",
     },
     {
       key: "approved",
@@ -254,12 +256,18 @@ export default function DashboardClient() {
           )}
           {!loading &&
             STAT_CARDS.map((card) => {
-              const isActive = activeFilter === card.key;
+              const isActive =
+                activeFilter === card.key ||
+                (card.key === "all" && activeFilter === "all");
               return (
                 <button
                   key={card.key}
                   type="button"
-                  onClick={() => setActiveFilter(isActive ? "all" : card.key)}
+                  onClick={() =>
+                    setActiveFilter(
+                      card.key === "all" ? "all" : isActive ? "all" : card.key,
+                    )
+                  }
                   className={`group bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3 transition-all text-left hover:border-[#FF8A00] hover:shadow-md cursor-pointer ${isActive ? "border-[#FF8A00] ring-2 ring-[#FF8A00]/30 shadow-md" : "border-gray-200"}`}
                 >
                   <div
