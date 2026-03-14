@@ -45,14 +45,14 @@ export default function InspectorHeroLayout({
     <div className="min-h-screen bg-gray-50 animate-fade-in-up">
       <section className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-5">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-5 w-full justify-between">
             {NAV_ITEMS.map((item) => {
               const active = isActive(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all whitespace-nowrap
                     ${
                       active
                         ? "bg-[#FF8A00] text-white shadow-md"

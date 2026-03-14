@@ -235,20 +235,8 @@ export default function DashboardClient() {
       highlightTitle="Tổng Quan"
       description={`Chào mừng trở lại! Bạn có ${counts.pendingAll} tin cần duyệt hôm nay.`}
     >
-      <div className="mb-6 grid grid-cols-1 lg:grid-cols-[auto_1fr] gap-4 items-start">
-        <div className="pt-1">
-          <Link
-            href="/inspector/pending-list"
-            className="inline-flex items-center gap-2 px-5 py-3 bg-[#FF8A00] text-white rounded-lg font-bold hover:bg-[#FF7A00] hover:shadow-lg hover:-translate-y-0.5 transition-all"
-          >
-            <span className="material-symbols-outlined">
-              format_list_bulleted
-            </span>
-            Vào danh sách chờ duyệt
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 justify-items-stretch">
           {loading && (
             <div className="col-span-full text-center text-gray-400 py-4 text-sm">
               Đang tải...
@@ -268,7 +256,7 @@ export default function DashboardClient() {
                       card.key === "all" ? "all" : isActive ? "all" : card.key,
                     )
                   }
-                  className={`group bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3 transition-all text-left hover:border-[#FF8A00] hover:shadow-md cursor-pointer ${isActive ? "border-[#FF8A00] ring-2 ring-[#FF8A00]/30 shadow-md" : "border-gray-200"}`}
+                  className={`group bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3 transition-all text-left hover:border-[#FF8A00] hover:shadow-md cursor-pointer w-full ${isActive ? "border-[#FF8A00] ring-2 ring-[#FF8A00]/30 shadow-md" : "border-gray-200"}`}
                 >
                   <div
                     className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${card.iconWrapClass}`}
