@@ -1,6 +1,6 @@
 import React from 'react';
-import { Calendar } from 'lucide-react';
 import { TimeRange } from '../../types/adminDashboard';
+import { Calendar } from 'lucide-react';
 
 interface TimeRangeFilterProps {
     currentRange: TimeRange;
@@ -11,10 +11,10 @@ const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ currentRange, onRange
     const [customDates, setCustomDates] = React.useState({ start: '', end: '' });
 
     const filters: { label: string; value: TimeRange }[] = [
-        { label: 'Today', value: 'TODAY' },
-        { label: '7D', value: 'LAST_7_DAYS' },
-        { label: '30D', value: 'LAST_30_DAYS' },
-        { label: 'Custom', value: 'CUSTOM' }
+        { label: 'Hôm nay', value: 'TODAY' },
+        { label: '7 Ngày', value: 'LAST_7_DAYS' },
+        { label: '30 Ngày', value: 'LAST_30_DAYS' },
+        { label: 'Tùy chọn', value: 'CUSTOM' }
     ];
 
     const handleCustomDateChange = (type: 'start' | 'end', value: string) => {
@@ -26,33 +26,39 @@ const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ currentRange, onRange
     };
 
     return (
-        <div className="flex flex-col md:flex-row items-end md:items-center gap-4">
+        <div className="flex flex-col md:flex-row items-center gap-3">
             {currentRange === 'CUSTOM' && (
-                <div className="flex items-center gap-2 animate-fade-in bg-white p-1 rounded-xl border border-gray-100 shadow-sm">
-                    <input 
-                        type="date" 
-                        value={customDates.start}
-                        onChange={(e) => handleCustomDateChange('start', e.target.value)}
-                        className="text-xs font-bold text-gray-600 p-1.5 focus:outline-none bg-transparent"
-                    />
-                    <span className="text-gray-300">→</span>
-                    <input 
-                        type="date" 
-                        value={customDates.end}
-                        onChange={(e) => handleCustomDateChange('end', e.target.value)}
-                        className="text-xs font-bold text-gray-600 p-1.5 focus:outline-none bg-transparent"
-                    />
+                <div className="flex items-center gap-2 animate-fade-in bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 shadow-2xl">
+                    <div className="flex items-center gap-2 px-3 py-1">
+                        <Calendar size={14} className="text-brand-primary" />
+                        <input 
+                            type="date" 
+                            value={customDates.start}
+                            onChange={(e) => handleCustomDateChange('start', e.target.value)}
+                            className="text-[10px] font-black uppercase tracking-widest text-gray-300 focus:outline-none bg-transparent [color-scheme:dark]"
+                        />
+                    </div>
+                    <span className="text-gray-600 font-bold">→</span>
+                    <div className="flex items-center gap-2 px-3 py-1">
+                        <input 
+                            type="date" 
+                            value={customDates.end}
+                            onChange={(e) => handleCustomDateChange('end', e.target.value)}
+                            className="text-[10px] font-black uppercase tracking-widest text-gray-300 focus:outline-none bg-transparent [color-scheme:dark]"
+                        />
+                    </div>
                 </div>
             )}
-            <div className="flex items-center space-x-1 bg-gray-100/80 p-1 rounded-xl backdrop-blur-sm border border-gray-100">
+            
+            <div className="flex items-center p-1 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl overflow-hidden">
                 {filters.map((filter) => (
                     <button
                         key={filter.value}
                         onClick={() => onRangeChange(filter.value)}
-                        className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-lg transition-all ${
+                        className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 ${
                             currentRange === filter.value
-                                ? 'bg-white text-blue-600 shadow-sm'
-                                : 'text-gray-400 hover:text-gray-700 hover:bg-gray-200'
+                                ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20 scale-100'
+                                : 'text-gray-400 hover:text-white hover:bg-white/5'
                         }`}
                     >
                         {filter.label}

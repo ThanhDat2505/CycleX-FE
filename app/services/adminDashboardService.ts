@@ -2,14 +2,6 @@ import { apiCallGET } from '../utils/apiHelpers';
 import { AdminDashboardData, TimeRange } from '../types/adminDashboard';
 import { API_DELAY_MS } from '../constants';
 
-/**
- * Get Admin Dashboard data including metrics and activities.
- * 
- * API Endpoint: GET /api/admin/dashboard
- * @param timeRange The range to filter data (TODAY, LAST_7_DAYS, etc.)
- * @param startDate Optional custom start date
- * @param endDate Optional custom end date
- */
 export async function getAdminDashboardData(
     timeRange: TimeRange = 'LAST_7_DAYS',
     startDate?: string,
@@ -18,67 +10,47 @@ export async function getAdminDashboardData(
     const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
     if (USE_MOCK_API) {
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
 
+        // Let's implement dynamic mock behavior to simulate "0 when no data"
+        // If they pick CUSTOM but put an invalid or very old date, return 0
+        const isZeroData = false; // Mock switch: change to true if you want to see all zeros
+
+        if (isZeroData) {
+            return {
+                userManagement: { totalUsers: 0, activeUsers: 0, bannedSuspendedUsers: 0, newUsersInRange: 0 },
+                disputeManagement: { totalDisputes: 0, pendingDisputes: 0, resolvedDisputes: 0, newDisputesInRange: 0 },
+                transactions: { totalSuccessfulTransactions: 0, successfulRevenue: 0 }
+            };
+        }
+
+        // Return rich mock data based on mock logic
+        let multiplier = 1;
+        if (timeRange === 'TODAY') multiplier = 0.1;
+        if (timeRange === 'LAST_7_DAYS') multiplier = 1;
+        if (timeRange === 'LAST_30_DAYS') multiplier = 4;
+        if (timeRange === 'CUSTOM') multiplier = 2; // Arbitrary
+
         return {
-            summary: {
-                totalUsers: 1250,
-                activeUsers: 845,
-                totalOrders: 328,
-                totalRevenue: 450000000, // 450M VND
-                userTrend: 12.5,
-                orderTrend: -5.2,
-                revenueTrend: 8.7,
+            userManagement: {
+                totalUsers: 1450, // "Dữ liệu của toàn bộ hệ thống khi admin mở Dashboard"
+                activeUsers: 1300,
+                bannedSuspendedUsers: 150,
+                newUsersInRange: Math.floor(54 * multiplier) // Lọc dữ liệu theo khoảng thời gian
             },
-            userStats: {
-                daily: Array.from({ length: 7 }, (_, i) => ({
-                    date: new Date(Date.now() - (6 - i) * 86400000).toISOString().split('T')[0],
-                    value: Math.floor(Math.random() * 50) + 10
-                })),
-                weekly: Array.from({ length: 4 }, (_, i) => ({
-                    date: `Week ${i + 1}`,
-                    value: Math.floor(Math.random() * 200) + 50
-                }))
+            disputeManagement: {
+                totalDisputes: 120, // Toàn bộ hệ thống
+                pendingDisputes: 15,
+                resolvedDisputes: 105,
+                newDisputesInRange: Math.floor(12 * multiplier) // Lọc theo thời gian
             },
-            orderStats: {
-                totalOrders: 328,
-                completedRevenue: 410000000,
-                orderHistory: Array.from({ length: 7 }, (_, i) => ({
-                    date: new Date(Date.now() - (6 - i) * 86400000).toISOString().split('T')[0],
-                    value: Math.floor(Math.random() * 20) + 5
-                })),
-                revenueHistory: Array.from({ length: 7 }, (_, i) => ({
-                    date: new Date(Date.now() - (6 - i) * 86400000).toISOString().split('T')[0],
-                    value: (Math.floor(Math.random() * 50) + 10) * 1000000
-                }))
-            },
-            recentActivities: [
-                {
-                    id: '1',
-                    type: 'USER_REGISTER',
-                    description: 'New user "Nguyen Van A" registered',
-                    timestamp: new Date().toISOString(),
-                    user: 'Nguyen Van A'
-                },
-                {
-                    id: '2',
-                    type: 'ORDER_CREATE',
-                    description: 'Order #ORD-2024-001 created for "Trek FX 2"',
-                    timestamp: new Date(Date.now() - 3600000).toISOString(),
-                    user: 'Tran Thi B'
-                },
-                {
-                    id: '3',
-                    type: 'DATA_UPDATE',
-                    description: 'System updated cycling categories',
-                    timestamp: new Date(Date.now() - 7200000).toISOString()
-                }
-            ]
+            transactions: {
+                totalSuccessfulTransactions: Math.floor(328 * multiplier),
+                successfulRevenue: Math.floor(450000000 * multiplier)
+            }
         };
     }
 
-    // REAL API CALL
     let url = `/admin/dashboard?timeRange=${timeRange}`;
     if (startDate) url += `&startDate=${startDate}`;
     if (endDate) url += `&endDate=${endDate}`;

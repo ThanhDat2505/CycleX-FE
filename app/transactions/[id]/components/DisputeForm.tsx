@@ -11,6 +11,11 @@ import {
   validateDisputeData,
 } from "@/app/services/buyerDisputeService";
 import { useToast } from "@/app/contexts/ToastContext";
+import { 
+    AlertTriangle, Camera, FileText, Send, 
+    X, CheckCircle, Info, ShieldAlert, Zap,
+    RefreshCw, Tag
+} from "lucide-react";
 
 interface DisputeFormProps {
   orderId: number;
@@ -48,7 +53,6 @@ export default function DisputeForm({
   useEffect(() => {
     async function init() {
       try {
-        // S70 Function: Kiểm tra đơn hàng đã được giao thành công, 24h, tồn tại, tần suất
         const eligibility = await checkDisputeEligibility(
           orderId,
           buyerId,
@@ -57,12 +61,11 @@ export default function DisputeForm({
         );
         if (!eligibility.allowed) {
           setEligibilityError(
-            eligibility.reason || "Bạn không thể khiếu nại đơn hàng này.",
+            eligibility.reason || "Bạn không thể khiếu nại đơn hàng này."
           );
           return;
         }
 
-        // S70 Function: Lấy danh sách dispute reasons
         const data = await getDisputeReasons();
         setReasons(data);
       } catch (error) {
@@ -77,27 +80,16 @@ export default function DisputeForm({
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-
-    // S70 Function: Validate số lượng evidence (0-5 files)
     if (evidenceFiles.length + files.length > 5) {
       addToast("Bạn chỉ có thể tải lên tối đa 5 tệp bằng chứng.", "warning");
       return;
     }
-
-    // S70 Function: Validate định dạng evidence (jpg, jpeg, png)
     const validTypes = ["image/jpeg", "image/jpg", "image/png"];
     const validFiles = files.filter((f) => validTypes.includes(f.type));
-
     if (validFiles.length < files.length) {
-      addToast(
-        "Một số tệp không đúng định dạng (chỉ nhận JPG, JPEG, PNG).",
-        "warning",
-      );
+      addToast("Một số tệp không đúng định dạng (chỉ nhận JPG, JPEG, PNG).", "warning");
     }
-
     setEvidenceFiles((prev) => [...prev, ...validFiles]);
-
-    // Generate previews
     const newPreviews = validFiles.map((f) => URL.createObjectURL(f));
     setPreviews((prev) => [...prev, ...newPreviews]);
   };
@@ -110,7 +102,6 @@ export default function DisputeForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const payload: CreateDisputeRequest = {
       orderId,
       buyerId,
@@ -118,10 +109,9 @@ export default function DisputeForm({
       title,
       content,
       reasonId,
-      evidenceUrls: [], // Will be updated after upload
+      evidenceUrls: [],
     };
 
-    // S-70 Function: Validate các field dispute (Sử dụng logic trung tâm từ service)
     const validation = validateDisputeData(payload, reasons);
     if (!validation.isValid) {
       addToast(validation.error || "Vui lòng kiểm tra lại thông tin.", "error");
@@ -130,33 +120,13 @@ export default function DisputeForm({
 
     try {
       setIsSubmitting(true);
-
-      // S70 Function: Upload evidence files và Lưu vào hệ thống
       const evidenceUrls = await uploadDisputeEvidence(evidenceFiles, orderId);
-
-      // Cập nhật payload với URLs
       payload.evidenceUrls = evidenceUrls;
-
-      // S70 Function: Tạo dispute mới, Khởi tạo trạng thái (PENDING), Liên kết với order/buyer/seller
       await createDispute(payload);
-
-      addToast(
-        "Gửi khiếu nại thành công. Chúng tôi sẽ xem xét và phản hồi sớm nhất.",
-        "success",
-      );
+      addToast("Gửi khiếu nại thành công. CycleX sẽ phản hồi sớm nhất.", "success");
       onSuccess();
     } catch (error: any) {
-      // Handle structured validation errors (400)
-      if (error.errors) {
-        const firstError = Object.values(error.errors)[0];
-        if (Array.isArray(firstError)) {
-          addToast(firstError[0], "error");
-        } else {
-          addToast("Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.", "error");
-        }
-      } else {
-        addToast(error.message || "Có lỗi xảy ra khi gửi khiếu nại.", "error");
-      }
+      addToast(error.message || "Có lỗi xảy ra khi gửi khiếu nại.", "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -164,15 +134,13 @@ export default function DisputeForm({
 
   if (isCheckingEligibility || isLoadingReasons) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+      <div className="flex flex-col items-center justify-center py-24 bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 animate-fade-in">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-gray-100 border-t-brand-primary rounded-full animate-spin"></div>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-8 h-8 bg-brand-primary/10 rounded-full animate-pulse"></div>
-          </div>
+          <div className="w-16 h-16 border-4 border-white/5 border-t-brand-primary rounded-full animate-spin"></div>
+          <Zap size={24} className="absolute inset-0 m-auto text-brand-primary animate-pulse" />
         </div>
-        <p className="mt-6 text-gray-500 font-bold tracking-wide animate-pulse uppercase text-xs">
-          Đang kiểm tra dữ liệu...
+        <p className="mt-8 text-[11px] font-black text-gray-500 uppercase tracking-[0.3em] animate-pulse">
+          Validating context...
         </p>
       </div>
     );
@@ -180,294 +148,159 @@ export default function DisputeForm({
 
   if (eligibilityError) {
     return (
-      <div className="bg-red-50/50 border border-red-100 rounded-3xl p-8 text-center animate-scale-in">
-        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6 rotate-3">
-          <svg
-            className="w-8 h-8 text-red-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-            />
-          </svg>
+      <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-12 text-center animate-scale-in">
+        <div className="w-20 h-20 bg-rose-500/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-glow-rose">
+          <ShieldAlert size={40} className="text-rose-500" />
         </div>
-        <h3 className="text-xl font-extrabold text-red-900 mb-2">
-          Từ chối yêu cầu
-        </h3>
-        <p className="text-red-700/80 text-sm mb-8 max-w-xs mx-auto leading-relaxed">
+        <h3 className="text-3xl font-black text-white mb-3 tracking-tighter uppercase">ACCESS DENIED</h3>
+        <p className="text-gray-400 text-sm mb-10 max-w-sm mx-auto leading-relaxed font-medium">
           {eligibilityError}
         </p>
-        <Button
-          variant="outline"
+        <button
           onClick={onCancel}
-          className="bg-white border-red-200 text-red-700 hover:bg-red-50 px-8 rounded-xl font-bold transition-all"
+          className="w-full py-4 bg-white/5 border border-white/10 text-gray-300 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-white/10 transition-all active:scale-[0.98]"
         >
           Quay lại đơn hàng
-        </Button>
+        </button>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in">
-      {/* Section 1: Information */}
-      <div className="space-y-6">
-        <div className="flex items-center gap-3 pb-2">
-          <div className="w-8 h-8 bg-brand-primary/10 rounded-lg flex items-center justify-center">
-            <svg
-              className="w-4 h-4 text-brand-primary"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-              <path
-                fillRule="evenodd"
-                d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </div>
-          <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest">
-            Thông tin khiếu nại
-          </h4>
+    <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl animate-fade-in selection:bg-brand-primary/30">
+      <form onSubmit={handleSubmit} className="space-y-10">
+        {/* Step Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-white/5">
+           <div>
+              <div className="inline-flex items-center gap-2 bg-brand-primary/10 px-3 py-1 rounded-full mb-3">
+                 <Zap size={10} className="text-brand-primary" />
+                 <span className="text-[9px] font-black text-brand-primary uppercase tracking-[0.2em]">S-70 Protection</span>
+              </div>
+              <h2 className="text-4xl font-black text-white tracking-tighter uppercase leading-none">Open <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-orange-400">Dispute</span></h2>
+           </div>
+           <div className="text-right hidden md:block">
+              <span className="text-[10px] font-black text-gray-600 uppercase tracking-widest">Order Reference</span>
+              <p className="text-sm font-mono font-bold text-gray-400">#TX-{orderId}</p>
+           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-5 bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
-          {/* Reason Selection */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
-              Lý do khiếu nại <span className="text-red-500">*</span>
+        {/* Input Sections */}
+        <div className="space-y-8">
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+              <Tag size={12} className="text-brand-primary" /> Lý do khiếu nại
             </label>
             <div className="relative group">
-              <select
-                value={reasonId}
-                onChange={(e) => setReasonId(Number(e.target.value))}
-                className="w-full h-12 pl-4 pr-10 rounded-xl border-gray-200 bg-white shadow-sm focus:border-brand-primary focus:ring-4 focus:ring-brand-primary/10 transition-all cursor-pointer appearance-none text-sm font-medium text-gray-700"
-                required
-              >
-                <option value={0}>-- Chọn lý do phù hợp nhất --</option>
-                {reasons.map((r) => (
-                  <option key={r.reasonId} value={r.reasonId}>
-                    {r.title}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-brand-primary transition-colors">
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
+               <select
+                 value={reasonId}
+                 onChange={(e) => setReasonId(Number(e.target.value))}
+                 className="w-full appearance-none px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-[11px] font-bold uppercase tracking-wider text-gray-200 focus:outline-none focus:border-brand-primary/50 cursor-pointer transition-all"
+                 required
+               >
+                 <option value={0} className="bg-brand-bg">-- Lựa chọn nguyên nhân --</option>
+                 {reasons.map((r) => <option key={r.reasonId} value={r.reasonId} className="bg-brand-bg">{r.title}</option>)}
+               </select>
+               <div className="absolute right-6 top-1/2 -translate-y-1/2 pointer-events-none text-gray-600 transition-colors">
+                  <X className="w-4 h-4 rotate-45" />
+               </div>
             </div>
           </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
-              Tiêu đề tóm tắt <span className="text-red-500">*</span>
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+              <FileText size={12} className="text-brand-primary" /> Tiêu đề tóm tắt
             </label>
-            <Input
-              id="dispute-title"
-              label=""
-              placeholder="VD: Xe thiếu phụ tùng so với tin đăng"
+            <input 
+              placeholder="VD: Sản phẩm không đúng mô tả kỹ thuật..."
               value={title}
-              onChange={setTitle}
-              className="bg-white"
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-white focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-gray-700"
+              required
             />
           </div>
 
-          {/* Content */}
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1">
-              Mô tả chi tiết nội dung <span className="text-red-500">*</span>
+          <div className="space-y-3">
+            <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
+              <Send size={12} className="text-brand-primary" /> Nội dung chi tiết
             </label>
-            <Textarea
-              placeholder="Mô tả cụ thể vấn đề bạn gặp phải để đội ngũ CycleX hỗ trợ tốt nhất (Tối đa 1000 ký tự)..."
+            <textarea
+              placeholder="Mô tả cụ thể sự cố để CycleX hỗ trợ tốt nhất (Tối đa 1000 ký tự)..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
               rows={4}
               maxLength={1000}
-              className="bg-white rounded-xl border-gray-200 focus:ring-4 focus:ring-brand-primary/10 text-sm"
+              className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-medium text-white focus:outline-none focus:border-brand-primary/50 transition-all placeholder:text-gray-700 resize-none min-h-[140px]"
               required
             />
-            <div className="mt-1.5 flex justify-end">
-              <span
-                className={`text-[10px] font-bold ${content.length > 900 ? "text-red-500" : "text-gray-400"}`}
-              >
-                {content.length}/1000
-              </span>
+            <div className="flex justify-between items-center px-1">
+               <p className="text-[9px] text-gray-600 font-bold uppercase tracking-widest italic">Be specific as possible</p>
+               <span className={`text-[10px] font-black ${content.length > 900 ? "text-rose-500" : "text-gray-500"}`}>{content.length}/1000</span>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Section 2: Evidence */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between pb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-primary/10 rounded-lg flex items-center justify-center">
-              <svg
-                className="w-4 h-4 text-brand-primary"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest">
-              Bằng chứng hình ảnh
-            </h4>
-          </div>
-          <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
-            {previews.length}/5 Ảnh
-          </span>
-        </div>
-
-        <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100">
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-4">
-            {previews.map((url, index) => (
-              <div
-                key={index}
-                className="relative group aspect-square rounded-2xl overflow-hidden border-2 border-white shadow-sm hover:shadow-md transition-all"
-              >
-                <img
-                  src={url}
-                  alt="Evidence"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button
-                    type="button"
-                    onClick={() => removeFile(index)}
-                    className="bg-white/20 backdrop-blur-md hover:bg-red-500 text-white rounded-full p-2 transition-all transform hover:scale-110"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+          {/* Evidence Upload */}
+          <div className="space-y-4">
+             <div className="flex items-center justify-between px-1">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] flex items-center gap-2">
+                  <Camera size={12} className="text-brand-primary" /> Bằng chứng trực quan
+                </label>
+                <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">{previews.length}/5 FILES</span>
+             </div>
+             
+             <div className="bg-white/[0.02] border border-white/5 p-6 rounded-[2rem] grid grid-cols-3 sm:grid-cols-5 gap-4">
+                {previews.map((url, index) => (
+                  <div key={index} className="relative group aspect-square rounded-2xl overflow-hidden border border-white/10 shadow-xl">
+                    <img src={url} alt="Evidence" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    <button 
+                      type="button" 
+                      onClick={() => removeFile(index)}
+                      className="absolute top-2 right-2 w-6 h-6 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity transform group-hover:scale-110 active:scale-90"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={3}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-              </div>
-            ))}
-
-            {evidenceFiles.length < 5 && (
-              <label className="aspect-square rounded-2xl border-2 border-dashed border-gray-200 hover:border-brand-primary hover:bg-brand-primary/5 transition-all flex flex-col items-center justify-center cursor-pointer group bg-white shadow-sm">
-                <div className="w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center group-hover:bg-brand-primary group-hover:text-white transition-all duration-300">
-                  <svg
-                    className="w-6 h-6 text-gray-400 group-hover:text-white transition-colors"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2.5}
-                      d="M12 4v16m8-8H4"
-                    />
-                  </svg>
-                </div>
-                <span className="text-[10px] mt-2 font-bold text-gray-400 group-hover:text-brand-primary uppercase tracking-tighter">
-                  Thêm ảnh
-                </span>
-                <input
-                  type="file"
-                  multiple
-                  accept="image/jpeg,image/jpg,image/png"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            )}
+                      <X size={12} strokeWidth={3} />
+                    </button>
+                  </div>
+                ))}
+                
+                {previews.length < 5 && (
+                  <label className="aspect-square rounded-2xl border-2 border-dashed border-white/10 hover:border-brand-primary hover:bg-brand-primary/5 transition-all flex flex-col items-center justify-center cursor-pointer group">
+                    <div className="w-10 h-10 bg-white/5 rounded-xl flex items-center justify-center group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                      <Camera size={20} className="text-gray-600 group-hover:text-white" />
+                    </div>
+                    <span className="text-[9px] font-black text-gray-600 mt-3 uppercase tracking-tighter group-hover:text-brand-primary transition-colors">Add Photo</span>
+                    <input type="file" multiple accept="image/*" onChange={handleFileChange} className="hidden" />
+                  </label>
+                )}
+             </div>
           </div>
-          <p className="mt-4 text-[11px] text-gray-500 flex items-center gap-2 px-1">
-            <svg
-              className="w-3.5 h-3.5 text-brand-primary"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            Tải ảnh rõ nét về tình trạng thực tế của xe để được xử lý nhanh hơn.
+        </div>
+
+        {/* Global Alert */}
+        <div className="bg-amber-500/10 border border-amber-500/20 p-6 rounded-3xl flex gap-4">
+          <AlertTriangle size={20} className="text-amber-500 shrink-0" />
+          <p className="text-[11px] font-bold text-amber-500/70 uppercase leading-relaxed tracking-tight">
+            Thời hạn khiếu nại trong vòng 24h từ lúc nhận xe. Quyết định của CycleX dựa trên bằng chứng bạn tải lên. Hãy đảm bảo hình ảnh rõ ràng và trung thực.
           </p>
         </div>
-      </div>
 
-      {/* Actions */}
-      <div className="flex flex-col sm:flex-row gap-4 pt-4 border-t border-gray-100">
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1 rounded-2xl font-bold py-4 border-gray-200 text-gray-600 hover:bg-gray-50 order-2 sm:order-1"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
-          Hủy bỏ
-        </Button>
-        <Button
-          type="submit"
-          variant="primary"
-          className="flex-1 sm:flex-[2] bg-brand-primary hover:bg-brand-primary/90 text-white rounded-2xl font-black py-4 shadow-lg shadow-orange-100 ring-offset-2 active:scale-[0.98] transition-all order-1 sm:order-2 tracking-wide uppercase text-sm"
-          loading={isSubmitting}
-        >
-          {isSubmitting ? "Đang xử lý..." : "Xác nhận gửi khiếu nại"}
-        </Button>
-      </div>
-
-      <div className="bg-orange-50/50 rounded-xl p-4 border border-orange-100 flex gap-3">
-        <div className="text-brand-primary shrink-0">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        {/* Form Actions */}
+        <div className="flex flex-col sm:flex-row gap-4 pt-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="flex-1 py-5 bg-white/5 text-gray-400 font-black uppercase tracking-widest text-xs rounded-2xl hover:bg-white/10 transition-all disabled:opacity-50"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M13 10V3L4 14h7v7l9-11h-7z"
-            />
-          </svg>
+            Hủy bỏ
+          </button>
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 sm:flex-[2] py-5 bg-brand-primary hover:bg-brand-primary-hover text-white font-black uppercase tracking-widest text-xs rounded-2xl transition-all shadow-glow-orange active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-3"
+          >
+            {isSubmitting ? <><RefreshCw size={16} className="animate-spin" /> Process initiated...</> : "Xác nhận gửi khiếu nại"}
+          </button>
         </div>
-        <p className="text-[11px] text-orange-800/80 leading-relaxed font-medium italic">
-          Lưu ý: Bạn chỉ có thể khiếu nại trong vòng 24h kể từ khi nhận xe. Đội
-          ngũ CycleX sẽ kiểm tra đối chứng và phản hồi trong 1-3 ngày làm việc.
-        </p>
-      </div>
-    </form>
+      </form>
+    </div>
   );
 }
