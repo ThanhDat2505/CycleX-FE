@@ -10,6 +10,7 @@ import { type TopListing } from "@/app/services/dashboardService";
 import { MetricCard } from "@/app/components/MetricCard";
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { useToast } from "@/app/contexts/ToastContext";
+import { PageLoading } from "@/app/components/ui";
 import { formatPrice } from "../../utils/format";
 import { TOP_LISTINGS_LIMIT } from "../../constants";
 
@@ -36,20 +37,12 @@ const DashboardPage: React.FC = () => {
 
   // Show loading while checking auth
   if (authLoading) {
-    return (
-      <div className="p-8 max-w-4xl mx-auto text-center">
-        <p className="text-gray-600">Loading...</p>
-      </div>
-    );
+    return <PageLoading message="Đang xác thực thông tin..." />;
   }
 
   // Redirect message if not logged in
   if (!isLoggedIn) {
-    return (
-      <div className="p-8 max-w-4xl mx-auto text-center">
-        <p className="text-gray-600">Redirecting to login...</p>
-      </div>
-    );
+    return <PageLoading message="Đang chuyển hướng đến trang đăng nhập..." />;
   }
 
   // Load dashboard data using custom hook

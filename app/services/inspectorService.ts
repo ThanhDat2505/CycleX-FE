@@ -5,6 +5,9 @@ import type {
   ListingStatus as DashboardListingStatus,
 } from "@/app/types/types";
 import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
+import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
+
+import { authService } from "./authService";
 
 type RawObject = Record<string, any>;
 
@@ -71,8 +74,7 @@ function parseJsonSafe(value: string | null): RawObject | null {
 }
 
 function getAuthToken(): string | null {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem("authToken");
+  return authService.getToken();
 }
 
 function getJwtPayload(token: string | null): RawObject | null {
@@ -99,9 +101,7 @@ function pickPositiveNumber(values: unknown[]): number | null {
 }
 
 function getInspectorId(): number {
-  if (typeof window === "undefined") return 0;
-
-  const token = localStorage.getItem("authToken");
+  const token = authService.getToken();
   const payload = getJwtPayload(token);
   const tokenInspectorId = pickPositiveNumber([
     payload?.userId,
@@ -112,7 +112,7 @@ function getInspectorId(): number {
     return tokenInspectorId;
   }
 
-  const fromUserData = parseJsonSafe(localStorage.getItem("userData"));
+  const fromUserData = authService.getUser() as any;
   const userDataInspectorId = pickPositiveNumber([
     fromUserData?.userId,
     fromUserData?.id,
@@ -165,7 +165,6 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
     throw new Error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
   }
 
-  const token = getAuthToken();
   const method = (init?.method ?? "GET").toUpperCase();
   const bodyKey =
     typeof init?.body === "string"
@@ -180,63 +179,34 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
     return existingRequest as Promise<T>;
   }
 
-  const headers: Record<string, string> = {};
-
-  if (!(init?.body instanceof FormData)) {
-    headers["Content-Type"] = "application/json";
-  }
-
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
   // Keep calls under /backend so Next.js rewrites to backend host.
   // credentials: "omit" prevents browser cookies from being attached,
   // avoiding CSRF/session side effects on POST/PUT/DELETE.
   const requestPromise = (async () => {
-    const response = await fetch(`/backend/api${path}`, {
-      method,
-      headers,
-      body: init?.body,
-      credentials: "omit",
-    });
-
-    if (!response.ok) {
-      let message = `Server error: ${response.status} ${response.statusText}`;
-      try {
-        const text = await response.text();
-        // Try parsing as JSON first
-        try {
-          const errorData = JSON.parse(text);
-          message =
-            errorData?.message ||
-            errorData?.error ||
-            errorData?.detail ||
-            message;
-        } catch {
-          // Plain-text error body
-          if (text.length > 0 && text.length < 500) message = text;
-        }
-      } catch {
-        // Ignore read error
-      }
+    try {
+      return await backendRequest<T>(path, {
+        method: method as "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+        body: init?.body,
+        credentials: "omit",
+      });
+    } catch (error: unknown) {
+      const backendError = error as BackendErrorShape | undefined;
+      const status = backendError?.status ?? 500;
+      const message =
+        backendError?.message ||
+        (error as Error)?.message ||
+        `Server error: ${status}`;
 
       // Special handling for auth errors
-      if (response.status === 401 || response.status === 403) {
+      if (status === 401 || status === 403) {
         console.error(
-          `[inspectorFetch] ${response.status} on ${method} ${path}:`,
+          `[inspectorFetch] ${status} on ${method} ${path}:`,
           message,
         );
       }
 
-      throw new InspectorApiError(response.status, message);
+      throw new InspectorApiError(status, message);
     }
-
-    if (response.status === 204) {
-      return undefined as T;
-    }
-
-    return (await response.json()) as T;
   })();
 
   inFlightInspectorRequests.set(requestKey, requestPromise);
@@ -537,9 +507,12 @@ export const inspectorService = {
 
   async getDashboardStats(): Promise<InspectorDashboardStats> {
     const inspectorId = getInspectorId();
-    return inspectorFetch<InspectorDashboardStats>(`/inspector/${inspectorId}/dashboard/stats`, {
-      method: "GET",
-    });
+    return inspectorFetch<InspectorDashboardStats>(
+      `/inspector/${inspectorId}/dashboard/stats`,
+      {
+        method: "GET",
+      },
+    );
   },
 
   async getListingDetail(listingId: string): Promise<InspectorReviewDetail> {
@@ -675,4 +648,3 @@ export const inspectorService = {
     );
   },
 };
-

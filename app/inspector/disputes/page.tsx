@@ -1,16 +1,17 @@
-import InspectorNav from "@/app/components/inspector/InspectorNav";
-import DisputeListClient from "@/app/components/inspector/DisputeListClient";
-import "@/app/components/inspector/inspector.css";
+"use client";
 
-export const metadata = {
-  title: "CycleX - Dispute List",
-};
+import DisputeListClient from "@/app/components/inspector/DisputeListClient";
+import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
+import "@/app/components/inspector/inspector.css";
 
 export default function DisputeListPage() {
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
-      <InspectorNav />
+    <InspectorHeroLayout
+      title="Danh Sách"
+      highlightTitle="Tranh Chấp"
+      description="Quản lý và xử lý các tranh chấp giữa người mua và người bán."
+    >
       <DisputeListClient />
-    </div>
+    </InspectorHeroLayout>
   );
 }

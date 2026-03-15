@@ -73,7 +73,7 @@ export interface SearchFilters {
     maxPrice?: number;
     bikeTypes?: string[];
     brands?: string[];
-    conditions?: ('new' | 'used')[];
+    conditions?: string[];
 }
 
 /**
@@ -149,6 +149,7 @@ export interface ListingDetail {
     model?: string;                 // ⚠️ Missing in backend
     condition?: 'new' | 'used';     // ⚠️ Missing in backend
     status?: ListingStatus;         // ⚠️ Missing in backend
+    productStatus?: string;         // Product availability: AVAILABLE, RESERVED, SOLD
 
     // Inspection info (BR-S32-03) - all optional
     inspectionStatus?: InspectionStatus;

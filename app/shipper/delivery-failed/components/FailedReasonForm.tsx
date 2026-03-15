@@ -126,13 +126,11 @@ export function FailedReasonForm({
                 </div>
             </div>
 
-            {/* We will render the submit button here to ensure validate can be triggered directly */}
             <div className="mt-8 pt-4 border-t border-gray-100 flex justify-end">
-                {/* This button will trigger validation before calling parent onSubmit */}
                 <button
                     type="submit"
                     disabled={isDisabled || isSubmitting}
-                    className="hidden" // Invisible proxy button if we want to submit externally
+                    className="hidden"
                     id="trigger-submit"
                 />
             </div>

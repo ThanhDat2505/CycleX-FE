@@ -23,16 +23,26 @@ export const BIKE_BRANDS = [
 export type BikeBrand = typeof BIKE_BRANDS[number];
 
 /**
- * Bike types extracted from categories
+ * Bike types for filter UI - value is apiValue sent to BE, label is display name
  */
-export const BIKE_TYPES = BIKE_CATEGORIES.map(c => c.name);
+export const BIKE_TYPES = BIKE_CATEGORIES.map(c => ({
+    value: c.apiValue,
+    label: c.name,
+}));
+
+/** Legacy: array of display names (for backward compat) */
+export const BIKE_TYPE_NAMES = BIKE_CATEGORIES.map(c => c.name);
 
 /**
- * Condition options
+ * Condition options matching BE stored values
  */
 export const CONDITION_OPTIONS = [
-    { value: 'new', label: 'Như mới' },
-    { value: 'used', label: 'Đã sử dụng' },
+    { value: 'New', label: 'Mới (New)' },
+    { value: 'Like New', label: 'Như mới (Like New)' },
+    { value: 'Excellent', label: 'Rất tốt (Excellent)' },
+    { value: 'Good', label: 'Tốt (Good)' },
+    { value: 'Fair', label: 'Khá (Fair)' },
+    { value: 'Used', label: 'Đã sử dụng (Used)' },
 ] as const;
 
 /**

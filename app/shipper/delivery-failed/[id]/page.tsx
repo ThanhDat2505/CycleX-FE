@@ -17,7 +17,7 @@ import { FailedReasonForm } from '../components/FailedReasonForm';
 
 export default function DeliveryFailedPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params);
-    const { isLoggedIn, role, isLoading: isAuthLoading } = useAuth();
+    const { user, isLoggedIn, role, isLoading: isAuthLoading } = useAuth();
     const router = useRouter();
     const { addToast } = useToast();
 
@@ -44,22 +44,32 @@ export default function DeliveryFailedPage({ params }: { params: Promise<{ id: s
     }, [isAuthLoading, isLoggedIn, role, router, id]);
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchDelivery = async () => {
+            if (!user?.userId) return;
+
             try {
+                setIsLoading(true);
                 const data = await getDeliveryDetail(id);
+                if (!isMounted) return;
                 setDelivery(data);
             } catch (err) {
-                console.error(err);
-                addToast(MESSAGES.S63_ERROR_LOAD, 'error');
+                if (isMounted) {
+                    console.error(err);
+                    addToast(MESSAGES.S63_ERROR_LOAD, 'error');
+                }
             } finally {
-                setIsLoading(false);
+                if (isMounted) setIsLoading(false);
             }
         };
 
-        if (isLoggedIn && role === 'SHIPPER') {
+        if (user?.userId && role === 'SHIPPER') {
             fetchDelivery();
         }
-    }, [id, isLoggedIn, role, addToast]);
+
+        return () => { isMounted = false; };
+    }, [id, user?.userId, role, addToast]);
 
     // Derived states
     const isStatusAllowed = delivery?.status === 'IN_PROGRESS';
@@ -68,6 +78,13 @@ export default function DeliveryFailedPage({ params }: { params: Promise<{ id: s
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
+            // check file type
+            if (!file.type.startsWith('image/')) {
+                addToast("Chỉ được phép chọn file ảnh!", "error");
+                event.target.value = "";
+                return;
+            }
+
             if (file.size > 5 * 1024 * 1024) {
                 addToast('Kích thước ảnh không được vượt quá 5MB', 'warning');
                 return;

@@ -9,9 +9,11 @@ interface InvoiceWidgetProps {
     isProcessing: boolean;
     onAccept: () => void;
     onCancel: () => void;
+    onDispute: () => void;
+    canDispute: boolean;
 }
 
-export default function InvoiceWidget({ transaction, viewerRole, isProcessing, onAccept, onCancel }: InvoiceWidgetProps) {
+export default function InvoiceWidget({ transaction, viewerRole, isProcessing, onAccept, onCancel, onDispute, canDispute }: InvoiceWidgetProps) {
     const isPending = transaction.status === TRANSACTION_STATUS.PENDING_SELLER_CONFIRM;
     const isConfirmed = transaction.status === TRANSACTION_STATUS.CONFIRMED;
     const isPurchase = transaction.transactionType === TRANSACTION_TYPE.PURCHASE;
@@ -31,7 +33,7 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                 {/* Transaction Type */}
                 <div className="flex justify-between items-center pb-4 border-b border-gray-100">
                     <span className="text-gray-600 text-sm">Loại giao dịch</span>
-                    <span className={`font-bold px-3 py-1 rounded-full text-xs ${isPurchase ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'}`}>
+                    <span className={`font-bold px-3 py-1 rounded-full text-xs ${isPurchase ? 'bg-orange-50 text-brand-primary' : 'bg-orange-100 text-orange-800'}`}>
                         {typeLabel.toUpperCase()}
                     </span>
                 </div>
@@ -58,7 +60,7 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                 <div className="pt-4 border-t border-gray-100">
                     <div className="flex justify-between items-end">
                         <span className="text-sm font-bold text-gray-900">Tổng cộng</span>
-                        <span className="text-2xl font-extrabold text-blue-600 leading-none">{formatPrice(transaction.totalAmount)}</span>
+                        <span className="text-2xl font-extrabold text-brand-primary leading-none">{formatPrice(transaction.totalAmount)}</span>
                     </div>
                     <p className="text-xs text-gray-400 text-right mt-1">Đã bao gồm VAT nếu có</p>
                 </div>
@@ -107,6 +109,25 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                         </div>
                         <p className="text-xs text-green-600 opacity-80">
                             Vui lòng chuẩn bị xe để giao.
+                        </p>
+                    </div>
+                )}
+
+                {/* Dispute Action (Buyer Only) */}
+                {viewerRole === 'BUYER' && canDispute && (
+                    <div className="pt-4 border-t border-gray-100 mt-2">
+                        <Button
+                            onClick={onDispute}
+                            variant="secondary"
+                            className="w-full text-red-500 bg-red-50/50 border-red-100 hover:bg-red-50 hover:border-red-200 transition-all font-bold py-3 flex items-center justify-center gap-2 rounded-xl group"
+                        >
+                            <svg className="w-4 h-4 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            Khiếu nại đơn hàng
+                        </Button>
+                        <p className="text-[10px] text-gray-400 mt-3 text-center italic font-medium">
+                            Yêu cầu hỗ trợ trong 24h sau khi nhận xe
                         </p>
                     </div>
                 )}

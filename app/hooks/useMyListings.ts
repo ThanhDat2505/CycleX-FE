@@ -3,75 +3,89 @@
  * Separates data fetching logic from UI component
  */
 
-import { useState, useEffect } from 'react';
-import { getMyListings, type Listing, type GetMyListingsParams } from '../services/myListingsService';
+import { useState, useEffect } from "react";
+import {
+  getMyListings,
+  type Listing,
+  type GetMyListingsParams,
+} from "../services/myListingsService";
 
 interface UseMyListingsReturn {
-    listings: Listing[];
-    totalItems: number;
-    totalPages: number;
-    currentPage: number;
-    loading: boolean;
-    error: string | null;
-    retry: () => void;
+  listings: Listing[];
+  totalItems: number;
+  totalPages: number;
+  currentPage: number;
+  loading: boolean;
+  error: string | null;
+  retry: () => void;
 }
 
 /**
  * Hook to load and manage listings data with pagination and filtering
  * Handles loading state, error handling, and retry logic
  */
-export function useMyListings(params: GetMyListingsParams): UseMyListingsReturn {
-    const [listings, setListings] = useState<Listing[]>([]);
-    const [totalItems, setTotalItems] = useState(0);
-    const [totalPages, setTotalPages] = useState(0);
-    const [currentPage, setCurrentPage] = useState(params.page || 1);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-    const [retryCount, setRetryCount] = useState(0);
+export function useMyListings(
+  params: GetMyListingsParams,
+): UseMyListingsReturn {
+  const { sellerId, page, pageSize, status, sortBy } = params;
 
-    useEffect(() => {
-        if (!params.sellerId) {
-            setListings([]);
-            setTotalItems(0);
-            setTotalPages(0);
-            setCurrentPage(params.page || 1);
-            setLoading(false);
-            setError(null);
-            return;
-        }
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(page || 1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
-        const loadListings = async () => {
-            setLoading(true);
-            setError(null); // Clear previous errors
+  useEffect(() => {
+    if (!sellerId) {
+      setListings([]);
+      setTotalItems(0);
+      setTotalPages(0);
+      setCurrentPage(page || 1);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
-            try {
-                const response = await getMyListings(params);
-                setListings(response.listings);
-                setTotalItems(response.totalItems);
-                setTotalPages(response.totalPages);
-                setCurrentPage(response.currentPage);
-            } catch (err) {
-                console.error('Failed to load listings:', err);
-                setError('Unable to load listings. Please try again.');
-            } finally {
-                setLoading(false);
-            }
-        };
+    const loadListings = async () => {
+      setLoading(true);
+      setError(null); // Clear previous errors
 
-        loadListings();
-    }, [params.sellerId, params.page, params.pageSize, params.status, params.sortBy, retryCount]); // Reload when params or retry changes
-
-    const retry = () => {
-        setRetryCount(prev => prev + 1);
+      try {
+        const response = await getMyListings({
+          sellerId,
+          page,
+          pageSize,
+          status,
+          sortBy,
+        });
+        setListings(response.listings);
+        setTotalItems(response.totalItems);
+        setTotalPages(response.totalPages);
+        setCurrentPage(response.currentPage);
+      } catch (err) {
+        console.error("Failed to load listings:", err);
+        setError("Unable to load listings. Please try again.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return {
-        listings,
-        totalItems,
-        totalPages,
-        currentPage,
-        loading,
-        error,
-        retry,
-    };
+    loadListings();
+  }, [sellerId, page, pageSize, status, sortBy, retryCount]); // Reload when params or retry changes
+
+  const retry = () => {
+    setRetryCount((prev) => prev + 1);
+  };
+
+  return {
+    listings,
+    totalItems,
+    totalPages,
+    currentPage,
+    loading,
+    error,
+    retry,
+  };
 }

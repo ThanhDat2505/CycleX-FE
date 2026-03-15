@@ -7,7 +7,7 @@ import {
   disputeService,
   type DisputeDetail,
   type DisputeResolutionPayload,
-} from "@/app/services/disputeService";
+} from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
 
 const RESOLUTION_OPTIONS: Array<{
@@ -23,8 +23,7 @@ const RESOLUTION_OPTIONS: Array<{
   {
     value: "RELEASE_FUND_SELLER",
     label: "Giai ngan cho seller",
-    helper:
-      "Xac nhan seller hop le, giai ngan va ket thuc tranh chap.",
+    helper: "Xac nhan seller hop le, giai ngan va ket thuc tranh chap.",
   },
   {
     value: "CLOSE_CASE",
@@ -44,7 +43,9 @@ export default function DisputeResolutionClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [action, setAction] = useState<DisputeResolutionPayload["action"] | "">("");
+  const [action, setAction] = useState<DisputeResolutionPayload["action"] | "">(
+    "",
+  );
   const [resolutionNote, setResolutionNote] = useState("");
 
   useEffect(() => {
@@ -58,8 +59,8 @@ export default function DisputeResolutionClient({
         if (!mounted) return;
         setDetail(data);
 
-        if (data.status === "RESOLVED" || data.status === "CLOSED") {
-          setError("Dispute nay da duoc xu ly. Khong the resolve lai.");
+        if (data.status === "RESOLVED" || data.status === "REJECTED") {
+          setError("Dispute này đã được xử lý. Không thể resolve lại.");
         }
       } catch (err: unknown) {
         if (!mounted) return;
@@ -75,11 +76,13 @@ export default function DisputeResolutionClient({
     };
   }, [disputeId]);
 
-  const selectedOption = RESOLUTION_OPTIONS.find(
-    (opt) => opt.value === action,
-  );
+  const selectedOption = RESOLUTION_OPTIONS.find((opt) => opt.value === action);
   const canSubmit =
-    !submitting && !loading && !error && !!action && resolutionNote.trim().length > 0;
+    !submitting &&
+    !loading &&
+    !error &&
+    !!action &&
+    resolutionNote.trim().length > 0;
 
   const handleSubmit = async () => {
     if (!canSubmit || !action) return;

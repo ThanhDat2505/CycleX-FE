@@ -9,30 +9,23 @@ import { validateObject, validateArray } from '../utils/apiValidation';
 
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
+import { authService } from './authService';
+
 type CurrentUserSnapshot = {
     userId?: number;
     role?: string;
 };
 
 function getCurrentUserSnapshot(): CurrentUserSnapshot {
-    if (typeof window === 'undefined') {
+    const userData = authService.getUser();
+    if (!userData) {
         return {};
     }
 
-    try {
-        const raw = localStorage.getItem('userData');
-        if (!raw) {
-            return {};
-        }
-
-        const parsed = JSON.parse(raw) as { userId?: number; role?: string };
-        return {
-            userId: typeof parsed.userId === 'number' ? parsed.userId : undefined,
-            role: typeof parsed.role === 'string' ? parsed.role : undefined,
-        };
-    } catch {
-        return {};
-    }
+    return {
+        userId: userData.userId,
+        role: userData.role,
+    };
 }
 
 function toNumber(value: unknown): number | undefined {
@@ -212,6 +205,9 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         ? 'DEPOSIT'
         : 'PURCHASE';
 
+    const productPrice = toNumber(source.productPrice);
+    const totalAmount = productPrice ?? toNumber(source.totalAmount) ?? calculateTotalAmount(source);
+
     return {
         transactionId: requestId,
         listingId,
@@ -227,7 +223,7 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         note: typeof source.note === 'string' ? source.note : undefined,
         platformFee: toNumber(source.platformFee) ?? 0,
         inspectionFee: toNumber(source.inspectionFee) ?? 0,
-        totalAmount: calculateTotalAmount(source),
+        totalAmount,
         createdAt: typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString(),
         updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : (typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString()),
         listingTitle: typeof source.listingTitle === 'string' ? source.listingTitle : `Xe #${listingId}`,
@@ -280,26 +276,29 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             transactionType: data.transactionType,
             desiredTransactionTime: toBackendDateTime(data.desiredTime),
             note: data.note,
+            receiverName: data.receiverName,
+            receiverPhone: data.receiverPhone,
+            receiverAddress: data.receiverAddress,
         };
 
-        const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
+        const dataResponse = await apiCallPOST<any>(`/orders?productId=${productId}`, payload);
 
         if (dataResponse) {
-            validateObject(dataResponse, 'Purchase Request Response');
+            validateObject(dataResponse, 'Order Response');
         } else {
-            throw new Error('Invalid backend response: Expected purchase request object');
+            throw new Error('Invalid backend response: Expected order object');
         }
 
-        const requestId = toNumber(dataResponse.requestId);
-        if (!requestId) {
-            throw new Error('Invalid backend response: Missing requestId');
+        const orderId = toNumber(dataResponse.orderId) ?? toNumber(dataResponse.requestId);
+        if (!orderId) {
+            throw new Error('Invalid backend response: Missing orderId');
         }
 
         return {
-            transactionId: requestId,
+            transactionId: orderId,
             listingId: toNumber(dataResponse.listingId) ?? data.listingId,
             buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
-            sellerId: 0,
+            sellerId: toNumber(dataResponse.sellerId) ?? 0,
             transactionType: data.transactionType,
             status: mapStatusToFrontend(dataResponse.status),
             desiredTime: typeof dataResponse.desiredTransactionTime === 'string'
@@ -309,10 +308,10 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             receiverPhone: data.receiverPhone,
             receiverAddress: data.receiverAddress,
             depositAmount: toNumber(dataResponse.depositAmount) ?? data.depositAmount,
-            note: typeof dataResponse.note === 'string' ? dataResponse.note : data.note,
+            note: typeof dataResponse.buyerNote === 'string' ? dataResponse.buyerNote : data.note,
             platformFee: toNumber(dataResponse.platformFee) ?? 0,
             inspectionFee: toNumber(dataResponse.inspectionFee) ?? 0,
-            totalAmount: calculateTotalAmount(dataResponse),
+            totalAmount: toNumber(dataResponse.productPrice) ?? toNumber(dataResponse.totalAmount) ?? calculateTotalAmount(dataResponse),
             createdAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
             updatedAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
         };
@@ -416,6 +415,27 @@ let mockTransactions: TransactionWithDetails[] = [
         createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
         updatedAt: new Date().toISOString(),
     },
+    {
+        transactionId: 108,
+        listingId: 8,
+        buyerId: 2,
+        sellerId: 3,
+        transactionType: 'PURCHASE',
+        status: 'COMPLETED',
+        desiredTime: new Date(Date.now() - 86400000).toISOString(),
+        listingTitle: 'Giant Escape 3 2023',
+        listingImage: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=500',
+        buyerName: 'Nguyen Van A',
+        sellerName: 'CycleX Verified Seller',
+        platformFee: 50000,
+        inspectionFee: 100000,
+        totalAmount: 8500000,
+        receiverName: 'Nguyen Van A',
+        receiverPhone: '0987654321',
+        receiverAddress: '456 Le Loi, Da Nang',
+        createdAt: new Date(Date.now() - 86400000).toISOString(),
+        updatedAt: new Date(Date.now() - 3600000).toISOString(), // Completed 1h ago
+    },
 ];
 
 export async function getSellerTransactions(
@@ -442,14 +462,14 @@ export async function getSellerTransactions(
         validateArray(itemsArray, 'Seller Transactions Array');
 
         const mapped = await Promise.all(itemsArray.map(async (item: any) => {
-            const requestId = toNumber(item?.requestId);
-            if (!requestId) {
+            const orderId = toNumber(item?.orderId) ?? toNumber(item?.requestId);
+            if (!orderId) {
                 return null;
             }
 
             try {
-                const detail = await apiCallGET<any>(`/seller/transactions/${requestId}`);
-                const normalized = await normalizeSellerTransactionDetail(detail, requestId);
+                const detail = await apiCallGET<any>(`/seller/transactions/${orderId}`);
+                const normalized = await normalizeSellerTransactionDetail(detail, orderId);
                 return {
                     ...normalized,
                     sellerId,
@@ -457,8 +477,9 @@ export async function getSellerTransactions(
                 };
             } catch {
                 const listingId = toNumber(item?.listingId) ?? 0;
+                const productPrice = toNumber(item?.productPrice) ?? 0;
                 return {
-                    transactionId: requestId,
+                    transactionId: orderId,
                     listingId,
                     buyerId: 0,
                     sellerId,
@@ -467,7 +488,7 @@ export async function getSellerTransactions(
                     desiredTime: new Date().toISOString(),
                     platformFee: 0,
                     inspectionFee: 0,
-                    totalAmount: 0,
+                    totalAmount: productPrice,
                     createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
                     updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
                     listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
