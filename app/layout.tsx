@@ -5,6 +5,8 @@ import Header from "@/app/components/Header";
 import React from "react";
 import Footer from "@/app/components/Footer";
 import { ToastProvider } from "@/app/contexts/ToastContext";
+import { SellerNavProvider } from "@/app/contexts/SellerNavContext";
+import SellerSidebar from "@/app/components/seller/SellerSidebar";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -34,11 +36,14 @@ export default function RootLayout({
         className={`${inter.variable} ${mono.variable} font-sans antialiased`}
       >
         <ToastProvider>
-          <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
-            <Header />
-            <main className="flex-1 w-full">{children}</main>
-            <Footer />
-          </div>
+          <SellerNavProvider>
+            <div className="min-h-screen flex flex-col w-full overflow-x-hidden">
+              <Header />
+              <SellerSidebar />
+              <main className="flex-1 w-full">{children}</main>
+              <Footer />
+            </div>
+          </SellerNavProvider>
         </ToastProvider>
       </body>
     </html>
