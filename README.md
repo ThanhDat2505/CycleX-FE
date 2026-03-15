@@ -1,40 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚴 CycleX - Specialized Bicycle Marketplace
 
-## Design Resources
+CycleX is a comprehensive platform for buying and selling specialized bicycles, featuring inspection verification, secure transactions, and delivery tracking.
 
-- **Figma Mockup:** [https://mock-branch-01543539.figma.site](https://mock-branch-01543539.figma.site)
+## 🚀 Overview
 
-## Getting Started
+This is the Frontend repository for CycleX, built with **Next.js** and designed to support a multi-role ecosystem including Buyers, Sellers, Inspectors, Shippers, and Admins.
 
-First, run the development server:
+---
+
+## 🛠️ Technology Stack
+
+- **Core:** [Next.js 15+](https://nextjs.org), [React 19](https://react.dev)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com)
+- **State Management:** [Redux Toolkit](https://redux-toolkit.js.org/)
+- **Icons:** [Lucide React](https://lucide.dev)
+- **Design:** Modern UI with focus on performance and accessibility.
+
+---
+
+## 📦 Core Business Processes (BP)
+
+The platform strictly follows the documented business flows:
+
+1.  **BP1: Listing Management** – Sellers create and manage bicycle listings.
+2.  **BP2: Listing Review** – Inspectors verify listings before they go public.
+3.  **BP3: Search & Discovery** – Buyers search and filter for verified bicycles.
+4.  **BP4: Inspection Comms** – Direct Q&A between Inspectors and Sellers.
+5.  **BP5: Purchase & Deposits** – Secure transaction requests and payment flow.
+6.  **BP6: Delivery Tracking** – Shippers manage and confirm physical delivery.
+7.  **BP7: Dispute Resolution** – Standardized handling of transaction issues.
+
+---
+
+## 🚦 Getting Started
+
+### Prerequisites
+
+- Node.js (Latest LTS recommended)
+- `pnpm` (Recommended) or `npm`
+
+### Installation
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Clone the repository
+git clone <repository-url>
+
+# Install dependencies
+pnpm install
+```
+
+### Development
+
+```bash
 pnpm dev
-# or
-bun dev
+# or 
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## ⚙️ Configuration
 
-## Learn More
+### API Toggle (Mock vs Real)
 
-To learn more about Next.js, take a look at the following resources:
+The project includes an auto-switch mechanism for API endpoints. Configure this in `.env.local`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```env
+# Set to 'true' to use local JSON mock data
+# Set to 'false' to connect to the actual Backend API
+NEXT_PUBLIC_MOCK_API=true
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📁 Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```text
+app/
+├── (auth)/             # Authentication routes (login, register)
+├── admin/              # Admin dashboard and management
+├── components/         # Reusable UI components
+├── constants/          # App-wide constants and enums
+├── docs/               # Detailed technical documentation
+├── hooks/              # Custom React hooks
+├── inspector/          # Inspector role screens
+├── listings/           # Public listing search and details
+├── services/           # API service layers
+├── shipper/            # Shipper role screens
+├── types/              # TypeScript interfaces and types
+└── ...
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📖 Documentation Index
+
+For deep-dives into specific areas, please refer to our internal documentation:
+
+👉 **[Complete Documentation Index](./docs/INDEX.md)**
+
+- [Screen Flow Overview](./docs/ScreenFlow.md)
+- [API Integration Guide](./docs/API_INTEGRATION_GUIDE.md)
+- [Clean Code Guidelines](./docs/CLEAN_CODE_GUIDELINES.md)
+- [Dashboad Analysis](./docs/DASHBOARD_DETAILED_ANALYSIS.md)
+
+---
+
+## 🎨 Design Resources
+
+- **Figma Mockup:** [CycleX Figma](https://mock-branch-01543539.figma.site)
+
+---
+
+**Last Updated:** March 14, 2026
