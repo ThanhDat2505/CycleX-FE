@@ -36,7 +36,7 @@ function buildHeaders(
   };
 
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken");
     if (token) {
       headers.Authorization = `Bearer ${token}`;
     }

@@ -317,11 +317,16 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
         };
     } catch (error: any) {
         console.error('Lỗi API Create Purchase Request:', error);
-        if (error.response?.status === 409) {
+        const status = error?.status ?? error?.response?.status;
+        if (status === 401) {
+            throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        } else if (status === 403) {
+            throw new Error('Bạn không có quyền thực hiện thao tác này. Vui lòng đăng nhập bằng tài khoản Người mua.');
+        } else if (status === 409) {
             throw new Error('Rất tiếc, xe này vừa có người đặt giữ và đang chờ người bán xác nhận. Vui lòng quay lại sau!');
-        } else if (error.response?.status === 400) {
+        } else if (status === 400) {
             throw new Error('Dữ liệu yêu cầu đặt mua không hợp lệ, vui lòng kiểm tra lại.');
-        } else if (error.response?.status === 404) {
+        } else if (status === 404) {
             throw new Error('Không tìm thấy tin đăng hoặc sản phẩm không còn tồn tại.');
         }
         throw error;

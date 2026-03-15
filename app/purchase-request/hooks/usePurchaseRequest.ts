@@ -273,8 +273,10 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
 
             addToast(MESSAGES.S50_SUCCESS_TOAST, 'success');
             router.push(`/transactions/${transaction.transactionId}`);
-        } catch (err) {
-            const errorMessage = err instanceof Error ? err.message : MESSAGES.S50_ERROR_SUBMIT;
+        } catch (err: any) {
+            const errorMessage = err instanceof Error
+                ? err.message
+                : (typeof err?.message === 'string' ? err.message : MESSAGES.S50_ERROR_SUBMIT);
             setSubmitError(errorMessage);
             addToast(errorMessage, 'error');
         } finally {
