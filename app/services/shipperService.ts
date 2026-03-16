@@ -5,6 +5,15 @@ import { validateObject, validateArray, validateString } from '../utils/apiValid
 // USE_MOCK_API can be imported or assumed globally if configured
 const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
+function resolveImageUrl(rawPath: unknown): string {
+    if (typeof rawPath !== 'string') return '/placeholder-bike.png';
+    const path = rawPath.trim();
+    if (!path) return '/placeholder-bike.png';
+    if (path.startsWith('http://') || path.startsWith('https://')) return path;
+    if (path.startsWith('/uploads/')) return `/backend${path}`;
+    return path || '/placeholder-bike.png';
+}
+
 /**
  * Get delivery summary for a shipper
  * endpoint: S-60/S-61 GET /api/shipper/dashboard/summary
@@ -183,7 +192,7 @@ export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 
             note: d.note ? String(d.note) : undefined,
             bike: {
                 name: String(d.bike?.name || d.productName || 'Xe đạp'),
-                image: String(d.bike?.image || d.productImage || '/placeholder-bike.png')
+                image: resolveImageUrl(d.bike?.image || d.productImage)
             },
             sender: {
                 name: String(d.sender?.name || d.sellerName || 'Khách gửi'),
@@ -231,7 +240,7 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
             note: data.note ? String(data.note) : undefined,
             bike: {
                 name: String(data.bike?.name || data.productName || 'Xe đạp'),
-                image: String(data.bike?.image || data.productImage || '/placeholder-bike.png')
+                image: resolveImageUrl(data.bike?.image || data.productImage)
             },
             sender: {
                 name: String(data.seller?.fullName || data.pickup?.contactName || 'Khách gửi'),
