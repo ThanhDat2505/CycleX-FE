@@ -53,7 +53,7 @@ export default function Header() {
   }
 
   return (
-    <header className="w-full shrink-0 bg-brand-bg text-white sticky top-0 z-50 shadow-lg">
+    <header className="w-full shrink-0 bg-brand-bg text-white sticky top-0 z-[100] shadow-lg">
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">

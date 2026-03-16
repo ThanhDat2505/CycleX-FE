@@ -77,10 +77,12 @@ export default function SellerSidebar() {
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className={`seller-drawer-overlay ${isSidebarOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        onClick={closeSidebar}
-      />
+      {isSidebarOpen && (
+        <div 
+          className="seller-drawer-overlay opacity-100 pointer-events-auto"
+          onClick={closeSidebar}
+        />
+      )}
 
       {/* Drawer */}
       <aside className={`seller-drawer ${isSidebarOpen ? "seller-drawer-open" : "seller-drawer-closed"}`}>
