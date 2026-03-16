@@ -51,6 +51,16 @@ function getBadge(status: string) {
   return STATUS_BADGE[status] ?? STATUS_BADGE.UNKNOWN;
 }
 
+function formatDateToVN(isoString: string) {
+  if (!isoString) return "—";
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return isoString;
+  const d = String(date.getDate()).padStart(2, "0");
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const y = date.getFullYear();
+  return `${d}/${m}/${y}`;
+}
+
 export default function DashboardClient() {
   const [listings, setListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -111,7 +121,7 @@ export default function DashboardClient() {
                   raw.sellerName ??
                   "—",
               ),
-              submittedAt: raw.submittedAt ?? raw.createdAt ?? "",
+              submittedAt: formatDateToVN(raw.submittedAt ?? raw.createdAt ?? ""),
               dateISO: raw.submittedAt ?? raw.createdAt ?? "",
               rawStatus,
               displayStatus: getBadge(rawStatus).label,
@@ -138,35 +148,38 @@ export default function DashboardClient() {
 
   // Compute counts from actual data
   const counts = useMemo(() => {
-    const pendingAll = listings.length;
-    const needMoreInfo = listings.filter(
-      (l) => l.rawStatus === "DISPUTE" || l.rawStatus === "NEED_MORE_INFO",
-    ).length;
-    const dispute = listings.filter((l) => l.rawStatus === "DISPUTE").length;
-    const flagged = listings.filter((l) => l.rawStatus === "FLAGGED").length;
-    const approved = listings.filter((l) => l.rawStatus === "APPROVED").length;
-    return { pendingAll, needMoreInfo, dispute, flagged, approved };
+    // Only count active listings (exclude DONE which meant REJECTED or DONE previously, but user only wants 'approved')
+    const activeListings = listings.filter((l) => l.rawStatus !== "DONE");
+    const pendingAll = activeListings.length;
+    
+    // Status counts exactly matching the API rawStatus
+    const pending = activeListings.filter((l) => l.rawStatus === "PENDING").length;
+    const needMoreInfo = activeListings.filter((l) => l.rawStatus === "NEED_MORE_INFO").length;
+    const dispute = activeListings.filter((l) => l.rawStatus === "DISPUTE").length;
+    const approved = activeListings.filter((l) => l.rawStatus === "APPROVED").length;
+    const flagged = activeListings.filter((l) => l.rawStatus === "FLAGGED").length;
+    
+    return { pendingAll, pending, needMoreInfo, dispute, flagged, approved, activeListings };
   }, [listings]);
 
   // Filter listings for the table below
   const filteredListings = useMemo(() => {
     switch (activeFilter) {
       case "pending":
-        return listings;
+        return counts.activeListings.filter((l) => l.rawStatus === "PENDING");
       case "needMoreInfo":
-        return listings.filter(
-          (l) => l.rawStatus === "DISPUTE" || l.rawStatus === "NEED_MORE_INFO",
-        );
+        return counts.activeListings.filter((l) => l.rawStatus === "NEED_MORE_INFO");
       case "dispute":
-        return listings.filter((l) => l.rawStatus === "DISPUTE");
+        return counts.activeListings.filter((l) => l.rawStatus === "DISPUTE");
       case "flagged":
-        return listings.filter((l) => l.rawStatus === "FLAGGED");
+        return counts.activeListings.filter((l) => l.rawStatus === "FLAGGED");
       case "approved":
-        return listings.filter((l) => l.rawStatus === "APPROVED");
+        return counts.activeListings.filter((l) => l.rawStatus === "APPROVED");
+      case "all":
       default:
-        return listings;
+        return counts.activeListings;
     }
-  }, [listings, activeFilter]);
+  }, [counts.activeListings, activeFilter]);
 
   // Đưa ô "Tất cả" ra ngoài cùng bên phải, kế ô "Tin chờ duyệt"
   // Đưa ô "Tất cả" sang bên trái của ô "Tin chờ duyệt"
@@ -185,38 +198,6 @@ export default function DashboardClient() {
       icon: "select_all",
       iconWrapClass: "bg-[#eef0f3]",
       iconClass: "text-[#111827]",
-    },
-    {
-      key: "pending",
-      label: "Tin chờ duyệt",
-      count: counts.pendingAll,
-      icon: "schedule",
-      iconWrapClass: "bg-[#fdf6d4]",
-      iconClass: "text-[#e7b53c]",
-    },
-    {
-      key: "needMoreInfo",
-      label: "Cần bổ sung",
-      count: counts.needMoreInfo,
-      icon: "assignment",
-      iconWrapClass: "bg-[#eaf2fb]",
-      iconClass: "text-[#4a90e2]",
-    },
-    {
-      key: "dispute",
-      label: "Tranh chấp",
-      count: counts.dispute,
-      icon: "warning",
-      iconWrapClass: "bg-[#faedf1]",
-      iconClass: "text-[#e15845]",
-    },
-    {
-      key: "approved",
-      label: "Tin đã duyệt",
-      count: counts.approved,
-      icon: "check_circle",
-      iconWrapClass: "bg-[#e8f5e9]",
-      iconClass: "text-[#388e3c]",
     },
   ];
 
@@ -317,15 +298,14 @@ export default function DashboardClient() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm table-fixed">
                 <thead>
-                  <tr className="bg-gray-50 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    <th className="px-5 py-3">ID</th>
-                    <th className="px-5 py-3">Tên sản phẩm</th>
-                    <th className="px-5 py-3">Cửa hàng</th>
-                    <th className="px-5 py-3">Ngày gửi</th>
-                    <th className="px-5 py-3">Trạng thái</th>
-                    <th className="px-5 py-3"></th>
+                  <tr className="bg-gray-50 text-left text-xs font-semibold text-black uppercase tracking-wider">
+                    <th className="px-5 py-3 w-1/5">ID</th>
+                    <th className="px-5 py-3 w-1/5">Tên sản phẩm</th>
+                    <th className="px-5 py-3 w-1/5">Cửa hàng</th>
+                    <th className="px-5 py-3 w-1/5">Ngày gửi</th>
+                    <th className="px-5 py-3 w-1/5">Trạng thái</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
@@ -352,14 +332,6 @@ export default function DashboardClient() {
                           >
                             {badge.label}
                           </span>
-                        </td>
-                        <td className="px-5 py-3">
-                          <Link
-                            href={`/inspector/review-detail/${row.id}`}
-                            className="text-[#FF8A00] hover:underline text-xs font-medium"
-                          >
-                            Xem chi tiết
-                          </Link>
                         </td>
                       </tr>
                     );

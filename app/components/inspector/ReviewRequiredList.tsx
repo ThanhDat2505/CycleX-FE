@@ -135,14 +135,21 @@ export default function ReviewRequiredList() {
           <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
         )}
         {!loading && !error && (
-          <table className="table">
-            <thead className="thead">
+          <table className="table" style={{ tableLayout: "fixed", width: "100%" }}>
+            <colgroup>
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "20%" }} />
+            </colgroup>
+            <thead className="thead" style={{ color: "black" }}>
               <tr>
                 <th>Tên sản phẩm</th>
                 <th>Cửa hàng</th>
                 <th>Ngày gửi duyệt</th>
                 <th>Trạng thái</th>
-                <th style={{ textAlign: "right" }}>Hành động</th>
+                <th style={{ textAlign: "center" }}>Hành động</th>
               </tr>
             </thead>
 
@@ -166,7 +173,7 @@ export default function ReviewRequiredList() {
                     <td>
                       <StatusPill status={row.status} />
                     </td>
-                    <td className="actionCell">
+                    <td className="actionCell" style={{ textAlign: "center" }}>
                       <Link className="viewBtn" href={href}>
                         <span className="material-symbols-outlined">
                           north_east

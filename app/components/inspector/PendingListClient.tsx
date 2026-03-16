@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
@@ -96,6 +96,9 @@ export default function PendingListClient() {
     const keyword = q.trim().toLowerCase();
 
     const filtered = listings.filter((x) => {
+      // Chỉ hiển thị tin đang chờ duyệt và đang review
+      if (x.status !== "PENDING" && x.status !== "REVIEWING") return false;
+
       if (!keyword) return true;
 
       return (
@@ -159,20 +162,20 @@ export default function PendingListClient() {
           <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
         )}
         {!loading && !error && (
-          <table className="table">
+          <table className="table" style={{ tableLayout: "fixed", width: "100%" }}>
             <colgroup>
-              <col style={{ width: "52%" }} />
-              <col style={{ width: "24%" }} />
-              <col style={{ width: "160px" }} />
-              <col style={{ width: "200px" }} />
+              <col style={{ width: "25%" }} />
+              <col style={{ width: "25%" }} />
+              <col style={{ width: "25%" }} />
+              <col style={{ width: "25%" }} />
             </colgroup>
 
-            <thead className="thead">
+            <thead className="thead" style={{ color: "black" }}>
               <tr>
                 <th>Tên sản phẩm</th>
                 <th>Cửa hàng</th>
                 <th>Ngày gửi duyệt</th>
-                <th style={{ textAlign: "right" }}>Hành động</th>
+                <th style={{ textAlign: "center" }}>Hành động</th>
               </tr>
             </thead>
 
@@ -199,7 +202,7 @@ export default function PendingListClient() {
                     <div className="dateText">{formatDate(x.dateISO)}</div>
                   </td>
 
-                  <td className="actionCell">
+                  <td className="actionCell" style={{ textAlign: "center" }}>
                     <Link
                       className="viewBtn"
                       href={`/inspector/review-detail?id=${encodeURIComponent(x.id)}`}

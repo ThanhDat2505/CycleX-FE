@@ -26,6 +26,7 @@ export default function ReviewDetailClient({
   const [activePanel, setActivePanel] = useState<ActionPanel>("NONE");
   const [selectedThumb, setSelectedThumb] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
+  const [checklist, setChecklist] = useState([false, false, false, false]);
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
@@ -114,6 +115,8 @@ export default function ReviewDetailClient({
   const canConfirmReject =
     rejectReason !== "" &&
     (!rejectNeedsOtherText || rejectOther.trim().length > 0);
+
+  const isChecklistComplete = checklist.every((item) => item === true);
 
   return (
     <div className="wrap review-detail-page">
@@ -288,6 +291,34 @@ export default function ReviewDetailClient({
           </section>
 
           <section className="box">
+            <h3 className="boxTitle">Checklist kiểm duyệt</h3>
+            <div className="flex flex-col gap-3 mt-4">
+              {[
+                "Hình ảnh rõ nét, đầy đủ góc độ",
+                "Thông tin mô tả khớp với hình ảnh",
+                "Giá cả hợp lý với tình trạng xe",
+                "Người bán đáng tin cậy, không có dấu hiệu lừa đảo",
+              ].map((text, idx) => (
+                <label key={idx} className="flex items-center gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={checklist[idx]}
+                    onChange={(e) => {
+                      const newChecklist = [...checklist];
+                      newChecklist[idx] = e.target.checked;
+                      setChecklist(newChecklist);
+                    }}
+                    className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
+                  />
+                  <span className={`text-sm select-none ${checklist[idx] ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-800'}`}>
+                    {text}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </section>
+
+          <section className="box">
             <h3 className="boxTitle">Thông số kỹ thuật</h3>
             <div className="specGrid">
               <div className="specItem">
@@ -314,26 +345,6 @@ export default function ReviewDetailClient({
                 <span className="specLabel">Tình trạng</span>
                 <span className="specValue">Đã qua sử dụng (98%)</span>
               </div>
-            </div>
-          </section>
-
-          <section className="box">
-            <h3 className="boxTitle">Lịch sử xử lý</h3>
-            <div className="history">
-              {listing.history.map((item, index) => (
-                <div key={index} className="historyRow">
-                  <div className="timelineMarker">
-                    <div className={`dot ${item.variant}`} />
-                  </div>
-                  <div className="hContent">
-                    <div className="hHeader">
-                      <span className="hTag">{item.tag}</span>
-                      <span className="hTime wrap-break-word">{item.at}</span>
-                    </div>
-                    <p className="hDesc wrap-break-word">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </section>
         </div>
@@ -364,9 +375,32 @@ export default function ReviewDetailClient({
             YÊU CẦU BỔ SUNG
           </button>
           <button
-            className="btn btn-success"
+            className={`btn btn-success ${!isChecklistComplete ? 'opacity-50 cursor-not-allowed' : ''}`}
             type="button"
-            onClick={() => togglePanel("APPROVE")}
+            disabled={!isChecklistComplete || submitting}
+            onClick={async () => {
+              if (!isChecklistComplete) return;
+              if (!listing) return;
+              
+              const confirmed = window.confirm("Bạn có chắc chắn muốn duyệt tin đăng này?");
+              if (!confirmed) return;
+
+              try {
+                setSubmitting(true);
+                const payload = {
+                  reasonCode: "MEETS_STANDARDS",
+                  reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
+                  note: note.trim() || undefined
+                };
+                await inspectorService.approveListing(listing.id, payload);
+                alert("Đã duyệt tin thành công");
+                router.push("/inspector/dashboard");
+              } catch (err: any) {
+                alert(err?.message || "Duyệt tin thất bại");
+              } finally {
+                setSubmitting(false);
+              }
+            }}
           >
             DUYỆT TIN
           </button>
@@ -411,69 +445,7 @@ export default function ReviewDetailClient({
                 >
                   GỬI
                 </button>
-              </div>
-            </section>
-          )}
-
-          {activePanel === "APPROVE" && (
-            <section className="panel">
-              <div className="panel-title">Lý do duyệt</div>
-              <label className="field">
-                <select
-                  className="select"
-                  value={approveReason}
-                  onChange={(e) => setApproveReason(e.target.value)}
-                >
-                  <option value="">-- Chọn --</option>
-                  <option value="ok">Đủ ảnh & mô tả khớp</option>
-                  <option value="price">Giá hợp lý</option>
-                </select>
-              </label>
-              <div className="confirm">
-                <span className="confirm-text">Xác nhận duyệt tin?</span>
-                <button
-                  className="btn btn-success btn-sm"
-                  type="button"
-                  disabled={submitting || approveReason === ""}
-                  onClick={async () => {
-                    if (!listing) return;
-                    const reasonCode =
-                      approveReason === "ok"
-                        ? "MEETS_STANDARDS"
-                        : "GOOD_CONDITION";
-                    const reasonText =
-                      approveReason === "ok"
-                        ? "Đủ ảnh và mô tả khớp"
-                        : "Giá phù hợp với thông tin sản phẩm";
-
-                    try {
-                      setSubmitting(true);
-                      const payload: {
-                        reasonCode: string;
-                        reasonText: string;
-                        note?: string;
-                      } = {
-                        reasonCode,
-                        reasonText,
-                      };
-                      if (note.trim()) payload.note = note.trim();
-                      await inspectorService.approveListing(
-                        listing.id,
-                        payload,
-                      );
-                      alert("Đã duyệt tin thành công");
-                      router.push("/inspector/dashboard");
-                    } catch (err: any) {
-                      alert(err?.message || "Duyệt tin thất bại");
-                    } finally {
-                      setSubmitting(false);
-                    }
-                  }}
-                >
-                  XÁC NHẬN
-                </button>
-              </div>
-            </section>
+              </div>            </section>
           )}
 
           {activePanel === "REJECT" && (
