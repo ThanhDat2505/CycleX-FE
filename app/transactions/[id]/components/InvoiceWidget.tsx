@@ -40,9 +40,15 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
 
                 {/* Fee Breakdown */}
                 <div className="space-y-2 text-sm">
+                    {(transaction.listingPrice ?? 0) > 0 && (
+                        <div className="flex justify-between">
+                            <span className="text-gray-500">Giá xe</span>
+                            <span className="font-medium text-gray-900">{formatPrice(transaction.listingPrice ?? 0)}</span>
+                        </div>
+                    )}
                     {(transaction.depositAmount ?? 0) > 0 && (
                         <div className="flex justify-between">
-                            <span className="text-gray-500">{isPurchase ? 'Giá trị đơn hàng' : 'Tiền cọc'}</span>
+                            <span className="text-gray-500">Tiền cọc ({isPurchase ? '10%' : 'đặt cọc'})</span>
                             <span className="font-medium text-gray-900">{formatPrice(transaction.depositAmount ?? 0)}</span>
                         </div>
                     )}
@@ -59,8 +65,8 @@ export default function InvoiceWidget({ transaction, viewerRole, isProcessing, o
                 {/* Total */}
                 <div className="pt-4 border-t border-gray-100">
                     <div className="flex justify-between items-end">
-                        <span className="text-sm font-bold text-gray-900">Tổng cộng</span>
-                        <span className="text-2xl font-extrabold text-brand-primary leading-none">{formatPrice(transaction.totalAmount)}</span>
+                        <span className="text-sm font-bold text-gray-900">Tổng giá trị</span>
+                        <span className="text-2xl font-extrabold text-brand-primary leading-none">{formatPrice(transaction.listingPrice ?? transaction.totalAmount)}</span>
                     </div>
                     <p className="text-xs text-gray-400 text-right mt-1">Đã bao gồm VAT nếu có</p>
                 </div>

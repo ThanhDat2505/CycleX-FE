@@ -8,8 +8,12 @@ export type TransactionType = 'PURCHASE' | 'DEPOSIT';
 export type TransactionStatus =
     | 'PENDING_SELLER_CONFIRM'
     | 'CONFIRMED'
+    | 'PENDING_DELIVERY'
+    | 'IN_DELIVERY'
+    | 'DELIVERED'
     | 'CANCELLED'
-    | 'COMPLETED';
+    | 'COMPLETED'
+    | 'DISPUTED';
 
 /**
  * Form data for S-50 Step 1 (Input)
@@ -58,6 +62,7 @@ export interface Transaction {
     note?: string;
     platformFee: number;
     inspectionFee: number;
+    listingPrice?: number;
     totalAmount: number;
     createdAt: string;
     updatedAt: string;

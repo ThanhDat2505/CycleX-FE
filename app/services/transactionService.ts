@@ -74,11 +74,23 @@ function mapStatusToFrontend(status: unknown): Transaction['status'] {
     if (normalized === 'SELLER_CONFIRMED' || normalized === 'BUYER_CONFIRMED' || normalized === 'CONFIRMED') {
         return 'CONFIRMED';
     }
+    if (normalized === 'PENDING_DELIVERY') {
+        return 'PENDING_DELIVERY';
+    }
+    if (normalized === 'IN_DELIVERY') {
+        return 'IN_DELIVERY';
+    }
+    if (normalized === 'DELIVERED') {
+        return 'DELIVERED';
+    }
     if (normalized === 'COMPLETED') {
         return 'COMPLETED';
     }
     if (normalized === 'CANCELLED') {
         return 'CANCELLED';
+    }
+    if (normalized === 'DISPUTED') {
+        return 'DISPUTED';
     }
 
     return 'PENDING_SELLER_CONFIRM';
@@ -172,7 +184,7 @@ async function normalizeBuyerTransactionDetail(response: any, requestId: number)
         buyerId: user.userId ?? 0,
         sellerId: toNumber(seller.userId) ?? 0,
         transactionType,
-        status: mapStatusToFrontend(source.status),
+        status: mapStatusToFrontend(source.orderStatus || source.status),
         desiredTime: typeof source.desiredTransactionTime === 'string' ? source.desiredTransactionTime : new Date().toISOString(),
         receiverName: undefined,
         receiverPhone: undefined,
@@ -181,7 +193,8 @@ async function normalizeBuyerTransactionDetail(response: any, requestId: number)
         note: typeof source.note === 'string' ? source.note : undefined,
         platformFee: toNumber(source.platformFee) ?? 0,
         inspectionFee: toNumber(source.inspectionFee) ?? 0,
-        totalAmount: calculateTotalAmount(source),
+        listingPrice: toNumber(source.listingPrice),
+        totalAmount: toNumber(source.listingPrice) ?? calculateTotalAmount(source),
         createdAt: typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString(),
         updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : (typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString()),
         listingTitle: typeof listing.title === 'string' ? listing.title : `Xe #${listingId}`,
@@ -223,6 +236,7 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         note: typeof source.note === 'string' ? source.note : undefined,
         platformFee: toNumber(source.platformFee) ?? 0,
         inspectionFee: toNumber(source.inspectionFee) ?? 0,
+        listingPrice: productPrice,
         totalAmount,
         createdAt: typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString(),
         updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : (typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString()),

@@ -9,8 +9,12 @@
 export const TRANSACTION_STATUS = {
     PENDING_SELLER_CONFIRM: 'PENDING_SELLER_CONFIRM',
     CONFIRMED: 'CONFIRMED',
+    PENDING_DELIVERY: 'PENDING_DELIVERY',
+    IN_DELIVERY: 'IN_DELIVERY',
+    DELIVERED: 'DELIVERED',
     COMPLETED: 'COMPLETED',
     CANCELLED: 'CANCELLED',
+    DISPUTED: 'DISPUTED',
 } as const;
 
 export type TransactionStatus = typeof TRANSACTION_STATUS[keyof typeof TRANSACTION_STATUS];
@@ -18,8 +22,12 @@ export type TransactionStatus = typeof TRANSACTION_STATUS[keyof typeof TRANSACTI
 export const TRANSACTION_STATUS_LABELS: Record<TransactionStatus, string> = {
     [TRANSACTION_STATUS.PENDING_SELLER_CONFIRM]: 'Chờ xác nhận',
     [TRANSACTION_STATUS.CONFIRMED]: 'Đã xác nhận',
+    [TRANSACTION_STATUS.PENDING_DELIVERY]: 'Chờ giao hàng',
+    [TRANSACTION_STATUS.IN_DELIVERY]: 'Đang giao hàng',
+    [TRANSACTION_STATUS.DELIVERED]: 'Đã giao hàng',
     [TRANSACTION_STATUS.COMPLETED]: 'Hoàn thành',
     [TRANSACTION_STATUS.CANCELLED]: 'Đã hủy',
+    [TRANSACTION_STATUS.DISPUTED]: 'Tranh chấp',
 };
 
 export const TRANSACTION_TYPE = {

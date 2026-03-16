@@ -9,7 +9,8 @@
 
 export type ListingStatus =
     | 'DRAFT' | 'PENDING' | 'REVIEWING' | 'APPROVE' | 'REJECT' | 'ACTIVE' | 'SOLD'
-    | 'PENDING_SELLER_CONFIRM' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'SOLVED' | 'REJECTED';
+    | 'PENDING_SELLER_CONFIRM' | 'CONFIRMED' | 'PENDING_DELIVERY' | 'IN_DELIVERY' | 'DELIVERED'
+    | 'COMPLETED' | 'CANCELLED' | 'DISPUTED' | 'SOLVED' | 'REJECTED';
 
 export interface StatusColorConfig {
     bg: string;
@@ -64,6 +65,21 @@ export const STATUS_COLORS: Record<ListingStatus, StatusColorConfig> = {
         text: 'text-blue-800',
         label: 'Đã xác nhận'
     },
+    PENDING_DELIVERY: {
+        bg: 'bg-indigo-100',
+        text: 'text-indigo-800',
+        label: 'Chờ giao hàng'
+    },
+    IN_DELIVERY: {
+        bg: 'bg-sky-100',
+        text: 'text-sky-800',
+        label: 'Đang giao hàng'
+    },
+    DELIVERED: {
+        bg: 'bg-teal-100',
+        text: 'text-teal-800',
+        label: 'Đã giao hàng'
+    },
     COMPLETED: {
         bg: 'bg-green-100',
         text: 'text-green-800',
@@ -73,6 +89,11 @@ export const STATUS_COLORS: Record<ListingStatus, StatusColorConfig> = {
         bg: 'bg-red-100',
         text: 'text-red-800',
         label: 'Đã hủy'
+    },
+    DISPUTED: {
+        bg: 'bg-orange-100',
+        text: 'text-orange-800',
+        label: 'Tranh chấp'
     },
     SOLVED: {
         bg: 'bg-green-100',

@@ -1,16 +1,12 @@
 import { TransactionWithDetails } from '@/app/types/transaction';
 import { formatPrice } from '@/app/utils/format';
-import { TRANSACTION_TYPE } from '@/app/constants/transactionStatus';
 
 interface VehicleInfoCardProps {
     transaction: TransactionWithDetails;
 }
 
 export default function VehicleInfoCard({ transaction }: VehicleInfoCardProps) {
-    // Estimate listing price from total amount (simplified)
-    const estimatedListingPrice = transaction.transactionType === TRANSACTION_TYPE.DEPOSIT
-        ? transaction.totalAmount / 0.1
-        : transaction.totalAmount;
+    const listingPrice = transaction.listingPrice ?? transaction.totalAmount;
 
     return (
         <div className="bg-white rounded-2xl shadow-card border border-gray-100 overflow-hidden animate-slide-up" style={{ animationDelay: '0.1s' }}>
@@ -47,7 +43,7 @@ export default function VehicleInfoCard({ transaction }: VehicleInfoCardProps) {
                         <div className="pt-3 border-t border-gray-100 flex items-baseline gap-2">
                             <span className="text-xs text-gray-500 uppercase font-semibold">Giá niêm yết:</span>
                             <span className="text-blue-600 font-bold text-lg">
-                                {formatPrice(estimatedListingPrice)}
+                                {formatPrice(listingPrice)}
                             </span>
                         </div>
                     </div>
