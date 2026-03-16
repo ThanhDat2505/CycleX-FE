@@ -128,6 +128,7 @@ function mapStatusFromBackend(status: string): ListingStatus {
     const normalized = status.toUpperCase();
     if (normalized === 'APPROVED') return 'APPROVE';
     if (normalized === 'REJECTED') return 'REJECT';
+    if (normalized === 'SOLD') return 'SOLD';
     if (normalized === 'PENDING' || normalized === 'DRAFT') {
         return normalized as ListingStatus;
     }
@@ -146,6 +147,7 @@ function mapStatusToBackend(status?: string): string | undefined {
     const normalized = status.toUpperCase();
     if (normalized === 'APPROVE' || normalized === 'ACTIVE') return 'APPROVED';
     if (normalized === 'REJECT') return 'REJECTED';
+    if (normalized === 'SOLD') return 'SOLD';
     if (normalized === 'DRAFT' || normalized === 'PENDING') return normalized;
 
     return undefined;
