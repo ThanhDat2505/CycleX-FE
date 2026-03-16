@@ -183,6 +183,7 @@ function PurchaseRequestContent() {
               onNext={handleNext}
               onCancel={handleCancel}
               userId={user?.userId}
+              listingPrice={listing.price}
             />
           ) : (
             <Step2Review
