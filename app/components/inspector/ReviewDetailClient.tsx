@@ -25,6 +25,7 @@ export default function ReviewDetailClient({
   const [note, setNote] = useState("");
   const [activePanel, setActivePanel] = useState<ActionPanel>("NONE");
   const [selectedThumb, setSelectedThumb] = useState(0);
+  const [showImageModal, setShowImageModal] = useState(false);
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
@@ -166,15 +167,35 @@ export default function ReviewDetailClient({
       <div className="layout">
         <div className="left">
           <section className="gallery">
-            <div className="mainBox" style={{ overflow: 'hidden', borderRadius: '18px', background: '#f0f4ff', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '400px' }}>
-              {(listing.images.main || listing.images.thumbs[0]) ? (
+            <div
+              className="mainBox"
+              style={{
+                overflow: "hidden",
+                borderRadius: "18px",
+                background: "#f0f4ff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minHeight: "400px",
+              }}
+            >
+              {listing.images.main || listing.images.thumbs[0] ? (
                 <img
-                  src={listing.images.thumbs[selectedThumb] || listing.images.main}
+                  src={
+                    listing.images.thumbs[selectedThumb] || listing.images.main
+                  }
                   alt={listing.productName}
-                  style={{ width: '100%', height: '400px', objectFit: 'contain' }}
+                  style={{
+                    width: "100%",
+                    height: "400px",
+                    objectFit: "contain",
+                  }}
+                  onClick={() => setShowImageModal(true)}
+                  className="cursor-zoom-in"
+                  title="Xem ảnh lớn"
                 />
               ) : (
-                <span style={{ color: '#999' }}>Không có ảnh</span>
+                <span style={{ color: "#999" }}>Không có ảnh</span>
               )}
             </div>
             <div className="thumbGrid">
@@ -182,15 +203,88 @@ export default function ReviewDetailClient({
                 <div
                   key={idx}
                   className="thumbBox"
-                  style={{ cursor: 'pointer', border: idx === selectedThumb ? '2px solid #2563eb' : '2px solid transparent', borderRadius: '8px', overflow: 'hidden' }}
-                  onClick={() => setSelectedThumb(idx)}
+                  style={{
+                    cursor: "pointer",
+                    border:
+                      idx === selectedThumb
+                        ? "2px solid #2563eb"
+                        : "2px solid transparent",
+                    borderRadius: "8px",
+                    overflow: "hidden",
+                  }}
+                  onClick={() => {
+                    setSelectedThumb(idx);
+                    setShowImageModal(true);
+                  }}
                 >
                   {url ? (
-                    <img src={url} alt={`Ảnh ${idx + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img
+                      src={url}
+                      alt={`Ảnh ${idx + 1}`}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "contain",
+                      }}
+                    />
                   ) : null}
                 </div>
               ))}
             </div>
+
+            {/* Modal hiển thị ảnh lớn */}
+            {showImageModal && (
+              <div
+                style={{
+                  position: "fixed",
+                  top: 0,
+                  left: 0,
+                  width: "100vw",
+                  height: "100vh",
+                  background: "rgba(0,0,0,0.7)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1000,
+                }}
+                onClick={() => setShowImageModal(false)}
+              >
+                <img
+                  src={
+                    listing.images.thumbs[selectedThumb] || listing.images.main
+                  }
+                  alt={listing.productName}
+                  style={{
+                    maxWidth: "90vw",
+                    maxHeight: "90vh",
+                    objectFit: "contain",
+                    background: "#fff",
+                    borderRadius: "12px",
+                    boxShadow: "0 2px 16px rgba(0,0,0,0.3)",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <button
+                  style={{
+                    position: "absolute",
+                    top: 24,
+                    right: 32,
+                    background: "rgba(0,0,0,0.6)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "50%",
+                    width: 40,
+                    height: 40,
+                    fontSize: 24,
+                    cursor: "pointer",
+                  }}
+                  onClick={() => setShowImageModal(false)}
+                  title="Đóng"
+                >
+                  ×
+                </button>
+              </div>
+            )}
           </section>
 
           <section className="box">
