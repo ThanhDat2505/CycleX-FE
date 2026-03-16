@@ -16,6 +16,7 @@ import { PurchaseRequestForm, TransactionType } from "@/app/types/transaction";
 import { Input, Textarea, Button } from "@/app/components/ui";
 import { MESSAGES } from "@/app/constants";
 import { MIN_DAYS_AHEAD } from "@/app/constants/fees";
+import { formatPrice } from "@/app/utils/format";
 import AddressSelector from "@/app/components/address/AddressSelector";
 import { UserAddress } from "@/app/types/address";
 
@@ -56,7 +57,8 @@ const STYLES = {
     "text-[10px] uppercase font-bold tracking-wider bg-gray-200 text-gray-600 px-3 py-1 rounded-full",
   receiverSection:
     "mb-10 p-8 bg-gradient-to-br from-orange-50/50 to-white rounded-2xl border border-orange-100/50 shadow-inner-sm",
-  receiverTitle: "text-xl font-bold text-orange-900 mb-8 flex items-center gap-3",
+  receiverTitle:
+    "text-xl font-bold text-orange-900 mb-8 flex items-center gap-3",
   receiverIcon:
     "bg-brand-primary p-2.5 rounded-xl text-white shadow-md shadow-orange-200",
   fieldGrid: "grid grid-cols-1 md:grid-cols-2 gap-8",
@@ -86,6 +88,7 @@ interface Step1InputFormProps {
   onNext: () => void;
   onCancel: () => void;
   userId?: number;
+  listingPrice?: number;
 }
 
 export default function Step1InputForm({
@@ -95,6 +98,7 @@ export default function Step1InputForm({
   onNext,
   onCancel,
   userId,
+  listingPrice,
 }: Step1InputFormProps) {
   const [addressMode, setAddressMode] = useState<"saved" | "manual">(
     userId ? "saved" : "manual",
@@ -114,16 +118,19 @@ export default function Step1InputForm({
     [formData, onFormDataChange],
   );
 
+  // Auto-calculated deposit = 10% of listing price
+  const autoDepositAmount = listingPrice ? Math.round(listingPrice * 0.1) : 0;
+
   // Handle transaction type toggle
   const handleTypeChange = useCallback(
     (type: TransactionType) => {
       onFormDataChange({
         ...formData,
         transactionType: type,
-        depositAmount: type === "PURCHASE" ? undefined : formData.depositAmount,
+        depositAmount: type === "PURCHASE" ? undefined : autoDepositAmount,
       });
     },
-    [formData, onFormDataChange],
+    [formData, onFormDataChange, autoDepositAmount],
   );
 
   return (
@@ -253,20 +260,13 @@ export default function Step1InputForm({
         {/* Deposit Amount (conditional) */}
         {formData.transactionType === "DEPOSIT" && (
           <div className="animate-fade-in">
-            <Input
-              label={MESSAGES.S50_DEPOSIT_LABEL}
-              id="depositAmount"
-              type="number"
-              value={formData.depositAmount?.toString() || ""}
-              onChange={(val) => handleChange("depositAmount", Number(val))}
-              placeholder={MESSAGES.S50_DEPOSIT_PLACEHOLDER}
-              error={errors.depositAmount}
-              min={0}
-              step={100000}
-            />
-            {!errors.depositAmount && (
-              <p className={STYLES.hintBlue}>{MESSAGES.S50_DEPOSIT_MIN_HINT}</p>
-            )}
+            <label className="block text-gray-700 font-semibold mb-2">
+              {MESSAGES.S50_DEPOSIT_LABEL}
+            </label>
+            <div className="px-4 py-3 bg-orange-50 border border-orange-200 rounded-xl text-lg font-bold text-brand-primary">
+              {formatPrice(autoDepositAmount)}
+            </div>
+            <p className={STYLES.hintBlue}>Tự động tính 10% giá xe</p>
           </div>
         )}
 

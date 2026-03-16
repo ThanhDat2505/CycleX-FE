@@ -20,7 +20,7 @@ import { ListingDetail } from '../../types/listing';
 import { PurchaseRequestForm } from '../../types/transaction';
 import { normalizePhoneNumber } from '../../utils/format';
 import { MESSAGES } from '../../constants';
-import { DEPOSIT_MIN_AMOUNT, MIN_DAYS_AHEAD } from '../../constants/fees';
+import { MIN_DAYS_AHEAD } from '../../constants/fees';
 
 /** Phone number regex: starts with 0, 10 digits total */
 const PHONE_REGEX = /^0\d{9}$/;
@@ -186,8 +186,6 @@ export function usePurchaseRequest(): UsePurchaseRequestReturn {
         if (formData.transactionType === 'DEPOSIT') {
             if (!formData.depositAmount || formData.depositAmount <= 0) {
                 errors.depositAmount = MESSAGES.S50_VAL_DEPOSIT_POSITIVE;
-            } else if (formData.depositAmount < DEPOSIT_MIN_AMOUNT) {
-                errors.depositAmount = MESSAGES.S50_VAL_DEPOSIT_MIN;
             }
         }
 
