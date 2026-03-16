@@ -1,6 +1,6 @@
 @layer components {
   .seller-drawer-overlay {
-    @apply fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm transition-opacity duration-300;
+    @apply fixed inset-0 z-[110] bg-black/40 backdrop-blur-sm transition-opacity duration-300;
   }
 
   .seller-drawer {

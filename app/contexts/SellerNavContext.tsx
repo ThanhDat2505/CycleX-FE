@@ -13,14 +13,8 @@ const SellerNavContext = createContext<SellerNavContextType | undefined>(undefin
 export function SellerNavProvider({ children }: { children: ReactNode }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const toggleSidebar = () => {
-    console.log("Toggling sidebar. Current state:", isSidebarOpen);
-    setIsSidebarOpen((prev) => !prev);
-  };
-  const closeSidebar = () => {
-    console.log("Closing sidebar");
-    setIsSidebarOpen(false);
-  };
+  const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
+  const closeSidebar = () => setIsSidebarOpen(false);
 
   return (
     <SellerNavContext.Provider value={{ isSidebarOpen, toggleSidebar, closeSidebar }}>
