@@ -8,6 +8,7 @@ import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 
 import { authService } from "./authService";
+import { mockListings, getMockDashboardStats } from "./mockInspectorData";
 
 type RawObject = Record<string, any>;
 
@@ -124,9 +125,13 @@ function getInspectorId(): number {
     return userDataInspectorId;
   }
 
+  // --- MOCK INTERCEPTOR ---
+  return 999;
+  /*
   throw new Error(
     "Không xác định được inspectorId từ phiên đăng nhập. Vui lòng đăng nhập lại.",
   );
+  */
 }
 
 /**
@@ -134,6 +139,10 @@ function getInspectorId(): number {
  * Returns true when the token is missing or its `exp` claim is in the past.
  */
 function isTokenExpired(): boolean {
+  // --- MOCK INTERCEPTOR ---
+  return false;
+  
+  /*
   const token = getAuthToken();
   if (!token) return true;
   const payload = getJwtPayload(token);
@@ -142,6 +151,7 @@ function isTokenExpired(): boolean {
     return payload.exp * 1000 < Date.now();
   }
   return false;
+  */
 }
 
 class InspectorApiError extends Error {
@@ -154,6 +164,40 @@ class InspectorApiError extends Error {
 }
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // --- MOCK INTERCEPTOR ---
+  console.log("[MOCK] Intercepted Request:", path, init);
+
+  // Return mock listings depending on endpoint
+  if (path.includes("/listings") && path.includes("/detail")) {
+    const id = path.split("/listings/")[1].split("/detail")[0];
+    const item = mockListings.find((l) => l.id === id) || mockListings[0];
+    return item as any as T;
+  }
+
+  if (path.includes("/dashboard/stats")) {
+    return getMockDashboardStats() as any as T;
+  }
+
+  if (
+    path.includes("/listings/reject") ||
+    path.includes("/approve") ||
+    path.includes("/lock") ||
+    path.includes("/unlock")
+  ) {
+    // delay to simulate network
+    return new Promise((resolve) => setTimeout(() => resolve({} as any as T), 500));
+  }
+
+  if (path.includes("/listings") || path.includes("/reviews")) {
+    return mockListings as any as T;
+  }
+
+  if (path.includes("/chat-thread") || path.includes("/chat-messages")) {
+      return [] as any as T;
+  }
+
+  // --- End MOCK INTERCEPTOR ---
+
   // --- Token expiration guard ---
   if (isTokenExpired()) {
     // Clear stale auth data and redirect to login

@@ -238,13 +238,13 @@
 }
 .specLabel {
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--muted);
   text-transform: uppercase;
 }
 .specValue {
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 400;
   color: var(--text);
 }
 

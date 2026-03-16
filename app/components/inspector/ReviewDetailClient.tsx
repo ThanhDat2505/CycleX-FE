@@ -1,4 +1,4 @@
-﻿/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client";
 
@@ -346,29 +346,8 @@ export default function ReviewDetailClient({
             <span className="sellerName">{listing.sellerName}</span>
           </div>
 
-          <div className="mb-4" style={{ marginBottom: 16 }}>
-            <Link
-              href={chatHref}
-              className="btn btn-info no-underline flex items-center justify-center"
-              style={{
-                textDecoration: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <span
-                className="material-symbols-outlined mr-2"
-                style={{ marginRight: 8 }}
-              >
-                chat
-              </span>
-              MỞ CHAT VỚI SELLER
-            </Link>
-          </div>
-
           <div className="note-box" aria-label="Ghi chú đánh giá">
-            <div className="note-box-title">Ghi chú đánh giá (nội bộ)</div>
+            <div className="note-box-title">Ghi chú đánh giá</div>
             <textarea
               className="textarea"
               placeholder="VD: xe đúng mô tả, ảnh đủ góc..."
