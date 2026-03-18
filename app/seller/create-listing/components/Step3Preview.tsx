@@ -75,12 +75,6 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
             {formData.description}
           </p>
         </div>
-        <div>
-          <p className="text-sm text-gray-500">Shipping</p>
-          <p className="font-semibold text-gray-900">
-            {formData.shipping ? "Available" : "Not Available"}
-          </p>
-        </div>
       </div>
 
       {/* Images Preview */}
@@ -107,6 +101,25 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
           <p className="text-gray-500 italic">No images uploaded</p>
         )}
       </div>
+
+      {/* Video Preview */}
+      {formData.videoUrl && (
+        <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Video kiểm tra xe
+          </h3>
+          <div className="max-w-lg">
+            <video
+              src={formData.videoUrl}
+              controls
+              className="w-full rounded-lg"
+              style={{ maxHeight: "300px" }}
+            >
+              Trình duyệt không hỗ trợ video.
+            </video>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

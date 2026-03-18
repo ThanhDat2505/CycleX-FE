@@ -766,3 +766,16 @@ export async function setImageAsPrimary(sellerId: number, listingId: number, ima
     await apiCallPATCH(`/seller/${sellerId}/listings/${listingId}/images/${imageId}/set-primary`, {});
 }
 
+/**
+ * Save listing video path to DB
+ * Endpoint: POST /api/seller/{sellerId}/listings/{listingId}/video
+ */
+export async function saveListingVideo(sellerId: number, listingId: number, videoPath: string): Promise<void> {
+    if (USE_MOCK_API) {
+        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
+        return;
+    }
+
+    await apiCallPOST(`/seller/${sellerId}/listings/${listingId}/video`, { videoPath });
+}
+

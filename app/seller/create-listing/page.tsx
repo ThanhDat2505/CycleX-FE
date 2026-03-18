@@ -8,7 +8,15 @@ import { useCreateListing } from "./hooks/useCreateListing";
 // Components
 import Step1VehicleInfo from "./components/Step1VehicleInfo";
 import Step2ImageUpload from "./components/Step2ImageUpload";
-import Step3Preview from "./components/Step3Preview";
+import Step3VideoUpload from "./components/Step3VideoUpload";
+import Step4Preview from "./components/Step3Preview";
+
+const STEP_LABELS = [
+  { step: CREATE_LISTING_STEPS.VEHICLE_INFO, label: "Thông tin xe" },
+  { step: CREATE_LISTING_STEPS.UPLOAD_IMAGES, label: "Hình ảnh" },
+  { step: CREATE_LISTING_STEPS.UPLOAD_VIDEO, label: "Video" },
+  { step: CREATE_LISTING_STEPS.PREVIEW, label: "Xem trước" },
+];
 
 const CreateListingPageContent: React.FC = () => {
   const { state, actions } = useCreateListing();
@@ -28,6 +36,8 @@ const CreateListingPageContent: React.FC = () => {
     isReadOnly,
     readOnlyMessage,
     canCancelPublish,
+    isUploadingVideo,
+    videoError,
   } = state;
 
   const handleFormKeyDown = useCallback(
@@ -39,6 +49,19 @@ const CreateListingPageContent: React.FC = () => {
     [step],
   );
 
+  const getNextLabel = () => {
+    switch (step) {
+      case CREATE_LISTING_STEPS.VEHICLE_INFO:
+        return "Tiếp tục - Hình ảnh";
+      case CREATE_LISTING_STEPS.UPLOAD_IMAGES:
+        return "Tiếp tục - Video";
+      case CREATE_LISTING_STEPS.UPLOAD_VIDEO:
+        return "Tiếp tục - Xem trước";
+      default:
+        return "Tiếp tục";
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
@@ -48,7 +71,7 @@ const CreateListingPageContent: React.FC = () => {
   }
 
   if (!isLoggedIn) {
-    return null; // Redirecting handled in hook
+    return null;
   }
 
   return (
@@ -65,7 +88,7 @@ const CreateListingPageContent: React.FC = () => {
         <>
           {/* Progress Bar */}
           <div className="flex items-center justify-between mb-12">
-            {Object.values(CREATE_LISTING_STEPS).map((s) => (
+            {STEP_LABELS.map(({ step: s }) => (
               <React.Fragment key={s}>
                 <div
                   className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${
@@ -88,24 +111,12 @@ const CreateListingPageContent: React.FC = () => {
           </div>
 
           <div className="flex gap-4 mb-8 text-center text-sm">
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">
-                Step {CREATE_LISTING_STEPS.VEHICLE_INFO}
-              </p>
-              <p className="text-gray-600">Basic Info</p>
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">
-                Step {CREATE_LISTING_STEPS.UPLOAD_IMAGES}
-              </p>
-              <p className="text-gray-600">Images</p>
-            </div>
-            <div className="flex-1">
-              <p className="font-semibold text-gray-900">
-                Step {CREATE_LISTING_STEPS.PREVIEW}
-              </p>
-              <p className="text-gray-600">Preview</p>
-            </div>
+            {STEP_LABELS.map(({ step: s, label }) => (
+              <div className="flex-1" key={s}>
+                <p className="font-semibold text-gray-900">Step {s}</p>
+                <p className="text-gray-600">{label}</p>
+              </div>
+            ))}
           </div>
         </>
       )}
@@ -117,13 +128,14 @@ const CreateListingPageContent: React.FC = () => {
         className="bg-white rounded-lg p-8 border border-gray-200 shadow-sm"
       >
         {isReadOnly ? (
-          <Step3Preview formData={formData} imageUrls={imageUrls} />
+          <Step4Preview formData={formData} imageUrls={imageUrls} />
         ) : (
           step === CREATE_LISTING_STEPS.VEHICLE_INFO && (
             <Step1VehicleInfo
               formData={formData}
               errors={errors}
               onChange={actions.handleInputChange}
+              onAddressChange={actions.handleAddressChange}
             />
           )
         )}
@@ -141,8 +153,18 @@ const CreateListingPageContent: React.FC = () => {
           />
         )}
 
+        {!isReadOnly && step === CREATE_LISTING_STEPS.UPLOAD_VIDEO && (
+          <Step3VideoUpload
+            videoUrl={formData.videoUrl}
+            isUploading={isUploadingVideo}
+            onUpload={actions.handleVideoUpload}
+            onRemove={actions.removeVideo}
+            error={videoError}
+          />
+        )}
+
         {!isReadOnly && step === CREATE_LISTING_STEPS.PREVIEW && (
-          <Step3Preview formData={formData} imageUrls={imageUrls} />
+          <Step4Preview formData={formData} imageUrls={imageUrls} />
         )}
 
         {isReadOnly && readOnlyMessage && (
@@ -171,23 +193,37 @@ const CreateListingPageContent: React.FC = () => {
 
         {/* Buttons */}
         {isReadOnly ? (
-          <div className="flex mt-8 justify-end gap-4">
-            {canCancelPublish && (
-              <button
-                type="button"
-                onClick={actions.handleCancelPublish}
-                disabled={isCancellingPublish}
-                className="px-6 py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          <div className="flex mt-8 justify-between">
+            <div className="flex gap-4">
+              {canCancelPublish && (
+                <button
+                  type="button"
+                  onClick={actions.handleCancelPublish}
+                  disabled={isCancellingPublish}
+                  className="px-6 py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isCancellingPublish ? "Cancelling..." : "Cancel Publish"}
+                </button>
+              )}
+            </div>
+            <div className="flex gap-4">
+              {!canCancelPublish && (
+                <button
+                  type="button"
+                  onClick={actions.handleSubmit}
+                  disabled={isSaving}
+                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSaving ? "Publishing..." : "Publish Listing"}
+                </button>
+              )}
+              <Link
+                href="/seller/my-listings"
+                className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
               >
-                {isCancellingPublish ? "Cancelling..." : "Cancel Publish"}
-              </button>
-            )}
-            <Link
-              href="/seller/my-listings"
-              className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
-            >
-              Back to My Listings
-            </Link>
+                Back to My Listings
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="flex gap-4 mt-8 justify-between">
@@ -236,9 +272,7 @@ const CreateListingPageContent: React.FC = () => {
                       />
                     </svg>
                   )}
-                  {isCreatingDraft
-                    ? "Creating Draft..."
-                    : `Continue to ${step === CREATE_LISTING_STEPS.VEHICLE_INFO ? "Images" : "Preview"}`}
+                  {isCreatingDraft ? "Creating Draft..." : getNextLabel()}
                 </button>
               ) : (
                 <button

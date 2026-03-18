@@ -12,4 +12,11 @@ export interface ListingFormData {
     usageTime: string;
     reasonForSale: string;
     shipping: boolean;
+    // Address picker fields
+    addressProvince: string;
+    addressDistrict: string;
+    addressWard: string;
+    addressStreet: string;
+    // Video upload
+    videoUrl: string;
 }

@@ -12,6 +12,7 @@ import {
   Calendar,
   FileText,
   CheckCircle2,
+  Video,
 } from "lucide-react";
 import { ListingDetail } from "../../../types/listing";
 import { MESSAGES } from "../../../constants";
@@ -280,6 +281,30 @@ export default function ListingDetailView({
           )}
         </div>
       </div>
+
+      {/* Video Section */}
+      {listing.videoUrl && (
+        <div
+          className={`${STYLES.descSection} animate-slide-up`}
+          style={{ animationDelay: "250ms" }}
+        >
+          <h2 className={STYLES.descTitle}>
+            <Video size={24} className="inline mr-2 text-brand-primary" />
+            Video
+          </h2>
+          <div className="rounded-3xl overflow-hidden border border-gray-100 bg-black">
+            <video
+              src={listing.videoUrl}
+              controls
+              className="w-full max-h-[500px] object-contain"
+              preload="metadata"
+            >
+              <track kind="captions" />
+              Trình duyệt không hỗ trợ phát video.
+            </video>
+          </div>
+        </div>
+      )}
 
       {/* Inspection Section (BR-S32-03) - Redesigned Verified Style */}
       {hasInspection && (

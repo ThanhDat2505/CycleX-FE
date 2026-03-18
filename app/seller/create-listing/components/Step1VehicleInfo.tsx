@@ -2,6 +2,7 @@ import React from "react";
 import { BIKE_CATEGORIES } from "@/app/constants/categories";
 import { YEAR_OPTIONS } from "../constants";
 import { ListingFormData } from "../types";
+import VietnameseAddressPicker from "@/app/components/address/VietnameseAddressPicker";
 
 interface Step1VehicleInfoProps {
   formData: ListingFormData;
@@ -11,12 +12,20 @@ interface Step1VehicleInfoProps {
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
     >,
   ) => void;
+  onAddressChange: (data: {
+    province: string;
+    district: string;
+    ward: string;
+    streetAddress: string;
+    fullAddress: string;
+  }) => void;
 }
 
 const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
   formData,
   errors,
   onChange,
+  onAddressChange,
 }) => {
   return (
     <div className="space-y-6">
@@ -205,44 +214,22 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
         </div>
       </div>
 
-      {/* Location */}
+      {/* Address Picker */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          City <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="location"
-          value={formData.location}
-          onChange={onChange}
-          placeholder="e.g., Ho Chi Minh, Ha Noi, Da Nang"
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
-            errors.location ? "border-red-500" : "border-gray-300"
-          }`}
+        <h3 className="text-sm font-semibold text-gray-700 mb-3">
+          Địa chỉ lấy hàng <span className="text-red-500">*</span>
+        </h3>
+        <VietnameseAddressPicker
+          province={formData.addressProvince}
+          district={formData.addressDistrict}
+          ward={formData.addressWard}
+          streetAddress={formData.addressStreet}
+          onChange={onAddressChange}
+          errors={{
+            province: errors.location,
+            streetAddress: errors.pickupAddress,
+          }}
         />
-        {errors.location && (
-          <p className="text-red-500 text-sm mt-1">{errors.location}</p>
-        )}
-      </div>
-
-      {/* Pickup Address */}
-      <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">
-          Pickup Address <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          name="pickupAddress"
-          value={formData.pickupAddress}
-          onChange={onChange}
-          placeholder="e.g., 123 Nguyen Hue, Quan 1, TP.HCM"
-          className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
-            errors.pickupAddress ? "border-red-500" : "border-gray-300"
-          }`}
-        />
-        {errors.pickupAddress && (
-          <p className="text-red-500 text-sm mt-1">{errors.pickupAddress}</p>
-        )}
       </div>
 
       {/* Description */}
@@ -264,25 +251,6 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
           <p className="text-red-500 text-sm mt-1">{errors.description}</p>
         )}
       </div>
-
-      {/* Shipping */}
-      <label className="flex items-center gap-3 cursor-pointer p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-        <input
-          type="checkbox"
-          name="shipping"
-          checked={formData.shipping}
-          onChange={onChange}
-          className="w-5 h-5 rounded border-gray-300 accent-brand-primary"
-        />
-        <div>
-          <span className="text-gray-900 font-medium block">
-            Offer Shipping
-          </span>
-          <span className="text-gray-500 text-sm">
-            Check this if you are willing to ship the bike to the buyer.
-          </span>
-        </div>
-      </label>
     </div>
   );
 };
