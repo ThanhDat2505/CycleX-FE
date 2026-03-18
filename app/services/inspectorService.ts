@@ -8,6 +8,7 @@ import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 
 import { authService } from "./authService";
+import { mockListings, getMockDashboardStats } from "./mockInspectorData";
 
 type RawObject = Record<string, any>;
 
@@ -154,6 +155,7 @@ class InspectorApiError extends Error {
 }
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
+
   // --- Token expiration guard ---
   if (isTokenExpired()) {
     // Clear stale auth data and redirect to login
