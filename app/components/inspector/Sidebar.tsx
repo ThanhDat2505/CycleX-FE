@@ -4,9 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 
-// Bổ sung thêm trường 'icon' dùng Material Symbols
-// Thêm tiền tố /inspector vào các đường dẫn href
-const NAV = [
+const MENU_ITEMS = [
   {
     href: "/inspector/dashboard",
     label: "Tổng quan",
@@ -36,9 +34,9 @@ const NAV = [
 export default function Sidebar() {
   const pathname = usePathname();
 
-  const isActive = (item: (typeof NAV)[number]) => {
+  const isActive = (item: (typeof MENU_ITEMS)[number]) => {
     if (item.href === "/") return pathname === "/";
-    return pathname.startsWith(item.href);
+    return pathname === item.href;
   };
 
   return (
@@ -57,15 +55,14 @@ export default function Sidebar() {
         <nav className="menu" aria-label="Danh mục Inspector">
           <p className="menu-title">Danh mục</p>
 
-          {NAV.map((item) => (
+          {MENU_ITEMS.map((item) => (
             <Link
               key={item.key}
-              className={`menu-item flex items-center gap-3 ${isActive(item) ? "active" : ""}`}
               href={item.href}
-              // Thêm class flex để icon và text nằm ngang nhau, có khoảng cách
-              style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              className={`menu-item flex items-center gap-3 ${
+                pathname === item.href ? "active" : ""
+              }`}
             >
-              {/* Thêm Icon */}
               <span
                 className="material-symbols-outlined"
                 style={{ fontSize: "20px" }}
@@ -80,7 +77,6 @@ export default function Sidebar() {
 
       <div
         className="user-info"
-        style={{ cursor: "pointer" }}
         title="Xem thông tin cá nhân / Đăng xuất"
       >
         <Image
@@ -99,10 +95,8 @@ export default function Sidebar() {
             Example@gmail.com
           </span>
         </div>
-        {/* Nút nhỏ góc phải để báo hiệu có menu dropdown */}
         <span
-          className="material-symbols-outlined"
-          style={{ marginLeft: "auto", fontSize: "18px", color: "#9ca3af" }}
+          className="material-symbols-outlined text-gray-400 text-[18px]"
         >
           more_vert
         </span>

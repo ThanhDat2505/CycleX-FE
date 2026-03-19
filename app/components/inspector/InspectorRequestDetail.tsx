@@ -327,7 +327,6 @@ export default function InspectorRequestDetail() {
               Thực hiện kiểm định
             </button>
 
-            {/* --- THÊM NÚT CHAT VỚI SELLER TẠI ĐÂY --- */}
             <Link
               href={chatHref}
               className="btn btn-info"

@@ -22,8 +22,8 @@ interface ListingRow {
   shop: string;
   submittedAt: string;
   dateISO: string;
-  rawStatus: string; // original status from API
-  displayStatus: string; // Vietnamese label
+  rawStatus: string;
+  displayStatus: string;
 }
 
 const STATUS_BADGE: Record<
@@ -62,7 +62,7 @@ function formatDateToVN(isoString: string) {
   return `${d}/${m}/${y}`;
 }
 
-/* ─── Skeleton Components ─── */
+
 
 function SkeletonStatCard() {
   return (
@@ -88,12 +88,12 @@ function SkeletonTableRow() {
   );
 }
 
-/* ─── Empty State ─── */
+
 
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      {/* Inline SVG illustration */}
+
       <svg
         className="w-32 h-32 mb-6 text-gray-300"
         viewBox="0 0 128 128"
@@ -118,7 +118,7 @@ function EmptyState({ label }: { label: string }) {
   );
 }
 
-/* ─── Mobile Card ─── */
+
 
 function ListingCard({
   row,
@@ -171,7 +171,7 @@ function SkeletonCard() {
   );
 }
 
-/* ─── Main Component ─── */
+
 
 export default function DashboardClient() {
   const router = useRouter();
@@ -180,9 +180,6 @@ export default function DashboardClient() {
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
-  /**
-   * Navigate to the appropriate page based on listing status
-   */
   function getTargetUrl(row: ListingRow): string {
     switch (row.rawStatus) {
       case "PENDING":
@@ -225,7 +222,7 @@ export default function DashboardClient() {
               .toUpperCase()
               .trim();
 
-            // Map to our known statuses
+
             let rawStatus = "UNKNOWN";
             if (["PENDING", "PENDING_APPROVAL"].includes(status))
               rawStatus = "PENDING";
@@ -280,7 +277,7 @@ export default function DashboardClient() {
     };
   }, []);
 
-  // Compute counts from actual data
+
   const counts = useMemo(() => {
     const activeListings = listings.filter((l) => l.rawStatus !== "DONE");
     const pendingAll = activeListings.length;
@@ -292,7 +289,7 @@ export default function DashboardClient() {
     return { pendingAll, pending, needMoreInfo, dispute, flagged, approved, activeListings };
   }, [listings]);
 
-  // Filter listings for the table below
+
   const filteredListings = useMemo(() => {
     switch (activeFilter) {
       case "pending":
@@ -344,7 +341,6 @@ export default function DashboardClient() {
       highlightTitle="Tổng Quan"
       description={`Chào mừng trở lại! Bạn có ${counts.pendingAll} tin cần duyệt hôm nay.`}
     >
-      {/* ─── Stat Cards ─── */}
       <div className="mb-6">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 justify-items-stretch">
           {loading && (
@@ -395,21 +391,18 @@ export default function DashboardClient() {
         </div>
       </div>
 
-      {/* ─── Error State ─── */}
       {!loading && error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
           {error}
         </div>
       )}
 
-      {/* ─── Loading Skeleton ─── */}
       {loading && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <div className="h-5 w-32 bg-gray-200 rounded animate-pulse" />
           </div>
 
-          {/* Desktop skeleton table */}
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -429,7 +422,6 @@ export default function DashboardClient() {
             </table>
           </div>
 
-          {/* Mobile skeleton cards */}
           <div className="md:hidden flex flex-col gap-3 p-4">
             {[...Array(4)].map((_, i) => (
               <SkeletonCard key={i} />
@@ -438,10 +430,8 @@ export default function DashboardClient() {
         </div>
       )}
 
-      {/* ─── Data Loaded ─── */}
       {!loading && !error && (
         <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-          {/* Header */}
           <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
             <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
               <span className="w-1.5 h-5 bg-[#FF8A00] rounded-full"></span>
@@ -461,12 +451,10 @@ export default function DashboardClient() {
             )}
           </div>
 
-          {/* Empty State */}
           {filteredListings.length === 0 ? (
             <EmptyState label={filterLabel[activeFilter]} />
           ) : (
             <>
-              {/* ─── Desktop Table (hidden on mobile) ─── */}
               <div className="hidden md:block overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -512,7 +500,6 @@ export default function DashboardClient() {
                 </table>
               </div>
 
-              {/* ─── Mobile Cards (hidden on desktop) ─── */}
               <div className="md:hidden flex flex-col gap-3 p-4">
                 {filteredListings.map((row) => (
                   <ListingCard

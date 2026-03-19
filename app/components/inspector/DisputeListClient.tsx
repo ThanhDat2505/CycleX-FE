@@ -155,13 +155,13 @@ export default function DisputeListClient() {
   return (
     <div className="min-h-screen text-gray-900 p-4 lg:p-10 font-sans">
       <div className="max-w-7xl mx-auto">
-        {/* Đã xóa toàn bộ phần tiêu đề theo yêu cầu */}
+
 
         <div className="contentWrapper">
-          {/* Filter Bar giống hình gửi */}
+
           <div className="filterCard">
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
-              {/* Trạng thái */}
+
               <div className="filterField !min-w-0">
                 <label className="filterLabel">Trạng thái</label>
                 <select
@@ -176,7 +176,7 @@ export default function DisputeListClient() {
                   ))}
                 </select>
               </div>
-              {/* Từ ngày tạo */}
+
               <div className="filterField !min-w-0">
                 <label className="filterLabel">Từ ngày tạo</label>
                 <input
@@ -186,7 +186,7 @@ export default function DisputeListClient() {
                   onChange={(e) => setCreatedFrom(e.target.value)}
                 />
               </div>
-              {/* Đến ngày tạo */}
+
               <div className="filterField !min-w-0">
                 <label className="filterLabel">Đến ngày tạo</label>
                 <input
@@ -196,7 +196,7 @@ export default function DisputeListClient() {
                   onChange={(e) => setCreatedTo(e.target.value)}
                 />
               </div>
-              {/* Tìm theo ID */}
+
               <div className="filterField !min-w-0">
                 <label className="filterLabel">Tìm theo ID</label>
                 <input
@@ -207,7 +207,7 @@ export default function DisputeListClient() {
                   onChange={(e) => setQInput(e.target.value)}
                 />
               </div>
-              {/* Sắp xếp */}
+
               <div className="filterField !min-w-0">
                 <label className="filterLabel">Sắp xếp</label>
                 <select
@@ -254,7 +254,7 @@ export default function DisputeListClient() {
             </div>
           </div>
 
-          {/* List Content */}
+
           <div className="tableCard" style={{ marginBottom: 40 }}>
             <div className="overflow-x-auto min-h-[400px]">
               {items.filter((row) => row.status?.toLowerCase() === "dispute")
@@ -367,7 +367,7 @@ export default function DisputeListClient() {
               )}
             </div>
 
-            {/* Pagination số ở góc phải dưới bảng */}
+
             {totalPages > 1 && (
               <div
                 style={{

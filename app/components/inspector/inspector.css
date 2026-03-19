@@ -513,27 +513,6 @@
   overflow-wrap: anywhere;
 }
 
-.note {
-  margin: 12px 0 16px;
-  padding: 12px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #fafafa;
-}
-.noteTitle {
-  font-weight: 900;
-  font-size: 13px;
-  margin-bottom: 8px;
-}
-
-.note-box {
-  margin: 12px 0 16px;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  background: var(--surface-soft);
-}
-.note-box-title,
 .panel-title {
   color: var(--brand-ink);
   font-weight: 900;
@@ -1070,6 +1049,7 @@
   color: #0b1220;
   line-height: 1.35;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   max-height: calc(1.35em * 2);
   word-break: break-word;
   overflow-wrap: anywhere;

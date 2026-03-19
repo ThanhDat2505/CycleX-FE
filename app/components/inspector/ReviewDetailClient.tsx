@@ -22,7 +22,6 @@ export default function ReviewDetailClient({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [note, setNote] = useState("");
   const [activePanel, setActivePanel] = useState<ActionPanel>("NONE");
   const [selectedThumb, setSelectedThumb] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -30,8 +29,6 @@ export default function ReviewDetailClient({
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
-  const [rejectOther, setRejectOther] = useState("");
-  const [needInfoNote, setNeedInfoNote] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -61,7 +58,7 @@ export default function ReviewDetailClient({
           try {
             await inspectorService.lockListing(id);
           } catch {
-            // Non-blocking: opening detail should not fail if lock is rejected
+            
           }
         }
       } catch (err: any) {
@@ -111,10 +108,7 @@ export default function ReviewDetailClient({
     setActivePanel((prev) => (prev === panel ? "NONE" : panel));
   };
 
-  const rejectNeedsOtherText = rejectReason === "other";
-  const canConfirmReject =
-    rejectReason !== "" &&
-    (!rejectNeedsOtherText || rejectOther.trim().length > 0);
+  const canConfirmReject = rejectReason !== "";
 
   const isChecklistComplete = checklist.every((item) => item === true);
 
@@ -235,7 +229,7 @@ export default function ReviewDetailClient({
               ))}
             </div>
 
-            {/* Modal hiển thị ảnh lớn */}
+
             {showImageModal && (
               <div
                 style={{
@@ -357,16 +351,6 @@ export default function ReviewDetailClient({
             <span className="sellerName">{listing.sellerName}</span>
           </div>
 
-          <div className="note-box" aria-label="Ghi chú đánh giá">
-            <div className="note-box-title">Ghi chú đánh giá</div>
-            <textarea
-              className="textarea"
-              placeholder="VD: xe đúng mô tả, ảnh đủ góc..."
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            ></textarea>
-          </div>
-
           <button
             className="btn btn-info"
             type="button"
@@ -390,7 +374,6 @@ export default function ReviewDetailClient({
                 const payload = {
                   reasonCode: "MEETS_STANDARDS",
                   reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
-                  note: note.trim() || undefined
                 };
                 await inspectorService.approveListing(listing.id, payload);
                 alert("Đã duyệt tin thành công");
@@ -415,14 +398,7 @@ export default function ReviewDetailClient({
           {activePanel === "NEED_INFO" && (
             <section className="panel">
               <div className="panel-title">Nội dung cần bổ sung</div>
-              <textarea
-                className="textarea"
-                rows={4}
-                placeholder="VD: Bổ sung ảnh số khung..."
-                value={needInfoNote}
-                onChange={(e) => setNeedInfoNote(e.target.value)}
-              ></textarea>
-              <div className="checklist">
+              <div className="checklist mt-2">
                 <label className="check-item">
                   <input type="checkbox" /> Ảnh số khung/serial
                 </label>
@@ -430,12 +406,12 @@ export default function ReviewDetailClient({
                   <input type="checkbox" /> Ảnh hóa đơn/giấy tờ
                 </label>
               </div>
-              <div className="confirm">
+              <div className="confirm mt-4">
                 <span className="confirm-text">Bạn chắc chắn muốn gửi?</span>
                 <button
                   className="btn btn-info btn-sm"
                   type="button"
-                  disabled={submitting || needInfoNote.trim().length === 0}
+                  disabled={submitting}
                   onClick={() => {
                     alert(
                       "Đã gửi yêu cầu bổ sung (UI). Endpoint riêng chưa có trong collection INSPECTOR.",
@@ -456,9 +432,7 @@ export default function ReviewDetailClient({
                   className="select"
                   value={rejectReason}
                   onChange={(e) => {
-                    const v = e.target.value;
-                    setRejectReason(v);
-                    if (v !== "other") setRejectOther("");
+                    setRejectReason(e.target.value);
                   }}
                 >
                   <option value="">-- Chọn --</option>
@@ -467,19 +441,9 @@ export default function ReviewDetailClient({
                   <option value="duplicate_post">Tin bị trùng</option>
                   <option value="spam_content">Nội dung spam</option>
                   <option value="wrong_photo">Ảnh không đúng</option>
-                  <option value="other">Khác</option>
                 </select>
               </label>
-              {rejectReason === "other" && (
-                <textarea
-                  className="textarea mt-2"
-                  rows={3}
-                  placeholder="Nhập lý do khác..."
-                  value={rejectOther}
-                  onChange={(e) => setRejectOther(e.target.value)}
-                />
-              )}
-              <div className="confirm">
+              <div className="confirm mt-4">
                 <span className="confirm-text">Xác nhận từ chối?</span>
                 <button
                   className="btn btn-danger btn-sm btn-reject-solid"
@@ -500,22 +464,17 @@ export default function ReviewDetailClient({
                               : rejectReason === "wrong_photo"
                                 ? "WRONG_PHOTO"
                                 : "OTHER";
-                    const reasonText =
-                      rejectReason === "other" && rejectOther.trim().length > 0
-                        ? rejectOther.trim()
-                        : rejectReason;
+                    const reasonText = rejectReason;
 
                     try {
                       setSubmitting(true);
                       const rejectPayload: {
                         reasonCode: string;
                         reasonText: string;
-                        note?: string;
                       } = {
                         reasonCode,
                         reasonText,
                       };
-                      if (note.trim()) rejectPayload.note = note.trim();
                       await inspectorService.rejectListing(
                         listing.id,
                         rejectPayload,

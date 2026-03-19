@@ -96,7 +96,6 @@ export default function PendingListClient() {
     const keyword = q.trim().toLowerCase();
 
     const filtered = listings.filter((x) => {
-      // Chỉ hiển thị tin đang chờ duyệt và đang review
       if (x.status !== "PENDING" && x.status !== "REVIEWING") return false;
 
       if (!keyword) return true;

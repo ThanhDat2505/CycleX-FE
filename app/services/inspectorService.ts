@@ -129,10 +129,6 @@ function getInspectorId(): number {
   );
 }
 
-/**
- * Check whether the current JWT token is expired.
- * Returns true when the token is missing or its `exp` claim is in the past.
- */
 function isTokenExpired(): boolean {
   const token = getAuthToken();
   if (!token) return true;
@@ -155,9 +151,7 @@ class InspectorApiError extends Error {
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
-  // --- Token expiration guard ---
   if (isTokenExpired()) {
-    // Clear stale auth data and redirect to login
     if (typeof window !== "undefined") {
       localStorage.removeItem("authToken");
       localStorage.removeItem("userData");
@@ -180,9 +174,6 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
     return existingRequest as Promise<T>;
   }
 
-  // Keep calls under /backend so Next.js rewrites to backend host.
-  // credentials: "omit" prevents browser cookies from being attached,
-  // avoiding CSRF/session side effects on POST/PUT/DELETE.
   const requestPromise = (async () => {
     try {
       return await backendRequest<T>(path, {
@@ -198,7 +189,6 @@ async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
         (error as Error)?.message ||
         `Server error: ${status}`;
 
-      // Special handling for auth errors
       if (status === 401 || status === 403) {
         console.error(
           `[inspectorFetch] ${status} on ${method} ${path}:`,
@@ -526,8 +516,6 @@ export const inspectorService = {
 
     const payload = response?.data ?? response;
     const detail = mapToReviewDetail(payload ?? {});
-    // Always keep detail id consistent with route param to avoid posting
-    // approve/reject requests with mismatched listing identifiers.
     detail.id = normalizedListingId;
     return detail;
   },

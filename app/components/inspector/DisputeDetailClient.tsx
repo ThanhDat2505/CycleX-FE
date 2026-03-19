@@ -110,7 +110,7 @@ export default function DisputeDetailClient({
   return (
     <div className="bg-brand-bg min-h-screen text-white p-4 lg:p-10 font-sans selection:bg-brand-primary/30">
       <div className="max-w-6xl mx-auto space-y-12">
-        {/* Header Phase */}
+
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5">
             <div className="animate-slide-up">
                 <Link 
@@ -149,13 +149,13 @@ export default function DisputeDetailClient({
             )}
         </div>
 
-        {/* Info Grid */}
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Left Column: Core Data */}
+
             <div className="lg:col-span-12 space-y-8">
                 
-                {/* Reason Card */}
+
                 <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl animate-fade-in">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shadow-glow-orange">
@@ -176,7 +176,7 @@ export default function DisputeDetailClient({
                     </div>
                 </div>
 
-                {/* Evidence Grid */}
+
                 <div className="space-y-6">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-3">
@@ -220,9 +220,9 @@ export default function DisputeDetailClient({
                     </div>
                 </div>
 
-                {/* Secondary Data Grid */}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Transaction & Parties */}
+
                     <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-200">
                         <div className="flex items-center gap-3 mb-2">
                            <History size={18} className="text-brand-primary" />
@@ -254,7 +254,7 @@ export default function DisputeDetailClient({
                         </div>
                     </div>
 
-                    {/* Listing Summary */}
+
                     <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-300">
                         <div className="flex items-center gap-3 mb-2">
                            <ShoppingBag size={18} className="text-brand-primary" />
@@ -296,7 +296,7 @@ export default function DisputeDetailClient({
             </div>
         </div>
 
-        {/* Footer Audit */}
+
         <div className="text-center pt-20 border-t border-white/5">
             <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.4em]">
                 CycleX Case ID: {detail.id} • Protocol S-74 Enforcement • Premium AI Workflow
