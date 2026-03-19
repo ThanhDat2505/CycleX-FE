@@ -89,7 +89,8 @@ export default function ReviewRequiredList() {
 
   return (
     <div className="page">
-      <div className="filterCard">
+      <div className="contentWrapper">
+        <div className="filterCard">
         <div className="filterRow">
           <div className="filterField filterGrow">
             <label className="filterLabel">Tìm kiếm</label>
@@ -196,6 +197,7 @@ export default function ReviewRequiredList() {
           </table>
         )}
       </section>
+      </div>
     </div>
   );
 }

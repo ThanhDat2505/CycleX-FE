@@ -117,7 +117,8 @@ export default function PendingListClient() {
 
   return (
     <div className="page">
-      <div className="filterCard">
+      <div className="contentWrapper">
+        <div className="filterCard">
         <div className="filterRow">
           <div className="filterField filterGrow">
             <label className="filterLabel">Tìm kiếm</label>
@@ -230,6 +231,7 @@ export default function PendingListClient() {
           </table>
         )}
       </section>
+      </div>
     </div>
   );
 }
