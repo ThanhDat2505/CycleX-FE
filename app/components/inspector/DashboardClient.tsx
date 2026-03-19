@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
 import { inspectorService } from "@/app/services/inspectorService";
 
@@ -62,10 +63,32 @@ function formatDateToVN(isoString: string) {
 }
 
 export default function DashboardClient() {
+  const router = useRouter();
   const [listings, setListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+
+  /**
+   * Navigate to the appropriate page based on listing status
+   */
+  function getTargetUrl(row: ListingRow): string {
+    switch (row.rawStatus) {
+      case "PENDING":
+        return `/inspector/pending-list`;
+      case "REVIEWING":
+      case "NEED_MORE_INFO":
+      case "FLAGGED":
+        return `/inspector/review-required`;
+      case "DISPUTE":
+        return `/inspector/disputes`;
+      case "APPROVED":
+      case "DONE":
+        return `/inspector/review-history`;
+      default:
+        return `/inspector/review-detail?id=${encodeURIComponent(row.id)}`;
+    }
+  }
 
   useEffect(() => {
     let mounted = true;
@@ -314,7 +337,9 @@ export default function DashboardClient() {
                     return (
                       <tr
                         key={row.id}
-                        className="hover:bg-gray-50 transition-colors"
+                        className="hover:bg-orange-50 transition-colors cursor-pointer"
+                        onClick={() => router.push(getTargetUrl(row))}
+                        title={`Nhấn để xem chi tiết — ${badge.label}`}
                       >
                         <td className="px-5 py-3 font-mono text-xs text-gray-500">
                           {row.id}

@@ -7,8 +7,6 @@ import { CreateTransactionRequest, Transaction, TransactionWithDetails, Transact
 import { apiCallPOST, apiCallGET } from '../utils/apiHelpers';
 import { validateObject, validateArray } from '../utils/apiValidation';
 
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
-
 import { authService } from './authService';
 
 type CurrentUserSnapshot = {
@@ -249,37 +247,6 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
 }
 
 export async function createPurchaseRequest(data: CreateTransactionRequest): Promise<Transaction> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const platformFee = 50000;
-        const inspectionFee = 100000;
-        const listingPrice = 5000000;
-        const totalAmount = data.transactionType === 'PURCHASE'
-            ? listingPrice + platformFee + inspectionFee
-            : (data.depositAmount || 0) + platformFee;
-
-        return {
-            transactionId: Math.floor(Math.random() * 10000),
-            listingId: data.listingId,
-            buyerId: data.buyerId,
-            sellerId: 1,
-            transactionType: data.transactionType,
-            status: 'PENDING_SELLER_CONFIRM',
-            desiredTime: data.desiredTime,
-            receiverName: data.receiverName,
-            receiverPhone: data.receiverPhone,
-            receiverAddress: data.receiverAddress,
-            depositAmount: data.depositAmount,
-            note: data.note,
-            platformFee,
-            inspectionFee,
-            totalAmount,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-    }
-
     const productId = data.productId ?? data.listingId;
     if (!productId) {
         throw new Error('Missing productId for purchase request');
@@ -351,35 +318,6 @@ export async function getTransactionDetail(
     transactionId: number,
     role: 'BUYER' | 'SELLER' = 'BUYER'
 ): Promise<TransactionWithDetails> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const user = getCurrentUserSnapshot();
-
-        return {
-            transactionId,
-            listingId: 1,
-            buyerId: user.userId ?? 2,
-            sellerId: 3,
-            transactionType: 'PURCHASE',
-            status: 'PENDING_SELLER_CONFIRM',
-            desiredTime: new Date(Date.now() + 86400000).toISOString(),
-            platformFee: 50000,
-            inspectionFee: 100000,
-            totalAmount: 5150000,
-            listingTitle: 'Trek Marlin 7 2022 (Mock Detail)',
-            listingImage: 'https://images.unsplash.com/photo-1576435728678-be95d398b646?auto=format&fit=crop&q=80&w=500',
-            buyerName: 'Nguyen Van A',
-            sellerName: 'CycleX Verified Seller',
-            sellerPhone: '0912345678',
-            receiverName: 'Nguyen Van A',
-            receiverPhone: '0987654321',
-            receiverAddress: '123 Duong Lang, Ha Noi',
-            note: 'Giao hang vao buoi sang giup minh nhe.',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-    }
-
     const prefix = role === 'SELLER' ? '/seller' : '/buyer';
     const dataResponse = await apiCallGET<any>(`${prefix}/transactions/${transactionId}`);
 
@@ -393,85 +331,10 @@ export async function getTransactionDetail(
     return normalizeBuyerTransactionDetail(dataResponse, transactionId);
 }
 
-let mockTransactions: TransactionWithDetails[] = [
-    {
-        transactionId: 101,
-        listingId: 1,
-        buyerId: 2,
-        sellerId: 3,
-        transactionType: 'PURCHASE',
-        status: 'PENDING_SELLER_CONFIRM',
-        desiredTime: new Date(Date.now() + 86400000 * 2).toISOString(),
-        listingTitle: 'Trek Marlin 7 2022',
-        listingImage: 'https://images.unsplash.com/photo-1576435728678-be95d398b646?auto=format&fit=crop&q=80&w=500',
-        buyerName: 'Nguyen Van A',
-        sellerName: 'CycleX Verified Seller',
-        platformFee: 50000,
-        inspectionFee: 100000,
-        totalAmount: 5500000,
-        receiverName: 'Nguyen Van A',
-        receiverPhone: '0987654321',
-        receiverAddress: '123 Duong Lang, Ha Noi',
-        createdAt: new Date(Date.now() - 3600000).toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-    {
-        transactionId: 105,
-        listingId: 5,
-        buyerId: 2,
-        sellerId: 3,
-        transactionType: 'DEPOSIT',
-        status: 'CONFIRMED',
-        desiredTime: new Date(Date.now() + 86400000 * 3).toISOString(),
-        listingTitle: 'Honda Wave Alpha',
-        listingImage: 'https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=500',
-        buyerName: 'Nguyen Van A',
-        sellerName: 'Another Seller',
-        depositAmount: 500000,
-        platformFee: 50000,
-        inspectionFee: 0,
-        totalAmount: 550000,
-        createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-        updatedAt: new Date().toISOString(),
-    },
-    {
-        transactionId: 108,
-        listingId: 8,
-        buyerId: 2,
-        sellerId: 3,
-        transactionType: 'PURCHASE',
-        status: 'COMPLETED',
-        desiredTime: new Date(Date.now() - 86400000).toISOString(),
-        listingTitle: 'Giant Escape 3 2023',
-        listingImage: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?auto=format&fit=crop&q=80&w=500',
-        buyerName: 'Nguyen Van A',
-        sellerName: 'CycleX Verified Seller',
-        platformFee: 50000,
-        inspectionFee: 100000,
-        totalAmount: 8500000,
-        receiverName: 'Nguyen Van A',
-        receiverPhone: '0987654321',
-        receiverAddress: '456 Le Loi, Da Nang',
-        createdAt: new Date(Date.now() - 86400000).toISOString(),
-        updatedAt: new Date(Date.now() - 3600000).toISOString(), // Completed 1h ago
-    },
-];
-
 export async function getSellerTransactions(
     sellerId: number,
     status?: string
 ): Promise<TransactionWithDetails[]> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        let results = mockTransactions.filter(t => t.sellerId === sellerId);
-
-        if (status) {
-            results = results.filter(t => t.status === status);
-        }
-
-        return results;
-    }
-
     try {
         const dataResponse = await apiCallGET<any>('/seller/transactions/pending?page=0&size=50');
         const itemsArray = Array.isArray(dataResponse)
@@ -533,11 +396,6 @@ export async function getSellerTransactions(
 export async function getBuyerTransactions(
     buyerId: number
 ): Promise<TransactionWithDetails[]> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        return mockTransactions.map(t => ({ ...t, buyerId }));
-    }
-
     try {
         const dataResponse = await apiCallGET<any[]>('/buyer/transactions');
 
@@ -586,17 +444,6 @@ export async function getBuyerTransactions(
 }
 
 export async function acceptTransaction(transactionId: number): Promise<boolean> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        const tx = mockTransactions.find(t => t.transactionId === transactionId);
-        if (tx) {
-            tx.status = 'CONFIRMED';
-        }
-
-        return true;
-    }
-
     try {
         const response = await apiCallPOST<any>(`/seller/transactions/${transactionId}/confirm`, { note: 'Da xac nhan tu phia nguoi ban' });
 
@@ -621,17 +468,6 @@ export async function acceptTransaction(transactionId: number): Promise<boolean>
 }
 
 export async function cancelTransaction(transactionId: number): Promise<boolean> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-
-        const tx = mockTransactions.find(t => t.transactionId === transactionId);
-        if (tx) {
-            tx.status = 'CANCELLED';
-        }
-
-        return true;
-    }
-
     try {
         const response = await apiCallPOST<any>(`/buyer/transactions/${transactionId}/cancel`, {});
 

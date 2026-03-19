@@ -3,12 +3,10 @@
 /**
  * Listing Service
  * Handles API calls for bike listing operations
- * Supports mock mode for development when backend is not ready
  */
 
 import { Listing, HomeBike, PaginationInfo, ListingDetail, validateListingDetail } from '../types/listing';
 import { PAGINATION } from '../constants/pagination';
-import { MOCK_LISTINGS } from '../mocks';
 import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
 import {
     validateResponse,
@@ -18,10 +16,6 @@ import {
     validateString,
     validatePositiveNumber
 } from '../utils/apiValidation';
-
-
-// Check if we should use mock API (for development)
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 type PublicListingApiResponse = {
     items?: unknown;
@@ -219,22 +213,6 @@ function normalizePublicListingResponse(
  * @returns Promise with array of featured bikes (HomeBike with viewCount)
  */
 export async function getFeaturedBikes(): Promise<HomeBike[]> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const featured = [...MOCK_LISTINGS]
-            .sort((a, b) => (b.viewsCount || 0) - (a.viewsCount || 0))
-            .slice(0, 10)
-            .map(listing => ({
-                listingId: listing.listingId,
-                title: listing.title,
-                price: listing.price,
-                imageUrl: listing.imageUrl,
-                locationCity: listing.locationCity,
-                viewCount: listing.viewsCount,
-            }));
-        return featured;
-    }
-
     const bikes = await apiCallGET<HomeBike[]>('/home');
 
     // ✅ VALIDATION: Ensure bikes is an array and each bike has required fields
@@ -264,14 +242,6 @@ export async function getFeaturedBikes(): Promise<HomeBike[]> {
  * @returns Promise with array of all bikes (HomeBike without viewCount)
  */
 export async function getAllListings(page: number = 1): Promise<HomeBike[]> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        const pageSize = 10;
-        const startIndex = (page - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        return MOCK_LISTINGS.slice(startIndex, endIndex);
-    }
-
     try {
         const params = new URLSearchParams();
         params.append('status', 'APPROVED');
@@ -317,96 +287,6 @@ export async function searchListings(
     pageSize: number = 12,
     sortBy: 'newest' | 'priceAsc' | 'priceDesc' | 'mostViewed' = 'newest'
 ): Promise<{ items: HomeBike[]; pagination: PaginationInfo }> {
-
-
-    // Mock data for development
-    if (USE_MOCK_API) {
-
-        await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
-
-        let results = MOCK_LISTINGS;
-
-        // ✅ BR-S30-01: Keyword matching ONLY on title field
-        if (keyword && keyword.trim().length > 0) {
-            const keywordLower = keyword.toLowerCase();
-            results = results.filter(listing =>
-                listing.title.toLowerCase().includes(keywordLower)
-                // ❌ NOT matching brand/model/description
-            );
-        }
-
-        // Filter by price range
-        if (filters?.minPrice !== undefined) {
-            results = results.filter(listing => listing.price >= filters.minPrice!);
-        }
-        if (filters?.maxPrice !== undefined) {
-            results = results.filter(listing => listing.price <= filters.maxPrice!);
-        }
-
-        // Filter by bike types
-        if (filters?.bikeTypes && filters.bikeTypes.length > 0) {
-            results = results.filter(listing =>
-                listing.category && filters.bikeTypes!.includes(listing.category)
-            );
-        }
-
-        // Filter by brands
-        if (filters?.brands && filters.brands.length > 0) {
-            results = results.filter(listing =>
-                listing.brand && filters.brands!.includes(listing.brand) // Add null check
-            );
-        }
-
-        // Filter by conditions (OR logic: show if listing matches ANY selected condition)
-        if (filters?.conditions && filters.conditions.length > 0) {
-            results = results.filter(listing =>
-                filters.conditions!.includes(listing.condition as 'new' | 'used')
-            );
-        }
-
-        switch (sortBy) {
-            case 'newest':
-                // Assume higher listingId = newer (mock data)
-                results.sort((a, b) => b.listingId - a.listingId);
-                break;
-            case 'priceAsc':
-                results.sort((a, b) => a.price - b.price);
-                break;
-            case 'priceDesc':
-                results.sort((a, b) => b.price - a.price);
-                break;
-            case 'mostViewed':
-                results.sort((a, b) => (b.viewsCount || 0) - (a.viewsCount || 0)); // Add null check
-                break;
-        }
-
-        // Pagination
-        const startIndex = (page - 1) * pageSize;
-        const endIndex = startIndex + pageSize;
-        const paginatedItems = results.slice(startIndex, endIndex);
-
-        // Convert Listing to HomeBike format (already camelCase)
-        const homeBikes: HomeBike[] = paginatedItems.map(listing => ({
-            listingId: listing.listingId,
-            title: listing.title,
-            price: listing.price,
-            imageUrl: listing.imageUrl,
-            locationCity: listing.locationCity,
-        }));
-
-
-
-        return {
-            items: homeBikes,
-            pagination: {
-                page,
-                pageSize,
-                total: results.length,
-            },
-        };
-    }
-
-    // Real API call (when backend is ready)
     try {
         // Build query string
         const params = new URLSearchParams();
@@ -459,48 +339,6 @@ export async function searchSellerListings(
     page: number = 0,
     pageSize: number = 10
 ): Promise<{ items: HomeBike[]; pagination: PaginationInfo }> {
-
-
-    if (USE_MOCK_API) {
-
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        let results = [...MOCK_LISTINGS];
-
-        // Keyword search on title
-        if (keyword && keyword.trim().length > 0) {
-            const keywordLower = keyword.toLowerCase();
-            results = results.filter(listing =>
-                listing.title.toLowerCase().includes(keywordLower)
-            );
-        }
-
-        // Filter by price
-        if (filters?.minPrice !== undefined) {
-            results = results.filter(listing => listing.price >= filters.minPrice!);
-        }
-        if (filters?.maxPrice !== undefined) {
-            results = results.filter(listing => listing.price <= filters.maxPrice!);
-        }
-
-        // Pagination
-        const startIndex = page * pageSize;
-        const paginatedItems = results.slice(startIndex, startIndex + pageSize);
-
-        const homeBikes: HomeBike[] = paginatedItems.map(listing => ({
-            listingId: listing.listingId,
-            title: listing.title,
-            price: listing.price,
-            imageUrl: listing.imageUrl,
-            locationCity: listing.locationCity,
-        }));
-
-        return {
-            items: homeBikes,
-            pagination: { page, pageSize, total: results.length },
-        };
-    }
-
     // Real API: POST /api/seller/listings/search
     const requestBody: Record<string, unknown> = {
         sellerId,
@@ -562,24 +400,6 @@ export async function searchSellerListings(
  * @throws Error if listing not found or not APPROVED
  */
 export async function getListingDetail(listingId: number): Promise<ListingDetail> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const { MOCK_LISTING_DETAILS } = await import('../mocks/listings');
-        const listing = MOCK_LISTING_DETAILS.find(l => l.listingId === listingId);
-
-        if (!listing) {
-            throw new Error('Listing not found');
-        }
-
-        // BR-S32-01: Only APPROVED listings for public
-        if (listing.status !== 'APPROVED') {
-            throw new Error(`Listing not available: status is ${listing.status}`);
-        }
-
-        return validateListingDetail(listing);
-    }
-
     // Real API: GET /api/bikelistings/{listingId}
     try {
         const data = await apiCallGET<ListingDetail>(`/bikelistings/${listingId}`);
@@ -617,20 +437,6 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
  * @throws Error if listing not found or not owned by seller
  */
 export async function getSellerListingDetail(sellerId: number, listingId: number): Promise<ListingDetail> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-
-        const { MOCK_LISTING_DETAILS } = await import('../mocks/listings');
-        const listing = MOCK_LISTING_DETAILS.find(l => l.listingId === listingId);
-
-        if (!listing) {
-            throw new Error('Listing not found');
-        }
-
-        // Seller can view their own listing regardless of status
-        return validateListingDetail(listing);
-    }
-
     try {
         // Real API: POST /api/seller/listings/detail
         const data = await apiCallPOST<ListingDetail>('/seller/listings/detail', { sellerId, listingId });
@@ -649,5 +455,3 @@ export async function getSellerListingDetail(sellerId: number, listingId: number
         throw error;
     }
 }
-
-

@@ -8,7 +8,6 @@ import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 
 import { authService } from "./authService";
-import { mockListings, getMockDashboardStats } from "./mockInspectorData";
 
 type RawObject = Record<string, any>;
 
