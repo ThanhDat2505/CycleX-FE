@@ -228,39 +228,34 @@ export default function DisputeListClient() {
               </select>
             </div>
           </div>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mt-2">
-            <div className="flex justify-center md:justify-end gap-2">
-              <div className="w-full flex justify-end gap-2">
-                <button
-                  className="font-extrabold text-base text-gray-900 py-2 px-6 rounded-lg border border-gray-300 bg-gray-100 hover:bg-gray-200 transition"
-                  type="button"
-                  onClick={() => {
-                    setStatus("ALL");
-                    setCreatedFrom("");
-                    setCreatedTo("");
-                    setAssigneeId("");
-                    setQInput("");
-                    setQDebounced("");
-                    setSort("createdAt:DESC");
-                    setPage(0);
-                  }}
-                >
-                  XÓA BỘ LỌC
-                </button>
-                <button
-                  onClick={() => load(true)}
-                  className="flex items-center gap-3 px-6 py-2 bg-gray-100 border border-gray-200 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-black hover:bg-gray-200 transition-all active:scale-95"
-                >
-                  <RefreshCw
-                    size={16}
-                    className={
-                      refreshing ? "animate-spin text-brand-primary" : ""
-                    }
-                  />
-                  Refresh
-                </button>
-              </div>
-            </div>
+          <div className="filterActions">
+              <button
+                className="btn btnGhost"
+                type="button"
+                onClick={() => {
+                  setStatus("ALL");
+                  setCreatedFrom("");
+                  setCreatedTo("");
+                  setAssigneeId("");
+                  setQInput("");
+                  setQDebounced("");
+                  setSort("createdAt:DESC");
+                  setPage(0);
+                }}
+              >
+                Xóa bộ lọc
+              </button>
+              <button
+                className="btn btnGhost"
+                type="button"
+                onClick={() => load(true)}
+              >
+                <RefreshCw
+                  size={14}
+                  className={refreshing ? "animate-spin" : ""}
+                />
+                Refresh
+              </button>
           </div>
         </div>
 
