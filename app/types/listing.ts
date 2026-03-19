@@ -159,6 +159,9 @@ export interface ListingDetail {
     // Seller info (S-33 future) - all optional
     sellerId?: number;
     sellerName?: string;
+
+    // Video
+    videoUrl?: string | null;
 }
 
 /**
@@ -246,7 +249,8 @@ export function validateListingDetail(data: any): ListingDetail {
         viewsCount: typeof data.viewsCount === 'number' ? data.viewsCount :
             (typeof data.viewCount === 'number' ? data.viewCount : 0),
         brand: data.brand || 'Unknown Brand',
-        status: data.status || 'APPROVED' // Default to APPROVED for public view if API omits it for some reason
+        status: data.status || 'APPROVED', // Default to APPROVED for public view if API omits it for some reason
+        videoUrl: typeof data.videoUrl === 'string' && data.videoUrl.trim().length > 0 ? data.videoUrl : null,
     } as ListingDetail;
 }
 

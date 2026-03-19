@@ -13,6 +13,7 @@ import {
   getListingImages,
   cancelPublish,
   setImageAsPrimary,
+  saveListingVideo,
 } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import {
@@ -119,7 +120,16 @@ export const useCreateListing = () => {
     usageTime: "",
     reasonForSale: "",
     shipping: false,
+    addressProvince: "",
+    addressDistrict: "",
+    addressWard: "",
+    addressStreet: "",
+    videoUrl: "",
   });
+
+  // Video upload state
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   // Auth & Role Protection
   useEffect(() => {
@@ -183,6 +193,11 @@ export const useCreateListing = () => {
           usageTime: draft.usageTime || "",
           reasonForSale: draft.reasonForSale || "",
           shipping: false,
+          addressProvince: "",
+          addressDistrict: "",
+          addressWard: "",
+          addressStreet: "",
+          videoUrl: (draft as any).videoUrl || "",
         });
 
         const sortedImages = [...images]
@@ -284,6 +299,120 @@ export const useCreateListing = () => {
     },
     [isReadOnly],
   );
+
+  const handleAddressChange = useCallback(
+    (data: {
+      province: string;
+      district: string;
+      ward: string;
+      streetAddress: string;
+      fullAddress: string;
+    }) => {
+      if (isReadOnly) return;
+      setFormData((prev) => ({
+        ...prev,
+        addressProvince: data.province,
+        addressDistrict: data.district,
+        addressWard: data.ward,
+        addressStreet: data.streetAddress,
+        location: data.province,
+        pickupAddress: data.fullAddress,
+      }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        if (data.province) delete newErrors.location;
+        if (data.fullAddress) delete newErrors.pickupAddress;
+        return newErrors;
+      });
+    },
+    [isReadOnly],
+  );
+
+  const handleVideoUpload = useCallback(
+    async (file: File) => {
+      if (isReadOnly) return;
+      setVideoError(null);
+
+      // Validate video file
+      const validTypes = ["video/mp4", "video/webm", "video/quicktime"];
+      if (!validTypes.includes(file.type)) {
+        setVideoError("Chỉ chấp nhận file video MP4, WebM hoặc MOV.");
+        return;
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        setVideoError("File video không được vượt quá 50MB.");
+        return;
+      }
+
+      // Check video duration
+      const video = document.createElement("video");
+      video.preload = "metadata";
+
+      const durationCheck = new Promise<boolean>((resolve) => {
+        video.onloadedmetadata = () => {
+          URL.revokeObjectURL(video.src);
+          if (video.duration > 15) {
+            setVideoError("Video không được dài quá 15 giây.");
+            resolve(false);
+          } else {
+            resolve(true);
+          }
+        };
+        video.onerror = () => {
+          URL.revokeObjectURL(video.src);
+          setVideoError("Không thể đọc file video.");
+          resolve(false);
+        };
+        video.src = URL.createObjectURL(file);
+      });
+
+      const isValid = await durationCheck;
+      if (!isValid) return;
+
+      setIsUploadingVideo(true);
+      try {
+        // Save to public/video/ via API upload
+        const formDataUpload = new FormData();
+        formDataUpload.append("file", file);
+        formDataUpload.append("type", "video");
+
+        const response = await fetch("/api/upload-video", {
+          method: "POST",
+          body: formDataUpload,
+        });
+
+        if (!response.ok) {
+          throw new Error("Upload failed");
+        }
+
+        const result = await response.json();
+        setFormData((prev) => ({ ...prev, videoUrl: result.url }));
+
+        // Save video path to DB if we have a listingId
+        if (listingId && user?.userId) {
+          try {
+            await saveListingVideo(user.userId, listingId, result.url);
+          } catch {
+            console.warn("Failed to save video path to DB, will retry on submit");
+          }
+        }
+
+        addToast("Video đã tải lên thành công!", "success");
+      } catch {
+        setVideoError("Tải video thất bại. Vui lòng thử lại.");
+      } finally {
+        setIsUploadingVideo(false);
+      }
+    },
+    [isReadOnly, addToast, listingId, user?.userId],
+  );
+
+  const removeVideo = useCallback(() => {
+    if (isReadOnly) return;
+    setFormData((prev) => ({ ...prev, videoUrl: "" }));
+    setVideoError(null);
+  }, [isReadOnly]);
 
   const handleCancelPublish = useCallback(async () => {
     if (!user?.userId) {
@@ -392,6 +521,10 @@ export const useCreateListing = () => {
         setStep((prev) => prev + 1);
         window.scrollTo(0, 0);
       }
+    } else if (step === CREATE_LISTING_STEPS.UPLOAD_VIDEO) {
+      // Video is optional, proceed to preview
+      setStep((prev) => prev + 1);
+      window.scrollTo(0, 0);
     } else {
       setStep((prev) => prev + 1);
     }
@@ -655,11 +788,6 @@ export const useCreateListing = () => {
   const handleSubmit = async (e?: React.SyntheticEvent) => {
     if (e) e.preventDefault();
 
-    if (isReadOnly) {
-      setSubmitError(readOnlyMessage);
-      return;
-    }
-
     if (!user) {
       setSubmitError("You must be logged in to create a listing.");
       return;
@@ -671,13 +799,21 @@ export const useCreateListing = () => {
     }
 
     setIsSaving(true);
+    setSubmitError(null);
     try {
       // Draft-First: Submit existing draft instead of creating new
       await submitDraft(listingId, user.userId);
-
+      addToast("Đăng tin thành công! Đang chờ duyệt.", "success");
       router.push("/seller/my-listings");
-    } catch (error) {
-      setSubmitError("Failed to submit listing. Please try again.");
+    } catch (error: any) {
+      const msg = String(error?.message || error?.response?.data?.message || "");
+      if (msg.includes("Only DRAFT listings can be submitted") || msg.includes("Only DRAFT")) {
+        // Listing was already submitted previously — treat as success
+        addToast("Tin đăng đã được gửi duyệt!", "success");
+        router.push("/seller/my-listings");
+      } else {
+        setSubmitError("Failed to submit listing. Please try again.");
+      }
     } finally {
       setIsSaving(false);
     }
@@ -701,10 +837,13 @@ export const useCreateListing = () => {
       isReadOnly,
       readOnlyMessage: isReadOnly ? readOnlyMessage : null,
       canCancelPublish,
+      isUploadingVideo,
+      videoError,
     },
     actions: {
       setStep,
       handleInputChange,
+      handleAddressChange,
       handleNext,
       handleBack,
       onFileChange,
@@ -715,6 +854,8 @@ export const useCreateListing = () => {
       handleSaveDraft,
       handleSubmit,
       handleCancelPublish,
+      handleVideoUpload,
+      removeVideo,
     },
   };
 };

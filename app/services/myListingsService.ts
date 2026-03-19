@@ -134,6 +134,7 @@ function mapStatusFromBackend(status: string): ListingStatus {
     const normalized = status.toUpperCase();
     if (normalized === 'APPROVED') return 'APPROVE';
     if (normalized === 'REJECTED') return 'REJECT';
+    if (normalized === 'SOLD') return 'SOLD';
     if (normalized === 'PENDING' || normalized === 'DRAFT') {
         return normalized as ListingStatus;
     }
@@ -152,6 +153,7 @@ function mapStatusToBackend(status?: string): string | undefined {
     const normalized = status.toUpperCase();
     if (normalized === 'APPROVE' || normalized === 'ACTIVE') return 'APPROVED';
     if (normalized === 'REJECT') return 'REJECTED';
+    if (normalized === 'SOLD') return 'SOLD';
     if (normalized === 'DRAFT' || normalized === 'PENDING') return normalized;
 
     return undefined;
@@ -569,4 +571,11 @@ export async function deleteListingImage(sellerId: number, listingId: number, im
  */
 export async function setImageAsPrimary(sellerId: number, listingId: number, imageId: number): Promise<void> {
     await apiCallPATCH(`/seller/${sellerId}/listings/${listingId}/images/${imageId}/set-primary`, {});
+}
+/**
+ * Save listing video path to DB
+ * Endpoint: POST /api/seller/{sellerId}/listings/{listingId}/video
+ */
+export async function saveListingVideo(sellerId: number, listingId: number, videoPath: string): Promise<void> {
+    await apiCallPOST(`/seller/${sellerId}/listings/${listingId}/video`, { videoPath });
 }

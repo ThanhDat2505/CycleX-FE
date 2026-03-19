@@ -5,17 +5,17 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
-import Pagination from '../../listings/components/Pagination';
+import Pagination from "../../listings/components/Pagination";
 import { ITEMS_PER_PAGE } from "@/app/constants";
 import { PageLoading } from "@/app/components/ui";
 
 // Force dynamic rendering
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 const ListingsPage: React.FC = () => {
   return (
@@ -49,43 +49,42 @@ function MyListingsContent() {
   useEffect(() => {
     if (!authLoading) {
       if (!isLoggedIn) {
-        router.push('/login?returnUrl=/seller/my-listings');
-      } else if (user && ['ADMIN', 'SHIPPER', 'INSPECTOR'].includes(user.role)) {
-        router.push('/');
+        router.push("/login?returnUrl=/seller/my-listings");
+      } else if (
+        user &&
+        ["ADMIN", "SHIPPER", "INSPECTOR"].includes(user.role)
+      ) {
+        router.push("/");
       }
     }
   }, [isLoggedIn, authLoading, router, user]);
 
   // Initialize filter from URL params with mapping
-  const rawStatus = searchParams.get('status');
+  const rawStatus = searchParams.get("status");
   const initialStatus = (() => {
     const s = rawStatus?.toLowerCase();
-    if (s === 'active') return 'approve';
-    if (s === 'rejected') return 'reject';
-    return s || '';
+    if (s === "active") return "approve";
+    if (s === "rejected") return "reject";
+    return s || "";
   })();
 
   const [filterStatus, setFilterStatus] = useState(initialStatus);
-  const [sortBy, setSortBy] = useState<'recent' | 'views' | 'price-high' | 'price-low'>('recent');
+  const [sortBy, setSortBy] = useState<
+    "recent" | "views" | "price-high" | "price-low"
+  >("recent");
 
   // BR-S11-F01: Pagination state
   const [page, setPage] = useState(1);
 
   // Use custom hook for data fetching and state management
-  const {
-    listings,
-    totalItems,
-    totalPages,
-    loading,
-    error,
-    retry
-  } = useMyListings({
-    sellerId: user?.userId,
-    page,
-    pageSize: ITEMS_PER_PAGE,
-    status: filterStatus || undefined,
-    sortBy
-  });
+  const { listings, totalItems, totalPages, loading, error, retry } =
+    useMyListings({
+      sellerId: user?.userId,
+      page,
+      pageSize: ITEMS_PER_PAGE,
+      status: filterStatus || undefined,
+      sortBy,
+    });
 
   // Reset to page 1 when filter/sort changes
   useEffect(() => {
@@ -129,6 +128,7 @@ function MyListingsContent() {
             <option value="pending">Pending</option>
             <option value="approve">Active</option>
             <option value="reject">Rejected</option>
+            <option value="sold">Sold</option>
           </select>
         </div>
 
@@ -138,7 +138,15 @@ function MyListingsContent() {
           </label>
           <select
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'recent' | 'views' | 'price-high' | 'price-low')}
+            onChange={(e) =>
+              setSortBy(
+                e.target.value as
+                  | "recent"
+                  | "views"
+                  | "price-high"
+                  | "price-low",
+              )
+            }
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
           >
             <option value="recent">Most Recent</option>
@@ -168,7 +176,8 @@ function MyListingsContent() {
         <div className="mt-8">
           {/* Page Info */}
           <div className="text-sm text-gray-600 text-center mb-4">
-            Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of {totalItems} listings
+            Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
+            {totalItems} listings
           </div>
 
           {/* Pagination Component */}
@@ -190,4 +199,3 @@ function MyListingsContent() {
 }
 
 export default ListingsPage;
-

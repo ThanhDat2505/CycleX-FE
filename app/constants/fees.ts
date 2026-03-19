@@ -7,5 +7,5 @@ export const calculateTotal = (price: number, type: 'PURCHASE' | 'DEPOSIT', depo
     if (type === 'PURCHASE') {
         return price + PLATFORM_FEE + INSPECTION_FEE;
     }
-    return (depositAmount || 0) + PLATFORM_FEE;
+    return (depositAmount || 0) + PLATFORM_FEE + INSPECTION_FEE;
 };

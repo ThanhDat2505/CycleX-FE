@@ -410,6 +410,7 @@ export async function getListingDetail(listingId: number): Promise<ListingDetail
             return {
                 ...validated,
                 images: (validated.images || []).map(resolvePublicImageUrl).filter((img) => img.length > 0),
+                videoUrl: validated.videoUrl ? resolvePublicImageUrl(validated.videoUrl) : null,
             };
         } catch (validationErr) {
             console.error('Data structure validation failed:', validationErr);
