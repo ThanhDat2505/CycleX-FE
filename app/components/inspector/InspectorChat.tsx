@@ -111,7 +111,7 @@ export default function InspectorChat() {
       setMessages((prev) => [...prev, newMsg]);
       setInput("");
     } catch {
-      // Keep UI stable if API fails
+      
     }
   };
 

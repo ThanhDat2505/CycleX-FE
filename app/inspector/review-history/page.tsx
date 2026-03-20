@@ -122,8 +122,9 @@ export default function ReviewHistoryPage() {
       highlightTitle="Duyệt"
       description="Xem lại toàn bộ lịch sử kiểm định và phê duyệt tin đăng."
     >
-      <div className="filterCard">
-        <div className="filterRow">
+      <div className="contentWrapper">
+        <div className="filterCard">
+          <div className="filterRow">
           <div className="filterField filterGrow">
             <label className="filterLabel">Tìm kiếm (ID / Tên)</label>
             <input
@@ -173,7 +174,6 @@ export default function ReviewHistoryPage() {
               <span>Thời gian gửi</span>
               <span className="center">Trạng thái</span>
               <span>Người bán</span>
-              <span>Ghi chú</span>
               <span className="right">Hành động</span>
             </div>
 
@@ -185,7 +185,6 @@ export default function ReviewHistoryPage() {
                   <div className="cell text-muted">{row.submittedAt}</div>
                   <div className="cell center">{renderBadge(row.status)}</div>
                   <div className="cell">{row.sellerName}</div>
-                  <div className="cell noteCell">{row.note}</div>
 
                   <div className="cell right">
                     <Link
@@ -206,6 +205,7 @@ export default function ReviewHistoryPage() {
             )}
           </div>
         )}
+      </div>
       </div>
     </InspectorHeroLayout>
   );

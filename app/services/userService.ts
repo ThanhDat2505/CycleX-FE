@@ -1,11 +1,7 @@
 import { UpdateProfileRequest, ChangePasswordRequest, UserProfileResponse } from '@/app/types/user';
 import { apiCallGET, apiCallPUT } from '../utils/apiHelpers';
 import { validateObject, validateString } from '../utils/apiValidation';
-import { getMockUser, updateMockUser, changeMockUserPassword } from '../mocks';
 import { authService } from './authService';
-
-// USE_MOCK_API can be imported or assumed globally if configured
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 export const userService = {
     /**
@@ -13,16 +9,6 @@ export const userService = {
      * endpoint: GET /api/users/{userId}
      */
     getUserProfile: async (userId: number | string): Promise<UserProfileResponse | null> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-            const userData = authService.getUser();
-            if (userData) {
-                const mockUser = getMockUser(userData.email);
-                if (mockUser) return mockUser as unknown as UserProfileResponse;
-            }
-            return null;
-        }
-
         try {
             const data = await apiCallGET<any>(`/users/${userId}`);
             if (!data) return null;
@@ -57,21 +43,6 @@ export const userService = {
      * endpoint: PUT /api/users/{userId}
      */
     updateUserProfile: async (userId: number | string, data: UpdateProfileRequest): Promise<UserProfileResponse> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-
-            const userData = authService.getUser();
-            if (userData) {
-                const updatedUser = updateMockUser(userData.email, data);
-
-                // Update session
-                authService.saveUser(updatedUser as any); 
-
-                return updatedUser as unknown as UserProfileResponse;
-            }
-            throw new Error("Không tìm thấy user session để cập nhật (Mock)");
-        }
-
         try {
             const response = await apiCallPUT<any>(`/users/${userId}`, data);
 
@@ -117,20 +88,6 @@ export const userService = {
      * endpoint: PUT /api/users/{userId}/password (Assumed REST path)
      */
     changePassword: async (userId: number | string, data: ChangePasswordRequest): Promise<void> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 1200));
-
-            const userData = authService.getUser();
-            if (userData) {
-                const success = changeMockUserPassword(userData.email, data.oldPassword!, data.newPassword!);
-                if (!success) {
-                    throw { status: 400, message: "Mật khẩu hiện tại không đúng" };
-                }
-                return;
-            }
-            throw new Error("Không tìm thấy user session (Mock)");
-        }
-
         try {
             const response = await apiCallPUT<any>(`/users/${userId}/password`, data);
 

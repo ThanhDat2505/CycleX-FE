@@ -3,11 +3,9 @@
  * Handles API calls for dispute creation and management.
  */
 
-import { CreateDisputeRequest, Dispute, DisputeReason, DisputeDetailResponse } from '../types/dispute';
-import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
+import { CreateDisputeRequest, Dispute, DisputeReason, DisputeDetailResponse, DisputeResultResponse } from '../types/dispute';
+import { apiCallGET, apiCallPOST, apiCallPUT } from '../utils/apiHelpers';
 import { uploadMultipleImages } from './imageUploadService';
-
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 /**
  * Map BE DisputeDetailResponse → FE Dispute type
@@ -61,15 +59,6 @@ export function validateDisputeData(data: CreateDisputeRequest, availableReasons
  * Fetch available reasons for creating a dispute
  */
 export async function getDisputeReasons(): Promise<DisputeReason[]> {
-    if (USE_MOCK_API) {
-        return [
-            { reasonId: 1, title: 'Sản phẩm không đúng mô tả', description: 'Xe có hư hỏng không được nêu trong tin đăng' },
-            { reasonId: 2, title: 'Người bán không bàn giao giấy tờ', description: 'Giấy tờ xe không đầy đủ hoặc bị giả mạo' },
-            { reasonId: 3, title: 'Lỗi động cơ/kỹ thuật nghiêm trọng', description: 'Xe không hoạt động được ngay sau khi nhận' },
-            { reasonId: 4, title: 'Khác', description: 'Lý do khác' },
-        ];
-    }
-
     return apiCallGET<DisputeReason[]>('/disputes/reasons');
 }
 
@@ -94,11 +83,9 @@ export async function uploadDisputeEvidence(files: File[], orderId: number): Pro
 /**
  * Check if the current buyer is allowed to create a dispute (frequency check)
  */
-async function checkBuyerDisputeFrequency(buyerId: number): Promise<boolean> {
-    if (USE_MOCK_API) return true; // Mock: Always allowed
-    
+async function checkBuyerDisputeFrequency(buyerId: number, orderId: number): Promise<boolean> {
     try {
-        const response = await apiCallGET<{ allowed: boolean }>(`/buyers/${buyerId}/dispute-eligibility`);
+        const response = await apiCallGET<{ allowed: boolean }>(`/buyers/${buyerId}/dispute-eligibility?orderId=${orderId}`);
         return response.allowed;
     } catch {
         return true; // Fallback
@@ -126,7 +113,7 @@ export async function checkDisputeEligibility(orderId: number, buyerId: number, 
     }
 
     // 4. Kiểm tra tần suất khiếu nại của buyer
-    const isFrequencyAllowed = await checkBuyerDisputeFrequency(buyerId);
+    const isFrequencyAllowed = await checkBuyerDisputeFrequency(buyerId, orderId);
     if (!isFrequencyAllowed) {
         return { allowed: false, reason: 'Bạn đã thực hiện quá nhiều khiếu nại gần đây. Vui lòng liên hệ hỗ trợ.' };
     }
@@ -138,18 +125,6 @@ export async function checkDisputeEligibility(orderId: number, buyerId: number, 
  * Create a new dispute for an order
  */
 export async function createDispute(data: CreateDisputeRequest): Promise<Dispute> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        return {
-            disputeId: Math.floor(Math.random() * 1000),
-            ...data,
-            reason: 'Lý do khiếu nại',
-            status: 'OPEN',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-    }
-
     const res = await apiCallPOST<DisputeDetailResponse>('/disputes', data);
     return mapToDispute(res);
 }
@@ -159,36 +134,6 @@ export async function createDispute(data: CreateDisputeRequest): Promise<Dispute
  * Requirement: Check if disputeId exists, handle errors
  */
 export async function getDisputeById(disputeId: number): Promise<Dispute> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        if (disputeId === 999) {
-            throw new Error('Khiếu nại không tồn tại.');
-        }
-
-        return {
-            disputeId,
-            orderId: 108,
-            buyerId: 1,
-            sellerId: 2,
-            title: 'Sản phẩm không đúng mô tả',
-            content: 'Xe bị trầy xước nhiều chỗ mà người bán không nói rõ trong tin đăng. Tôi yêu cầu hoàn tiền hoặc giảm giá.',
-            reason: 'Sản phẩm không đúng mô tả',
-            status: disputeId % 2 === 0 ? 'RESOLVED' : 'REJECTED',
-            evidenceUrls: [
-                'https://placehold.co/600x400?text=Scratch+1',
-                'https://placehold.co/600x400?text=Scratch+2'
-            ],
-            adminNote: disputeId % 2 === 0 
-                ? 'Chúng tôi đã xác nhận tình trạng xe và yêu cầu người bán hoàn trả 10% giá trị giao dịch cho bạn.' 
-                : 'Dựa trên hình ảnh đối chứng từ người bán, vết trầy xước này đã được hiển thị trong ảnh thứ 4 của bài đăng. Khiếu nại bị bác bỏ.',
-            isOverridden: disputeId % 3 === 0, // Mock: Every 3rd dispute is overridden
-            resolvedAt: new Date().toISOString(),
-            createdAt: new Date(Date.now() - 86400000).toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-    }
-
     const res = await apiCallGET<DisputeDetailResponse>(`/disputes/${disputeId}`);
     return mapToDispute(res);
 }
@@ -209,13 +154,20 @@ export function canCreateDispute(status: string, updatedAt: string): boolean {
  * Allows BP7 to force resolve a dispute
  */
 export async function overrideDispute(disputeId: number, action: 'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT', reason: string): Promise<void> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log(`[MOCK] Dispute ${disputeId} overridden by Admin. Action: ${action}. Reason: ${reason}`);
-        // In a real app, this would notify the buyer and seller via WebSockets or push notifications
-        return;
-    }
-
     await apiCallPOST(`/admin/disputes/${disputeId}/override`, { action, reason });
 }
 
+/**
+ * S-74: Get dispute result for buyer/seller viewing
+ */
+export async function getDisputeResult(disputeId: number): Promise<DisputeResultResponse> {
+    return apiCallGET<DisputeResultResponse>(`/disputes/${disputeId}/result`);
+}
+
+/**
+ * Reply to a dispute (buyer provides more info)
+ */
+export async function replyToDispute(disputeId: number, content: string): Promise<Dispute> {
+    const res = await apiCallPUT<DisputeDetailResponse>(`/disputes/${disputeId}/reply`, { content });
+    return mapToDispute(res);
+}

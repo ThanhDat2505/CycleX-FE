@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Service layer for My Listings (S-11)
-// API endpoints will be provided by backend team
 
 import {
     validateResponse,
@@ -13,14 +12,25 @@ import {
     validatePositiveNumber
 } from '../utils/apiValidation';
 import { apiCallPOST, apiCallPUT, apiCallGET, apiCallPATCH, apiCallDELETE } from '../utils/apiHelpers';
-import { ITEMS_PER_PAGE, API_DELAY_MS, VALID_LISTING_STATUSES, type ListingStatus } from '../constants';
-import { MOCK_MY_LISTINGS, type MyListing } from '../mocks';
+import { ITEMS_PER_PAGE, VALID_LISTING_STATUSES, type ListingStatus } from '../constants';
 
-// Check if we should use mock API
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
-
-// Re-export Listing type from mocks for backward compatibility
-export type Listing = MyListing;
+export interface Listing {
+    id: number;
+    mainImageUrl?: string;
+    brand: string;
+    model: string;
+    type: string;
+    condition: string;
+    price: number;
+    location: string;
+    status: ListingStatus;
+    rejectionReason?: string;
+    shipping: boolean;
+    views: number;
+    inquiries: number;
+    createdDate: string;
+    updatedDate: string;
+}
 
 export interface GetMyListingsParams {
     sellerId?: number;
@@ -54,10 +64,6 @@ export interface CreateListingPayload {
     imageUrls?: string[];
     saveDraft?: boolean;
 }
-
-// Mock data now imported from @/app/mocks/myListings.ts
-// Re-export for backward compatibility with existing code
-export const mockListings = MOCK_MY_LISTINGS;
 
 type ListingApiResponse = Partial<Listing> & {
     listingId?: number;
@@ -202,7 +208,6 @@ async function attachMainImageToListings(sellerId: number, listings: Listing[]):
 /**
  * Get seller's listings with pagination and filters
  * 
- * TODO: Replace mock implementation with actual API call
  * API Endpoint: GET /seller/listings
  * Query params: page, pageSize, status, sortBy
  */
@@ -261,40 +266,8 @@ export async function getMyListings(
 /**
  * Create a new listing and submit for approval
  * Endpoint: POST /api/seller/{sellerId}/listings/create
- * 
- * @param payload - Listing data including sellerId
- * @returns Promise<Listing> - Created listing with PENDING status
  */
 export async function createListing(payload: CreateListingPayload): Promise<Listing> {
-
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        const mockResponse: Listing = {
-            id: Math.floor(Math.random() * 10000),
-            brand: payload.brand,
-            model: payload.model,
-            type: payload.bikeType,
-            condition: payload.condition || 'Used',
-            price: payload.price,
-            location: payload.locationCity,
-            status: 'PENDING' as ListingStatus,
-            shipping: false,
-            views: 0,
-            inquiries: 0,
-            createdDate: new Date().toISOString(),
-            updatedDate: new Date().toISOString(),
-        };
-
-        validateResponse(mockResponse, 'createListing response');
-        validateNumber(mockResponse.id, 'id');
-        validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
-
-        mockListings.unshift(mockResponse);
-        return mockResponse;
-    }
-
     // Real API: POST /api/seller/{sellerId}/listings/create
     // Strip imageUrls — images are uploaded separately via /images endpoint
     const { sellerId, imageUrls, ...body } = payload;
@@ -306,47 +279,14 @@ export async function createListing(payload: CreateListingPayload): Promise<List
     validateString(normalizedResponse.model, 'model');
     validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
 
-
     return normalizedResponse;
 }
 
 /**
  * Save listing as draft (not submitted for approval)
  * Endpoint: POST /api/seller/{sellerId}/listings/create (saveDraft: true)
- * 
- * @param payload - Listing data including sellerId
- * @returns Promise<Listing> - Created listing with DRAFT status
  */
 export async function saveDraft(payload: CreateListingPayload): Promise<Listing> {
-
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        const mockResponse: Listing = {
-            id: Math.floor(Math.random() * 10000),
-            brand: payload.brand,
-            model: payload.model,
-            type: payload.bikeType,
-            condition: payload.condition || 'Used',
-            price: payload.price,
-            location: payload.locationCity,
-            status: 'DRAFT' as ListingStatus,
-            shipping: false,
-            views: 0,
-            inquiries: 0,
-            createdDate: new Date().toISOString(),
-            updatedDate: new Date().toISOString(),
-        };
-
-        validateResponse(mockResponse, 'saveDraft response');
-        validateNumber(mockResponse.id, 'id');
-        validateEnum(mockResponse.status, VALID_LISTING_STATUSES, 'status');
-
-        mockListings.unshift(mockResponse);
-        return mockResponse;
-    }
-
     // Real API: POST /api/seller/{sellerId}/listings/create with saveDraft: true
     // Strip imageUrls — images are uploaded separately via /images endpoint
     const { sellerId, imageUrls, ...body } = payload;
@@ -358,46 +298,14 @@ export async function saveDraft(payload: CreateListingPayload): Promise<Listing>
     validateString(normalizedResponse.model, 'model');
     validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
 
-
     return normalizedResponse;
 }
 
 /**
  * Update an existing listing
  * Endpoint: PATCH /api/seller/{sellerId}/listings/{listingId}
- * 
- * @param sellerId - Seller ID
- * @param listingId - ID of the listing to update
- * @param payload - Updated listing data
- * @returns Promise<Listing> - Updated listing
  */
 export async function updateDraft(listingId: number, payload: Partial<CreateListingPayload>): Promise<Listing> {
-
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        // Find and update mock listing
-        const existingIndex = mockListings.findIndex(l => l.id === listingId);
-        if (existingIndex === -1) {
-            throw new Error(`Draft listing ${listingId} not found`);
-        }
-
-        const updated: Listing = {
-            ...mockListings[existingIndex],
-            brand: payload.brand || mockListings[existingIndex].brand,
-            model: payload.model || mockListings[existingIndex].model,
-            type: payload.bikeType || mockListings[existingIndex].type,
-            condition: payload.condition || mockListings[existingIndex].condition,
-            price: payload.price ?? mockListings[existingIndex].price,
-            location: payload.locationCity || mockListings[existingIndex].location,
-            updatedDate: new Date().toISOString(),
-        };
-
-        mockListings[existingIndex] = updated;
-        return updated;
-    }
-
     // Real API: PATCH /api/seller/{sellerId}/listings/{listingId}
     const { sellerId, ...rest } = payload;
     const sid = sellerId ?? 0;
@@ -406,41 +314,14 @@ export async function updateDraft(listingId: number, payload: Partial<CreateList
 
     validateNumber(normalizedResponse.id, 'id');
 
-
     return normalizedResponse;
 }
 
 /**
  * Submit a draft listing for approval (DRAFT → PENDING)
  * Endpoint: POST /api/seller/{sellerId}/drafts/{listingId}/submit
- * 
- * @param listingId - ID of the draft to submit
- * @param sellerId - Seller ID
- * @returns Promise<Listing> - Listing with PENDING status
  */
 export async function submitDraft(listingId: number, sellerId?: number): Promise<Listing> {
-
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        // Find and update mock listing status
-        const existingIndex = mockListings.findIndex(l => l.id === listingId);
-        if (existingIndex === -1) {
-            throw new Error(`Draft listing ${listingId} not found`);
-        }
-
-        const submitted: Listing = {
-            ...mockListings[existingIndex],
-            status: 'PENDING' as ListingStatus,
-            updatedDate: new Date().toISOString(),
-        };
-
-        mockListings[existingIndex] = submitted;
-
-        return submitted;
-    }
-
     // Real API: POST /api/seller/{sellerId}/drafts/{listingId}/submit
     const sid = sellerId ?? 0;
     const response = await apiCallPOST<ListingApiResponse>(`/seller/${sid}/drafts/${listingId}/submit`, {});
@@ -448,7 +329,6 @@ export async function submitDraft(listingId: number, sellerId?: number): Promise
 
     validateNumber(normalizedResponse.id, 'id');
     validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
-
 
     return normalizedResponse;
 }
@@ -473,26 +353,8 @@ export async function cancelPublish(listingId: number, sellerId: number): Promis
 /**
  * Preview a listing before submitting
  * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/preview
- * 
- * @param sellerId - Seller ID
- * @param listingId - Listing ID to preview
- * @returns Promise<Listing> - Preview data
  */
 export async function previewListing(sellerId: number, listingId: number): Promise<Listing> {
-
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        // Find in mock listings
-        const listing = mockListings.find(l => l.id === listingId);
-        if (!listing) {
-            throw new Error(`Listing ${listingId} not found`);
-        }
-
-        return listing;
-    }
-
     // Real API: GET /api/seller/{sellerId}/listings/{listingId}/preview
     const response = await apiCallGET<ListingApiResponse>(`/seller/${sellerId}/listings/${listingId}/preview`);
     const normalizedResponse = normalizeListingResponse(response, 'previewListing response');
@@ -501,47 +363,20 @@ export async function previewListing(sellerId: number, listingId: number): Promi
     validateString(normalizedResponse.brand, 'brand');
     validateString(normalizedResponse.model, 'model');
 
-
     return normalizedResponse;
 }
 
 /**
  * Submit a DRAFT listing for approval (DRAFT → PENDING)
  * Endpoint: POST /api/seller/{sellerId}/drafts/{listingId}/submit
- * 
- * @param sellerId - Seller ID
- * @param listingId - Listing ID to submit
- * @returns Promise<Listing> - Updated listing with PENDING status
  */
 export async function submitListing(sellerId: number, listingId: number): Promise<Listing> {
-
-
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-
-        // Find and update in mock listings
-        const listingIndex = mockListings.findIndex(l => l.id === listingId);
-        if (listingIndex === -1) {
-            throw new Error(`Listing ${listingId} not found`);
-        }
-
-        // Update status to PENDING
-        mockListings[listingIndex] = {
-            ...mockListings[listingIndex],
-            status: 'PENDING' as ListingStatus,
-            updatedDate: new Date().toISOString(),
-        };
-
-        return mockListings[listingIndex];
-    }
-
     // Real API: POST /api/seller/{sellerId}/drafts/{listingId}/submit
     const response = await apiCallPOST<ListingApiResponse>(`/seller/${sellerId}/drafts/${listingId}/submit`, {});
     const normalizedResponse = normalizeListingResponse(response, 'submitListing response');
 
     validateNumber(normalizedResponse.id, 'id');
     validateEnum(normalizedResponse.status, VALID_LISTING_STATUSES, 'status');
-
 
     return normalizedResponse;
 }
@@ -566,9 +401,6 @@ export interface GetDraftsResponse {
 /**
  * Get all draft listings
  * Endpoint: GET /api/seller/{sellerId}/drafts?page=0&pageSize=10&sort=newest
- * 
- * @param params - Query parameters
- * @returns Promise<GetDraftsResponse> - Paginated draft listings
  */
 export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsResponse> {
     const { sellerId, sort = 'newest', page = 0, pageSize = 10 } = params;
@@ -607,11 +439,6 @@ export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsRespo
  * Endpoint: GET /api/seller/{sellerId}/dashboard/stats
  */
 export async function getDashboardStats(sellerId: number): Promise<any> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return { totalListings: 5, activeListings: 3, pendingListings: 1, draftListings: 1, totalViews: 120, totalInquiries: 15 };
-    }
-
     return await apiCallGET(`/seller/${sellerId}/dashboard/stats`);
 }
 
@@ -690,11 +517,6 @@ export interface RejectionInfo {
 }
 
 export async function getRejectionReason(sellerId: number, listingId: number): Promise<RejectionInfo> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return { listingId, reasonCode: 'INVALID_INFO', reasonText: 'Mock rejection reason', note: 'Please update your listing' };
-    }
-
     return await apiCallGET<RejectionInfo>(`/seller/${sellerId}/listings/${listingId}/rejection`);
 }
 
@@ -732,11 +554,6 @@ export async function uploadListingImage(
     imagePath: string,
     _imageOrder?: number
 ): Promise<ListingImage> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return { id: Math.floor(Math.random() * 10000), imagePath, imageOrder: _imageOrder ?? 1 };
-    }
-
     return await apiCallPOST<ListingImage>(`/seller/${sellerId}/listings/${listingId}/images`, { imagePath });
 }
 
@@ -745,11 +562,6 @@ export async function uploadListingImage(
  * Endpoint: DELETE /api/seller/{sellerId}/listings/{listingId}/images/{imageId}
  */
 export async function deleteListingImage(sellerId: number, listingId: number, imageId: number): Promise<void> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return;
-    }
-
     await apiCallDELETE(`/seller/${sellerId}/listings/${listingId}/images/${imageId}`);
 }
 
@@ -758,24 +570,12 @@ export async function deleteListingImage(sellerId: number, listingId: number, im
  * Endpoint: PATCH /api/seller/{sellerId}/listings/{listingId}/images/{imageId}/set-primary
  */
 export async function setImageAsPrimary(sellerId: number, listingId: number, imageId: number): Promise<void> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return;
-    }
-
     await apiCallPATCH(`/seller/${sellerId}/listings/${listingId}/images/${imageId}/set-primary`, {});
 }
-
 /**
  * Save listing video path to DB
  * Endpoint: POST /api/seller/{sellerId}/listings/{listingId}/video
  */
 export async function saveListingVideo(sellerId: number, listingId: number, videoPath: string): Promise<void> {
-    if (USE_MOCK_API) {
-        await new Promise(resolve => setTimeout(resolve, API_DELAY_MS));
-        return;
-    }
-
     await apiCallPOST(`/seller/${sellerId}/listings/${listingId}/video`, { videoPath });
 }
-

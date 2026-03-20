@@ -1,9 +1,6 @@
 import { NotificationResponse, NotificationType, PaginatedNotificationResponse, UnreadCountResponse } from '@/app/types/notification';
-import { mockNotificationsDB } from '@/app/mocks/notifications';
 import { apiCallGET, apiCallPATCH } from '../utils/apiHelpers';
 import { validateObject, validateArray, validateNumber } from '../utils/apiValidation';
-
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 export const notificationService = {
     /**
@@ -16,25 +13,6 @@ export const notificationService = {
         isRead?: boolean,
         type?: NotificationType
     ): Promise<PaginatedNotificationResponse> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 800));
-
-            let userNotifs = mockNotificationsDB[userId] || [];
-            if (isRead !== undefined) userNotifs = userNotifs.filter(n => n.isRead === isRead);
-            if (type !== undefined) userNotifs = userNotifs.filter(n => n.type === type);
-
-            // Sort by newest first (BR-02 Requirement)
-            userNotifs = [...userNotifs].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-            return {
-                items: userNotifs.slice(page * size, (page + 1) * size),
-                page,
-                size,
-                totalElements: userNotifs.length,
-                totalPages: Math.ceil(userNotifs.length / size)
-            };
-        }
-
         try {
             const params = new URLSearchParams({
                 page: String(page),
@@ -77,12 +55,6 @@ export const notificationService = {
      * Get Unread Notification Count
      */
     getUnreadCount: async (userId: number): Promise<number> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const userNotifs = mockNotificationsDB[userId] || [];
-            return userNotifs.filter(n => !n.isRead).length;
-        }
-
         try {
             const res = await apiCallGET<any>(`/notifications/unread-count`);
             validateObject(res, 'Unread Count Response');
@@ -97,12 +69,6 @@ export const notificationService = {
      * Get Single Notification Detail
      */
     getNotificationDetail: async (userId: number, notificationId: number): Promise<NotificationResponse | null> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 400));
-            const userNotifs = mockNotificationsDB[userId] || [];
-            return userNotifs.find(n => n.id === notificationId) || null;
-        }
-
         try {
             const n = await apiCallGET<any>(`/notifications/${notificationId}`);
             if (!n) return null;
@@ -127,17 +93,6 @@ export const notificationService = {
      * S-05 Mark Single Notification As Read
      */
     markAsRead: async (userId: number, notificationId: number): Promise<boolean> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const userNotifs = mockNotificationsDB[userId];
-            if (userNotifs) {
-                const notif = userNotifs.find(n => n.id === notificationId);
-                if (notif) notif.isRead = true;
-                return true;
-            }
-            return false;
-        }
-
         try {
             const response = await apiCallPATCH<any>(`/notifications/${notificationId}/read`, {});
 
@@ -162,16 +117,6 @@ export const notificationService = {
      * S-05 Mark All Unread Notifications As Read
      */
     markAllAsRead: async (userId: number): Promise<boolean> => {
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 600));
-            const userNotifs = mockNotificationsDB[userId];
-            if (userNotifs) {
-                userNotifs.forEach(n => { n.isRead = true; });
-                return true;
-            }
-            return false;
-        }
-
         try {
             const response = await apiCallPATCH<any>(`/notifications/read-all`, {});
 
@@ -191,15 +136,9 @@ export const notificationService = {
     },
 
     /**
-     * S-05 Validation object exists before routing (Mock BR-05 Guard)
+     * S-05 Validation object exists before routing
      */
     validateRelatedObject: async (type: string, relatedId: number): Promise<boolean> => {
-        // Return true realistically, but block some specific ID to test negative flow
-        if (USE_MOCK_API) {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            if (relatedId === 9999) return false; // Mock failure id
-            return true;
-        }
         return true;
     }
 };

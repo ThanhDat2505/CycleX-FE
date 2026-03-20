@@ -96,7 +96,6 @@ export default function PendingListClient() {
     const keyword = q.trim().toLowerCase();
 
     const filtered = listings.filter((x) => {
-      // Chỉ hiển thị tin đang chờ duyệt và đang review
       if (x.status !== "PENDING" && x.status !== "REVIEWING") return false;
 
       if (!keyword) return true;
@@ -117,7 +116,8 @@ export default function PendingListClient() {
 
   return (
     <div className="page">
-      <div className="filterCard">
+      <div className="contentWrapper">
+        <div className="filterCard">
         <div className="filterRow">
           <div className="filterField filterGrow">
             <label className="filterLabel">Tìm kiếm</label>
@@ -230,6 +230,7 @@ export default function PendingListClient() {
           </table>
         )}
       </section>
+      </div>
     </div>
   );
 }

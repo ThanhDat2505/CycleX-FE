@@ -13,7 +13,7 @@ import {
     ChevronLeft, Loader2, ShieldAlert, CheckCircle, 
     XCircle, History, MessageSquare, Image as ImageIcon, 
     ExternalLink, Zap, ShoppingBag, User, FileText,
-    Gavel, ArrowRight
+    Gavel, ArrowRight, ArrowUpRight, HelpCircle, Send
 } from "lucide-react";
 import { formatDate } from "@/app/utils/format";
 
@@ -27,6 +27,11 @@ export default function DisputeDetailClient({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openingEvidenceIndex, setOpeningEvidenceIndex] = useState<number | null>(null);
+  const [claiming, setClaiming] = useState(false);
+  const [escalating, setEscalating] = useState(false);
+  const [showRequestInfo, setShowRequestInfo] = useState(false);
+  const [requestInfoMessage, setRequestInfoMessage] = useState("");
+  const [requestingInfo, setRequestingInfo] = useState(false);
 
   const handleOpenEvidence = async (item: DisputeEvidence, index: number) => {
     if (!item.url) return;
@@ -39,6 +44,45 @@ export default function DisputeDetailClient({
       setError(getErrorMessage(err, "Không thể mở bằng chứng bảo mật"));
     } finally {
       setOpeningEvidenceIndex(null);
+    }
+  };
+
+  const handleClaim = async () => {
+    try {
+      setClaiming(true);
+      const updated = await disputeService.claimDispute(disputeId);
+      setDetail(updated);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Không thể nhận xử lý khiếu nại"));
+    } finally {
+      setClaiming(false);
+    }
+  };
+
+  const handleEscalate = async () => {
+    try {
+      setEscalating(true);
+      const updated = await disputeService.escalateDispute(disputeId, "Chuyển tiếp lên Admin để xử lý");
+      setDetail(updated);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"));
+    } finally {
+      setEscalating(false);
+    }
+  };
+
+  const handleRequestMoreInfo = async () => {
+    if (!requestInfoMessage.trim()) return;
+    try {
+      setRequestingInfo(true);
+      const updated = await disputeService.requestMoreInfo(disputeId, requestInfoMessage);
+      setDetail(updated);
+      setShowRequestInfo(false);
+      setRequestInfoMessage("");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"));
+    } finally {
+      setRequestingInfo(false);
     }
   };
 
@@ -106,11 +150,28 @@ export default function DisputeDetailClient({
 
   const isSolved = detail.status === "RESOLVED";
   const isRejected = detail.status === "REJECTED";
+  const isOpen = detail.status === "OPEN";
+  const isInProgress = detail.status === "IN_PROGRESS";
+  const isNeedMoreInfo = detail.status === "NEED_MORE_INFO";
+  const isEscalated = detail.status === "ESCALATED";
+  const canAct = !isSolved && !isRejected;
+
+  const statusLabel = (() => {
+    switch (detail.status) {
+      case "OPEN": return "Đang mở";
+      case "IN_PROGRESS": return "Đang xử lý";
+      case "NEED_MORE_INFO": return "Cần bổ sung";
+      case "ESCALATED": return "Đã chuyển Admin";
+      case "RESOLVED": return "Đã giải quyết";
+      case "REJECTED": return "Đã từ chối";
+      default: return detail.status;
+    }
+  })();
 
   return (
     <div className="bg-brand-bg min-h-screen text-white p-4 lg:p-10 font-sans selection:bg-brand-primary/30">
       <div className="max-w-6xl mx-auto space-y-12">
-        {/* Header Phase */}
+
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5">
             <div className="animate-slide-up">
                 <Link 
@@ -129,33 +190,103 @@ export default function DisputeDetailClient({
                    <div className={`px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border ${
                         isSolved ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 
                         isRejected ? 'text-rose-400 bg-rose-500/10 border-rose-500/20' : 
+                        isNeedMoreInfo ? 'text-amber-400 bg-amber-500/10 border-amber-500/20' :
+                        isEscalated ? 'text-purple-400 bg-purple-500/10 border-purple-500/20' :
                         'text-brand-primary bg-brand-primary/10 border-brand-primary/20 animate-pulse'
                     }`}>
-                        {detail.status}
+                        {statusLabel}
                     </div>
                     <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Khởi tạo: {detail.createdAt}</span>
                 </div>
             </div>
 
-            {!isSolved && !isRejected && (
-              <Link
-                href={`/inspector/disputes/${encodeURIComponent(detail.id)}/resolution`}
-                className="group flex items-center gap-4 px-8 py-5 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-glow-orange transition-all active:scale-95"
-              >
-                <Gavel size={18} className="group-hover:rotate-12 transition-transform" />
-                Proceed to Resolution
-                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-              </Link>
-            )}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {/* Claim button - only for OPEN disputes */}
+              {isOpen && (
+                <button
+                  onClick={handleClaim}
+                  disabled={claiming}
+                  className="group flex items-center gap-3 px-6 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] shadow-lg transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {claiming ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+                  Nhận xử lý
+                </button>
+              )}
+
+              {/* Request more info button */}
+              {(isInProgress || isNeedMoreInfo) && (
+                <button
+                  onClick={() => setShowRequestInfo(!showRequestInfo)}
+                  className="group flex items-center gap-3 px-6 py-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95"
+                >
+                  <HelpCircle size={16} />
+                  Yêu cầu bổ sung
+                </button>
+              )}
+
+              {/* Escalate button */}
+              {canAct && !isEscalated && (
+                <button
+                  onClick={handleEscalate}
+                  disabled={escalating}
+                  className="group flex items-center gap-3 px-6 py-4 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-50"
+                >
+                  {escalating ? <Loader2 size={16} className="animate-spin" /> : <ArrowUpRight size={16} />}
+                  Chuyển Admin
+                </button>
+              )}
+
+              {/* Resolution button */}
+              {canAct && (isInProgress || isNeedMoreInfo) && (
+                <Link
+                  href={`/inspector/disputes/${encodeURIComponent(detail.id)}/resolution`}
+                  className="group flex items-center gap-4 px-8 py-4 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-glow-orange transition-all active:scale-95"
+                >
+                  <Gavel size={18} className="group-hover:rotate-12 transition-transform" />
+                  Xử lý
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </Link>
+              )}
+            </div>
         </div>
 
-        {/* Info Grid */}
+        {/* Request more info form */}
+        {showRequestInfo && (
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-8 animate-fade-in">
+            <h4 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-4">Yêu cầu bổ sung thông tin</h4>
+            <textarea
+              value={requestInfoMessage}
+              onChange={(e) => setRequestInfoMessage(e.target.value)}
+              placeholder="Nhập yêu cầu bổ sung cho người mua... VD: Vui lòng gửi thêm ảnh chụp rõ phần hư hỏng"
+              rows={3}
+              className="w-full px-4 py-3 bg-black/20 border border-amber-500/20 rounded-2xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-amber-500/50 resize-none"
+            />
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                onClick={() => { setShowRequestInfo(false); setRequestInfoMessage(""); }}
+                className="px-6 py-3 bg-white/5 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 transition-all"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleRequestMoreInfo}
+                disabled={!requestInfoMessage.trim() || requestingInfo}
+                className="px-6 py-3 bg-amber-500 text-white font-bold text-xs rounded-xl hover:bg-amber-600 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {requestingInfo ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+                Gửi yêu cầu
+              </button>
+            </div>
+          </div>
+        )}
+
+
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Left Column: Core Data */}
+
             <div className="lg:col-span-12 space-y-8">
                 
-                {/* Reason Card */}
+
                 <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl animate-fade-in">
                     <div className="flex items-center gap-4 mb-8">
                         <div className="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shadow-glow-orange">
@@ -176,7 +307,7 @@ export default function DisputeDetailClient({
                     </div>
                 </div>
 
-                {/* Evidence Grid */}
+
                 <div className="space-y-6">
                     <div className="flex items-center justify-between px-2">
                         <div className="flex items-center gap-3">
@@ -220,9 +351,9 @@ export default function DisputeDetailClient({
                     </div>
                 </div>
 
-                {/* Secondary Data Grid */}
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Transaction & Parties */}
+
                     <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-200">
                         <div className="flex items-center gap-3 mb-2">
                            <History size={18} className="text-brand-primary" />
@@ -254,7 +385,7 @@ export default function DisputeDetailClient({
                         </div>
                     </div>
 
-                    {/* Listing Summary */}
+
                     <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-300">
                         <div className="flex items-center gap-3 mb-2">
                            <ShoppingBag size={18} className="text-brand-primary" />
@@ -296,7 +427,7 @@ export default function DisputeDetailClient({
             </div>
         </div>
 
-        {/* Footer Audit */}
+
         <div className="text-center pt-20 border-t border-white/5">
             <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.4em]">
                 CycleX Case ID: {detail.id} • Protocol S-74 Enforcement • Premium AI Workflow

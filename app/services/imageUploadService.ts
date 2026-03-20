@@ -1,11 +1,6 @@
-import { API_DELAY_MS } from "../constants";
-
 /**
  * Service to handle image uploads
- * Supports both mock mode and real API calls
  */
-
-const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
 
 /**
  * Upload an image file to the server
@@ -14,17 +9,6 @@ const USE_MOCK_API = process.env.NEXT_PUBLIC_MOCK_API === 'true';
  * @returns Promise<string> - The uploaded image URL
  */
 export async function uploadImage(file: File, listingId?: number | string): Promise<string> {
-    if (USE_MOCK_API) {
-        return mockUploadImage(file);
-    }
-    return realUploadImage(file, listingId);
-}
-
-/**
- * Real API upload - calls backend endpoint
- * BE will handle storing at: public/<listingId>/<number>.png
- */
-async function realUploadImage(file: File, listingId?: number | string): Promise<string> {
     const formData = new FormData();
     formData.append('file', file);
     if (listingId) {
@@ -50,23 +34,6 @@ async function realUploadImage(file: File, listingId?: number | string): Promise
     }
 
     return data.url;
-}
-
-/**
- * Mock upload - simulates network delay and returns placeholder URL
- * Used when NEXT_PUBLIC_MOCK_API=true
- */
-async function mockUploadImage(file: File): Promise<string> {
-
-
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, API_DELAY_MS * 2));
-
-    // Return placeholder URL for visual preview
-    const mockUrl = `https://placehold.co/600x400?text=${encodeURIComponent(file.name)}`;
-
-
-    return mockUrl;
 }
 
 /**

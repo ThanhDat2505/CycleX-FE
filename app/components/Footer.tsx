@@ -90,32 +90,16 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Services */}
           <div>
-            <h3 className="font-bold mb-4">Liên Kết</h3>
+            <h3 className="font-bold mb-4">Hệ Sinh Thái</h3>
             <ul className="space-y-2 text-sm">
-              <li>
-                <button
-                  onClick={handleHomeClick}
-                  className="text-gray-400 hover:text-brand-primary transition-colors"
-                >
-                  Trang Chủ
-                </button>
-              </li>
               <li>
                 <Link
                   href="/listings"
                   className="text-gray-400 hover:text-brand-primary transition-colors"
                 >
-                  Mua Xe
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/sell"
-                  className="text-gray-400 hover:text-brand-primary transition-colors"
-                >
-                  Bán Xe
+                  Mua Bán &amp; Giao Dịch
                 </Link>
               </li>
               <li>
@@ -123,7 +107,23 @@ export default function Footer() {
                   href="/guide"
                   className="text-gray-400 hover:text-brand-primary transition-colors"
                 >
-                  Cẩm Nang
+                  Hệ Thống Kiểm Định
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/guide"
+                  className="text-gray-400 hover:text-brand-primary transition-colors"
+                >
+                  Dịch Vụ Vận Chuyển
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/guide"
+                  className="text-gray-400 hover:text-brand-primary transition-colors"
+                >
+                  Giải Quyết Khiếu Nại
                 </Link>
               </li>
             </ul>
