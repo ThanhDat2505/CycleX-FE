@@ -58,20 +58,21 @@ export async function apiCallPOST<T>(
         });
 
         if (!response.ok) {
-            let parsed: ApiError | null = null;
+            // Try to parse error from backend
             try {
-                parsed = await response.json();
-            } catch {
-                // Response body is empty or not JSON
+                const error: ApiError = await response.json(); // parse lỗi từ server thành json
+                throw error; // ném lỗi ra ngoài
+            } catch (parseError) {
+                // If can't parse JSON, throw generic error with status code
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
             }
-            throw parsed ?? {
-                status: response.status,
-                message: `Server error: ${response.statusText}`,
-            };
         }
 
         return await response.json();
-    } catch (error: any) {
+    } catch (error: any) { // ở đây là bắt lỗi mạng khi server không chạy hoặc không kết nối được
         // Handle network errors (server down, no internet, CORS, etc.)
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
@@ -98,16 +99,17 @@ export async function apiCallGET<T>(endpoint: string): Promise<T> {
         });
 
         if (!response.ok) {
-            let parsed: ApiError | null = null;
+            // Try to parse error from backend
             try {
-                parsed = await response.json();
-            } catch {
-                // Response body is empty or not JSON
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                // If can't parse JSON, throw generic error with status code
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
             }
-            throw parsed ?? {
-                status: response.status,
-                message: `Server error: ${response.statusText}`,
-            };
         }
 
         return await response.json();
@@ -143,16 +145,15 @@ export async function apiCallPUT<T>(
         });
 
         if (!response.ok) {
-            let parsed: ApiError | null = null;
             try {
-                parsed = await response.json();
-            } catch {
-                // Response body is empty or not JSON
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
             }
-            throw parsed ?? {
-                status: response.status,
-                message: `Server error: ${response.statusText}`,
-            };
         }
 
         return await response.json();
@@ -185,16 +186,15 @@ export async function apiCallPATCH<T>(
         });
 
         if (!response.ok) {
-            let parsed: ApiError | null = null;
             try {
-                parsed = await response.json();
-            } catch {
-                // Response body is empty or not JSON
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
             }
-            throw parsed ?? {
-                status: response.status,
-                message: `Server error: ${response.statusText}`,
-            };
         }
 
         return await response.json();
@@ -224,16 +224,15 @@ export async function apiCallDELETE<T>(
         });
 
         if (!response.ok) {
-            let parsed: ApiError | null = null;
             try {
-                parsed = await response.json();
-            } catch {
-                // Response body is empty or not JSON
+                const error: ApiError = await response.json();
+                throw error;
+            } catch (parseError) {
+                throw {
+                    status: response.status,
+                    message: `Server error: ${response.statusText}`,
+                };
             }
-            throw parsed ?? {
-                status: response.status,
-                message: `Server error: ${response.statusText}`,
-            };
         }
 
         // Some DELETE endpoints return empty body

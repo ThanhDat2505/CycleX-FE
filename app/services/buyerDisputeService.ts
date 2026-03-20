@@ -3,8 +3,8 @@
  * Handles API calls for dispute creation and management.
  */
 
-import { CreateDisputeRequest, Dispute, DisputeReason, DisputeDetailResponse } from '../types/dispute';
-import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
+import { CreateDisputeRequest, Dispute, DisputeReason, DisputeDetailResponse, DisputeResultResponse } from '../types/dispute';
+import { apiCallGET, apiCallPOST, apiCallPUT } from '../utils/apiHelpers';
 import { uploadMultipleImages } from './imageUploadService';
 
 /**
@@ -83,9 +83,9 @@ export async function uploadDisputeEvidence(files: File[], orderId: number): Pro
 /**
  * Check if the current buyer is allowed to create a dispute (frequency check)
  */
-async function checkBuyerDisputeFrequency(buyerId: number): Promise<boolean> {
+async function checkBuyerDisputeFrequency(buyerId: number, orderId: number): Promise<boolean> {
     try {
-        const response = await apiCallGET<{ allowed: boolean }>(`/buyers/${buyerId}/dispute-eligibility`);
+        const response = await apiCallGET<{ allowed: boolean }>(`/buyers/${buyerId}/dispute-eligibility?orderId=${orderId}`);
         return response.allowed;
     } catch {
         return true; // Fallback
@@ -113,7 +113,7 @@ export async function checkDisputeEligibility(orderId: number, buyerId: number, 
     }
 
     // 4. Kiểm tra tần suất khiếu nại của buyer
-    const isFrequencyAllowed = await checkBuyerDisputeFrequency(buyerId);
+    const isFrequencyAllowed = await checkBuyerDisputeFrequency(buyerId, orderId);
     if (!isFrequencyAllowed) {
         return { allowed: false, reason: 'Bạn đã thực hiện quá nhiều khiếu nại gần đây. Vui lòng liên hệ hỗ trợ.' };
     }
@@ -155,4 +155,19 @@ export function canCreateDispute(status: string, updatedAt: string): boolean {
  */
 export async function overrideDispute(disputeId: number, action: 'BUYER_WIN' | 'SELLER_WIN' | 'SPLIT', reason: string): Promise<void> {
     await apiCallPOST(`/admin/disputes/${disputeId}/override`, { action, reason });
+}
+
+/**
+ * S-74: Get dispute result for buyer/seller viewing
+ */
+export async function getDisputeResult(disputeId: number): Promise<DisputeResultResponse> {
+    return apiCallGET<DisputeResultResponse>(`/disputes/${disputeId}/result`);
+}
+
+/**
+ * Reply to a dispute (buyer provides more info)
+ */
+export async function replyToDispute(disputeId: number, content: string): Promise<Dispute> {
+    const res = await apiCallPUT<DisputeDetailResponse>(`/disputes/${disputeId}/reply`, { content });
+    return mapToDispute(res);
 }

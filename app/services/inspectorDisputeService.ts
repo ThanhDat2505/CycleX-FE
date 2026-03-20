@@ -541,4 +541,113 @@ export const disputeService = {
     const blob = await response.blob();
     return URL.createObjectURL(blob);
   },
+
+  /**
+   * Claim/accept a dispute (inspector picks it up → IN_PROGRESS)
+   * PUT /api/disputes/{id}/claim
+   */
+  async claimDispute(disputeId: string): Promise<DisputeDetail> {
+    const id = encodeURIComponent(getString(disputeId, "").trim());
+    const payload: unknown = await tryFirstSuccess<unknown>([
+      () => requestJson<unknown>(`/disputes/${id}/claim`, { method: "PUT" }),
+      () => requestJson<unknown>(`/disputes/${id}/claim`, { method: "POST" }),
+    ]);
+    return mapDetail(toRecord(payload));
+  },
+
+  /**
+   * Request more info from buyer (inspector action)
+   * PUT /api/disputes/{id}/request-more-info
+   */
+  async requestMoreInfo(disputeId: string, message: string): Promise<DisputeDetail> {
+    const id = encodeURIComponent(getString(disputeId, "").trim());
+    const payload: unknown = await requestJson<unknown>(
+      `/disputes/${id}/request-more-info`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ message }),
+      },
+    );
+    return mapDetail(toRecord(payload));
+  },
+
+  /**
+   * Reply to a dispute (buyer/seller provides more info)
+   * PUT /api/disputes/{id}/reply
+   */
+  async replyToDispute(disputeId: string, content: string): Promise<DisputeDetail> {
+    const id = encodeURIComponent(getString(disputeId, "").trim());
+    const payload: unknown = await requestJson<unknown>(
+      `/disputes/${id}/reply`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ content }),
+      },
+    );
+    return mapDetail(toRecord(payload));
+  },
+
+  /**
+   * Escalate dispute to admin
+   * PUT /api/disputes/{id}/escalate
+   */
+  async escalateDispute(disputeId: string, note?: string): Promise<DisputeDetail> {
+    const id = encodeURIComponent(getString(disputeId, "").trim());
+    const payload: unknown = await tryFirstSuccess<unknown>([
+      () =>
+        requestJson<unknown>(`/disputes/${id}/escalate`, {
+          method: "PUT",
+          body: JSON.stringify({ note: note || "" }),
+        }),
+      () =>
+        requestJson<unknown>(`/disputes/${id}/escalate`, {
+          method: "POST",
+          body: JSON.stringify({ note: note || "" }),
+        }),
+    ]);
+    return mapDetail(toRecord(payload));
+  },
+
+  /**
+   * Admin resolve dispute (S-73)
+   * PUT /api/disputes/{id}/admin-resolve
+   */
+  async adminResolve(
+    disputeId: string,
+    action: "ACCEPT" | "REJECT",
+    note: string,
+  ): Promise<DisputeDetail> {
+    const id = encodeURIComponent(getString(disputeId, "").trim());
+    const payload: unknown = await requestJson<unknown>(
+      `/disputes/${id}/admin-resolve`,
+      {
+        method: "PUT",
+        body: JSON.stringify({ action, resolutionNote: note }),
+      },
+    );
+    return mapDetail(toRecord(payload));
+  },
+
+  /**
+   * Get dispute result for buyer/seller (S-74)
+   * GET /api/disputes/{id}/result
+   */
+  async getDisputeResult(disputeId: string): Promise<{
+    disputeId: string;
+    status: string;
+    result: string;
+    message: string;
+    resolvedAt: string;
+  }> {
+    const id = encodeURIComponent(getString(disputeId, "").trim());
+    const payload: unknown = await requestJson<unknown>(`/disputes/${id}/result`);
+    const record = toRecord(payload);
+    return {
+      disputeId: getString(firstDefined(record.disputeId, record.id), id),
+      status: normalizeStatus(record.status),
+      result: getString(record.result, "-"),
+      message: getString(record.message, ""),
+      resolvedAt: toDisplayDate(record.resolvedAt),
+    };
+  },
 };

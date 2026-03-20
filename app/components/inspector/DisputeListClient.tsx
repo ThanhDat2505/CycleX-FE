@@ -34,6 +34,8 @@ const STATUS_OPTIONS = [
   { value: "ALL", label: "Tất cả trạng thái" },
   { value: "OPEN", label: "Đang mở" },
   { value: "IN_PROGRESS", label: "Đang xử lý" },
+  { value: "NEED_MORE_INFO", label: "Cần bổ sung" },
+  { value: "ESCALATED", label: "Đã chuyển Admin" },
   { value: "RESOLVED", label: "Đã giải quyết" },
   { value: "REJECTED", label: "Đã từ chối" },
 ];
