@@ -172,7 +172,9 @@ export default function InspectorSummary() {
 
         <div className="summary-media-grid">
           {report.media.map((img, idx) => (
-            <img key={idx} src={img} alt={`media-${idx}`} />
+            <div key={idx} className="w-full aspect-[4/3] overflow-hidden rounded-lg">
+              <img src={img} alt={`media-${idx}`} className="w-full h-full object-cover" />
+            </div>
           ))}
         </div>
       </div>
