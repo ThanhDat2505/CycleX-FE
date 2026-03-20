@@ -259,8 +259,7 @@ export default function DisputeListClient() {
 
           <div className="tableCard" style={{ marginBottom: 40 }}>
             <div className="overflow-x-auto min-h-[400px]">
-              {items.filter((row) => row.status?.toLowerCase() === "dispute")
-                .length === 0 ? (
+              {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center">
                   <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
                     <Gavel size={48} />
@@ -297,9 +296,7 @@ export default function DisputeListClient() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {items
-                      .filter((row) => row.status?.toLowerCase() === "dispute")
-                      .map((row) => (
+                    {items.map((row) => (
                         <tr
                           key={row.id}
                           className="group hover:bg-white/[0.02] transition-colors"
