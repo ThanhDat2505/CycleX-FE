@@ -393,6 +393,63 @@ export async function getSellerTransactions(
     }
 }
 
+export async function getAllSellerTransactions(
+    sellerId: number,
+    status?: string
+): Promise<TransactionWithDetails[]> {
+    try {
+        let url = '/seller/transactions?page=0&size=50';
+        if (status && status !== 'ALL') {
+            url += `&status=${encodeURIComponent(status)}`;
+        }
+        const dataResponse = await apiCallGET<any>(url);
+        const itemsArray = Array.isArray(dataResponse)
+            ? dataResponse
+            : (Array.isArray(dataResponse?.content) ? dataResponse.content : []);
+
+        const mapped = await Promise.all(itemsArray.map(async (item: any) => {
+            const orderId = toNumber(item?.orderId) ?? toNumber(item?.requestId);
+            if (!orderId) return null;
+
+            try {
+                const detail = await apiCallGET<any>(`/seller/transactions/${orderId}`);
+                const normalized = await normalizeSellerTransactionDetail(detail, orderId);
+                return {
+                    ...normalized,
+                    sellerId,
+                    buyerName: typeof item?.buyerName === 'string' ? item.buyerName : normalized.buyerName,
+                };
+            } catch {
+                const listingId = toNumber(item?.listingId) ?? 0;
+                const productPrice = toNumber(item?.productPrice) ?? 0;
+                return {
+                    transactionId: orderId,
+                    listingId,
+                    buyerId: 0,
+                    sellerId,
+                    transactionType: (typeof item?.transactionType === 'string' && item.transactionType.toUpperCase() === 'DEPOSIT') ? 'DEPOSIT' : 'PURCHASE',
+                    status: mapStatusToFrontend(item?.status),
+                    desiredTime: new Date().toISOString(),
+                    platformFee: 0,
+                    inspectionFee: 0,
+                    totalAmount: productPrice,
+                    createdAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                    updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
+                    listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
+                    listingImage: await fetchListingPrimaryImage(listingId),
+                    buyerName: typeof item?.buyerName === 'string' ? item.buyerName : 'Khách hàng',
+                    sellerName: 'Bạn',
+                } as TransactionWithDetails;
+            }
+        }));
+
+        return mapped.filter((item): item is TransactionWithDetails => item !== null);
+    } catch (error) {
+        console.error('Lỗi API Get All Seller Transactions:', error);
+        return [];
+    }
+}
+
 export async function getBuyerTransactions(
     buyerId: number
 ): Promise<TransactionWithDetails[]> {
