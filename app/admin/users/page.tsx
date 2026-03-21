@@ -266,10 +266,10 @@ export default function AdminUsersPage() {
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-5">
                                                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-white/10 to-transparent border border-white/10 text-white flex items-center justify-center font-black text-sm group-hover:scale-110 transition-transform origin-left">
-                                                    {user.fullName.charAt(0).toUpperCase()}
+                                                    {user.fullName?.charAt(0).toUpperCase() ?? '?'}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-black text-white group-hover:text-brand-primary transition-colors">{user.fullName}</p>
+                                                    <p className="text-sm font-black text-white group-hover:text-brand-primary transition-colors">{user.fullName ?? 'N/A'}</p>
                                                     <p className="text-[11px] font-bold text-gray-500 mt-0.5 tracking-tight">{user.email}</p>
                                                 </div>
                                             </div>
