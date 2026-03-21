@@ -262,21 +262,22 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             receiverAddress: data.receiverAddress,
         };
 
-        const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
+        // Call Order API instead of PurchaseRequest API — creates both Order + PurchaseRequest
+        const dataResponse = await apiCallPOST<any>(`/orders?productId=${productId}`, payload);
 
         if (dataResponse) {
-            validateObject(dataResponse, 'Purchase Request Response');
+            validateObject(dataResponse, 'Order Response');
         } else {
-            throw new Error('Invalid backend response: Expected purchase request object');
+            throw new Error('Invalid backend response: Expected order object');
         }
 
-        const requestId = toNumber(dataResponse.requestId) ?? toNumber(dataResponse.orderId);
-        if (!requestId) {
-            throw new Error('Invalid backend response: Missing requestId');
+        const orderId = toNumber(dataResponse.orderId);
+        if (!orderId) {
+            throw new Error('Invalid backend response: Missing orderId');
         }
 
         return {
-            transactionId: requestId,
+            transactionId: orderId,
             listingId: toNumber(dataResponse.listingId) ?? data.listingId,
             buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
             sellerId: toNumber(dataResponse.sellerId) ?? 0,
@@ -297,7 +298,7 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             updatedAt: typeof dataResponse.createdAt === 'string' ? dataResponse.createdAt : new Date().toISOString(),
         };
     } catch (error: any) {
-        console.error('Lỗi API Create Purchase Request:', error);
+        console.error('Lỗi API Create Order:', error);
         const status = error?.status ?? error?.response?.status;
         if (status === 401) {
             throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
