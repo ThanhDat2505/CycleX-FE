@@ -11,6 +11,7 @@
  * Trả về null nếu chưa đăng nhập hoặc đang chạy trên server (SSR).
  */
 import { authService } from '@/app/services/authService';
+import { isMockMode, getMockResponse } from '@/app/services/mockData';
 
 function getAuthToken(): string | null {
     return authService.getToken();
@@ -50,6 +51,10 @@ export async function apiCallPOST<T>(
     endpoint: string,
     body: object
 ): Promise<T> {
+    if (isMockMode()) {
+        return getMockResponse(endpoint, 'POST', body) as T;
+    }
+
     try {
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'POST',
@@ -92,6 +97,10 @@ export async function apiCallPOST<T>(
  * @returns Promise with parsed JSON response
  */
 export async function apiCallGET<T>(endpoint: string): Promise<T> {
+    if (isMockMode()) {
+        return getMockResponse(endpoint, 'GET') as T;
+    }
+
     try {
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'GET',
@@ -137,6 +146,10 @@ export async function apiCallPUT<T>(
     endpoint: string,
     body: object
 ): Promise<T> {
+    if (isMockMode()) {
+        return getMockResponse(endpoint, 'PUT', body) as T;
+    }
+
     try {
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'PUT',
@@ -178,6 +191,10 @@ export async function apiCallPATCH<T>(
     endpoint: string,
     body: object
 ): Promise<T> {
+    if (isMockMode()) {
+        return getMockResponse(endpoint, 'PATCH', body) as T;
+    }
+
     try {
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'PATCH',
@@ -217,6 +234,10 @@ export async function apiCallPATCH<T>(
 export async function apiCallDELETE<T>(
     endpoint: string
 ): Promise<T> {
+    if (isMockMode()) {
+        return getMockResponse(endpoint, 'DELETE') as T;
+    }
+
     try {
         const response = await fetch(`/backend/api${endpoint}`, {
             method: 'DELETE',

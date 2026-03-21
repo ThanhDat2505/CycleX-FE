@@ -1,13 +1,12 @@
-@layer components {
-  .seller-drawer-overlay {
-    @apply fixed inset-0 z-[110] bg-black/40 backdrop-blur-sm transition-opacity duration-300;
-  }
+.seller-drawer-overlay {
+  @apply fixed inset-0 z-[110] bg-black/40 backdrop-blur-sm transition-opacity duration-300;
+}
 
-  .seller-drawer {
-    @apply fixed top-0 left-0 bottom-0 w-72 z-[120] transition-transform duration-500 ease-in-out;
-    background: #1A2332; /* Match brand-bg */
-    border-right: 1px solid rgba(255, 255, 255, 0.05);
-  }
+.seller-drawer {
+  @apply fixed top-0 left-0 bottom-0 w-72 z-[120] transition-transform duration-500 ease-in-out;
+  background: #1A2332; /* Match brand-bg */
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
 
 .seller-drawer-open {
   @apply translate-x-0;
@@ -35,7 +34,6 @@
   @apply transition-transform duration-300;
 }
 
-  .seller-nav-item:hover .seller-nav-icon {
-    @apply scale-110 rotate-3;
-  }
+.seller-nav-item:hover .seller-nav-icon {
+  @apply scale-110 rotate-3;
 }

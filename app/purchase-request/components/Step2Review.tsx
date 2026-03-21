@@ -71,13 +71,13 @@ const STYLES = {
     "bg-white border-2 border-gray-100/70 border-dashed rounded-2xl p-6 shadow-sm relative",
   feeRow:
     "flex justify-between items-center text-gray-500 font-medium py-1 gap-4",
-  feeValue: "text-gray-900 font-bold break-all text-right min-w-0 flex-1",
+  feeValue: "text-gray-900 font-bold whitespace-nowrap text-right flex-shrink-0",
   feeTotal:
     "border-t-2 border-dashed border-gray-100 mt-5 pt-5 flex justify-between items-center gap-4",
   feeTotalLabel:
     "text-lg font-black text-gray-900 uppercase tracking-tighter flex-shrink-0",
   feeTotalValue:
-    "text-2xl sm:text-3xl font-black text-brand-primary tracking-tight break-all text-right min-w-0 flex-1",
+    "text-2xl sm:text-3xl font-black text-brand-primary tracking-tight whitespace-nowrap text-right flex-shrink-0",
   errorBanner:
     "mt-8 p-5 bg-red-50 text-red-800 border-2 border-red-100/50 rounded-2xl flex items-center gap-3 animate-shake font-bold text-sm",
   terms:
@@ -273,7 +273,7 @@ export default function Step2Review({
                 <div className="space-y-4 mb-6">
                   <div className={STYLES.feeRow}>
                     <span>{MESSAGES.S50_REVIEW_ORDER_VALUE}</span>
-                    <span className="text-gray-900 font-bold">
+                    <span className={STYLES.feeValue}>
                       {formatPrice(
                         formData.transactionType === "PURCHASE"
                           ? listing.price
@@ -283,13 +283,13 @@ export default function Step2Review({
                   </div>
                   <div className={STYLES.feeRow}>
                     <span>{MESSAGES.S50_REVIEW_PLATFORM_FEE}</span>
-                    <span className="text-gray-900 font-bold">
+                    <span className={STYLES.feeValue}>
                       {formatPrice(PLATFORM_FEE)}
                     </span>
                   </div>
                   <div className={STYLES.feeRow}>
                     <span>{MESSAGES.S50_REVIEW_INSPECTION_FEE}</span>
-                    <span className="text-gray-900 font-bold">
+                    <span className={STYLES.feeValue}>
                       {formatPrice(INSPECTION_FEE)}
                     </span>
                   </div>
