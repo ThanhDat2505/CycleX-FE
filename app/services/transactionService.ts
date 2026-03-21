@@ -262,21 +262,21 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             receiverAddress: data.receiverAddress,
         };
 
-        const dataResponse = await apiCallPOST<any>(`/orders?productId=${productId}`, payload);
+        const dataResponse = await apiCallPOST<any>(`/products/${productId}/purchase-requests`, payload);
 
         if (dataResponse) {
-            validateObject(dataResponse, 'Order Response');
+            validateObject(dataResponse, 'Purchase Request Response');
         } else {
-            throw new Error('Invalid backend response: Expected order object');
+            throw new Error('Invalid backend response: Expected purchase request object');
         }
 
-        const orderId = toNumber(dataResponse.orderId) ?? toNumber(dataResponse.requestId);
-        if (!orderId) {
-            throw new Error('Invalid backend response: Missing orderId');
+        const requestId = toNumber(dataResponse.requestId) ?? toNumber(dataResponse.orderId);
+        if (!requestId) {
+            throw new Error('Invalid backend response: Missing requestId');
         }
 
         return {
-            transactionId: orderId,
+            transactionId: requestId,
             listingId: toNumber(dataResponse.listingId) ?? data.listingId,
             buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
             sellerId: toNumber(dataResponse.sellerId) ?? 0,
