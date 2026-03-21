@@ -1,11 +1,12 @@
-import { apiCallGET, apiCallPUT, apiCallPATCH } from '../utils/apiHelpers';
-import { 
-    AdminUser, 
-    AdminUserListResponse, 
-    AdminUserQuery, 
-    AdminUpdateUserRequest, 
-    AdminUpdateRoleRequest, 
-    AdminUpdateStatusRequest 
+import { apiCallGET, apiCallPUT, apiCallPATCH, apiCallPOST } from '../utils/apiHelpers';
+import {
+    AdminUser,
+    AdminUserListResponse,
+    AdminUserQuery,
+    AdminUpdateUserRequest,
+    AdminUpdateRoleRequest,
+    AdminUpdateStatusRequest,
+    AdminCreateAccountRequest
 } from '../types/adminUser';
 
 export const adminUserService = {
@@ -49,5 +50,12 @@ export const adminUserService = {
      */
     updateStatus: async (userId: number, data: AdminUpdateStatusRequest): Promise<AdminUser> => {
         return apiCallPATCH<AdminUser>(`/admin/users/${userId}/status`, data);
+    },
+
+    /**
+     * Create a new Shipper or Inspector account (auto verified)
+     */
+    createAccount: async (data: AdminCreateAccountRequest): Promise<AdminUser> => {
+        return apiCallPOST<AdminUser>(`/admin/users`, data);
     }
 };
