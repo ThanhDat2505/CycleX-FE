@@ -5,7 +5,6 @@ import {
   Search,
   User,
   Shield,
-  AlertTriangle,
   CheckCircle,
   RefreshCw,
   ChevronLeft,
@@ -23,6 +22,7 @@ import {
   CreditCard,
 } from "lucide-react";
 import { adminUserService } from "../../services/adminUserService";
+import VietnameseAddressPicker from "../../components/address/VietnameseAddressPicker";
 import {
   AdminUser,
   AdminUserQuery,
@@ -67,6 +67,18 @@ export default function AdminUsersPage() {
     address: "",
   });
   const [creating, setCreating] = useState(false);
+
+  // Close modals on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsConfirmModalOpen(false);
+        setIsCreateModalOpen(false);
+      }
+    };
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
+  }, []);
 
   const fetchUsers = useCallback(
     async (currentQuery: AdminUserQuery) => {
@@ -297,13 +309,11 @@ export default function AdminUsersPage() {
                 <option value="" className="bg-brand-bg">
                   Tất cả vai trò
                 </option>
-                {["BUYER", "SELLER", "SHIPPER", "INSPECTOR"].map(
-                  (r) => (
-                    <option key={r} value={r} className="bg-brand-bg">
-                      {r}
-                    </option>
-                  ),
-                )}
+                {["BUYER", "SELLER", "SHIPPER", "INSPECTOR"].map((r) => (
+                  <option key={r} value={r} className="bg-brand-bg">
+                    {r}
+                  </option>
+                ))}
               </select>
               <Filter
                 className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-600 pointer-events-none"
@@ -402,20 +412,17 @@ export default function AdminUsersPage() {
                           }
                           className={`appearance-none px-4 py-1.5 rounded-xl border text-[10px] font-black tracking-widest uppercase transition-all focus:outline-none cursor-pointer pr-8 ${getRoleBadge(user.role)}`}
                         >
-                          {[
-                            "BUYER",
-                            "SELLER",
-                            "SHIPPER",
-                            "INSPECTOR",
-                          ].map((r) => (
-                            <option
-                              key={r}
-                              value={r}
-                              className="bg-brand-bg text-white"
-                            >
-                              {r}
-                            </option>
-                          ))}
+                          {["BUYER", "SELLER", "SHIPPER", "INSPECTOR"].map(
+                            (r) => (
+                              <option
+                                key={r}
+                                value={r}
+                                className="bg-brand-bg text-white"
+                              >
+                                {r}
+                              </option>
+                            ),
+                          )}
                         </select>
                         <UserCog
                           size={10}
@@ -503,17 +510,21 @@ export default function AdminUsersPage() {
 
         {/* CONFIRMATION MODAL */}
         {isConfirmModalOpen && selectedUser && confirmAction && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in shadow-glow-orange cursor-default">
-            <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl animate-scale-in relative overflow-hidden">
+          <div
+            onMouseDown={() => setIsConfirmModalOpen(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in shadow-glow-orange cursor-default"
+          >
+            <div
+              onMouseDown={(e) => e.stopPropagation()}
+              className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl animate-scale-in relative overflow-hidden"
+            >
               {/* Accent Decoration */}
               <div
-                className={`absolute top-0 inset-x-0 h-2 ${
-                  confirmAction.type === "BAN"
-                    ? "bg-rose-500"
-                    : confirmAction.type === "UNBAN"
-                      ? "bg-emerald-500"
-                      : "bg-brand-primary"
-                }`}
+                className={`absolute top-0 inset-x-0 h-2 ${(() => {
+                  if (confirmAction.type === "BAN") return "bg-rose-500";
+                  if (confirmAction.type === "UNBAN") return "bg-emerald-500";
+                  return "bg-brand-primary";
+                })()}`}
               />
 
               <button
@@ -525,13 +536,13 @@ export default function AdminUsersPage() {
 
               <div className="text-center">
                 <div
-                  className={`w-20 h-20 rounded-3xl mx-auto mb-8 flex items-center justify-center ${
-                    confirmAction.type === "BAN"
-                      ? "bg-rose-500/20 text-rose-500 shadow-glow-red"
-                      : confirmAction.type === "UNBAN"
-                        ? "bg-emerald-500/20 text-emerald-500 shadow-glow-emerald"
-                        : "bg-brand-primary/20 text-brand-primary shadow-glow-orange"
-                  }`}
+                  className={`w-20 h-20 rounded-3xl mx-auto mb-8 flex items-center justify-center ${(() => {
+                    if (confirmAction.type === "BAN")
+                      return "bg-rose-500/20 text-rose-500 shadow-glow-red";
+                    if (confirmAction.type === "UNBAN")
+                      return "bg-emerald-500/20 text-emerald-500 shadow-glow-emerald";
+                    return "bg-brand-primary/20 text-brand-primary shadow-glow-orange";
+                  })()}`}
                 >
                   {confirmAction.type === "BAN" && (
                     <Ban size={40} strokeWidth={2.5} />
@@ -584,13 +595,13 @@ export default function AdminUsersPage() {
                   </button>
                   <button
                     onClick={executeAction}
-                    className={`py-4 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-xl active:scale-[0.98] ${
-                      confirmAction.type === "BAN"
-                        ? "bg-rose-600 text-white shadow-rose-900/20 hover:bg-rose-500"
-                        : confirmAction.type === "UNBAN"
-                          ? "bg-emerald-600 text-white shadow-emerald-900/20 hover:bg-emerald-500"
-                          : "bg-brand-primary text-white shadow-brand-primary/20 hover:bg-brand-primary-hover"
-                    }`}
+                    className={`py-4 font-black uppercase tracking-widest text-[10px] rounded-2xl transition-all shadow-xl active:scale-[0.98] ${(() => {
+                      if (confirmAction.type === "BAN")
+                        return "bg-rose-600 text-white shadow-rose-900/20 hover:bg-rose-500";
+                      if (confirmAction.type === "UNBAN")
+                        return "bg-emerald-600 text-white shadow-emerald-900/20 hover:bg-emerald-500";
+                      return "bg-brand-primary text-white shadow-brand-primary/20 hover:bg-brand-primary-hover";
+                    })()}`}
                   >
                     Xác nhận
                   </button>
@@ -602,8 +613,14 @@ export default function AdminUsersPage() {
 
         {/* CREATE ACCOUNT MODAL */}
         {isCreateModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in cursor-default">
-            <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-scale-in relative overflow-hidden">
+          <div
+            onMouseDown={() => setIsCreateModalOpen(false)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in cursor-default overflow-y-auto"
+          >
+            <div
+              onMouseDown={(e) => e.stopPropagation()}
+              className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-scale-in relative overflow-hidden my-auto"
+            >
               <div className="absolute top-0 inset-x-0 h-2 bg-brand-primary" />
 
               <button
@@ -714,38 +731,36 @@ export default function AdminUsersPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="relative">
-                    <CreditCard
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-                      size={16}
-                    />
-                    <input
-                      type="text"
-                      placeholder="CCCD"
-                      value={createForm.cccd}
-                      onChange={(e) =>
-                        setCreateForm({ ...createForm, cccd: e.target.value })
-                      }
-                      className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
-                    />
+                <div className="relative">
+                  <CreditCard
+                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
+                    size={16}
+                  />
+                  <input
+                    type="text"
+                    placeholder="CCCD"
+                    value={createForm.cccd}
+                    onChange={(e) =>
+                      setCreateForm({ ...createForm, cccd: e.target.value })
+                    }
+                    className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                  />
+                </div>
+
+                {/* Address Picker */}
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gray-400 text-xs font-bold">
+                    <MapPin size={14} />
+                    Địa chỉ
                   </div>
-                  <div className="relative">
-                    <MapPin
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-                      size={16}
-                    />
-                    <input
-                      type="text"
-                      placeholder="Địa chỉ"
-                      value={createForm.address}
-                      onChange={(e) =>
+                  <div className="[&_label]:text-gray-400 [&_select]:bg-white/5 [&_select]:border-white/10 [&_select]:text-white [&_select]:rounded-xl [&_input]:bg-white/5 [&_input]:border-white/10 [&_input]:text-white [&_input]:rounded-xl [&_select]:text-sm [&_input]:text-sm">
+                    <VietnameseAddressPicker
+                      onChange={(data) =>
                         setCreateForm({
                           ...createForm,
-                          address: e.target.value,
+                          address: data.fullAddress,
                         })
                       }
-                      className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
                     />
                   </div>
                 </div>
