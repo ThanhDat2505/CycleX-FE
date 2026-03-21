@@ -20,6 +20,7 @@ interface ListingRow {
   id: string;
   name: string;
   shop: string;
+  sellerName: string;
   submittedAt: string;
   dateISO: string;
   rawStatus: string;
@@ -240,6 +241,9 @@ export default function DashboardClient() {
                   raw.sellerName ??
                   "—",
               ),
+              sellerName: String(
+                raw.sellerName ?? raw.ownerName ?? raw.sellerFullName ?? "—"
+              ),
               submittedAt: formatDateToVN(raw.submittedAt ?? raw.createdAt ?? ""),
               dateISO: raw.submittedAt ?? raw.createdAt ?? "",
               rawStatus,
@@ -333,7 +337,7 @@ export default function DashboardClient() {
                 <tr className="bg-gray-50 text-left text-xs font-semibold text-black uppercase tracking-wider">
                   <th className="px-5 py-3">ID</th>
                   <th className="px-5 py-3">Tên sản phẩm</th>
-                  <th className="px-5 py-3">Cửa hàng</th>
+                  <th className="px-5 py-3">Người bán</th>
                   <th className="px-5 py-3">Ngày gửi</th>
                   <th className="px-5 py-3">Trạng thái</th>
                 </tr>
@@ -385,7 +389,7 @@ export default function DashboardClient() {
                     <tr className="bg-gray-50 text-left text-xs font-semibold text-black uppercase tracking-wider">
                       <th className="px-5 py-3 w-[10%]">ID</th>
                       <th className="px-5 py-3 w-[30%]">Tên sản phẩm</th>
-                      <th className="px-5 py-3 w-[20%]">Cửa hàng</th>
+                      <th className="px-5 py-3 w-[20%]">Người bán</th>
                       <th className="px-5 py-3 w-[20%]">Ngày gửi</th>
                       <th className="px-5 py-3 w-[20%]">Trạng thái</th>
                     </tr>
@@ -406,7 +410,7 @@ export default function DashboardClient() {
                           <td className="px-5 py-3 font-medium text-gray-900 max-w-[250px] truncate">
                             {row.name}
                           </td>
-                          <td className="px-5 py-3 text-gray-600">{row.shop}</td>
+                          <td className="px-5 py-3 text-gray-600">{row.sellerName}</td>
                           <td className="px-5 py-3 text-gray-500">
                             {row.submittedAt || "—"}
                           </td>

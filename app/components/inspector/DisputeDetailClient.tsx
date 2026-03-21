@@ -95,9 +95,12 @@ export default function DisputeDetailClient({
             <p className="text-gray-400 font-medium mb-10 leading-relaxed">{error || "Dữ liệu khiếu nại bị hỏng hoặc không tồn tại."}</p>
             <button 
                 onClick={() => router.back()}
-                className="w-full py-4 bg-white/5 border border-white/10 text-gray-300 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-white/10 transition-all active:scale-[0.98]"
+                className="text-sm font-extrabold text-gray-500 hover:text-white transition-colors inline-flex items-center justify-center gap-1 bg-transparent border-none p-0 cursor-pointer w-full mt-4"
             >
-                Quay lại hàng chờ
+                <span className="material-symbols-outlined text-[18px]">
+                  arrow_back
+                </span>
+                Quay lại
             </button>
         </div>
       </div>
@@ -113,12 +116,15 @@ export default function DisputeDetailClient({
 
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5">
             <div className="animate-slide-up">
-                <Link 
-                    href="/inspector/disputes" 
-                    className="inline-flex items-center gap-2 text-gray-500 hover:text-brand-primary transition-colors mb-6 font-bold text-[10px] uppercase tracking-[0.2em] group"
+                <Link
+                  href="/inspector/disputes"
+                  className="text-sm font-extrabold text-gray-500 hover:text-white transition-colors mb-6 inline-flex items-center gap-1"
+                  style={{ textDecoration: "none" }}
                 >
-                    <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                    Back to Queue
+                  <span className="material-symbols-outlined text-[18px]">
+                    arrow_back
+                  </span>
+                  Quay lại
                 </Link>
                 <div className="flex items-center gap-4 mb-4">
                     <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">

@@ -10,6 +10,7 @@ export type PendingRow = {
   status: PendingStatus;
   name: string;
   shop: string;
+  sellerName: string;
   submittedAt: string;
   wait: number;
   waitLabel: string;

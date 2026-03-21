@@ -120,10 +120,11 @@ export default function ReviewDetailClient({
     <div className="wrap review-detail-page">
       <header className="header">
         <div className="min-w-0">
-          <div className="meta">
+          <div className="meta" style={{ marginBottom: "8px" }}>
             <Link
               href="/inspector/pending-list"
-              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors mb-2 inline-flex items-center gap-1"
+              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+              style={{ textDecoration: "none" }}
             >
               <span className="material-symbols-outlined text-[18px]">
                 arrow_back
@@ -329,14 +330,7 @@ export default function ReviewDetailClient({
                 <span className="specLabel">Loại xe</span>
                 <span className="specValue">{listing.specs.type}</span>
               </div>
-              <div className="specItem">
-                <span className="specLabel">Khung sườn</span>
-                <span className="specValue">{listing.specs.frame}</span>
-              </div>
-              <div className="specItem">
-                <span className="specLabel">Trọng lượng</span>
-                <span className="specValue">{listing.specs.weight}</span>
-              </div>
+
               <div className="specItem">
                 <span className="specLabel">Màu sắc</span>
                 <span className="specValue">Đen / Đỏ</span>

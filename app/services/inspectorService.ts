@@ -357,6 +357,7 @@ function mapToDashboardListing(raw: RawObject): DashboardListing {
     id: getListingId(raw),
     name: getProductName(raw),
     shop: getStoreName(raw),
+    sellerName: getSellerName(raw),
     imageUrl:
       raw.imageUrl ??
       raw.thumbnailUrl ??
@@ -380,6 +381,7 @@ function mapToPendingRow(raw: RawObject): PendingRow {
     status: statusToPendingStatus(getStatus(raw)) as PendingStatus | "DONE" as any,
     name: getProductName(raw),
     shop: getStoreName(raw),
+    sellerName: getSellerName(raw),
     submittedAt: toDisplayDate(submittedIso),
     wait,
     waitLabel: `${Math.max(0, wait)} ngày`,

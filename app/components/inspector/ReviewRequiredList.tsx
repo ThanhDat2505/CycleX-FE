@@ -14,6 +14,7 @@ type RowVM = {
   req: string;
   name: string;
   shop: string;
+  sellerName: string;
   submittedAt: string;
   status: PendingStatus;
 };
@@ -55,6 +56,7 @@ export default function ReviewRequiredList() {
             req: makeReq(x.id),
             name: x.name,
             shop: x.shop,
+            sellerName: x.sellerName,
             submittedAt: x.submittedAt,
             status: x.status,
           })),
@@ -137,18 +139,18 @@ export default function ReviewRequiredList() {
         {!loading && !error && (
           <table className="table" style={{ tableLayout: "fixed", width: "100%" }}>
             <colgroup>
+              <col style={{ width: "35%" }} />
               <col style={{ width: "20%" }} />
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "20%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "15%" }} />
+              <col style={{ width: "15%" }} />
             </colgroup>
             <thead className="thead" style={{ color: "black" }}>
               <tr>
                 <th>Tên sản phẩm</th>
-                <th>Cửa hàng</th>
+                <th>Người bán</th>
                 <th>Ngày gửi duyệt</th>
-                <th>Trạng thái</th>
+                <th style={{ textAlign: "center" }}>Trạng thái</th>
                 <th style={{ textAlign: "center" }}>Hành động</th>
               </tr>
             </thead>
@@ -159,18 +161,18 @@ export default function ReviewRequiredList() {
                 return (
                   <tr key={`${row.req}-${row.id}`}>
                     <td>
-                      <div className="productCell">
+                      <div className="flex flex-col gap-2 min-w-0">
                         <div className="productName">{row.name}</div>
-                        <div className="productId">#{row.id}</div>
+                        <div className="productId" style={{ margin: 0 }}>#{row.id}</div>
                       </div>
                     </td>
                     <td>
-                      <div className="storeName">{row.shop}</div>
+                      <div className="storeName">{row.sellerName}</div>
                     </td>
                     <td>
                       <div className="dateText">{row.submittedAt}</div>
                     </td>
-                    <td>
+                    <td style={{ textAlign: "center" }}>
                       <StatusPill status={row.status} />
                     </td>
                     <td className="actionCell" style={{ textAlign: "center" }}>
