@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { 
     Search, User, Shield, AlertTriangle, 
     CheckCircle, RefreshCw, ChevronLeft, ChevronRight, 
-    Filter, Loader2, Ban, ShieldCheck, UserCog, X
+    Filter, Loader2, Ban, ShieldCheck, UserCog, X,
+    UserPlus, Mail, Phone, MapPin, CreditCard
 } from 'lucide-react';
 import { adminUserService } from '../../services/adminUserService';
 import { AdminUser, AdminUserQuery, UserRole, UserStatus } from '../../types/adminUser';
@@ -33,6 +34,14 @@ export default function AdminUsersPage() {
         type: 'BAN' | 'UNBAN' | 'CHANGE_ROLE';
         newRole?: UserRole;
     } | null>(null);
+
+    // Create Account State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [createForm, setCreateForm] = useState({
+        email: '', password: '', fullName: '', phone: '', 
+        role: 'SHIPPER' as UserRole, cccd: '', address: ''
+    });
+    const [creating, setCreating] = useState(false);
 
     const fetchUsers = useCallback(async (currentQuery: AdminUserQuery) => {
         setRefreshing(true);
@@ -110,6 +119,26 @@ export default function AdminUsersPage() {
         }
     };
 
+    const handleCreateAccount = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!createForm.email || !createForm.password || !createForm.fullName || !createForm.phone) {
+            addToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'error');
+            return;
+        }
+        setCreating(true);
+        try {
+            await adminUserService.createAccount(createForm);
+            addToast(`Tạo tài khoản ${createForm.role} thành công!`, 'success');
+            setIsCreateModalOpen(false);
+            setCreateForm({ email: '', password: '', fullName: '', phone: '', role: 'SHIPPER', cccd: '', address: '' });
+            fetchUsers(query);
+        } catch (error: any) {
+            addToast(error.message || 'Tạo tài khoản thất bại', 'error');
+        } finally {
+            setCreating(false);
+        }
+    };
+
     const getStatusStyle = (status: UserStatus) => {
         switch (status) {
             case 'ACTIVE': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
@@ -157,6 +186,13 @@ export default function AdminUsersPage() {
                             Kiểm soát quyền truy cập, thay đổi vai trò và giám sát trạng thái tài khoản người dùng bảo mật cao.
                         </p>
                     </div>
+                    <button
+                        onClick={() => setIsCreateModalOpen(true)}
+                        className="flex items-center gap-3 px-6 py-4 bg-brand-primary text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-brand-primary/20 hover:bg-brand-primary-hover transition-all active:scale-[0.98]"
+                    >
+                        <UserPlus size={18} />
+                        Tạo Tài Khoản
+                    </button>
                 </div>
 
                 {/* Filters & Actions Bar */}
@@ -380,6 +416,146 @@ export default function AdminUsersPage() {
                                     </button>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* CREATE ACCOUNT MODAL */}
+                {isCreateModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in cursor-default">
+                        <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-scale-in relative overflow-hidden">
+                            <div className="absolute top-0 inset-x-0 h-2 bg-brand-primary" />
+                            
+                            <button 
+                                onClick={() => setIsCreateModalOpen(false)}
+                                className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+
+                            <div className="text-center mb-8">
+                                <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center bg-brand-primary/20 text-brand-primary shadow-glow-orange">
+                                    <UserPlus size={40} strokeWidth={2.5} />
+                                </div>
+                                <h2 className="text-3xl font-black text-white tracking-tight">Tạo Tài Khoản Mới</h2>
+                                <p className="text-gray-400 text-sm font-medium mt-2">Tạo tài khoản Shipper hoặc Inspector (email tự động xác thực)</p>
+                            </div>
+
+                            <form onSubmit={handleCreateAccount} className="space-y-4">
+                                {/* Role Selection */}
+                                <div className="grid grid-cols-2 gap-3">
+                                    {(['SHIPPER', 'INSPECTOR'] as const).map((r) => (
+                                        <button
+                                            key={r}
+                                            type="button"
+                                            onClick={() => setCreateForm({...createForm, role: r})}
+                                            className={`py-3 rounded-2xl text-xs font-black uppercase tracking-widest border transition-all ${
+                                                createForm.role === r 
+                                                    ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-brand-primary/20' 
+                                                    : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10'
+                                            }`}
+                                        >
+                                            {r}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Form Fields */}
+                                <div className="relative">
+                                    <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                    <input
+                                        type="email"
+                                        required
+                                        placeholder="Email *"
+                                        value={createForm.email}
+                                        onChange={(e) => setCreateForm({...createForm, email: e.target.value})}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                                    />
+                                </div>
+
+                                <div className="relative">
+                                    <Shield className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                    <input
+                                        type="password"
+                                        required
+                                        minLength={6}
+                                        placeholder="Mật khẩu * (tối thiểu 6 ký tự)"
+                                        value={createForm.password}
+                                        onChange={(e) => setCreateForm({...createForm, password: e.target.value})}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                                    />
+                                </div>
+
+                                <div className="relative">
+                                    <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Họ và tên *"
+                                        value={createForm.fullName}
+                                        onChange={(e) => setCreateForm({...createForm, fullName: e.target.value})}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                                    />
+                                </div>
+
+                                <div className="relative">
+                                    <Phone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                    <input
+                                        type="tel"
+                                        required
+                                        placeholder="Số điện thoại *"
+                                        value={createForm.phone}
+                                        onChange={(e) => setCreateForm({...createForm, phone: e.target.value})}
+                                        className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    <div className="relative">
+                                        <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                        <input
+                                            type="text"
+                                            placeholder="CCCD"
+                                            value={createForm.cccd}
+                                            onChange={(e) => setCreateForm({...createForm, cccd: e.target.value})}
+                                            className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                                        />
+                                    </div>
+                                    <div className="relative">
+                                        <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                        <input
+                                            type="text"
+                                            placeholder="Địa chỉ"
+                                            value={createForm.address}
+                                            onChange={(e) => setCreateForm({...createForm, address: e.target.value})}
+                                            className="w-full pl-12 pr-4 py-3.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-brand-primary/20 focus:border-brand-primary/50 placeholder:text-gray-600"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-2 flex items-center gap-3 text-xs text-emerald-400 font-bold">
+                                    <CheckCircle size={14} />
+                                    Email sẽ tự động được xác thực (verified)
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 pt-4">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setIsCreateModalOpen(false)}
+                                        className="py-4 bg-white/5 text-gray-400 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-white/10 transition-all active:scale-[0.98]"
+                                    >
+                                        Hủy bỏ
+                                    </button>
+                                    <button 
+                                        type="submit"
+                                        disabled={creating}
+                                        className="py-4 bg-brand-primary text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-brand-primary/20 hover:bg-brand-primary-hover transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        {creating ? <Loader2 size={16} className="animate-spin" /> : <UserPlus size={16} />}
+                                        Tạo Tài Khoản
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}
