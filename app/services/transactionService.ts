@@ -464,7 +464,7 @@ export async function getBuyerTransactions(
         validateArray(itemsArray, 'Buyer Transactions Array');
 
         const mapped = await Promise.all(dataResponse.map(async (item) => {
-            const transactionId = toNumber(item?.requestId);
+            const transactionId = toNumber(item?.orderId) ?? toNumber(item?.requestId);
             const listingId = toNumber(item?.listingId) ?? 0;
             if (!transactionId) {
                 return null;
