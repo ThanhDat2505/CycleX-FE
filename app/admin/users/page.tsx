@@ -297,7 +297,7 @@ export default function AdminUsersPage() {
                 <option value="" className="bg-brand-bg">
                   Tất cả vai trò
                 </option>
-                {["BUYER", "SELLER", "SHIPPER", "INSPECTOR", "ADMIN"].map(
+                {["BUYER", "SELLER", "SHIPPER", "INSPECTOR"].map(
                   (r) => (
                     <option key={r} value={r} className="bg-brand-bg">
                       {r}
@@ -407,7 +407,6 @@ export default function AdminUsersPage() {
                             "SELLER",
                             "SHIPPER",
                             "INSPECTOR",
-                            "ADMIN",
                           ].map((r) => (
                             <option
                               key={r}
