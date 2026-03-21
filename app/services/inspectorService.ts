@@ -6,8 +6,8 @@ import type {
 } from "@/app/types/types";
 import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
-
 import { authService } from "./authService";
+import { INSPECTOR_MOCK_ENABLED, handleInspectorMockRequest } from "./inspectorMockData";
 
 type RawObject = Record<string, any>;
 
@@ -101,6 +101,7 @@ function pickPositiveNumber(values: unknown[]): number | null {
 }
 
 function getInspectorId(): number {
+  if (INSPECTOR_MOCK_ENABLED) return 999;
   const token = authService.getToken();
   const payload = getJwtPayload(token);
   const tokenInspectorId = pickPositiveNumber([
@@ -150,6 +151,9 @@ class InspectorApiError extends Error {
 }
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  if (INSPECTOR_MOCK_ENABLED) {
+    return handleInspectorMockRequest(path, init) as Promise<T>;
+  }
 
   if (isTokenExpired()) {
     if (typeof window !== "undefined") {
@@ -258,7 +262,7 @@ function statusToDashboardStatus(status: string): DashboardListingStatus {
   }
 }
 
-function statusToPendingStatus(status: string): PendingStatus {
+function statusToPendingStatus(status: string): PendingStatus | "DONE" {
   const normalizedStatus = normalizeStatus(status);
 
   switch (normalizedStatus) {
@@ -279,6 +283,11 @@ function statusToPendingStatus(status: string): PendingStatus {
     case "REPORTED":
     case "REPORT":
       return "FLAGGED";
+    case "APPROVED":
+    case "PASSED":
+    case "REJECTED":
+    case "DONE":
+      return "DONE";
     default:
       return "PENDING";
   }
@@ -368,7 +377,7 @@ function mapToPendingRow(raw: RawObject): PendingRow {
 
   return {
     id: getListingId(raw),
-    status: statusToPendingStatus(getStatus(raw)),
+    status: statusToPendingStatus(getStatus(raw)) as PendingStatus | "DONE" as any,
     name: getProductName(raw),
     shop: getStoreName(raw),
     submittedAt: toDisplayDate(submittedIso),
