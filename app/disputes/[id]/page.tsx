@@ -5,10 +5,11 @@ import { useParams, useRouter } from "next/navigation";
 import { 
     ChevronLeft, Loader2, AlertTriangle, CheckCircle, 
     XCircle, ShieldAlert, History, MessageSquare, 
-    Image as ImageIcon, ExternalLink, Zap
+    Image as ImageIcon, ExternalLink, Zap, Clock,
+    ArrowUpRight, Send
 } from "lucide-react";
-import { getDisputeById, overrideDispute } from "@/app/services/buyerDisputeService";
-import { Dispute } from "@/app/types/dispute";
+import { getDisputeById, overrideDispute, replyToDispute, getDisputeResult } from "@/app/services/buyerDisputeService";
+import { Dispute, DisputeResultResponse } from "@/app/types/dispute";
 import { useToast } from "@/app/contexts/ToastContext";
 import { formatDate } from "@/app/utils/format";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -18,8 +19,13 @@ export default function DisputeResultPage() {
     const router = useRouter();
     const { addToast } = useToast();
     const [dispute, setDispute] = useState<Dispute | null>(null);
+    const [disputeResult, setDisputeResult] = useState<DisputeResultResponse | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Reply state (for NEED_MORE_INFO)
+    const [replyContent, setReplyContent] = useState('');
+    const [isReplying, setIsReplying] = useState(false);
 
     const disputeId = Number(params.id);
 
@@ -41,6 +47,16 @@ export default function DisputeResultPage() {
         try {
             const data = await getDisputeById(disputeId);
             setDispute(data);
+
+            // Fetch result if dispute is resolved/rejected
+            if (data.status === 'RESOLVED' || data.status === 'REJECTED') {
+                try {
+                    const result = await getDisputeResult(disputeId);
+                    setDisputeResult(result);
+                } catch {
+                    // Result may not be available yet
+                }
+            }
         } catch (err: any) {
             setError(err.message || "Không tìm thấy thông tin khiếu nại.");
         } finally {
@@ -48,8 +64,27 @@ export default function DisputeResultPage() {
         }
     }, [disputeId]);
 
+    const handleReply = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!replyContent.trim()) {
+            addToast('Vui lòng nhập nội dung phản hồi.', 'error');
+            return;
+        }
+        setIsReplying(true);
+        try {
+            const updated = await replyToDispute(disputeId, replyContent);
+            setDispute(updated);
+            setReplyContent('');
+            addToast('Đã gửi phản hồi bổ sung thành công!', 'success');
+        } catch (err: any) {
+            addToast(err.message || 'Lỗi khi gửi phản hồi.', 'error');
+        } finally {
+            setIsReplying(false);
+        }
+    };
+
     useEffect(() => {
-        document.title = "Chi tiết khiếu nại | CycleX Admin";
+        document.title = "Chi tiết khiếu nại | CycleX";
         fetchDispute();
     }, [fetchDispute]);
 
@@ -106,6 +141,34 @@ export default function DisputeResultPage() {
 
     const isSolved = dispute.status === "RESOLVED";
     const isRejected = dispute.status === "REJECTED";
+    const isNeedMoreInfo = dispute.status === "NEED_MORE_INFO";
+    const isEscalated = dispute.status === "ESCALATED";
+    const isInProgress = dispute.status === "IN_PROGRESS";
+    const isOpen = dispute.status === "OPEN";
+
+    const statusLabel = (() => {
+        switch (dispute.status) {
+            case "OPEN": return "Đang chờ xử lý";
+            case "IN_PROGRESS": return "Đang được xem xét";
+            case "NEED_MORE_INFO": return "Cần bổ sung thông tin";
+            case "ESCALATED": return "Đã chuyển lên quản trị viên";
+            case "RESOLVED": return "Khiếu nại được chấp nhận";
+            case "REJECTED": return "Khiếu nại bị từ chối";
+            default: return "Đang được xem xét";
+        }
+    })();
+
+    const statusIcon = isSolved ? <CheckCircle size={40} strokeWidth={2.5} /> 
+        : isRejected ? <XCircle size={40} strokeWidth={2.5} /> 
+        : isNeedMoreInfo ? <MessageSquare size={40} strokeWidth={2.5} />
+        : isEscalated ? <ArrowUpRight size={40} strokeWidth={2.5} />
+        : <History size={40} strokeWidth={2.5} />;
+
+    const statusColor = isSolved ? 'emerald' 
+        : isRejected ? 'rose' 
+        : isNeedMoreInfo ? 'amber' 
+        : isEscalated ? 'purple' 
+        : 'brand-primary';
 
     return (
         <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
@@ -152,7 +215,7 @@ export default function DisputeResultPage() {
                         <div className={`relative overflow-hidden bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 text-center shadow-2xl`}>
                             {/* Visual Background Glow */}
                             <div className={`absolute -top-24 -left-24 w-48 h-48 blur-[80px] rounded-full opacity-20 ${
-                                isSolved ? 'bg-emerald-500' : isRejected ? 'bg-rose-500' : 'bg-brand-primary'
+                                isSolved ? 'bg-emerald-500' : isRejected ? 'bg-rose-500' : isNeedMoreInfo ? 'bg-amber-500' : isEscalated ? 'bg-purple-500' : 'bg-brand-primary'
                             }`} />
                             
                             <div className={`w-24 h-24 rounded-3xl mx-auto mb-8 flex items-center justify-center border-2 transition-transform hover:scale-110 duration-500 ${
@@ -160,15 +223,19 @@ export default function DisputeResultPage() {
                                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-glow-emerald" 
                                     : isRejected 
                                         ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-glow-red" 
-                                        : "bg-brand-primary/10 text-brand-primary border-brand-primary/20 shadow-glow-orange"
+                                        : isNeedMoreInfo
+                                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                                            : isEscalated
+                                                ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
+                                                : "bg-brand-primary/10 text-brand-primary border-brand-primary/20 shadow-glow-orange"
                             }`}>
-                                {isSolved ? <CheckCircle size={40} strokeWidth={2.5} /> : isRejected ? <XCircle size={40} strokeWidth={2.5} /> : <History size={40} strokeWidth={2.5} />}
+                                {statusIcon}
                             </div>
                             
                             <h2 className={`text-4xl font-black tracking-tight mb-4 ${
-                                isSolved ? "text-emerald-400" : isRejected ? "text-rose-400" : "text-brand-primary"
+                                isSolved ? "text-emerald-400" : isRejected ? "text-rose-400" : isNeedMoreInfo ? "text-amber-400" : isEscalated ? "text-purple-400" : "text-brand-primary"
                             }`}>
-                                {isSolved ? "Khiếu nại được chấp nhận" : isRejected ? "Khiếu nại bị từ chối" : "Đang được xem xét"}
+                                {statusLabel}
                             </h2>
                             
                             <div className="flex items-center justify-center gap-3 text-gray-500 text-xs font-bold uppercase tracking-widest">
@@ -177,8 +244,41 @@ export default function DisputeResultPage() {
                                 <span>{formatDate(dispute.createdAt)}</span>
                             </div>
 
-                            {/* Admin Note if resolved */}
-                            {(isSolved || isRejected) && dispute.adminNote && (
+                            {/* Dispute Result info (S-74) */}
+                            {disputeResult && (isSolved || isRejected) && (
+                                <div className="mt-10 pt-10 border-t border-white/5 text-left bg-white/[0.02] -mx-10 px-10">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <CheckCircle size={16} className="text-brand-primary" />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">Kết quả xử lý</h4>
+                                    </div>
+                                    <div className="mb-4">
+                                        <span className={`inline-block px-4 py-2 rounded-xl text-sm font-bold ${
+                                            disputeResult.result === 'BUYER_WIN' ? 'bg-emerald-500/20 text-emerald-400' :
+                                            disputeResult.result === 'SELLER_WIN' ? 'bg-blue-500/20 text-blue-400' :
+                                            disputeResult.result === 'SPLIT' ? 'bg-amber-500/20 text-amber-400' :
+                                            'bg-gray-500/20 text-gray-400'
+                                        }`}>
+                                            {disputeResult.result === 'BUYER_WIN' ? 'Người mua thắng - Hoàn tiền' :
+                                             disputeResult.result === 'SELLER_WIN' ? 'Người bán thắng - Giải phóng thanh toán' :
+                                             disputeResult.result === 'SPLIT' ? 'Phân chia 50/50' :
+                                             disputeResult.result === 'CLOSED' ? 'Đã đóng' : disputeResult.result}
+                                        </span>
+                                    </div>
+                                    {disputeResult.message && (
+                                        <p className="text-lg font-medium text-gray-300 leading-relaxed italic">
+                                            &ldquo;{disputeResult.message}&rdquo;
+                                        </p>
+                                    )}
+                                    {disputeResult.resolvedAt && (
+                                        <p className="mt-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest">
+                                            Ghi nhận lúc: {formatDate(disputeResult.resolvedAt)}
+                                        </p>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Legacy admin note (fallback) */}
+                            {!disputeResult && (isSolved || isRejected) && dispute.adminNote && (
                                 <div className="mt-10 pt-10 border-t border-white/5 text-left bg-white/[0.02] -mx-10 px-10 rounded-b-[2.5rem]">
                                     <div className="flex items-center gap-3 mb-4">
                                         <MessageSquare size={16} className="text-brand-primary" />
@@ -190,8 +290,52 @@ export default function DisputeResultPage() {
                                     <p className="mt-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest">Ghi nhận lúc: {formatDate(dispute.resolvedAt || '')}</p>
                                 </div>
                             )}
+
+                            {/* Need More Info notice for buyer */}
+                            {isNeedMoreInfo && (
+                                <div className="mt-10 pt-10 border-t border-white/5 text-left bg-amber-500/[0.03] -mx-10 px-10 rounded-b-[2.5rem] pb-4">
+                                    <div className="flex items-center gap-3 mb-4">
+                                        <Clock size={16} className="text-amber-400" />
+                                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Yêu cầu bổ sung thông tin</h4>
+                                    </div>
+                                    <p className="text-sm font-medium text-gray-300 leading-relaxed mb-2">
+                                        Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc bằng chứng cho khiếu nại này. Vui lòng phản hồi bên dưới.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
+
+                    {/* Reply form for NEED_MORE_INFO status */}
+                    {isNeedMoreInfo && (
+                        <div className="animate-fade-in">
+                            <div className="bg-amber-500/10 border border-amber-500/20 rounded-[2rem] p-8">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <Send size={18} className="text-amber-400" />
+                                    <h3 className="text-lg font-black text-white tracking-tight">Phản hồi bổ sung</h3>
+                                </div>
+                                <form onSubmit={handleReply}>
+                                    <textarea
+                                        value={replyContent}
+                                        onChange={(e) => setReplyContent(e.target.value)}
+                                        placeholder="Nhập thông tin bổ sung, mô tả chi tiết hơn hoặc đính kèm thêm bằng chứng..."
+                                        rows={4}
+                                        required
+                                        className="w-full px-6 py-4 bg-black/20 border border-amber-500/20 rounded-2xl text-sm font-medium text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none"
+                                    />
+                                    <div className="flex justify-end gap-3 mt-4">
+                                        <button
+                                            type="submit"
+                                            disabled={isReplying || !replyContent.trim()}
+                                            className="px-8 py-3 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-amber-600 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
+                                        >
+                                            {isReplying ? <><Loader2 size={14} className="animate-spin" /> Đang gửi...</> : <><Send size={14} /> Gửi phản hồi</>}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Dispute Info Sections */}
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
@@ -252,10 +396,10 @@ export default function DisputeResultPage() {
                     </p>
                     <div className="flex gap-4">
                         <button 
-                            onClick={() => router.push('/admin/dashboard')}
+                            onClick={() => router.back()}
                             className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                         >
-                            Quay lại Dashboard
+                            Quay lại
                         </button>
                     </div>
                 </div>

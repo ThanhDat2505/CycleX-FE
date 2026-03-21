@@ -284,6 +284,8 @@ export default function TransactionDetailPage() {
           orderId={transaction.transactionId}
           buyerId={user?.userId || 0}
           sellerId={transaction.sellerId}
+          sellerName={transaction.sellerName}
+          deliveryDate={transaction.updatedAt ? new Date(transaction.updatedAt).toLocaleDateString('vi-VN') : undefined}
           orderStatus={transaction.status}
           completedAt={transaction.updatedAt}
           onSuccess={() => {

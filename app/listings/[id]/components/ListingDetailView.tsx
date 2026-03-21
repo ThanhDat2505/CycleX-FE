@@ -36,7 +36,7 @@ const STYLES = {
   grid: "grid grid-cols-1 lg:grid-cols-2 gap-10",
   infoSection: "space-y-8",
   title: "text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight",
-  price: "text-4xl font-extrabold text-brand-primary",
+  price: "text-4xl font-extrabold text-brand-primary break-all",
   metaRow: "flex flex-wrap gap-4 items-center",
   badgeNew:
     "px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-green-100 text-green-700 border border-green-200",

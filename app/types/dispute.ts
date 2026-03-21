@@ -3,8 +3,8 @@
  * Used for S-70 (Dispute Creation)
  */
 
-// Match BE DisputeStatus enum: OPEN, IN_PROGRESS, RESOLVED, REJECTED
-export type DisputeStatus = 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'REJECTED';
+// Match BE DisputeStatus enum: OPEN, IN_PROGRESS, NEED_MORE_INFO, ESCALATED, RESOLVED, REJECTED
+export type DisputeStatus = 'OPEN' | 'IN_PROGRESS' | 'NEED_MORE_INFO' | 'ESCALATED' | 'RESOLVED' | 'REJECTED';
 
 export interface DisputeReason {
     reasonId: number;
@@ -91,4 +91,15 @@ export interface Dispute {
     isOverridden?: boolean;
     createdAt: string;
     updatedAt: string;
+}
+
+/**
+ * Dispute result for buyer/seller viewing (S-74)
+ */
+export interface DisputeResultResponse {
+    disputeId: number;
+    status: string;
+    result: string;
+    message: string;
+    resolvedAt?: string;
 }
