@@ -12,6 +12,7 @@ export type Listing = {
   id: string;
   name: string;
   shop: string;
+  sellerName: string;
   imageUrl?: string;
   submittedAt: string;
   waitingTime: string;

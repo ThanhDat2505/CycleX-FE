@@ -65,7 +65,7 @@ export default function ListingsTable({
           <tr>
             <th className="px-6 py-4 font-semibold">Hình ảnh</th>
             <th className="px-6 py-4 font-semibold">Tên xe</th>
-            <th className="px-6 py-4 font-semibold">Cửa hàng</th>
+            <th className="px-6 py-4 font-semibold">Người bán</th>
             <th className="px-6 py-4 font-semibold">Ngày gửi duyệt</th>
             <th className="px-6 py-4 font-semibold">Thời gian chờ</th>
             <th className="px-6 py-4 font-semibold">Trạng thái</th>
@@ -100,7 +100,7 @@ export default function ListingsTable({
                 </div>
                 <div className="text-xs text-gray-400 mt-1">ID: {r.id}</div>
               </td>
-              <td className="px-6 py-4 text-gray-600">{r.shop}</td>
+              <td className="px-6 py-4 text-gray-600">{r.sellerName}</td>
               <td className="px-6 py-4 text-gray-600">{r.submittedAt}</td>
               <td className="px-6 py-4 text-gray-600 font-medium">
                 {r.waitingTime}

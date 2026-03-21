@@ -20,6 +20,7 @@ interface ListingRow {
   id: string;
   name: string;
   shop: string;
+  sellerName: string;
   submittedAt: string;
   dateISO: string;
   rawStatus: string;
@@ -63,18 +64,6 @@ function formatDateToVN(isoString: string) {
 }
 
 
-
-function SkeletonStatCard() {
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 flex items-center gap-3 w-full animate-pulse">
-      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200" />
-      <div className="min-w-0 flex-1">
-        <div className="h-5 w-10 bg-gray-200 rounded mb-1.5" />
-        <div className="h-3 w-16 bg-gray-100 rounded" />
-      </div>
-    </div>
-  );
-}
 
 function SkeletonTableRow() {
   return (
@@ -252,6 +241,9 @@ export default function DashboardClient() {
                   raw.sellerName ??
                   "—",
               ),
+              sellerName: String(
+                raw.sellerName ?? raw.ownerName ?? raw.sellerFullName ?? "—"
+              ),
               submittedAt: formatDateToVN(raw.submittedAt ?? raw.createdAt ?? ""),
               dateISO: raw.submittedAt ?? raw.createdAt ?? "",
               rawStatus,
@@ -308,23 +300,7 @@ export default function DashboardClient() {
     }
   }, [counts.activeListings, activeFilter]);
 
-  const STAT_CARDS: {
-    key: FilterKey;
-    label: string;
-    count: number;
-    icon: string;
-    iconWrapClass: string;
-    iconClass: string;
-  }[] = [
-    {
-      key: "all",
-      label: "Tất cả",
-      count: counts.pendingAll,
-      icon: "select_all",
-      iconWrapClass: "bg-[#eef0f3]",
-      iconClass: "text-[#111827]",
-    },
-  ];
+
 
   const filterLabel: Record<FilterKey, string> = {
     all: "Tất cả tin",
@@ -341,55 +317,7 @@ export default function DashboardClient() {
       highlightTitle="Tổng Quan"
       description={`Chào mừng trở lại! Bạn có ${counts.pendingAll} tin cần duyệt hôm nay.`}
     >
-      <div className="mb-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 justify-items-stretch">
-          {loading && (
-            <>
-              <SkeletonStatCard />
-              <SkeletonStatCard />
-              <SkeletonStatCard />
-            </>
-          )}
-          {!loading &&
-            STAT_CARDS.map((card) => {
-              const isActive =
-                activeFilter === card.key ||
-                (card.key === "all" && activeFilter === "all");
-              return (
-                <button
-                  key={card.key}
-                  type="button"
-                  onClick={() =>
-                    setActiveFilter(
-                      card.key === "all" ? "all" : isActive ? "all" : card.key,
-                    )
-                  }
-                  className={`group bg-white rounded-xl border shadow-sm p-3 flex items-center gap-3 transition-all text-left hover:border-[#FF8A00] hover:shadow-md cursor-pointer w-full ${isActive ? "border-[#FF8A00] ring-2 ring-[#FF8A00]/30 shadow-md" : "border-gray-200"}`}
-                >
-                  <div
-                    className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${card.iconWrapClass}`}
-                  >
-                    <span
-                      className={`material-symbols-outlined text-[20px] ${card.iconClass}`}
-                    >
-                      {card.icon}
-                    </span>
-                  </div>
-                  <div className="min-w-0">
-                    <div
-                      className={`text-xl font-extrabold leading-none transition-colors ${isActive ? "text-[#FF8A00]" : "text-[#0f172a] group-hover:text-[#FF8A00]"}`}
-                    >
-                      {card.count}
-                    </div>
-                    <div className="text-[11px] font-semibold text-[#5b6879] leading-tight mt-0.5 truncate">
-                      {card.label}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-        </div>
-      </div>
+
 
       {!loading && error && (
         <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
@@ -409,7 +337,7 @@ export default function DashboardClient() {
                 <tr className="bg-gray-50 text-left text-xs font-semibold text-black uppercase tracking-wider">
                   <th className="px-5 py-3">ID</th>
                   <th className="px-5 py-3">Tên sản phẩm</th>
-                  <th className="px-5 py-3">Cửa hàng</th>
+                  <th className="px-5 py-3">Người bán</th>
                   <th className="px-5 py-3">Ngày gửi</th>
                   <th className="px-5 py-3">Trạng thái</th>
                 </tr>
@@ -461,7 +389,7 @@ export default function DashboardClient() {
                     <tr className="bg-gray-50 text-left text-xs font-semibold text-black uppercase tracking-wider">
                       <th className="px-5 py-3 w-[10%]">ID</th>
                       <th className="px-5 py-3 w-[30%]">Tên sản phẩm</th>
-                      <th className="px-5 py-3 w-[20%]">Cửa hàng</th>
+                      <th className="px-5 py-3 w-[20%]">Người bán</th>
                       <th className="px-5 py-3 w-[20%]">Ngày gửi</th>
                       <th className="px-5 py-3 w-[20%]">Trạng thái</th>
                     </tr>
@@ -482,7 +410,7 @@ export default function DashboardClient() {
                           <td className="px-5 py-3 font-medium text-gray-900 max-w-[250px] truncate">
                             {row.name}
                           </td>
-                          <td className="px-5 py-3 text-gray-600">{row.shop}</td>
+                          <td className="px-5 py-3 text-gray-600">{row.sellerName}</td>
                           <td className="px-5 py-3 text-gray-500">
                             {row.submittedAt || "—"}
                           </td>

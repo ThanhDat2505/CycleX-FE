@@ -107,9 +107,13 @@ export default function DisputeResolutionClient({
         <div>
           <Link
             href={`/inspector/disputes/${encodeURIComponent(disputeId)}`}
-            className="actionLink"
+            className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+            style={{ textDecoration: "none", marginBottom: "8px" }}
           >
-            ← Quay lai chi tiet dispute
+            <span className="material-symbols-outlined text-[18px]">
+              arrow_back
+            </span>
+            Quay lại chi tiết
           </Link>
           <h1 className="page-title" style={{ marginTop: 8 }}>
             Dispute Resolution #{disputeId}

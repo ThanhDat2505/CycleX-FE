@@ -171,9 +171,9 @@ export default function ReviewHistoryPage() {
             <div className="tableHeader">
               <span>Mã tin</span>
               <span>Tên sản phẩm</span>
-              <span>Thời gian gửi</span>
-              <span className="center">Trạng thái</span>
               <span>Người bán</span>
+              <span className="center">Trạng thái</span>
+              <span>Thời gian gửi</span>
               <span className="right">Hành động</span>
             </div>
 
@@ -182,9 +182,9 @@ export default function ReviewHistoryPage() {
                 <div key={row.id} className="tableRow">
                   <div className="cell font-bold">{row.id}</div>
                   <div className="cell name">{row.productName}</div>
-                  <div className="cell text-muted">{row.submittedAt}</div>
-                  <div className="cell center">{renderBadge(row.status)}</div>
                   <div className="cell">{row.sellerName}</div>
+                  <div className="cell center">{renderBadge(row.status)}</div>
+                  <div className="cell text-muted">{row.submittedAt}</div>
 
                   <div className="cell right">
                     <Link

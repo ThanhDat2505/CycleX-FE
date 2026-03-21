@@ -62,6 +62,18 @@ export default function InspectorChecklist() {
         <header className="pageHeader">
           <div className="header">
             <div>
+              <div className="meta" style={{ marginBottom: "8px" }}>
+                <button
+                  onClick={() => router.back()}
+                  className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
+                  style={{ textDecoration: "none" }}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    arrow_back
+                  </span>
+                  Quay lại
+                </button>
+              </div>
               <h1 className="title">
                 Perform Inspection: <span>#{idParam}</span>
               </h1>
@@ -71,11 +83,6 @@ export default function InspectorChecklist() {
                   <strong>Giant Propel Advanced SL 0 (2025)</strong>
                 </div>
               </div>
-            </div>
-            <div className="rightActions">
-              <button className="btnGhost" onClick={() => router.back()}>
-                ← Quay lại
-              </button>
             </div>
           </div>
         </header>

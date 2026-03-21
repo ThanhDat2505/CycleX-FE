@@ -105,6 +105,18 @@ export default function InspectorRequestDetail() {
         <header className="pageHeader">
           <div className="header">
             <div>
+              <div className="meta" style={{ marginBottom: "8px" }}>
+                <Link
+                  href="/inspector/review-required"
+                  className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+                  style={{ textDecoration: "none" }}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    arrow_back
+                  </span>
+                  Quay lại
+                </Link>
+              </div>
               <h1 className="title">
                 Chi tiết yêu cầu bổ sung: <span>#{reqParam}</span>
               </h1>
@@ -122,11 +134,6 @@ export default function InspectorRequestDetail() {
                   <strong>{storeName}</strong>
                 </div>
               </div>
-            </div>
-            <div className="rightActions">
-              <Link className="btnGhost" href="/inspector/review-required">
-                ← Quay lại danh sách
-              </Link>
             </div>
           </div>
         </header>

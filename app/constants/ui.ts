@@ -9,7 +9,4 @@ export const UI_CONFIG = {
 
     // Filters
     INITIAL_VISIBLE_ITEMS: 5, // Show first 5 items before "Show more"
-
-    // Loading
-    SEARCH_DELAY_MS: 500, // Simulated network delay for mock API
 } as const;

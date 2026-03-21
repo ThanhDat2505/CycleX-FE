@@ -58,7 +58,13 @@ export default function InspectorSummary() {
     return (
       <div style={{ padding: "40px" }}>
         <h2>Không tìm thấy biên bản kiểm định</h2>
-        <button onClick={() => router.push("/review-required")}>
+        <button
+          onClick={() => router.push("/inspector/review-required")}
+          className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer mt-4"
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
           Quay lại
         </button>
       </div>
@@ -73,9 +79,16 @@ export default function InspectorSummary() {
 
   return (
     <div className="summary-container fade-in">
-      <div className="summary-actions">
-        <button className="summary-btn" onClick={() => router.back()}>
-          ← Back to Inspection Detail
+      <div className="meta" style={{ marginBottom: "16px", marginTop: "16px", padding: "0 40px" }}>
+        <button
+          onClick={() => router.back()}
+          className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
+          style={{ textDecoration: "none" }}
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            arrow_back
+          </span>
+          Quay lại
         </button>
       </div>
 

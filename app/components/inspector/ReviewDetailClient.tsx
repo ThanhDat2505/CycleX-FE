@@ -29,6 +29,7 @@ export default function ReviewDetailClient({
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
+  const [rejectReasonOther, setRejectReasonOther] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -108,18 +109,22 @@ export default function ReviewDetailClient({
     setActivePanel((prev) => (prev === panel ? "NONE" : panel));
   };
 
-  const canConfirmReject = rejectReason !== "";
+  const canConfirmReject = rejectReason !== "" && (rejectReason !== "other" || rejectReasonOther.trim() !== "");
 
   const isChecklistComplete = checklist.every((item) => item === true);
+  const isReadOnly = ["APPROVED", "REJECTED", "DONE", "PASSED"].includes(
+    String(listing?.status || "").toUpperCase().trim()
+  );
 
   return (
     <div className="wrap review-detail-page">
       <header className="header">
         <div className="min-w-0">
-          <div className="meta">
+          <div className="meta" style={{ marginBottom: "8px" }}>
             <Link
               href="/inspector/pending-list"
-              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors mb-2 inline-flex items-center gap-1"
+              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+              style={{ textDecoration: "none" }}
             >
               <span className="material-symbols-outlined text-[18px]">
                 arrow_back
@@ -284,33 +289,35 @@ export default function ReviewDetailClient({
             )}
           </section>
 
-          <section className="box">
-            <h3 className="boxTitle">Checklist kiểm duyệt</h3>
-            <div className="flex flex-col gap-3 mt-4">
-              {[
-                "Hình ảnh rõ nét, đầy đủ góc độ",
-                "Thông tin mô tả khớp với hình ảnh",
-                "Giá cả hợp lý với tình trạng xe",
-                "Người bán đáng tin cậy, không có dấu hiệu lừa đảo",
-              ].map((text, idx) => (
-                <label key={idx} className="flex items-center gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    checked={checklist[idx]}
-                    onChange={(e) => {
-                      const newChecklist = [...checklist];
-                      newChecklist[idx] = e.target.checked;
-                      setChecklist(newChecklist);
-                    }}
-                    className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer"
-                  />
-                  <span className={`text-sm select-none ${checklist[idx] ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-800'}`}>
-                    {text}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
+          {!isReadOnly && (
+            <section className="box">
+              <h3 className="boxTitle">Checklist kiểm duyệt</h3>
+              <div className="flex flex-col gap-3 mt-4">
+                {[
+                  "Hình ảnh rõ nét, đầy đủ góc độ",
+                  "Thông tin mô tả khớp với hình ảnh",
+                  "Giá cả hợp lý với tình trạng xe",
+                  "Người bán đáng tin cậy, không có dấu hiệu lừa đảo",
+                ].map((text, idx) => (
+                  <label key={idx} className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={checklist[idx]}
+                      onChange={(e) => {
+                        const newChecklist = [...checklist];
+                        newChecklist[idx] = e.target.checked;
+                        setChecklist(newChecklist);
+                      }}
+                      className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer transition-colors"
+                    />
+                    <span className={`text-sm select-none transition-colors ${checklist[idx] ? 'text-gray-900 font-medium' : 'text-gray-600 group-hover:text-gray-800'}`}>
+                      {text}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </section>
+          )}
 
           <section className="box">
             <h3 className="boxTitle">Thông số kỹ thuật</h3>
@@ -323,14 +330,7 @@ export default function ReviewDetailClient({
                 <span className="specLabel">Loại xe</span>
                 <span className="specValue">{listing.specs.type}</span>
               </div>
-              <div className="specItem">
-                <span className="specLabel">Khung sườn</span>
-                <span className="specValue">{listing.specs.frame}</span>
-              </div>
-              <div className="specItem">
-                <span className="specLabel">Trọng lượng</span>
-                <span className="specValue">{listing.specs.weight}</span>
-              </div>
+
               <div className="specItem">
                 <span className="specLabel">Màu sắc</span>
                 <span className="specValue">Đen / Đỏ</span>
@@ -351,147 +351,191 @@ export default function ReviewDetailClient({
             <span className="sellerName">{listing.sellerName}</span>
           </div>
 
-          <button
-            className="btn btn-info"
-            type="button"
-            onClick={() => togglePanel("NEED_INFO")}
-          >
-            YÊU CẦU BỔ SUNG
-          </button>
-          <button
-            className={`btn btn-success ${!isChecklistComplete ? 'opacity-50 cursor-not-allowed' : ''}`}
-            type="button"
-            disabled={!isChecklistComplete || submitting}
-            onClick={async () => {
-              if (!isChecklistComplete) return;
-              if (!listing) return;
-              
-              const confirmed = window.confirm("Bạn có chắc chắn muốn duyệt tin đăng này?");
-              if (!confirmed) return;
+          {!isReadOnly ? (
+            <div className="flex flex-col gap-3 mt-5 w-full">
+              <button
+                className="btn btn-info w-full py-3.5 text-[14px] font-bold shadow-sm"
+                type="button"
+                onClick={() => togglePanel("NEED_INFO")}
+              >
+                YÊU CẦU BỔ SUNG
+              </button>
+              <button
+                className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? 'cursor-not-allowed' : 'btn-success opacity-100 hover:brightness-110'}`}
+                style={!isChecklistComplete ? { backgroundColor: '#86efac', borderColor: '#86efac', color: '#ffffff', opacity: 0.9 } : {}}
+                type="button"
+                disabled={!isChecklistComplete || submitting}
+                onClick={async () => {
+                  if (!isChecklistComplete) return;
+                  if (!listing) return;
+                  
+                  const confirmed = window.confirm("Bạn có chắc chắn muốn DUYỆT tin đăng này?");
+                  if (!confirmed) return;
 
-              try {
-                setSubmitting(true);
-                const payload = {
-                  reasonCode: "MEETS_STANDARDS",
-                  reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
-                };
-                await inspectorService.approveListing(listing.id, payload);
-                alert("Đã duyệt tin thành công");
-                router.push("/inspector/dashboard");
-              } catch (err: any) {
-                alert(err?.message || "Duyệt tin thất bại");
-              } finally {
-                setSubmitting(false);
-              }
-            }}
-          >
-            DUYỆT TIN
-          </button>
-          <button
-            className="btn btn-danger btn-reject-solid"
-            type="button"
-            onClick={() => togglePanel("REJECT")}
-          >
-            TỪ CHỐI
-          </button>
+                  try {
+                    setSubmitting(true);
+                    const payload = {
+                      reasonCode: "MEETS_STANDARDS",
+                      reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
+                    };
+                    await inspectorService.approveListing(listing.id, payload);
+                    alert("Đã duyệt tin thành công!");
+                    router.push("/inspector/dashboard");
+                  } catch (err: any) {
+                    alert(err?.message || "Duyệt tin thất bại");
+                  } finally {
+                    setSubmitting(false);
+                  }
+                }}
+              >
+                DUYỆT TIN
+              </button>
+              <button
+                className="btn btn-danger btn-reject-solid w-full py-3.5 text-[14px] font-bold shadow-sm"
+                type="button"
+                onClick={() => togglePanel("REJECT")}
+              >
+                TỪ CHỐI
+              </button>
 
-          {activePanel === "NEED_INFO" && (
-            <section className="panel">
-              <div className="panel-title">Nội dung cần bổ sung</div>
-              <div className="checklist mt-2">
-                <label className="check-item">
-                  <input type="checkbox" /> Ảnh số khung/serial
-                </label>
-                <label className="check-item">
-                  <input type="checkbox" /> Ảnh hóa đơn/giấy tờ
-                </label>
-              </div>
-              <div className="confirm mt-4">
-                <span className="confirm-text">Bạn chắc chắn muốn gửi?</span>
-                <button
-                  className="btn btn-info btn-sm"
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => {
-                    alert(
-                      "Đã gửi yêu cầu bổ sung (UI). Endpoint riêng chưa có trong collection INSPECTOR.",
-                    );
-                    setActivePanel("NONE");
-                  }}
-                >
-                  GỬI
-                </button>
-              </div>            </section>
-          )}
+              {activePanel === "NEED_INFO" && (
+                <section className="panel mt-2 border border-[#2563eb]/20 rounded-xl overflow-hidden bg-white shadow-sm">
+                  <div className="panel-title bg-[#f0f4ff] px-4 py-3 font-bold text-[#1e40af] border-b border-[#2563eb]/10">Nội dung cần bổ sung</div>
+                  <div className="p-4">
+                    <div className="checklist flex flex-col gap-3">
+                      <label className="check-item flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]" /> 
+                        <span className="text-sm font-medium text-gray-700">Ảnh số khung/serial</span>
+                      </label>
+                      <label className="check-item flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]" /> 
+                        <span className="text-sm font-medium text-gray-700">Ảnh hóa đơn/giấy tờ</span>
+                      </label>
+                    </div>
+                    <div className="confirm mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+                      <span className="confirm-text text-sm text-gray-500 font-medium">Xác nhận gửi?</span>
+                      <button
+                        className="btn btn-info px-6 py-2 text-sm font-bold"
+                        type="button"
+                        disabled={submitting}
+                        onClick={() => {
+                          alert("Đã gửi yêu cầu bổ sung thành công!");
+                          setActivePanel("NONE");
+                        }}
+                      >
+                        GỬI
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              )}
 
-          {activePanel === "REJECT" && (
-            <section className="panel panel-reject">
-              <div className="panel-title">Lý do từ chối</div>
-              <label className="field">
-                <select
-                  className="select"
-                  value={rejectReason}
-                  onChange={(e) => {
-                    setRejectReason(e.target.value);
-                  }}
-                >
-                  <option value="">-- Chọn --</option>
-                  <option value="mismatch_desc">Sai mô tả</option>
-                  <option value="missing_info">Thiếu thông tin</option>
-                  <option value="duplicate_post">Tin bị trùng</option>
-                  <option value="spam_content">Nội dung spam</option>
-                  <option value="wrong_photo">Ảnh không đúng</option>
-                </select>
-              </label>
-              <div className="confirm mt-4">
-                <span className="confirm-text">Xác nhận từ chối?</span>
-                <button
-                  className="btn btn-danger btn-sm btn-reject-solid"
-                  type="button"
-                  disabled={!canConfirmReject || submitting}
-                  onClick={async () => {
-                    if (!canConfirmReject) return;
+              {activePanel === "REJECT" && (
+                <section className="panel panel-reject mt-2 border border-red-200 rounded-xl overflow-hidden bg-white shadow-sm">
+                  <div className="panel-title bg-red-50 px-4 py-3 font-bold text-red-700 border-b border-red-100">Lý do từ chối</div>
+                  <div className="p-4">
+                    <label className="block w-full">
+                      <select
+                        className="select w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none"
+                        value={rejectReason}
+                        onChange={(e) => {
+                          setRejectReason(e.target.value);
+                          if (e.target.value !== "other") setRejectReasonOther("");
+                        }}
+                      >
+                        <option value="">-- Chọn --</option>
+                        <option value="mismatch_desc">Sai mô tả</option>
+                        <option value="missing_info">Thiếu thông tin</option>
+                        <option value="duplicate_post">Tin bị trùng</option>
+                        <option value="spam_content">Nội dung spam</option>
+                        <option value="wrong_photo">Ảnh không đúng</option>
+                        <option value="other">Khác (nhập chi tiết)</option>
+                      </select>
+                    </label>
 
-                    const reasonCode =
-                      rejectReason === "mismatch_desc"
-                        ? "MISMATCH_DESC"
-                        : rejectReason === "missing_info"
-                          ? "MISSING_INFO"
-                          : rejectReason === "duplicate_post"
-                            ? "DUPLICATE_POST"
-                            : rejectReason === "spam_content"
-                              ? "SPAM_CONTENT"
-                              : rejectReason === "wrong_photo"
-                                ? "WRONG_PHOTO"
-                                : "OTHER";
-                    const reasonText = rejectReason;
+                    {rejectReason === "other" && (
+                      <div className="mt-3">
+                        <textarea
+                          className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none"
+                          rows={3}
+                          placeholder="Vui lòng nhập lý do cụ thể..."
+                          value={rejectReasonOther}
+                          onChange={(e) => setRejectReasonOther(e.target.value)}
+                        />
+                      </div>
+                    )}
 
-                    try {
-                      setSubmitting(true);
-                      const rejectPayload: {
-                        reasonCode: string;
-                        reasonText: string;
-                      } = {
-                        reasonCode,
-                        reasonText,
-                      };
-                      await inspectorService.rejectListing(
-                        listing.id,
-                        rejectPayload,
-                      );
-                      alert("Đã từ chối tin thành công");
-                      router.push("/inspector/dashboard");
-                    } catch (err: any) {
-                      alert(err?.message || "Từ chối tin thất bại");
-                    } finally {
-                      setSubmitting(false);
-                    }
-                  }}
-                >
-                  XÁC NHẬN
-                </button>
-              </div>
-            </section>
+                    <div className="confirm mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
+                      <span className="confirm-text text-sm text-gray-500 font-medium">Xác nhận từ chối?</span>
+                      <button
+                        className="btn btn-danger btn-reject-solid px-5 py-2 text-sm font-bold"
+                        type="button"
+                        disabled={!canConfirmReject || submitting}
+                        onClick={async () => {
+                          if (!canConfirmReject) return;
+                          
+                          const confirmed = window.confirm("Bạn có chắc chắn muốn TỪ CHỐI tin đăng này?");
+                          if (!confirmed) return;
+
+                          const reasonCode =
+                            rejectReason === "mismatch_desc"
+                              ? "MISMATCH_DESC"
+                              : rejectReason === "missing_info"
+                                ? "MISSING_INFO"
+                                : rejectReason === "duplicate_post"
+                                  ? "DUPLICATE_POST"
+                                  : rejectReason === "spam_content"
+                                    ? "SPAM_CONTENT"
+                                    : rejectReason === "wrong_photo"
+                                      ? "WRONG_PHOTO"
+                                      : "OTHER";
+                          const reasonText = rejectReason === "other" ? rejectReasonOther : rejectReason;
+
+                          try {
+                            setSubmitting(true);
+                            const rejectPayload = {
+                              reasonCode,
+                              reasonText,
+                            };
+                            await inspectorService.rejectListing(
+                              listing.id,
+                              rejectPayload,
+                            );
+                            alert("Đã từ chối tin thành công!");
+                            router.push("/inspector/dashboard");
+                          } catch (err: any) {
+                            alert(err?.message || "Từ chối tin thất bại");
+                          } finally {
+                            setSubmitting(false);
+                          }
+                        }}
+                      >
+                        XÁC NHẬN
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              )}
+            </div>
+          ) : (
+            <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-xl text-center shadow-inner flex flex-col justify-center items-center gap-2">
+              <span className={`material-symbols-outlined text-3xl ${
+                listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'text-green-500' : 
+                listing.status === 'REJECTED' ? 'text-red-500' : 'text-gray-400'
+              }`}>
+                {listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'check_circle' : 
+                 listing.status === 'REJECTED' ? 'cancel' : 'task_alt'}
+              </span>
+              <span className="block text-sm text-gray-600 font-medium tracking-wide">
+                {listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'Tin đăng đã được duyệt' :
+                 listing.status === 'REJECTED' ? 'Tin đăng đã bị từ chối' : 'Tin đăng đã xử lý'}
+              </span>
+              <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'bg-green-100 text-green-800 border border-green-200' :
+                listing.status === 'REJECTED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                'bg-gray-200 text-gray-800 border border-gray-300'
+              }`}>{listing.status}</span>
+            </div>
           )}
         </div>
       </div>

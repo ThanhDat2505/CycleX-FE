@@ -47,6 +47,7 @@ export default function PendingListClient() {
       id: string;
       productName: string;
       storeName: string;
+      sellerName: string;
       submittedAt: string;
       dateISO: string;
       status: PendingStatus | "DONE";
@@ -72,6 +73,7 @@ export default function PendingListClient() {
             id: x.id,
             productName: x.name,
             storeName: x.shop,
+            sellerName: x.sellerName,
             submittedAt: x.submittedAt,
             dateISO: x.dateISO,
             status: x.status,
@@ -164,16 +166,16 @@ export default function PendingListClient() {
         {!loading && !error && (
           <table className="table" style={{ tableLayout: "fixed", width: "100%" }}>
             <colgroup>
+              <col style={{ width: "35%" }} />
               <col style={{ width: "25%" }} />
-              <col style={{ width: "25%" }} />
-              <col style={{ width: "25%" }} />
-              <col style={{ width: "25%" }} />
+              <col style={{ width: "20%" }} />
+              <col style={{ width: "20%" }} />
             </colgroup>
 
             <thead className="thead" style={{ color: "black" }}>
               <tr>
                 <th>Tên sản phẩm</th>
-                <th>Cửa hàng</th>
+                <th>Người bán</th>
                 <th>Ngày gửi duyệt</th>
                 <th style={{ textAlign: "center" }}>Hành động</th>
               </tr>
@@ -195,7 +197,7 @@ export default function PendingListClient() {
                   </td>
 
                   <td>
-                    <div className="storeName">{x.storeName}</div>
+                    <div className="storeName">{x.sellerName}</div>
                   </td>
 
                   <td>
