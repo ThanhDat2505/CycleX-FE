@@ -270,13 +270,13 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             throw new Error('Invalid backend response: Expected purchase request object');
         }
 
-        const orderId = toNumber(dataResponse.orderId);
+        const orderId = toNumber(dataResponse.orderId) ?? toNumber(dataResponse.requestId);
         if (!orderId) {
             throw new Error('Invalid backend response: Missing orderId');
         }
 
         return {
-            transactionId: requestId,
+            transactionId: orderId,
             listingId: toNumber(dataResponse.listingId) ?? data.listingId,
             buyerId: toNumber(dataResponse.buyerId) ?? data.buyerId,
             sellerId: toNumber(dataResponse.sellerId) ?? 0,
