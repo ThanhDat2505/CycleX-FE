@@ -609,6 +609,20 @@ export const inspectorService = {
     });
   },
 
+  async requestMoreInfo(
+    listingId: string,
+    payload: { requiredItems: string[]; reasonText?: string; note?: string },
+  ): Promise<void> {
+    const inspectorId = getInspectorId();
+    await inspectorFetch<void>(`/inspector/${inspectorId}/listings/request-info`, {
+      method: "POST",
+      body: JSON.stringify({
+        listingId: Number(listingId) || listingId,
+        ...payload,
+      }),
+    });
+  },
+
   async getReviewHistory(
     from: string,
     to: string,

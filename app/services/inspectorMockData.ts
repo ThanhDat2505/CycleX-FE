@@ -183,6 +183,27 @@ export async function handleInspectorMockRequest(path: string, init?: RequestIni
         return { success: true };
     }
     
+    // Request More Info
+    if (path.includes("/request-info") && method === "POST") {
+        let body: any = {};
+        if (init?.body && typeof init.body === "string") {
+            try { body = JSON.parse(init.body); } catch (e) {}
+        }
+        const listingId = body.listingId;
+        if (listingId) {
+            const idx = mockInspectorListings.findIndex(l => l.id === String(listingId));
+            if (idx !== -1) {
+                mockInspectorListings[idx].status = "NEED_MORE_INFO";
+                mockInspectorListings[idx].history.unshift({
+                    at: new Date().toISOString(),
+                    tag: "NEED_INFO",
+                    desc: body.reasonText || "Yêu cầu bổ sung qua Mock API"
+                });
+            }
+        }
+        return { success: true };
+    }
+    
     // Review history
     if (path.includes("/reviews") && method === "GET") {
         return mockInspectorListings;

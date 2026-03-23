@@ -26,6 +26,10 @@ export default function ReviewDetailClient({
   const [selectedThumb, setSelectedThumb] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
   const [checklist, setChecklist] = useState([false, false, false, false]);
+  const [needInfoChecklist, setNeedInfoChecklist] = useState({
+    frameSerial: false,
+    invoice: false,
+  });
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
@@ -404,11 +408,21 @@ export default function ReviewDetailClient({
                   <div className="p-4">
                     <div className="checklist flex flex-col gap-3">
                       <label className="check-item flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]" /> 
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
+                          checked={needInfoChecklist.frameSerial}
+                          onChange={(e) => setNeedInfoChecklist(prev => ({ ...prev, frameSerial: e.target.checked }))}
+                        /> 
                         <span className="text-sm font-medium text-gray-700">Ảnh số khung/serial</span>
                       </label>
                       <label className="check-item flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]" /> 
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
+                          checked={needInfoChecklist.invoice}
+                          onChange={(e) => setNeedInfoChecklist(prev => ({ ...prev, invoice: e.target.checked }))}
+                        /> 
                         <span className="text-sm font-medium text-gray-700">Ảnh hóa đơn/giấy tờ</span>
                       </label>
                     </div>
@@ -417,10 +431,30 @@ export default function ReviewDetailClient({
                       <button
                         className="btn btn-info px-6 py-2 text-sm font-bold"
                         type="button"
-                        disabled={submitting}
-                        onClick={() => {
-                          alert("Đã gửi yêu cầu bổ sung thành công!");
-                          setActivePanel("NONE");
+                        disabled={submitting || (!needInfoChecklist.frameSerial && !needInfoChecklist.invoice)}
+                        onClick={async () => {
+                          const confirmed = window.confirm("Bạn có chắc chắn muốn yêu cầu bổ sung thông tin cho tin đăng này?");
+                          if (!confirmed) return;
+
+                          try {
+                            setSubmitting(true);
+                            const requiredItems = [];
+                            if (needInfoChecklist.frameSerial) requiredItems.push("Ảnh số khung/serial");
+                            if (needInfoChecklist.invoice) requiredItems.push("Ảnh hóa đơn/giấy tờ");
+
+                            await inspectorService.requestMoreInfo(listing.id, {
+                              requiredItems,
+                              reasonText: "Vui lòng bổ sung thêm: " + requiredItems.join(", "),
+                            });
+                            
+                            alert("Đã gửi yêu cầu bổ sung thành công!");
+                            router.push("/inspector/dashboard");
+                          } catch (err: any) {
+                            alert(err?.message || "Yêu cầu bổ sung thất bại");
+                          } finally {
+                            setSubmitting(false);
+                            setActivePanel("NONE");
+                          }
                         }}
                       >
                         GỬI
