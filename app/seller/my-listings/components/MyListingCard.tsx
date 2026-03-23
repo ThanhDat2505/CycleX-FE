@@ -139,8 +139,7 @@ export function MyListingCard({ listing }: MyListingCardProps) {
               </span>
             </div>
             <p className="text-sm text-gray-700 mt-1">
-              {listing.rejectionReason ||
-                "Listing bị từ chối, vui lòng liên hệ Inspector để biết thêm chi tiết"}
+              {listing.rejectionReason}
             </p>
           </div>
         )}
