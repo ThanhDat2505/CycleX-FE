@@ -194,6 +194,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
             name="usageTime"
             value={formData.usageTime}
             onChange={onChange}
+            max={new Date().toISOString().split("T")[0]}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
           />
         </div>

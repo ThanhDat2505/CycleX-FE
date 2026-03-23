@@ -36,6 +36,7 @@ const CreateListingPageContent: React.FC = () => {
     isReadOnly,
     readOnlyMessage,
     canCancelPublish,
+    loadedStatus,
     isUploadingVideo,
     videoError,
   } = state;
@@ -207,16 +208,18 @@ const CreateListingPageContent: React.FC = () => {
               )}
             </div>
             <div className="flex gap-4">
-              {!canCancelPublish && (
-                <button
-                  type="button"
-                  onClick={actions.handleSubmit}
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSaving ? "Publishing..." : "Publish Listing"}
-                </button>
-              )}
+              {!canCancelPublish &&
+                loadedStatus !== "REJECTED" &&
+                loadedStatus !== "REJECT" && (
+                  <button
+                    type="button"
+                    onClick={actions.handleSubmit}
+                    disabled={isSaving}
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? "Publishing..." : "Publish Listing"}
+                  </button>
+                )}
               <Link
                 href="/seller/my-listings"
                 className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"

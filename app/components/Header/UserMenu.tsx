@@ -259,13 +259,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                 >
                   👥 User Management
                 </Link>
-                <Link
+                {/* <Link
                   href="/admin/audit-logs"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
                   🔍 Audit Logs
-                </Link>
+                </Link> */}
                 <Link
                   href="/admin/disputes"
                   onClick={() => setIsOpen(false)}
