@@ -12,11 +12,6 @@ const NAV_ITEMS = [
     icon: "pending_actions",
   },
   {
-    href: "/inspector/review-required",
-    label: "Tin Cần Xem Xét",
-    icon: "assignment_late",
-  },
-  {
     href: "/inspector/review-history",
     label: "Lịch Sử Duyệt",
     icon: "history",

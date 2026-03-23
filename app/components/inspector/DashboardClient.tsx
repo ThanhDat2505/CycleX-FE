@@ -176,7 +176,7 @@ export default function DashboardClient() {
       case "REVIEWING":
       case "NEED_MORE_INFO":
       case "FLAGGED":
-        return `/inspector/review-required`;
+        return `/inspector/pending-list`;
       case "DISPUTE":
         return `/inspector/disputes`;
       case "APPROVED":

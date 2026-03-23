@@ -112,8 +112,7 @@ export default function ReviewDetailClient({
   };
 
   const canConfirmReject =
-    rejectReason !== "" &&
-    (rejectReason !== "other" || rejectReasonOther.trim() !== "");
+    rejectReason !== "" && rejectReasonOther.trim() !== "";
 
   const isChecklistComplete = checklist.every((item) => item === true);
   const isReadOnly = ["APPROVED", "REJECTED", "DONE", "PASSED"].includes(
@@ -364,13 +363,6 @@ export default function ReviewDetailClient({
           {!isReadOnly ? (
             <div className="flex flex-col gap-3 mt-5 w-full">
               <button
-                className="btn btn-info w-full py-3.5 text-[14px] font-bold shadow-sm"
-                type="button"
-                onClick={() => togglePanel("NEED_INFO")}
-              >
-                YÊU CẦU BỔ SUNG
-              </button>
-              <button
                 className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? "cursor-not-allowed" : "btn-success opacity-100 hover:brightness-110"}`}
                 style={
                   !isChecklistComplete
@@ -484,7 +476,6 @@ export default function ReviewDetailClient({
                   </div>
                 </section>
               )}
-
               {activePanel === "REJECT" && (
                 <section className="panel panel-reject mt-2 border border-red-200 rounded-xl overflow-hidden bg-white shadow-sm">
                   <div className="panel-title bg-red-50 px-4 py-3 font-bold text-red-700 border-b border-red-100">
@@ -497,8 +488,7 @@ export default function ReviewDetailClient({
                         value={rejectReason}
                         onChange={(e) => {
                           setRejectReason(e.target.value);
-                          if (e.target.value !== "other")
-                            setRejectReasonOther("");
+                          setRejectReasonOther("");
                         }}
                       >
                         <option value="">-- Chọn --</option>
@@ -511,7 +501,7 @@ export default function ReviewDetailClient({
                       </select>
                     </label>
 
-                    {rejectReason === "other" && (
+                    {rejectReason && (
                       <div className="mt-3">
                         <textarea
                           className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none"
@@ -551,17 +541,7 @@ export default function ReviewDetailClient({
                                     : rejectReason === "wrong_photo"
                                       ? "WRONG_PHOTO"
                                       : "OTHER";
-                          const reasonTextMap: Record<string, string> = {
-                            mismatch_desc: "Sai mô tả",
-                            missing_info: "Thiếu thông tin",
-                            duplicate_post: "Tin bị trùng",
-                            spam_content: "Nội dung spam",
-                            wrong_photo: "Ảnh không đúng",
-                          };
-                          const reasonText =
-                            rejectReason === "other"
-                              ? rejectReasonOther
-                              : reasonTextMap[rejectReason] || rejectReason;
+                          const reasonText = rejectReasonOther;
 
                           try {
                             setSubmitting(true);
