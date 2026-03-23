@@ -15,7 +15,10 @@ export default async function DisputeDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-white">
       <InspectorNav />
-      <DisputeDetailClient disputeId={resolvedParams.id} />
+      <DisputeDetailClient
+        disputeId={resolvedParams.id}
+        viewerRole="INSPECTOR"
+      />
     </div>
   );
 }

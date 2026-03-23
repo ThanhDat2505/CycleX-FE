@@ -19,8 +19,20 @@ export interface TransactionStats {
     successfulRevenue: number;
 }
 
+export interface WeeklyDataPoint {
+    week: string;
+    count: number;
+}
+
+export interface WeeklyStats {
+    listings: WeeklyDataPoint[];
+    products: WeeklyDataPoint[];
+    orders: WeeklyDataPoint[];
+}
+
 export interface AdminDashboardData {
     userManagement: UserManagementStats;
     disputeManagement: DisputeManagementStats;
     transactions: TransactionStats;
+    weeklyStats: WeeklyStats;
 }

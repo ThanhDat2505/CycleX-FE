@@ -23,17 +23,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const token = authService.getToken();
         if (token) {
-            // In real app, validate token and get user info
-            // For now, just set authenticated if token exists
+            const storedUser = authService.getUser();
+            if (storedUser) {
+                // Check if user is suspended/banned
+                if (storedUser.status === 'SUSPENDED') {
+                    authService.logout();
+                    setUserState(null);
+                    setIsAuthenticated(false);
+                    return;
+                }
+                setUserState(storedUser);
+            }
             setIsAuthenticated(true);
-
-            // TODO: Fetch user info from API using token
-            // const userData = await authService.getCurrentUser();
-            // setUserState(userData);
         }
     }, []);
 
     const setUser = (newUser: User | null) => {
+        // Block suspended users
+        if (newUser && newUser.status === 'SUSPENDED') {
+            authService.logout();
+            setUserState(null);
+            setIsAuthenticated(false);
+            return;
+        }
         setUserState(newUser);
         setIsAuthenticated(!!newUser);
     };

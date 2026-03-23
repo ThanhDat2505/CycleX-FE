@@ -268,7 +268,7 @@ function mapListRow(raw: JsonRecord): DisputeListRow {
       firstDefined(raw.reasonText, raw.reason, raw.reasonCode),
       "-",
     ),
-    createdAt: toDisplayDate(firstDefined(raw.createdAt, raw.createdDate)),
+    createdAt: getString(firstDefined(raw.createdAt, raw.createdDate), "-"),
     assigneeId: getString(
       firstDefined(raw.assigneeId, assignee.id, raw.inspectorId),
       "-",

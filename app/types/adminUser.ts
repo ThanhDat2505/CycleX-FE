@@ -45,3 +45,13 @@ export interface AdminUpdateRoleRequest {
 export interface AdminUpdateStatusRequest {
     status: UserStatus;
 }
+
+export interface AdminCreateAccountRequest {
+    email: string;
+    password: string;
+    fullName: string;
+    phone: string;
+    role: UserRole;
+    cccd?: string;
+    address?: string;
+}

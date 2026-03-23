@@ -5,11 +5,12 @@ import {
     RefreshCw, 
     Users, UserCheck, UserX, UserPlus,
     AlertTriangle, ShieldAlert, CheckCircle, BellRing,
-    ShoppingBag, DollarSign
+    ShoppingBag, DollarSign,
+    BarChart3, Package, FileText
 } from 'lucide-react';
 import TimeRangeFilter from '../../components/admin/TimeRangeFilter';
 import { getAdminDashboardData } from '../../services/adminDashboardService';
-import { AdminDashboardData, TimeRange } from '../../types/adminDashboard';
+import { AdminDashboardData, TimeRange, WeeklyDataPoint } from '../../types/adminDashboard';
 import { useToast } from '../../contexts/ToastContext';
 import { formatNumber, formatPrice } from '../../utils/format';
 
@@ -148,6 +149,53 @@ const AdminDashboardPage = () => {
         );
     };
 
+    const WeeklyChart = ({ title, subtitle, data, color, icon: Icon }: { title: string, subtitle: string, data: WeeklyDataPoint[], color: string, icon: any }) => {
+        const maxCount = Math.max(...data.map(d => d.count), 1);
+        const totalCount = data.reduce((sum, d) => sum + d.count, 0);
+        
+        const colorMap: Record<string, { bar: string, bg: string, text: string, border: string }> = {
+            orange: { bar: 'bg-brand-primary', bg: 'bg-brand-primary/10', text: 'text-brand-primary', border: 'border-brand-primary/20' },
+            emerald: { bar: 'bg-emerald-500', bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
+            blue: { bar: 'bg-blue-500', bg: 'bg-blue-500/10', text: 'text-blue-400', border: 'border-blue-500/20' },
+        };
+        const c = colorMap[color] || colorMap.orange;
+
+        return (
+            <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl hover:bg-white/10 transition-all duration-300">
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-xl border ${c.bg} ${c.border}`}>
+                            <Icon size={18} strokeWidth={2.5} className={c.text} />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-black text-white">{title}</h3>
+                            <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{subtitle}</p>
+                        </div>
+                    </div>
+                    <div className={`text-2xl font-black ${c.text}`}>{formatNumber(totalCount)}</div>
+                </div>
+                
+                <div className="flex items-end gap-2 h-32">
+                    {data.map((point) => {
+                        const height = maxCount > 0 ? (point.count / maxCount) * 100 : 0;
+                        return (
+                            <div key={point.week} className="flex-1 flex flex-col items-center gap-1">
+                                <span className="text-[9px] font-bold text-gray-500">{point.count}</span>
+                                <div className="w-full relative flex items-end justify-center" style={{ height: '100px' }}>
+                                    <div
+                                        className={`w-full rounded-t-lg ${c.bar} transition-all duration-500 opacity-80 hover:opacity-100`}
+                                        style={{ height: `${Math.max(height, 4)}%` }}
+                                    />
+                                </div>
+                                <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest">{point.week}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30">
             <div className="max-w-7xl mx-auto">
@@ -254,6 +302,41 @@ const AdminDashboardPage = () => {
                             </div>
                         </div>
                     </div>
+
+                    {/* Section 4: Weekly Statistics */}
+                    {data.weeklyStats && (
+                        <div className="animate-fade-in delay-400">
+                            <div className="flex items-center gap-4 mb-8">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shadow-glow">
+                                    <BarChart3 size={24} strokeWidth={2.5} />
+                                </div>
+                                <h2 className="text-2xl font-black tracking-tight border-l-4 border-blue-400 pl-4">Thống Kê Theo Tuần (8 tuần gần nhất)</h2>
+                            </div>
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <WeeklyChart 
+                                    title="Listings" 
+                                    subtitle="Tin đăng mới"
+                                    data={data.weeklyStats.listings} 
+                                    color="orange" 
+                                    icon={FileText}
+                                />
+                                <WeeklyChart 
+                                    title="Products" 
+                                    subtitle="Sản phẩm mới"
+                                    data={data.weeklyStats.products} 
+                                    color="emerald" 
+                                    icon={Package}
+                                />
+                                <WeeklyChart 
+                                    title="Orders" 
+                                    subtitle="Đơn hàng mới"
+                                    data={data.weeklyStats.orders} 
+                                    color="blue" 
+                                    icon={ShoppingBag}
+                                />
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Footer Decor */}

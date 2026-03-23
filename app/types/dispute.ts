@@ -103,3 +103,27 @@ export interface DisputeResultResponse {
     message: string;
     resolvedAt?: string;
 }
+
+/**
+ * Admin dispute list row - matches BE DisputeListRowResponse
+ */
+export interface AdminDisputeListRow {
+    id: number;
+    transactionId: number;
+    listingId: number;
+    listingTitle: string;
+    status: string;
+    reasonText: string;
+    createdAt: string;
+    assigneeId?: number;
+    assigneeName?: string;
+    requesterName: string;
+}
+
+export interface AdminDisputeListResponse {
+    content: AdminDisputeListRow[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+}
