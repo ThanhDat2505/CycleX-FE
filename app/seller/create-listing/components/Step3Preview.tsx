@@ -17,44 +17,44 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">Preview Listing</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Xem trước tin đăng</h2>
       <div className="bg-gray-50 p-6 rounded-lg space-y-4 border border-gray-200">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-gray-500">Title</p>
+            <p className="text-sm text-gray-500">Tiêu đề</p>
             <p className="font-semibold text-gray-900">{formData.title}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Price</p>
+            <p className="text-sm text-gray-500">Giá bán</p>
             <p className="font-semibold text-brand-primary">{formattedPrice}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Category</p>
+            <p className="text-sm text-gray-500">Loại xe</p>
             <p className="font-semibold text-gray-900">{formData.category}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Condition</p>
+            <p className="text-sm text-gray-500">Tình trạng</p>
             <p className="font-semibold text-gray-900 capitalize">
               {formData.condition}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Brand / Model / Year</p>
+            <p className="text-sm text-gray-500">Hãng / Dòng xe / Năm</p>
             <p className="font-semibold text-gray-900">
               {formData.brand} / {formData.model} / {formData.year}
             </p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">City</p>
+            <p className="text-sm text-gray-500">Tỉnh/Thành phố</p>
             <p className="font-semibold text-gray-900">{formData.location}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-500">Pickup Address</p>
+            <p className="text-sm text-gray-500">Địa chỉ xem xe</p>
             <p className="font-semibold text-gray-900">{pickupAddress}</p>
           </div>
           {formData.usageTime && (
             <div>
-              <p className="text-sm text-gray-500">Usage Time</p>
+              <p className="text-sm text-gray-500">Thời gian sử dụng</p>
               <p className="font-semibold text-gray-900">
                 {formData.usageTime}
               </p>
@@ -62,7 +62,7 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
           )}
           {formData.reasonForSale && (
             <div>
-              <p className="text-sm text-gray-500">Reason for Sale</p>
+              <p className="text-sm text-gray-500">Lý do bán</p>
               <p className="font-semibold text-gray-900">
                 {formData.reasonForSale}
               </p>
@@ -70,7 +70,7 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
           )}
         </div>
         <div>
-          <p className="text-sm text-gray-500">Description</p>
+          <p className="text-sm text-gray-500">Mô tả chi tiết</p>
           <p className="text-gray-900 mt-1 whitespace-pre-wrap">
             {formData.description}
           </p>
@@ -80,7 +80,7 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
       {/* Images Preview */}
       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Images ({imageUrls.length})
+          Hình ảnh ({imageUrls.length})
         </h3>
         {imageUrls.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -98,7 +98,7 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 italic">No images uploaded</p>
+          <p className="text-gray-500 italic">Chưa có hình ảnh nào được tải lên</p>
         )}
       </div>
 

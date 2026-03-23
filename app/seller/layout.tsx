@@ -15,7 +15,7 @@ import {
 const NAV_ITEMS = [
   {
     href: "/seller/dashboard",
-    label: "Dashboard",
+    label: "Bảng điều khiển",
     icon: LayoutDashboard,
   },
   {
@@ -58,7 +58,7 @@ export default function SellerLayout({
       <aside className="w-64 bg-white border-r border-gray-200 min-h-screen sticky top-0 hidden md:block">
         <div className="p-6 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900 tracking-tight">
-            Seller Center
+            Trung tâm người bán
           </h2>
           <p className="text-sm text-gray-500 mt-1">Quản lý bán hàng</p>
         </div>

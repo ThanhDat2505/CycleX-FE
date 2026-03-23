@@ -573,6 +573,19 @@ export default function ReviewDetailClient({
           )}
         </div>
       </div>
+      
+      {/* Nút Chat Tương Lai */}
+      <Link
+        href={chatHref}
+        className="fixed bottom-6 right-6 w-14 h-14 bg-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 border border-gray-100 group"
+        title="Chat với người bán"
+      >
+        <div className="w-12 h-12 bg-[#FF8A00] rounded-full flex items-center justify-center text-white relative">
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+      </Link>
     </div>
   );
 }

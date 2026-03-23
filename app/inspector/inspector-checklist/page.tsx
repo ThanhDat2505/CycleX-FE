@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function InspectorChecklistPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Đang tải...</div>}>
       <InspectorChecklist />
     </Suspense>
   );

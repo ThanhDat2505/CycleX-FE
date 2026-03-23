@@ -103,38 +103,38 @@ function MyListingsContent() {
       {/* Header */}
       <div className="flex justify-between items-start mb-8 gap-4 flex-wrap">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">My Listings</h1>
-          <p className="text-gray-600 mt-2">Manage all your bike listings</p>
+          <h1 className="text-4xl font-bold text-gray-900">Quản lý tin đăng</h1>
+          <p className="text-gray-600 mt-2">Quản lý tất cả danh sách xe đạp của bạn</p>
         </div>
         <Link
           href="/seller/create-listing"
           className="px-6 py-3 bg-[#FF8A00] text-white rounded-lg font-semibold hover:bg-[#FF7A00] transition"
         >
-          Create New Listing
+          Đăng tin mới
         </Link>
       </div>
 
       {/* Filters */}
       <div className="flex gap-4 mb-8 flex-wrap">
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-semibold text-gray-700">Status:</label>
+          <label className="text-sm font-semibold text-gray-700">Trạng thái:</label>
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
           >
-            <option value="">All Statuses</option>
-            <option value="draft">Draft</option>
-            <option value="pending">Pending</option>
-            <option value="approve">Active</option>
-            <option value="reject">Rejected</option>
-            <option value="sold">Sold</option>
+            <option value="">Tất cả trạng thái</option>
+            <option value="draft">Bản nháp</option>
+            <option value="pending">Chờ duyệt</option>
+            <option value="approve">Đang hiển thị</option>
+            <option value="reject">Bị từ chối</option>
+            <option value="sold">Đã bán</option>
           </select>
         </div>
 
         <div className="flex flex-col gap-2">
           <label className="text-sm font-semibold text-gray-700">
-            Sort by:
+            Sắp xếp theo:
           </label>
           <select
             value={sortBy}
@@ -149,10 +149,10 @@ function MyListingsContent() {
             }
             className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FF8A00]"
           >
-            <option value="recent">Most Recent</option>
-            <option value="views">Most Views</option>
-            <option value="price-high">Price (High to Low)</option>
-            <option value="price-low">Price (Low to High)</option>
+            <option value="recent">Mới nhất</option>
+            <option value="views">Xem nhiều nhất</option>
+            <option value="price-high">Giá (Cao đến Thấp)</option>
+            <option value="price-low">Giá (Thấp đến Cao)</option>
           </select>
         </div>
       </div>
@@ -176,8 +176,8 @@ function MyListingsContent() {
         <div className="mt-8">
           {/* Page Info */}
           <div className="text-sm text-gray-600 text-center mb-4">
-            Showing {startIndex + 1}-{Math.min(endIndex, totalItems)} of{" "}
-            {totalItems} listings
+            Đang hiển thị {startIndex + 1}-{Math.min(endIndex, totalItems)} trên tổng số{" "}
+            {totalItems} tin đăng
           </div>
 
           {/* Pagination Component */}
@@ -191,7 +191,7 @@ function MyListingsContent() {
 
       {!loading && totalItems === 0 && (
         <div className="text-center py-12">
-          <p className="text-gray-600 text-lg">No listings found</p>
+          <p className="text-gray-600 text-lg">Không tìm thấy tin đăng nào</p>
         </div>
       )}
     </div>

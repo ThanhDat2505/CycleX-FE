@@ -10,8 +10,8 @@ import { AuthGuard } from './AuthGuard';
 export default function LoginPage() {
     return (
         <AuthGuard>
-            <AuthLayout title="Login">
-                <Suspense fallback={<div className="text-center py-4">Loading...</div>}>
+            <AuthLayout title="Đăng nhập">
+                <Suspense fallback={<div className="text-center py-4">Đang tải...</div>}>
                     <LoginForm />
                 </Suspense>
             </AuthLayout>

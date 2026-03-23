@@ -3,7 +3,7 @@ import InspectorRequestDetail from "@/app/components/inspector/InspectorRequestD
 
 export default function Page() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Đang tải...</div>}>
       <InspectorRequestDetail />
     </Suspense>
   );

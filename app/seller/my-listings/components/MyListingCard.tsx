@@ -96,17 +96,17 @@ export function MyListingCard({ listing }: MyListingCardProps) {
         <div className="grid grid-cols-3 gap-2 mb-4 text-center text-sm">
           <div>
             <div className="font-bold text-gray-900">{listing.views}</div>
-            <div className="text-gray-500 text-xs">Views</div>
+            <div className="text-gray-500 text-xs">Lượt xem</div>
           </div>
           <div>
             <div className="font-bold text-gray-900">{listing.inquiries}</div>
-            <div className="text-gray-500 text-xs">Inquiries</div>
+            <div className="text-gray-500 text-xs">Lượt hỏi</div>
           </div>
           <div>
             <div className="font-bold text-gray-900">
               {listing.shipping ? "✓" : "—"}
             </div>
-            <div className="text-gray-500 text-xs">Shipping</div>
+            <div className="text-gray-500 text-xs">Giao hàng</div>
           </div>
         </div>
 
@@ -119,14 +119,14 @@ export function MyListingCard({ listing }: MyListingCardProps) {
               href={editHref}
               className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center"
             >
-              Edit
+              Sửa
             </Link>
           )}
           <Link
             href={viewHref}
             className="flex-1 px-3 py-2 border border-gray-300 text-gray-900 rounded text-sm font-medium hover:bg-gray-50 transition text-center"
           >
-            View
+            Xem
           </Link>
         </div>
 
@@ -135,7 +135,7 @@ export function MyListingCard({ listing }: MyListingCardProps) {
           <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
             <div className="flex items-start gap-2">
               <span className="text-red-600 font-semibold text-sm">
-                ❌ Rejection Reason:
+                ❌ Lý do từ chối:
               </span>
             </div>
             <p className="text-sm text-gray-700 mt-1">

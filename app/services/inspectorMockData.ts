@@ -1,4 +1,4 @@
-export const INSPECTOR_MOCK_ENABLED = false;
+export const INSPECTOR_MOCK_ENABLED = true;
 
 const MOCK_DELAY_MS = 300;
 
