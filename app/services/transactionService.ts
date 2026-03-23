@@ -389,7 +389,7 @@ export async function getSellerTransactions(
 
         return safe.filter(item => item.status === mapStatusToFrontend(status));
     } catch (error) {
-        console.error('Lỗi API Get Seller Transactions:', error);
+        console.error('Lỗi API Get Seller Transactions:', error instanceof Error ? error.message : JSON.stringify(error));
         return [];
     }
 }

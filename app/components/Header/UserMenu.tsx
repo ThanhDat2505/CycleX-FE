@@ -193,6 +193,13 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                 >
                   🛍️ Đơn mua của tôi
                 </Link>
+                <Link
+                  href="/buyer/disputes"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                >
+                  ⚖️ Khiếu nại của tôi
+                </Link>
                 <hr className="my-2 border-gray-100" />
               </>
             )}
@@ -264,14 +271,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  ⚖️ Dispute Management
-                </Link>
-                <Link
-                  href="/inspector/disputes"
-                  onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                >
-                  ⚖️ All Disputes
+                  ⚖️ Quản Lý Khiếu Nại
                 </Link>
               </>
             )}
