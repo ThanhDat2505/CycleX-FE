@@ -18,12 +18,6 @@ const MENU_ITEMS = [
     icon: "pending_actions",
   },
   {
-    href: "/inspector/review-required",
-    label: "Tin cần xem xét",
-    key: "review_required",
-    icon: "assignment_late",
-  },
-  {
     href: "/inspector/review-history",
     label: "Lịch sử duyệt",
     key: "history",
@@ -75,10 +69,7 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div
-        className="user-info"
-        title="Xem thông tin cá nhân / Đăng xuất"
-      >
+      <div className="user-info" title="Xem thông tin cá nhân / Đăng xuất">
         <Image
           src="https://ui-avatars.com/api/?name=Inspector&background=random"
           alt="avatar"
@@ -95,9 +86,7 @@ export default function Sidebar() {
             Example@gmail.com
           </span>
         </div>
-        <span
-          className="material-symbols-outlined text-gray-400 text-[18px]"
-        >
+        <span className="material-symbols-outlined text-gray-400 text-[18px]">
           more_vert
         </span>
       </div>

@@ -10,7 +10,7 @@ import {
   type InspectorReviewDetail,
 } from "@/app/services/inspectorService";
 
-type ActionPanel = "NONE" | "NEED_INFO" | "APPROVE" | "REJECT";
+type ActionPanel = "NONE" | "APPROVE" | "REJECT";
 
 export default function ReviewDetailClient({
   listingId,
@@ -359,13 +359,6 @@ export default function ReviewDetailClient({
           {!isReadOnly ? (
             <div className="flex flex-col gap-3 mt-5 w-full">
               <button
-                className="btn btn-info w-full py-3.5 text-[14px] font-bold shadow-sm"
-                type="button"
-                onClick={() => togglePanel("NEED_INFO")}
-              >
-                YÊU CẦU BỔ SUNG
-              </button>
-              <button
                 className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? "cursor-not-allowed" : "btn-success opacity-100 hover:brightness-110"}`}
                 style={
                   !isChecklistComplete
@@ -413,52 +406,6 @@ export default function ReviewDetailClient({
               >
                 TỪ CHỐI
               </button>
-
-              {activePanel === "NEED_INFO" && (
-                <section className="panel mt-2 border border-[#2563eb]/20 rounded-xl overflow-hidden bg-white shadow-sm">
-                  <div className="panel-title bg-[#f0f4ff] px-4 py-3 font-bold text-[#1e40af] border-b border-[#2563eb]/10">
-                    Nội dung cần bổ sung
-                  </div>
-                  <div className="p-4">
-                    <div className="checklist flex flex-col gap-3">
-                      <label className="check-item flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                          Ảnh số khung/serial
-                        </span>
-                      </label>
-                      <label className="check-item flex items-center gap-2 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                          Ảnh hóa đơn/giấy tờ
-                        </span>
-                      </label>
-                    </div>
-                    <div className="confirm mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-                      <span className="confirm-text text-sm text-gray-500 font-medium">
-                        Xác nhận gửi?
-                      </span>
-                      <button
-                        className="btn btn-info px-6 py-2 text-sm font-bold"
-                        type="button"
-                        disabled={submitting}
-                        onClick={() => {
-                          alert("Đã gửi yêu cầu bổ sung thành công!");
-                          setActivePanel("NONE");
-                        }}
-                      >
-                        GỬI
-                      </button>
-                    </div>
-                  </div>
-                </section>
-              )}
 
               {activePanel === "REJECT" && (
                 <section className="panel panel-reject mt-2 border border-red-200 rounded-xl overflow-hidden bg-white shadow-sm">

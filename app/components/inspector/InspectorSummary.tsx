@@ -59,7 +59,7 @@ export default function InspectorSummary() {
       <div style={{ padding: "40px" }}>
         <h2>Không tìm thấy biên bản kiểm định</h2>
         <button
-          onClick={() => router.push("/inspector/review-required")}
+
           className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer mt-4"
         >
           <span className="material-symbols-outlined text-[18px]">

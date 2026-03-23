@@ -6,7 +6,6 @@ import React from "react";
 import {
   LayoutDashboard,
   ClipboardList,
-  AlertCircle,
   History,
   Gavel,
   Fingerprint,
@@ -22,11 +21,6 @@ const NAV_ITEMS = [
     href: "/inspector/pending-list",
     label: "Tin Chờ Duyệt",
     icon: ClipboardList,
-  },
-  {
-    href: "/inspector/review-required",
-    label: "Tin Cần Xem Xét",
-    icon: AlertCircle,
   },
   {
     href: "/inspector/review-history",
