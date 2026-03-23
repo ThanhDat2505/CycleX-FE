@@ -68,10 +68,10 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
                             </Link>
                         )}
                         <Link href="/profile" onClick={onClose} className={LINK_STYLE}>
-                            Profile
+                            Hồ sơ cá nhân
                         </Link>
                         <Link href="/notifications" onClick={onClose} className={LINK_STYLE}>
-                            Notifications
+                            Thông báo
                         </Link>
                     </>
                 )}
