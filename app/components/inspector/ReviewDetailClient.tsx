@@ -125,13 +125,13 @@ export default function ReviewDetailClient({
     <div className="wrap review-detail-page">
       <header className="header">
         <div className="min-w-0">
-          <div className="meta" style={{ marginBottom: "8px" }}>
+          <div className="mt-7 mb-2">
             <Link
               href="/inspector/pending-list"
-              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 w-fit"
               style={{ textDecoration: "none" }}
             >
-              <span className="material-symbols-outlined text-[18px]">
+              <span className="material-symbols-outlined text-[18px] translate-y-[1px]">
                 arrow_back
               </span>
               Quay lại
@@ -161,13 +161,6 @@ export default function ReviewDetailClient({
               </span>
             </span>
           </div>
-        </div>
-
-        <div className="rightActions">
-          <button className="btnGhost" type="button">
-            <span className="material-symbols-outlined">flag</span>
-            Báo cáo
-          </button>
         </div>
       </header>
 
@@ -352,7 +345,10 @@ export default function ReviewDetailClient({
           </section>
         </div>
 
-        <div className="card" style={{ overflow: "visible" }}>
+        <div
+          className="card sticky top-24 self-start"
+          style={{ overflow: "visible" }}
+        >
           <div className="price">{priceText}</div>
 
           <div className="seller">
@@ -423,18 +419,32 @@ export default function ReviewDetailClient({
                           type="checkbox"
                           className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
                           checked={needInfoChecklist.frameSerial}
-                          onChange={(e) => setNeedInfoChecklist(prev => ({ ...prev, frameSerial: e.target.checked }))}
-                        /> 
-                        <span className="text-sm font-medium text-gray-700">Ảnh số khung/serial</span>
+                          onChange={(e) =>
+                            setNeedInfoChecklist((prev) => ({
+                              ...prev,
+                              frameSerial: e.target.checked,
+                            }))
+                          }
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Ảnh số khung/serial
+                        </span>
                       </label>
                       <label className="check-item flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
                           className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
                           checked={needInfoChecklist.invoice}
-                          onChange={(e) => setNeedInfoChecklist(prev => ({ ...prev, invoice: e.target.checked }))}
-                        /> 
-                        <span className="text-sm font-medium text-gray-700">Ảnh hóa đơn/giấy tờ</span>
+                          onChange={(e) =>
+                            setNeedInfoChecklist((prev) => ({
+                              ...prev,
+                              invoice: e.target.checked,
+                            }))
+                          }
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Ảnh hóa đơn/giấy tờ
+                        </span>
                       </label>
                     </div>
                     <div className="confirm mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
@@ -444,22 +454,32 @@ export default function ReviewDetailClient({
                       <button
                         className="btn btn-info px-6 py-2 text-sm font-bold"
                         type="button"
-                        disabled={submitting || (!needInfoChecklist.frameSerial && !needInfoChecklist.invoice)}
+                        disabled={
+                          submitting ||
+                          (!needInfoChecklist.frameSerial &&
+                            !needInfoChecklist.invoice)
+                        }
                         onClick={async () => {
-                          const confirmed = window.confirm("Bạn có chắc chắn muốn yêu cầu bổ sung thông tin cho tin đăng này?");
+                          const confirmed = window.confirm(
+                            "Bạn có chắc chắn muốn yêu cầu bổ sung thông tin cho tin đăng này?",
+                          );
                           if (!confirmed) return;
 
                           try {
                             setSubmitting(true);
                             const requiredItems = [];
-                            if (needInfoChecklist.frameSerial) requiredItems.push("Ảnh số khung/serial");
-                            if (needInfoChecklist.invoice) requiredItems.push("Ảnh hóa đơn/giấy tờ");
+                            if (needInfoChecklist.frameSerial)
+                              requiredItems.push("Ảnh số khung/serial");
+                            if (needInfoChecklist.invoice)
+                              requiredItems.push("Ảnh hóa đơn/giấy tờ");
 
                             await inspectorService.requestMoreInfo(listing.id, {
                               requiredItems,
-                              reasonText: "Vui lòng bổ sung thêm: " + requiredItems.join(", "),
+                              reasonText:
+                                "Vui lòng bổ sung thêm: " +
+                                requiredItems.join(", "),
                             });
-                            
+
                             alert("Đã gửi yêu cầu bổ sung thành công!");
                             router.push("/inspector/dashboard");
                           } catch (err: any) {
@@ -608,19 +628,8 @@ export default function ReviewDetailClient({
           )}
         </div>
       </div>
-      
-      {/* Nút Chat Tương Lai */}
-      <Link
-        href={chatHref}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-white rounded-full shadow-[0_4px_20px_rgba(0,0,0,0.15)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 border border-gray-100 group"
-        title="Chat với người bán"
-      >
-        <div className="w-12 h-12 bg-[#FF8A00] rounded-full flex items-center justify-center text-white relative">
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-      </Link>
+
+      {/* Đã xóa nút chat với seller */}
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 "use client";
 
+import InspectorGuard from "../InspectorGuard";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
@@ -12,6 +13,15 @@ import {
 } from "@/app/services/inspectorService";
 
 export default function ReviewHistoryPage() {
+  return (
+    <InspectorGuard>
+      {/* ...existing code... */}
+      <ReviewHistoryPageContent />
+    </InspectorGuard>
+  );
+}
+
+function ReviewHistoryPageContent() {
   const [rows, setRows] = useState<ReviewHistoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +62,12 @@ export default function ReviewHistoryPage() {
   const filtered = useMemo(
     () =>
       rows.filter((item) => {
+        // Chỉ lấy trạng thái APPROVED hoặc REJECTED
+        const status = String(item.status ?? "")
+          .trim()
+          .toUpperCase();
+        if (status !== "APPROVED" && status !== "REJECTED") return false;
+
         if (
           filterId &&
           !item.id.toLowerCase().includes(filterId.toLowerCase()) &&
@@ -125,87 +141,89 @@ export default function ReviewHistoryPage() {
       <div className="contentWrapper">
         <div className="filterCard">
           <div className="filterRow">
-          <div className="filterField filterGrow">
-            <label className="filterLabel">Tìm kiếm (ID / Tên)</label>
-            <input
-              type="text"
-              className="filterInput"
-              placeholder="Nhập mã hoặc tên xe..."
-              value={filterId}
-              onChange={(e) => setFilterId(e.target.value)}
-            />
-          </div>
-
-          <div className="filterField">
-            <label className="filterLabel">Ngày gửi</label>
-            <input
-              type="date"
-              className="filterInput"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <div className="filterActions">
-          <button
-            className="btn btnGhost"
-            type="button"
-            onClick={() => {
-              setFilterId("");
-              setFilterDate("");
-            }}
-          >
-            Xóa bộ lọc
-          </button>
-        </div>
-      </div>
-
-      <div className="dataTable">
-        {loading && <div style={{ padding: 20 }}>Đang tải dữ liệu...</div>}
-        {!loading && error && (
-          <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
-        )}
-        {!loading && !error && (
-          <div className="historyTable">
-            <div className="tableHeader">
-              <span>Mã tin</span>
-              <span>Tên sản phẩm</span>
-              <span>Người bán</span>
-              <span className="center">Trạng thái</span>
-              <span>Thời gian gửi</span>
-              <span className="right">Hành động</span>
+            <div className="filterField filterGrow">
+              <label className="filterLabel">Tìm kiếm (ID / Tên)</label>
+              <input
+                type="text"
+                className="filterInput"
+                placeholder="Nhập mã hoặc tên xe..."
+                value={filterId}
+                onChange={(e) => setFilterId(e.target.value)}
+              />
             </div>
 
-            {filtered.map((row) => {
-              return (
-                <div key={row.id} className="tableRow">
-                  <div className="cell font-bold">{row.id}</div>
-                  <div className="cell name">{row.productName}</div>
-                  <div className="cell">{row.sellerName}</div>
-                  <div className="cell center">{renderBadge(row.status)}</div>
-                  <div className="cell text-muted">{row.submittedAt}</div>
-
-                  <div className="cell right">
-                    <Link
-                      href={`/inspector/review-detail?id=${encodeURIComponent(row.id)}`}
-                      className="actionLink"
-                    >
-                      Xem
-                    </Link>
-                  </div>
-                </div>
-              );
-            })}
-
-            {filtered.length === 0 && (
-              <div style={{ padding: 30, textAlign: "center", color: "#999" }}>
-                Không tìm thấy dữ liệu đã duyệt nào.
-              </div>
-            )}
+            <div className="filterField">
+              <label className="filterLabel">Ngày gửi</label>
+              <input
+                type="date"
+                className="filterInput"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+              />
+            </div>
           </div>
-        )}
-      </div>
+
+          <div className="filterActions">
+            <button
+              className="btn btnGhost"
+              type="button"
+              onClick={() => {
+                setFilterId("");
+                setFilterDate("");
+              }}
+            >
+              Xóa bộ lọc
+            </button>
+          </div>
+        </div>
+
+        <div className="dataTable">
+          {loading && <div style={{ padding: 20 }}>Đang tải dữ liệu...</div>}
+          {!loading && error && (
+            <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
+          )}
+          {!loading && !error && (
+            <div className="historyTable">
+              <div className="tableHeader">
+                <span>Mã tin</span>
+                <span>Tên sản phẩm</span>
+                <span>Người bán</span>
+                <span className="center">Trạng thái</span>
+                <span>Thời gian gửi</span>
+                <span className="right">Hành động</span>
+              </div>
+
+              {filtered.map((row) => {
+                return (
+                  <div key={row.id} className="tableRow">
+                    <div className="cell font-bold">{row.id}</div>
+                    <div className="cell name">{row.productName}</div>
+                    <div className="cell">{row.sellerName}</div>
+                    <div className="cell center">{renderBadge(row.status)}</div>
+                    <div className="cell text-muted">{row.submittedAt}</div>
+
+                    <div className="cell right">
+                      <Link
+                        href={`/inspector/review-detail?id=${encodeURIComponent(row.id)}`}
+                        className="actionLink"
+                      >
+                        Xem
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {filtered.length === 0 && (
+                <div
+                  style={{ padding: 30, textAlign: "center", color: "#999" }}
+                >
+                  Không tìm thấy dữ liệu đã duyệt nào.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     </InspectorHeroLayout>
   );

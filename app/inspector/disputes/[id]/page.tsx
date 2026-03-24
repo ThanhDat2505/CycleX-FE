@@ -1,3 +1,4 @@
+import InspectorGuard from "../../InspectorGuard";
 import InspectorNav from "@/app/components/inspector/InspectorNav";
 import DisputeDetailClient from "@/app/components/inspector/DisputeDetailClient";
 import "@/app/components/inspector/inspector.css";
@@ -13,12 +14,14 @@ type PageProps = {
 export default async function DisputeDetailPage({ params }: PageProps) {
   const resolvedParams = await params;
   return (
-    <div className="min-h-screen bg-white">
-      <InspectorNav />
-      <DisputeDetailClient
-        disputeId={resolvedParams.id}
-        viewerRole="INSPECTOR"
-      />
-    </div>
+    <InspectorGuard>
+      <div className="min-h-screen bg-white">
+        <InspectorNav />
+        <DisputeDetailClient
+          disputeId={resolvedParams.id}
+          viewerRole="INSPECTOR"
+        />
+      </div>
+    </InspectorGuard>
   );
 }
