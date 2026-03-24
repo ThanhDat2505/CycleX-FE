@@ -86,7 +86,7 @@ export const MESSAGES = {
     S50_PAYMENT_METHOD_LABEL: 'Phương thức thanh toán',
     S50_PAYMENT_PURCHASE_TITLE: 'Thanh toán toàn bộ (COD)',
     S50_PAYMENT_PURCHASE_DESC: 'Thanh toán 100% giá trị đơn hàng cho người bán khi nhận xe.',
-    S50_PAYMENT_DEPOSIT_TITLE: 'Đặt cọc giữ chỗ (COD)',
+    S50_PAYMENT_DEPOSIT_TITLE: 'Thanh toán cọc (COD phần còn lại)',
     S50_PAYMENT_DEPOSIT_DESC: 'Đặt cọc một phần tiền để giữ xe. Phần còn lại thanh toán khi nhận xe.',
     S50_PAYMENT_ONLINE_TITLE: 'Thanh toán Online (Thẻ/Ví điện tử)',
     S50_PAYMENT_ONLINE_SOON: 'Coming Soon',

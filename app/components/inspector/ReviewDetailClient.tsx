@@ -26,6 +26,10 @@ export default function ReviewDetailClient({
   const [selectedThumb, setSelectedThumb] = useState(0);
   const [showImageModal, setShowImageModal] = useState(false);
   const [checklist, setChecklist] = useState([false, false, false, false]);
+  const [needInfoChecklist, setNeedInfoChecklist] = useState({
+    frameSerial: false,
+    invoice: false,
+  });
 
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
@@ -58,9 +62,7 @@ export default function ReviewDetailClient({
         ) {
           try {
             await inspectorService.lockListing(id);
-          } catch {
-            
-          }
+          } catch {}
         }
       } catch (err: any) {
         if (mounted) {
@@ -109,24 +111,27 @@ export default function ReviewDetailClient({
     setActivePanel((prev) => (prev === panel ? "NONE" : panel));
   };
 
-  const canConfirmReject = rejectReason !== "" && (rejectReason !== "other" || rejectReasonOther.trim() !== "");
+  const canConfirmReject =
+    rejectReason !== "" && rejectReasonOther.trim() !== "";
 
   const isChecklistComplete = checklist.every((item) => item === true);
   const isReadOnly = ["APPROVED", "REJECTED", "DONE", "PASSED"].includes(
-    String(listing?.status || "").toUpperCase().trim()
+    String(listing?.status || "")
+      .toUpperCase()
+      .trim(),
   );
 
   return (
     <div className="wrap review-detail-page">
       <header className="header">
         <div className="min-w-0">
-          <div className="meta" style={{ marginBottom: "8px" }}>
+          <div className="mt-7 mb-2">
             <Link
               href="/inspector/pending-list"
-              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 w-fit"
               style={{ textDecoration: "none" }}
             >
-              <span className="material-symbols-outlined text-[18px]">
+              <span className="material-symbols-outlined text-[18px] translate-y-[1px]">
                 arrow_back
               </span>
               Quay lại
@@ -156,13 +161,6 @@ export default function ReviewDetailClient({
               </span>
             </span>
           </div>
-        </div>
-
-        <div className="rightActions">
-          <button className="btnGhost" type="button">
-            <span className="material-symbols-outlined">flag</span>
-            Báo cáo
-          </button>
         </div>
       </header>
 
@@ -234,7 +232,6 @@ export default function ReviewDetailClient({
               ))}
             </div>
 
-
             {showImageModal && (
               <div
                 style={{
@@ -299,7 +296,10 @@ export default function ReviewDetailClient({
                   "Giá cả hợp lý với tình trạng xe",
                   "Người bán đáng tin cậy, không có dấu hiệu lừa đảo",
                 ].map((text, idx) => (
-                  <label key={idx} className="flex items-center gap-3 cursor-pointer group">
+                  <label
+                    key={idx}
+                    className="flex items-center gap-3 cursor-pointer group"
+                  >
                     <input
                       type="checkbox"
                       checked={checklist[idx]}
@@ -310,7 +310,9 @@ export default function ReviewDetailClient({
                       }}
                       className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer transition-colors"
                     />
-                    <span className={`text-sm select-none transition-colors ${checklist[idx] ? 'text-gray-900 font-medium' : 'text-gray-600 group-hover:text-gray-800'}`}>
+                    <span
+                      className={`text-sm select-none transition-colors ${checklist[idx] ? "text-gray-900 font-medium" : "text-gray-600 group-hover:text-gray-800"}`}
+                    >
                       {text}
                     </span>
                   </label>
@@ -343,7 +345,10 @@ export default function ReviewDetailClient({
           </section>
         </div>
 
-        <div className="card" style={{ overflow: "visible" }}>
+        <div
+          className="card sticky top-24 self-start"
+          style={{ overflow: "visible" }}
+        >
           <div className="price">{priceText}</div>
 
           <div className="seller">
@@ -354,22 +359,26 @@ export default function ReviewDetailClient({
           {!isReadOnly ? (
             <div className="flex flex-col gap-3 mt-5 w-full">
               <button
-                className="btn btn-info w-full py-3.5 text-[14px] font-bold shadow-sm"
-                type="button"
-                onClick={() => togglePanel("NEED_INFO")}
-              >
-                YÊU CẦU BỔ SUNG
-              </button>
-              <button
-                className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? 'cursor-not-allowed' : 'btn-success opacity-100 hover:brightness-110'}`}
-                style={!isChecklistComplete ? { backgroundColor: '#86efac', borderColor: '#86efac', color: '#ffffff', opacity: 0.9 } : {}}
+                className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? "cursor-not-allowed" : "btn-success opacity-100 hover:brightness-110"}`}
+                style={
+                  !isChecklistComplete
+                    ? {
+                        backgroundColor: "#86efac",
+                        borderColor: "#86efac",
+                        color: "#ffffff",
+                        opacity: 0.9,
+                      }
+                    : {}
+                }
                 type="button"
                 disabled={!isChecklistComplete || submitting}
                 onClick={async () => {
                   if (!isChecklistComplete) return;
                   if (!listing) return;
-                  
-                  const confirmed = window.confirm("Bạn có chắc chắn muốn DUYỆT tin đăng này?");
+
+                  const confirmed = window.confirm(
+                    "Bạn có chắc chắn muốn DUYỆT tin đăng này?",
+                  );
                   if (!confirmed) return;
 
                   try {
@@ -400,27 +409,85 @@ export default function ReviewDetailClient({
 
               {activePanel === "NEED_INFO" && (
                 <section className="panel mt-2 border border-[#2563eb]/20 rounded-xl overflow-hidden bg-white shadow-sm">
-                  <div className="panel-title bg-[#f0f4ff] px-4 py-3 font-bold text-[#1e40af] border-b border-[#2563eb]/10">Nội dung cần bổ sung</div>
+                  <div className="panel-title bg-[#f0f4ff] px-4 py-3 font-bold text-[#1e40af] border-b border-[#2563eb]/10">
+                    Nội dung cần bổ sung
+                  </div>
                   <div className="p-4">
                     <div className="checklist flex flex-col gap-3">
                       <label className="check-item flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]" /> 
-                        <span className="text-sm font-medium text-gray-700">Ảnh số khung/serial</span>
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
+                          checked={needInfoChecklist.frameSerial}
+                          onChange={(e) =>
+                            setNeedInfoChecklist((prev) => ({
+                              ...prev,
+                              frameSerial: e.target.checked,
+                            }))
+                          }
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Ảnh số khung/serial
+                        </span>
                       </label>
                       <label className="check-item flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]" /> 
-                        <span className="text-sm font-medium text-gray-700">Ảnh hóa đơn/giấy tờ</span>
+                        <input
+                          type="checkbox"
+                          className="w-5 h-5 rounded border-gray-300 text-[#2563eb] focus:ring-[#2563eb]"
+                          checked={needInfoChecklist.invoice}
+                          onChange={(e) =>
+                            setNeedInfoChecklist((prev) => ({
+                              ...prev,
+                              invoice: e.target.checked,
+                            }))
+                          }
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          Ảnh hóa đơn/giấy tờ
+                        </span>
                       </label>
                     </div>
                     <div className="confirm mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-                      <span className="confirm-text text-sm text-gray-500 font-medium">Xác nhận gửi?</span>
+                      <span className="confirm-text text-sm text-gray-500 font-medium">
+                        Xác nhận gửi?
+                      </span>
                       <button
                         className="btn btn-info px-6 py-2 text-sm font-bold"
                         type="button"
-                        disabled={submitting}
-                        onClick={() => {
-                          alert("Đã gửi yêu cầu bổ sung thành công!");
-                          setActivePanel("NONE");
+                        disabled={
+                          submitting ||
+                          (!needInfoChecklist.frameSerial &&
+                            !needInfoChecklist.invoice)
+                        }
+                        onClick={async () => {
+                          const confirmed = window.confirm(
+                            "Bạn có chắc chắn muốn yêu cầu bổ sung thông tin cho tin đăng này?",
+                          );
+                          if (!confirmed) return;
+
+                          try {
+                            setSubmitting(true);
+                            const requiredItems = [];
+                            if (needInfoChecklist.frameSerial)
+                              requiredItems.push("Ảnh số khung/serial");
+                            if (needInfoChecklist.invoice)
+                              requiredItems.push("Ảnh hóa đơn/giấy tờ");
+
+                            await inspectorService.requestMoreInfo(listing.id, {
+                              requiredItems,
+                              reasonText:
+                                "Vui lòng bổ sung thêm: " +
+                                requiredItems.join(", "),
+                            });
+
+                            alert("Đã gửi yêu cầu bổ sung thành công!");
+                            router.push("/inspector/dashboard");
+                          } catch (err: any) {
+                            alert(err?.message || "Yêu cầu bổ sung thất bại");
+                          } finally {
+                            setSubmitting(false);
+                            setActivePanel("NONE");
+                          }
                         }}
                       >
                         GỬI
@@ -429,10 +496,11 @@ export default function ReviewDetailClient({
                   </div>
                 </section>
               )}
-
               {activePanel === "REJECT" && (
                 <section className="panel panel-reject mt-2 border border-red-200 rounded-xl overflow-hidden bg-white shadow-sm">
-                  <div className="panel-title bg-red-50 px-4 py-3 font-bold text-red-700 border-b border-red-100">Lý do từ chối</div>
+                  <div className="panel-title bg-red-50 px-4 py-3 font-bold text-red-700 border-b border-red-100">
+                    Lý do từ chối
+                  </div>
                   <div className="p-4">
                     <label className="block w-full">
                       <select
@@ -440,7 +508,7 @@ export default function ReviewDetailClient({
                         value={rejectReason}
                         onChange={(e) => {
                           setRejectReason(e.target.value);
-                          if (e.target.value !== "other") setRejectReasonOther("");
+                          setRejectReasonOther("");
                         }}
                       >
                         <option value="">-- Chọn --</option>
@@ -453,7 +521,7 @@ export default function ReviewDetailClient({
                       </select>
                     </label>
 
-                    {rejectReason === "other" && (
+                    {rejectReason && (
                       <div className="mt-3">
                         <textarea
                           className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none"
@@ -466,15 +534,19 @@ export default function ReviewDetailClient({
                     )}
 
                     <div className="confirm mt-5 flex items-center justify-between border-t border-gray-100 pt-4">
-                      <span className="confirm-text text-sm text-gray-500 font-medium">Xác nhận từ chối?</span>
+                      <span className="confirm-text text-sm text-gray-500 font-medium">
+                        Xác nhận từ chối?
+                      </span>
                       <button
                         className="btn btn-danger btn-reject-solid px-5 py-2 text-sm font-bold"
                         type="button"
                         disabled={!canConfirmReject || submitting}
                         onClick={async () => {
                           if (!canConfirmReject) return;
-                          
-                          const confirmed = window.confirm("Bạn có chắc chắn muốn TỪ CHỐI tin đăng này?");
+
+                          const confirmed = window.confirm(
+                            "Bạn có chắc chắn muốn TỪ CHỐI tin đăng này?",
+                          );
                           if (!confirmed) return;
 
                           const reasonCode =
@@ -489,7 +561,7 @@ export default function ReviewDetailClient({
                                     : rejectReason === "wrong_photo"
                                       ? "WRONG_PHOTO"
                                       : "OTHER";
-                          const reasonText = rejectReason === "other" ? rejectReasonOther : rejectReason;
+                          const reasonText = rejectReasonOther;
 
                           try {
                             setSubmitting(true);
@@ -519,26 +591,45 @@ export default function ReviewDetailClient({
             </div>
           ) : (
             <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-xl text-center shadow-inner flex flex-col justify-center items-center gap-2">
-              <span className={`material-symbols-outlined text-3xl ${
-                listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'text-green-500' : 
-                listing.status === 'REJECTED' ? 'text-red-500' : 'text-gray-400'
-              }`}>
-                {listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'check_circle' : 
-                 listing.status === 'REJECTED' ? 'cancel' : 'task_alt'}
+              <span
+                className={`material-symbols-outlined text-3xl ${
+                  listing.status === "APPROVED" || listing.status === "PASSED"
+                    ? "text-green-500"
+                    : listing.status === "REJECTED"
+                      ? "text-red-500"
+                      : "text-gray-400"
+                }`}
+              >
+                {listing.status === "APPROVED" || listing.status === "PASSED"
+                  ? "check_circle"
+                  : listing.status === "REJECTED"
+                    ? "cancel"
+                    : "task_alt"}
               </span>
               <span className="block text-sm text-gray-600 font-medium tracking-wide">
-                {listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'Tin đăng đã được duyệt' :
-                 listing.status === 'REJECTED' ? 'Tin đăng đã bị từ chối' : 'Tin đăng đã xử lý'}
+                {listing.status === "APPROVED" || listing.status === "PASSED"
+                  ? "Tin đăng đã được duyệt"
+                  : listing.status === "REJECTED"
+                    ? "Tin đăng đã bị từ chối"
+                    : "Tin đăng đã xử lý"}
               </span>
-              <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
-                listing.status === 'APPROVED' || listing.status === 'PASSED' ? 'bg-green-100 text-green-800 border border-green-200' :
-                listing.status === 'REJECTED' ? 'bg-red-100 text-red-800 border border-red-200' :
-                'bg-gray-200 text-gray-800 border border-gray-300'
-              }`}>{listing.status}</span>
+              <span
+                className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider ${
+                  listing.status === "APPROVED" || listing.status === "PASSED"
+                    ? "bg-green-100 text-green-800 border border-green-200"
+                    : listing.status === "REJECTED"
+                      ? "bg-red-100 text-red-800 border border-red-200"
+                      : "bg-gray-200 text-gray-800 border border-gray-300"
+                }`}
+              >
+                {listing.status}
+              </span>
             </div>
           )}
         </div>
       </div>
+
+      {/* Đã xóa nút chat với seller */}
     </div>
   );
 }

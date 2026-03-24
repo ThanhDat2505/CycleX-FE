@@ -121,7 +121,7 @@ export default function Header() {
                   onClick={logout}
                   className="md:hidden text-white hover:text-brand-primary transition-colors"
                 >
-                  Logout
+                  Đăng xuất
                 </button>
               </>
             ) : (
@@ -131,13 +131,13 @@ export default function Header() {
                   href="/login"
                   className="hidden md:block text-white hover:text-brand-primary transition-colors font-medium"
                 >
-                  Login
+                  Đăng nhập
                 </Link>
                 <Link
                   href="/register"
                   className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"
                 >
-                  Register
+                  Đăng ký
                 </Link>
               </>
             )}

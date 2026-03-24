@@ -157,13 +157,9 @@ export default function DisputeListClient() {
   return (
     <div className="min-h-screen text-gray-900 p-4 lg:p-10 font-sans">
       <div className="max-w-7xl mx-auto">
-
-
         <div className="contentWrapper">
-
           <div className="filterCard">
             <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
-
               <div className="filterField !min-w-0">
                 <label className="filterLabel">Trạng thái</label>
                 <select
@@ -256,7 +252,6 @@ export default function DisputeListClient() {
             </div>
           </div>
 
-
           <div className="tableCard" style={{ marginBottom: 40 }}>
             <div className="overflow-x-auto min-h-[400px]">
               {items.length === 0 ? (
@@ -281,14 +276,14 @@ export default function DisputeListClient() {
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         Transaction & Listing
                       </th>
+                      <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                        Người tạo
+                      </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-center">
                         Trạng thái
                       </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         Khởi tạo
-                      </th>
-                      <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
-                        Assignee
                       </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">
                         Chi tiết
@@ -297,75 +292,74 @@ export default function DisputeListClient() {
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {items.map((row) => (
-                        <tr
-                          key={row.id}
-                          className="group hover:bg-white/[0.02] transition-colors"
-                        >
-                          <td className="px-8 py-6">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
-                                #{row.id}
-                              </div>
+                      <tr
+                        key={row.id}
+                        className="group hover:bg-white/[0.02] transition-colors"
+                      >
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                              #{row.id}
                             </div>
-                          </td>
-                          <td className="px-8 py-6">
-                            <div>
-                              <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
-                                {row.listingTitle}
-                              </p>
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                                  TX-{row.transactionId}
-                                </span>
-                                <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
-                                  {row.reason}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6 text-center">
-                            <span
-                              className={`inline-flex px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
-                            >
-                              {row.status}
-                            </span>
-                          </td>
-                          <td className="px-8 py-6">
-                            <div className="flex flex-col">
-                              <span className="text-[11px] font-black text-white">
-                                {row.createdAt.split("T")[0]}
-                              </span>
-                              <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
-                                {row.createdAt.split("T")[1]?.split(".")[0] ||
-                                  "Unknown"}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-6">
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div>
+                            <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
+                              {row.listingTitle}
+                            </p>
                             <div className="flex items-center gap-2">
-                              <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
-                                <User size={12} className="text-gray-500" />
-                              </div>
-                              <span className="text-xs font-bold text-gray-400">
-                                {row.assigneeName || "Chưa phân công"}
+                              <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                                TX-{row.transactionId}
+                              </span>
+                              <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
+                                {row.reason}
                               </span>
                             </div>
-                          </td>
-                          <td className="px-8 py-6 text-right">
-                            <Link
-                              href={`/inspector/disputes/${encodeURIComponent(row.id)}`}
-                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
-                            >
-                              <ExternalLink size={14} /> View Details
-                            </Link>
-                          </td>
-                        </tr>
-                      ))}
+                          </div>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
+                              <User size={12} className="text-gray-500" />
+                            </div>
+                            <span className="text-xs font-bold text-gray-300">
+                              {row.requesterName || "N/A"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-center">
+                          <span
+                            className={`inline-flex px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
+                          >
+                            {row.status}
+                          </span>
+                        </td>
+                        <td className="px-8 py-6">
+                          <div className="flex flex-col">
+                            <span className="text-[11px] font-black text-white">
+                              {row.createdAt.split("T")[0]}
+                            </span>
+                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
+                              {row.createdAt.split("T")[1]?.split(".")[0] ||
+                                "Unknown"}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-6 text-right">
+                          <Link
+                            href={`/inspector/disputes/${encodeURIComponent(row.id)}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
+                          >
+                            <ExternalLink size={14} /> View Details
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               )}
             </div>
-
 
             {totalPages > 1 && (
               <div

@@ -77,6 +77,7 @@ interface SellerListingSearchItemResponse {
     price: number | string;
     status: string;
     viewsCount?: number;
+    rejectionReason?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -171,6 +172,7 @@ function mapSearchItemToListing(item: SellerListingSearchItemResponse): Listing 
         price: Number.isFinite(parsedPrice) ? parsedPrice : 0,
         location: '-',
         status: mapStatusFromBackend(item.status),
+        rejectionReason: item.rejectionReason,
         shipping: false,
         views: item.viewsCount ?? 0,
         inquiries: 0,

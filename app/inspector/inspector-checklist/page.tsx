@@ -1,3 +1,4 @@
+import InspectorGuard from "../InspectorGuard";
 import { Suspense } from "react";
 import InspectorChecklist from "@/app/components/inspector/InspectorChecklist";
 
@@ -7,8 +8,10 @@ export const metadata = {
 
 export default function InspectorChecklistPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <InspectorChecklist />
-    </Suspense>
+    <InspectorGuard>
+      <Suspense fallback={<div>Đang tải...</div>}>
+        <InspectorChecklist />
+      </Suspense>
+    </InspectorGuard>
   );
 }

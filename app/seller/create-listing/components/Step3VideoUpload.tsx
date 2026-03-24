@@ -44,7 +44,7 @@ const Step3VideoUpload: React.FC<Step3VideoUploadProps> = ({
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-2">
-        Upload Video kiểm tra xe
+        Tải lên Video kiểm tra xe
       </h2>
       <p className="text-gray-600 text-sm mb-6">
         Quay video ngắn (tối đa {LISTING_CONFIG.MAX_VIDEO_DURATION} giây) để

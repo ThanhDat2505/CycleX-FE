@@ -107,7 +107,7 @@ export default function InspectorRequestDetail() {
             <div>
               <div className="meta" style={{ marginBottom: "8px" }}>
                 <Link
-                  href="/inspector/review-required"
+                  href="/inspector/pending-list"
                   className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
                   style={{ textDecoration: "none" }}
                 >

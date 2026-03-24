@@ -25,7 +25,7 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Upload Images (Minimum {LISTING_CONFIG.MIN_IMAGES})
+        Tải ảnh lên (Tối thiểu {LISTING_CONFIG.MIN_IMAGES} ảnh)
       </h2>
 
       {/* Error Message Display */}
@@ -34,7 +34,7 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
           className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative animate-pulse"
           role="alert"
         >
-          <strong className="font-bold">Error: </strong>
+          <strong className="font-bold">Lỗi: </strong>
           <span className="block sm:inline">{error}</span>
         </div>
       )}
@@ -65,7 +65,7 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
         {isUploading ? (
           <div className="flex flex-col items-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-primary mb-2"></div>
-            <p className="text-gray-600">Uploading images...</p>
+            <p className="text-gray-600">Đang tải ảnh lên...</p>
           </div>
         ) : (
           <>
@@ -79,14 +79,14 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={2}
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
               />
             </svg>
             <p className="text-gray-900 font-medium mb-2">
-              Click to upload or drag and drop
+              Nhấn để tải lên hoặc kéo thả vào đây
             </p>
             <p className="text-gray-600 text-sm">
-              SVG, PNG, JPG or GIF (max. 800x400px)
+              PNG, JPG hoặc WEBP (tối đa 5MB)
             </p>
           </>
         )}
@@ -113,7 +113,7 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
               {/* Primary Badge */}
               {index === 0 && (
                 <div className="absolute top-2 left-2 bg-brand-primary text-white text-xs font-bold px-2 py-1 rounded shadow-sm">
-                  Primary Image
+                  Ảnh đại diện
                 </div>
               )}
 
@@ -129,7 +129,7 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
                     }}
                     className="absolute top-2 left-2 bg-white/90 hover:bg-white text-gray-700 text-xs font-medium px-2 py-1 rounded shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   >
-                    Set as Primary
+                    Đặt làm đại diện
                   </button>
                 )}
 
@@ -162,8 +162,7 @@ const Step2ImageUpload: React.FC<Step2ImageUploadProps> = ({
       )}
 
       <p className="text-sm text-gray-500 mt-2">
-        {imageUrls.length} images uploaded. Minimum {LISTING_CONFIG.MIN_IMAGES}{" "}
-        required.
+        Đã tải lên {imageUrls.length} ảnh. Yêu cầu tối thiểu {LISTING_CONFIG.MIN_IMAGES} ảnh.
       </p>
     </div>
   );

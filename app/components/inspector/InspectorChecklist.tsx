@@ -31,7 +31,7 @@ export default function InspectorChecklist() {
     setMedia((prev) => prev.filter((_, index) => index !== indexToRemove));
   };
 
-  const handleSubmit = (status: "approve" | "reject" | "need_info") => {
+  const handleSubmit = (status: "approve" | "reject") => {
     if (status === "approve" || status === "reject") {
       const reportData = {
         id: idParam,
@@ -50,9 +50,6 @@ export default function InspectorChecklist() {
 
       alert("Đã lưu biên bản kiểm định thành công!");
       router.push(`/inspector/inspector-summary?id=${idParam}`);
-    } else {
-      alert("Đã gửi yêu cầu bổ sung thông tin cho Seller!");
-      router.push("/inspector/review-required");
     }
   };
 

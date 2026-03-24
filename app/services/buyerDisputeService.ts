@@ -7,6 +7,37 @@ import { CreateDisputeRequest, Dispute, DisputeReason, DisputeDetailResponse, Di
 import { apiCallGET, apiCallPOST, apiCallPUT } from '../utils/apiHelpers';
 import { uploadMultipleImages } from './imageUploadService';
 
+// ==================== TYPES ====================
+
+export type BuyerDisputeListOptions = {
+    status?: string;
+    fromDate?: string;
+    toDate?: string;
+    q?: string;
+    sortBy?: 'createdAt' | 'updatedAt' | 'status';
+    sortDir?: 'ASC' | 'DESC';
+    page?: number;
+    limit?: number;
+};
+
+export type BuyerDisputeListRow = {
+    id: number;
+    orderId: number;
+    listingTitle: string;
+    status: string;
+    reason: string;
+    createdAt: string;
+    assigneeName: string;
+};
+
+export type BuyerDisputeListResult = {
+    content: BuyerDisputeListRow[];
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+};
+
 /**
  * Map BE DisputeDetailResponse → FE Dispute type
  */
@@ -99,23 +130,23 @@ export async function checkDisputeEligibility(orderId: number, buyerId: number, 
     // 1. Kiểm tra đơn hàng có tồn tại (đã pass qua props)
     if (!orderId) return { allowed: false, reason: 'Mã đơn hàng không hợp lệ.' };
 
-    // 2. Kiểm tra đơn hàng đã được giao thành công (status === COMPLETED)
-    if (status !== 'COMPLETED') {
-        return { allowed: false, reason: 'Chỉ có thể khiếu nại đơn hàng đã hoàn thành.' };
+    // 2. Kiểm tra đơn hàng đã hoàn thành hoặc giao hàng thất bại (DISPUTED)
+    if (status !== 'COMPLETED' && status !== 'DISPUTED') {
+        return { allowed: false, reason: 'Chỉ có thể khiếu nại đơn hàng đã hoàn thành hoặc giao hàng thất bại.' };
     }
 
-    // 3. Kiểm tra thời gian tạo dispute (trong 24h sau khi giao)
-    const completedDate = new Date(completedAt);
-    const now = new Date();
-    const diffInHours = (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60);
-    if (diffInHours > 24) {
-        return { allowed: false, reason: 'Đã hết thời hạn khiếu nại (24h kể từ khi hoàn thành).' };
+    // 3. Kiểm tra thời hạn khiếu nại (24 giờ sau khi đơn hoàn thành)
+    if (completedAt) {
+        const hoursRemaining = getDisputeHoursRemaining(status, completedAt);
+        if (hoursRemaining === 0) {
+            return { allowed: false, reason: `Đã hết thời hạn khiếu nại. Bạn chỉ có ${DISPUTE_DEADLINE_HOURS} giờ để khiếu nại sau khi đơn hoàn thành.` };
+        }
     }
 
-    // 4. Kiểm tra tần suất khiếu nại của buyer
+    // 4. Kiểm tra tần suất khiếu nại của buyer (backend sẽ check giới hạn 3 lần)
     const isFrequencyAllowed = await checkBuyerDisputeFrequency(buyerId, orderId);
     if (!isFrequencyAllowed) {
-        return { allowed: false, reason: 'Bạn đã thực hiện quá nhiều khiếu nại gần đây. Vui lòng liên hệ hỗ trợ.' };
+        return { allowed: false, reason: 'Đã đạt giới hạn khiếu nại cho đơn hàng này.' };
     }
 
     return { allowed: true };
@@ -138,15 +169,27 @@ export async function getDisputeById(disputeId: number): Promise<Dispute> {
     return mapToDispute(res);
 }
 
+/** Number of hours buyer has to raise a dispute after order completion */
+export const DISPUTE_DEADLINE_HOURS = 24;
+
+/**
+ * Returns how many hours remain before the dispute deadline expires.
+ * Returns 0 if already expired or status not eligible.
+ */
+export function getDisputeHoursRemaining(status: string, completedAt: string): number {
+    if (status !== 'COMPLETED' && status !== 'DISPUTED') return 0;
+    if (!completedAt) return 0;
+    const deadline = new Date(completedAt).getTime() + DISPUTE_DEADLINE_HOURS * 60 * 60 * 1000;
+    const remaining = deadline - Date.now();
+    return remaining > 0 ? Math.ceil(remaining / (60 * 60 * 1000)) : 0;
+}
+
 /**
  * Simple helper to check 24h window (for UI visibility)
  */
-export function canCreateDispute(status: string, updatedAt: string): boolean {
-    if (status !== 'COMPLETED') return false;
-    const completedDate = new Date(updatedAt);
-    const now = new Date();
-    const diffInHours = (now.getTime() - completedDate.getTime()) / (1000 * 60 * 60);
-    return diffInHours <= 24;
+export function canCreateDispute(status: string, completedAt: string): boolean {
+    if (status !== 'COMPLETED' && status !== 'DISPUTED') return false;
+    return getDisputeHoursRemaining(status, completedAt) > 0;
 }
 
 /**
@@ -171,3 +214,23 @@ export async function replyToDispute(disputeId: number, content: string): Promis
     const res = await apiCallPUT<DisputeDetailResponse>(`/disputes/${disputeId}/reply`, { content });
     return mapToDispute(res);
 }
+
+/**
+ * Get list of disputes created by the buyer
+ */
+export async function getBuyerDisputes(buyerId: number, options: BuyerDisputeListOptions = {}): Promise<BuyerDisputeListResult> {
+    const params = new URLSearchParams();
+    
+    if (options.status && options.status !== 'ALL') params.set('status', options.status);
+    if (options.q) params.set('q', options.q);
+    if (options.fromDate) params.set('fromDate', options.fromDate);
+    if (options.toDate) params.set('toDate', options.toDate);
+    if (options.sortBy) params.set('sortBy', options.sortBy);
+    if (options.sortDir) params.set('sortDir', options.sortDir);
+    params.set('page', String(options.page ?? 0));
+    params.set('limit', String(options.limit ?? 10));
+
+    const queryString = params.toString();
+    return apiCallGET<BuyerDisputeListResult>(`/buyers/${buyerId}/disputes${queryString ? `?${queryString}` : ''}`);
+}
+

@@ -11,7 +11,7 @@ import { AuthGuard } from '@/app/login/AuthGuard';
 export default function RegisterPage() {
     return (
         <AuthGuard>
-            <AuthLayout title="Create Account">
+            <AuthLayout title="Đăng ký tài khoản">
                 <RegisterForm />
             </AuthLayout>
         </AuthGuard>

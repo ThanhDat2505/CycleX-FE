@@ -63,9 +63,9 @@ const DashboardPage: React.FC = () => {
       <div className="max-w-7xl mx-auto animate-fade-in-up">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+          <h1 className="text-4xl font-bold text-gray-900 tracking-tight">Bảng điều khiển</h1>
           <p className="text-gray-600 mt-2 text-lg">
-            Welcome back, <span className="font-semibold">{user?.fullName || 'User'}</span>. Here&apos;s your selling overview.
+            Chào mừng trở lại, <span className="font-semibold">{user?.fullName || 'Người dùng'}</span>. Dưới đây là tổng quan bán hàng của bạn.
           </p>
         </div>
 
@@ -107,35 +107,35 @@ const DashboardPage: React.FC = () => {
             {/* Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <MetricCard
-                label="Active Listings"
+                label="Tin đang hiển thị"
                 value={activeListings}
                 icon="📋"
-                change="↑ 2 from last month"
+                change="↑ 2 so với tháng trước"
                 href="/seller/my-listings?status=active"
                 isPositive={true}
               />
               {/* BR-S10-F01: PENDING listings */}
               <MetricCard
-                label="Pending Listings"
+                label="Tin chờ duyệt"
                 value={pendingListings}
                 icon="⏳"
-                change="Waiting for approval"
+                change="Đang chờ phê duyệt"
                 href="/seller/my-listings?status=pending"
               />
               {/* BR-S10-F01: REJECTED listings */}
               <MetricCard
-                label="Rejected Listings"
+                label="Tin bị từ chối"
                 value={rejectedListings}
                 icon="❌"
-                change="Need attention"
+                change="Cần xem xét lại"
                 href="/seller/my-listings?status=rejected"
               />
               {/* BR-S10-F02: Transactions count */}
               <MetricCard
-                label="Transactions"
+                label="Giao dịch"
                 value={totalTransactions}
                 icon="💰"
-                change="View not available yet"
+                change="Chức năng chưa khả dụng"
               />
             </div>
 
@@ -145,28 +145,28 @@ const DashboardPage: React.FC = () => {
               <div className="lg:col-span-2 bg-white rounded-xl p-6 shadow-sm border border-gray-100">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
-                  Recent Activity
+                  Hoạt động gần đây
                 </h2>
                 <div className="space-y-4">
                   <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">Today</p>
-                    <p className="font-semibold text-gray-900">💬 New inquiry on Trek Domane</p>
-                    <p className="text-sm text-gray-600">Customer asked about shipping costs</p>
+                    <p className="text-sm text-gray-500 mb-1">Hôm nay</p>
+                    <p className="font-semibold text-gray-900">💬 Có người hỏi mua Trek Domane</p>
+                    <p className="text-sm text-gray-600">Khách hàng hỏi về phí giao hàng</p>
                   </div>
                   <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">Yesterday</p>
-                    <p className="font-semibold text-gray-900">👁️ Listing viewed 25 times</p>
-                    <p className="text-sm text-gray-600">Specialized Tarmac SL7 getting attention</p>
+                    <p className="text-sm text-gray-500 mb-1">Hôm qua</p>
+                    <p className="font-semibold text-gray-900">👁️ Tin đăng được xem 25 lần</p>
+                    <p className="text-sm text-gray-600">Xe Specialized Tarmac SL7 đang được chú ý</p>
                   </div>
                   <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">2 days ago</p>
-                    <p className="font-semibold text-gray-900">✅ New sale completed</p>
+                    <p className="text-sm text-gray-500 mb-1">2 ngày trước</p>
+                    <p className="font-semibold text-gray-900">✅ Giao dịch thành công mới</p>
                     <p className="text-sm text-gray-600">Trek Domane AL 3 - $1,200</p>
                   </div>
                   <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">3 days ago</p>
-                    <p className="font-semibold text-gray-900">⭐ 5-star review received</p>
-                    <p className="text-sm text-gray-600">From verified buyer</p>
+                    <p className="text-sm text-gray-500 mb-1">3 ngày trước</p>
+                    <p className="font-semibold text-gray-900">⭐ Nhận được đánh giá 5 sao</p>
+                    <p className="text-sm text-gray-600">Từ người mua đã xác thực</p>
                   </div>
                 </div>
               </div>
@@ -175,7 +175,7 @@ const DashboardPage: React.FC = () => {
               <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 h-fit sticky top-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <span className="w-2 h-6 bg-orange-500 rounded-full"></span>
-                  Quick Actions
+                  Thao tác nhanh
                 </h2>
                 <div className="space-y-3">
                   <Link
@@ -185,26 +185,26 @@ const DashboardPage: React.FC = () => {
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                     </svg>
-                    Create Listing
+                    Đăng tin mới
                   </Link>
                   <Link
                     href="/seller/transactions/pending"
                     className="flex items-center justify-between px-4 py-3 bg-blue-50 text-blue-700 rounded-lg font-medium hover:bg-blue-100 transition-all border border-blue-100"
                   >
-                    <span>Check Requests</span>
+                    <span>Kiểm tra yêu cầu</span>
                     <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></span>
                   </Link>
                   <Link
                     href="/seller/my-listings"
                     className="block px-4 py-3 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-all text-center border border-gray-100"
                   >
-                    View Listings
+                    Xem tin đăng
                   </Link>
                   <Link
                     href="/seller/draft-listings"
                     className="block px-4 py-3 bg-gray-50 text-gray-700 rounded-lg font-medium hover:bg-gray-100 transition-all text-center border border-gray-100"
                   >
-                    Draft Listings
+                    Tin nháp
                   </Link>
                 </div>
               </div>
@@ -214,26 +214,26 @@ const DashboardPage: React.FC = () => {
             <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                 <span className="w-2 h-6 bg-green-500 rounded-full"></span>
-                Top Performing Listings
+                Các tin đăng nổi bật
               </h2>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">
-                        Bike Name
+                        Tên xe
                       </th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">
-                        Price
+                        Giá bán
                       </th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">
-                        Views
+                        Lượt xem
                       </th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">
-                        Inquiries
+                        Lượt hỏi mua
                       </th>
                       <th className="text-left px-4 py-3 font-semibold text-gray-700">
-                        Status
+                        Trạng thái
                       </th>
                     </tr>
                   </thead>

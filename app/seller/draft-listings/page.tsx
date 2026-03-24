@@ -22,7 +22,7 @@ const DraftListingsPage: React.FC = () => {
   if (isLoading) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Đang tải...</p>
       </div>
     );
   }
@@ -31,7 +31,7 @@ const DraftListingsPage: React.FC = () => {
   if (!isLoggedIn) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <p className="text-gray-600">Redirecting to login...</p>
+        <p className="text-gray-600">Đang chuyển hướng đến trang đăng nhập...</p>
       </div>
     );
   }
@@ -48,9 +48,9 @@ const DraftListingsPage: React.FC = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold text-gray-900 mb-2">Draft Listings</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-2">Tin nháp</h1>
       <p className="text-gray-600 mb-8">
-        Manage your unsaved and pending listings
+        Quản lý các tin đăng chưa lưu và đang chờ xử lý
       </p>
 
       {draftListings.length > 0 ? (
@@ -88,10 +88,10 @@ const DraftListingsPage: React.FC = () => {
                       href={`/seller/create-listing?draft=${listing.id}`}
                       className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center"
                     >
-                      Continue
+                      Tiếp tục
                     </Link>
                     <button className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded text-sm font-medium hover:bg-red-50 transition">
-                      Delete
+                      Xóa
                     </button>
                   </div>
                 </div>
@@ -101,12 +101,12 @@ const DraftListingsPage: React.FC = () => {
         </div>
       ) : (
         <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-          <p className="text-gray-600 text-lg mb-4">No draft listings yet</p>
+          <p className="text-gray-600 text-lg mb-4">Chưa có tin nháp nào</p>
           <Link
             href="/seller/create-listing"
             className="inline-block px-6 py-3 bg-[#FF8A00] text-white rounded-lg font-semibold hover:bg-[#FF7A00] transition"
           >
-            Create New Listing
+            Đăng tin mới
           </Link>
         </div>
       )}

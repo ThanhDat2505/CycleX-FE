@@ -837,6 +837,7 @@ export const useCreateListing = () => {
       isReadOnly,
       readOnlyMessage: isReadOnly ? readOnlyMessage : null,
       canCancelPublish,
+      loadedStatus: normalizedLoadedStatus,
       isUploadingVideo,
       videoError,
     },

@@ -36,6 +36,7 @@ const CreateListingPageContent: React.FC = () => {
     isReadOnly,
     readOnlyMessage,
     canCancelPublish,
+    loadedStatus,
     isUploadingVideo,
     videoError,
   } = state;
@@ -65,7 +66,7 @@ const CreateListingPageContent: React.FC = () => {
   if (isLoading) {
     return (
       <div className="p-8 max-w-4xl mx-auto text-center">
-        <p className="text-gray-600">Loading...</p>
+        <p className="text-gray-600">Đang tải...</p>
       </div>
     );
   }
@@ -78,9 +79,9 @@ const CreateListingPageContent: React.FC = () => {
     <div className="p-8 max-w-4xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">Create New Listing</h1>
+        <h1 className="text-4xl font-bold text-gray-900">Đăng tin mới</h1>
         <p className="text-gray-600 mt-2">
-          Fill in the details about your bike
+          Điền thông tin chi tiết về xe đạp của bạn
         </p>
       </div>
 
@@ -113,7 +114,7 @@ const CreateListingPageContent: React.FC = () => {
           <div className="flex gap-4 mb-8 text-center text-sm">
             {STEP_LABELS.map(({ step: s, label }) => (
               <div className="flex-1" key={s}>
-                <p className="font-semibold text-gray-900">Step {s}</p>
+                <p className="font-semibold text-gray-900">Bước {s}</p>
                 <p className="text-gray-600">{label}</p>
               </div>
             ))}
@@ -202,26 +203,28 @@ const CreateListingPageContent: React.FC = () => {
                   disabled={isCancellingPublish}
                   className="px-6 py-3 bg-amber-600 text-white rounded-lg font-semibold hover:bg-amber-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isCancellingPublish ? "Cancelling..." : "Cancel Publish"}
+                  {isCancellingPublish ? "Đang hủy..." : "Hủy đăng tin"}
                 </button>
               )}
             </div>
             <div className="flex gap-4">
-              {!canCancelPublish && (
-                <button
-                  type="button"
-                  onClick={actions.handleSubmit}
-                  disabled={isSaving}
-                  className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSaving ? "Publishing..." : "Publish Listing"}
-                </button>
-              )}
+              {!canCancelPublish &&
+                loadedStatus !== "REJECTED" &&
+                loadedStatus !== "REJECT" && (
+                  <button
+                    type="button"
+                    onClick={actions.handleSubmit}
+                    disabled={isSaving}
+                    className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSaving ? "Đang đăng..." : "Đăng tin"}
+                  </button>
+                )}
               <Link
                 href="/seller/my-listings"
                 className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
               >
-                Back to My Listings
+                Trở về danh sách của tôi
               </Link>
             </div>
           </div>
@@ -233,7 +236,7 @@ const CreateListingPageContent: React.FC = () => {
               disabled={isSaving}
               className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isSaving ? "Saving..." : "Save for Later"}
+              {isSaving ? "Đang lưu..." : "Lưu nháp"}
             </button>
 
             <div className="flex gap-4">
@@ -243,7 +246,7 @@ const CreateListingPageContent: React.FC = () => {
                   onClick={actions.handleBack}
                   className="px-6 py-3 border border-gray-300 text-gray-900 rounded-lg font-semibold hover:bg-gray-50 transition"
                 >
-                  Back
+                  Quay lại
                 </button>
               )}
 
@@ -272,7 +275,7 @@ const CreateListingPageContent: React.FC = () => {
                       />
                     </svg>
                   )}
-                  {isCreatingDraft ? "Creating Draft..." : getNextLabel()}
+                  {isCreatingDraft ? "Đang tạo nháp..." : getNextLabel()}
                 </button>
               ) : (
                 <button
@@ -281,7 +284,7 @@ const CreateListingPageContent: React.FC = () => {
                   disabled={isSaving}
                   className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isSaving ? "Publishing..." : "Publish Listing"}
+                  {isSaving ? "Đang đăng..." : "Đăng tin"}
                 </button>
               )}
             </div>
@@ -297,7 +300,7 @@ const CreateListingPage: React.FC = () => {
     <Suspense
       fallback={
         <div className="p-8 max-w-4xl mx-auto text-center">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">Đang tải...</p>
         </div>
       }
     >

@@ -6,6 +6,7 @@ import {
   TRANSACTION_TYPE,
   TRANSACTION_TYPE_LABELS,
 } from "@/app/constants/transactionStatus";
+import { Clock } from "lucide-react";
 
 interface InvoiceWidgetProps {
   transaction: TransactionWithDetails;
@@ -196,6 +197,25 @@ export default function InvoiceWidget({
             </p>
           </div>
         )}
+
+        {/* Expired Dispute Deadline (Buyer Only) */}
+        {viewerRole === "BUYER" &&
+          !canDispute &&
+          (transaction.status === TRANSACTION_STATUS.COMPLETED ||
+            transaction.status === TRANSACTION_STATUS.DISPUTED) && (
+            <div className="pt-4 border-t border-gray-100 mt-2">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center">
+                <Clock className="w-5 h-5 text-amber-500 mx-auto mb-2" />
+                <p className="text-sm font-bold text-amber-700">
+                  Hết thời hạn khiếu nại
+                </p>
+                <p className="text-xs text-amber-600 mt-1">
+                  Thời hạn khiếu nại 24 giờ kể từ khi hoàn thành đơn đã kết
+                  thúc.
+                </p>
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );

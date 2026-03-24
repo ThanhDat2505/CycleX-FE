@@ -49,7 +49,7 @@ export default function TransactionCard({ transaction }: TransactionCardProps) {
                         />
                     ) : (
                         <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400 text-xs">
-                            No Image
+                            Không có ảnh
                         </div>
                     )}
                     <div className="absolute top-0 left-0 w-full h-full bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>

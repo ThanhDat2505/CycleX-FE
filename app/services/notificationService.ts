@@ -46,7 +46,7 @@ export const notificationService = {
                 totalPages: typeof response.totalPages === 'number' ? response.totalPages : 1
             };
         } catch (error) {
-            console.error(`Lỗi lấy danh sách thông báo:`, error);
+            console.error(`Lỗi lấy danh sách thông báo:`, error instanceof Error ? error.message : JSON.stringify(error));
             return { items: [], page: 0, size: 10, totalElements: 0, totalPages: 0 };
         }
     },
