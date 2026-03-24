@@ -50,6 +50,21 @@ export const useAuth = (): UseAuthReturn => {
         setIsLoading(false);
     }, []);
 
+    // Sync trạng thái khi localStorage thay đổi từ tab khác
+    // (ví dụ: user logout ở tab A → tab B tự động cập nhật)
+    useEffect(() => {
+        const handleStorageChange = () => {
+            const token = authService.getToken();
+            if (!token) {
+                setUser(null);
+                setRole(null);
+                setIsLoggedIn(false);
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
+
     const logout = useCallback(() => {
         authService.logout();
         setUser(null);
