@@ -82,6 +82,8 @@ export default function FeaturedBikeCard({ bike, className = '' }: FeaturedBikeC
                     src={bike.imageUrl || FALLBACK_IMAGE}
                     alt={bike.title}
                     className={STYLES.image}
+                    loading="lazy"
+                    decoding="async"
                     onError={(e) => {
                         e.currentTarget.src = FALLBACK_IMAGE;
                     }}

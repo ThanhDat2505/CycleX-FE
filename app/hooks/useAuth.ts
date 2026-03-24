@@ -7,8 +7,8 @@
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { User } from '@/app/types/auth';
 import { authService } from '@/app/services/authService';
 
@@ -26,11 +26,13 @@ interface UseAuthReturn extends AuthState {
 
 export const useAuth = (): UseAuthReturn => {
     const router = useRouter();
-    const pathname = usePathname();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<string | null>(null);
+
+    // Chỉ chạy 1 lần khi mount — không phụ thuộc pathname để tránh
+    // re-render toàn app mỗi khi đổi route.
     useEffect(() => {
         const userData = authService.getUser();
         const token = authService.getToken();
@@ -40,29 +42,28 @@ export const useAuth = (): UseAuthReturn => {
             setRole(userData.role);
             setIsLoggedIn(true);
         } else {
-            // No auth data - reset state
             setUser(null);
             setRole(null);
             setIsLoggedIn(false);
         }
 
         setIsLoading(false);
-    }, [pathname]);
+    }, []);
 
-    const logout = () => {
+    const logout = useCallback(() => {
         authService.logout();
         setUser(null);
         setRole(null);
         setIsLoggedIn(false);
         router.push('/');
-    };
+    }, [router]);
 
     /**
      * Check if user is authenticated, redirect to login if not
      * @param returnUrl - URL to return to after login
      * @returns true if authenticated, false if redirected to login
      */
-    const requireAuth = (returnUrl?: string): boolean => {
+    const requireAuth = useCallback((returnUrl?: string): boolean => {
         if (!isLoggedIn) {
             const loginUrl = returnUrl
                 ? `/login?returnUrl=${encodeURIComponent(returnUrl)}`
@@ -71,7 +72,7 @@ export const useAuth = (): UseAuthReturn => {
             return false;
         }
         return true;
-    };
+    }, [isLoggedIn, router]);
 
     return {
         isLoggedIn,

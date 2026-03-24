@@ -96,6 +96,8 @@ export default function HeroSection() {
                                     src={DECORATIVE_IMAGE}
                                     className={STYLES.decorativeImage}
                                     alt="Decorative bike"
+                                    loading="lazy"
+                                    decoding="async"
                                 />
                             </div>
                         </div>

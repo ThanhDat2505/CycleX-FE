@@ -29,12 +29,33 @@ interface UseListingsReturn {
     retryFetch: () => void;
 }
 
+/** Parse filters từ URLSearchParams — dùng cho lazy state initialization */
+function parseFiltersFromURL(params: ReturnType<typeof useSearchParams>): SearchFilters {
+    const keyword = params.get('keyword') || undefined;
+    const minPrice = params.get('minPrice');
+    const maxPrice = params.get('maxPrice');
+    const bikeTypes = params.getAll('bikeType');
+    const brands = params.getAll('brand');
+    const conditions = params.getAll('condition') as ('new' | 'used')[];
+    return {
+        keyword,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        bikeTypes: bikeTypes.length > 0 ? bikeTypes : undefined,
+        brands: brands.length > 0 ? brands : undefined,
+        conditions: conditions.length > 0 ? conditions : undefined,
+    };
+}
+
 /**
  * Custom hook that encapsulates all S-31 Listings logic:
  * - URL sync (dual filter state: local + applied)
  * - Data fetching with AbortController for race condition prevention
  * - Filter/sort/pagination handlers
  * - Auth guard for SHIPPER role
+ *
+ * PERF: filters/sortBy/currentPage được khởi tạo trực tiếp từ URL params
+ * (lazy initializer) để tránh double-fetch trên mount đầu tiên.
  */
 export function useListings(): UseListingsReturn {
     const router = useRouter();
@@ -51,32 +72,23 @@ export function useListings(): UseListingsReturn {
     });
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    // Counter để trigger re-fetch khi user nhấn Retry
+    const [retryCounter, setRetryCounter] = useState(0);
 
-    // Filter state: `filters` = applied (synced with URL), `localFilters` = working (UI)
-    const [filters, setFilters] = useState<SearchFilters>({});
-    const [localFilters, setLocalFilters] = useState<SearchFilters>({});
-    const [sortBy, setSortBy] = useState<SortOption>('newest');
-    const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE);
-
-    // Sync state from URL params
-    useEffect(() => {
-        const keyword = searchParams.get('keyword') || undefined;
-        const minPrice = searchParams.get('minPrice');
-        const maxPrice = searchParams.get('maxPrice');
-        const bikeTypes = searchParams.getAll('bikeType');
-        const brands = searchParams.getAll('brand');
-        const conditions = searchParams.getAll('condition') as ('new' | 'used')[];
+    // Filter state khởi tạo từ URL ngay lúc mount — tránh double-fetch
+    const [filters, setFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
+    const [localFilters, setLocalFilters] = useState<SearchFilters>(() => parseFiltersFromURL(searchParams));
+    const [sortBy, setSortBy] = useState<SortOption>(() => (searchParams.get('sortBy') as SortOption) || 'newest');
+    const [currentPage, setCurrentPage] = useState<number>(() => {
         const page = searchParams.get('page');
-        const sort = searchParams.get('sortBy') as SortOption;
+        return page ? Number(page) : DEFAULT_PAGE;
+    });
 
-        const filtersFromURL: SearchFilters = {
-            keyword,
-            minPrice: minPrice ? Number(minPrice) : undefined,
-            maxPrice: maxPrice ? Number(maxPrice) : undefined,
-            bikeTypes: bikeTypes.length > 0 ? bikeTypes : undefined,
-            brands: brands.length > 0 ? brands : undefined,
-            conditions: conditions.length > 0 ? conditions : undefined,
-        };
+    // Sync state từ URL khi URL thay đổi (user nhấn back/forward hoặc updateURL)
+    useEffect(() => {
+        const filtersFromURL = parseFiltersFromURL(searchParams);
+        const sort = searchParams.get('sortBy') as SortOption;
+        const page = searchParams.get('page');
 
         setFilters(filtersFromURL);
         setLocalFilters(filtersFromURL);
@@ -140,7 +152,7 @@ export function useListings(): UseListingsReturn {
         return () => {
             abortController.abort();
         };
-    }, [filters, sortBy, currentPage]);
+    }, [filters, sortBy, currentPage, retryCounter]);
 
     // URL update helper
     const updateURL = useCallback((newFilters: SearchFilters, newSort: SortOption, newPage: number) => {
@@ -210,10 +222,7 @@ export function useListings(): UseListingsReturn {
     }, [filters, sortBy, updateURL]);
 
     const retryFetch = useCallback(() => {
-        setError(null);
-        setIsLoading(true);
-        // Trigger re-fetch by updating a dependency — simplest: reset currentPage
-        setCurrentPage(prev => prev);
+        setRetryCounter(c => c + 1);
     }, []);
 
     const totalPages = Math.ceil(pagination.total / pagination.pageSize);
