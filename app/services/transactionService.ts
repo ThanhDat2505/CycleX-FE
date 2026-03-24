@@ -271,11 +271,7 @@ export async function createPurchaseRequest(data: CreateTransactionRequest): Pro
             throw new Error('Invalid backend response: Expected order object');
         }
 
-<<<<<<< HEAD
-        const orderId = toNumber(dataResponse.orderId) ?? toNumber(dataResponse.requestId);
-=======
         const orderId = toNumber(dataResponse.orderId);
->>>>>>> origin/sprint3.PhanThanhDat
         if (!orderId) {
             throw new Error('Invalid backend response: Missing orderId');
         }
@@ -468,11 +464,7 @@ export async function getBuyerTransactions(
         validateArray(itemsArray, 'Buyer Transactions Array');
 
         const mapped = await Promise.all(dataResponse.map(async (item) => {
-<<<<<<< HEAD
-            const transactionId = toNumber(item?.orderId);
-=======
             const transactionId = toNumber(item?.orderId) ?? toNumber(item?.requestId);
->>>>>>> origin/sprint3.PhanThanhDat
             const listingId = toNumber(item?.listingId) ?? 0;
             if (!transactionId) {
                 return null;
