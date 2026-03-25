@@ -9,6 +9,7 @@ import {
   type DisputeEvidence,
 } from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
+import { useToast } from "@/app/contexts/ToastContext";
 import {
   ChevronLeft,
   Loader2,
@@ -39,12 +40,14 @@ export default function DisputeDetailClient({
   viewerRole?: "INSPECTOR" | "ADMIN";
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [detail, setDetail] = useState<DisputeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openingEvidenceIndex, setOpeningEvidenceIndex] = useState<
     number | null
   >(null);
+  const [evidenceError, setEvidenceError] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [escalating, setEscalating] = useState(false);
   const [showRequestInfo, setShowRequestInfo] = useState(false);
@@ -53,13 +56,20 @@ export default function DisputeDetailClient({
 
   const handleOpenEvidence = async (item: DisputeEvidence, index: number) => {
     if (!item.url) return;
+    setEvidenceError(null);
     try {
       setOpeningEvidenceIndex(index);
-      const blobUrl = await disputeService.getEvidenceBlobUrl(item.url);
-      window.open(blobUrl, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      const resolvedUrl = await disputeService.getEvidenceBlobUrl(item.url);
+      const opened = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+      // Only schedule revoke for blob: URLs; /public/ paths are static and don't need revocation
+      if (resolvedUrl.startsWith("blob:")) {
+        setTimeout(() => URL.revokeObjectURL(resolvedUrl), 60_000);
+      }
+      if (!opened) {
+        setEvidenceError("Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép popup.");
+      }
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể mở bằng chứng bảo mật"));
+      setEvidenceError(getErrorMessage(err, "Không thể mở bằng chứng. Vui lòng thử lại."));
     } finally {
       setOpeningEvidenceIndex(null);
     }
@@ -70,8 +80,9 @@ export default function DisputeDetailClient({
       setClaiming(true);
       const updated = await disputeService.claimDispute(disputeId);
       setDetail(updated);
+      addToast("Đã nhận xử lý khiếu nại thành công", "success");
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể nhận xử lý khiếu nại"));
+      addToast(getErrorMessage(err, "Không thể nhận xử lý khiếu nại"), "error");
     } finally {
       setClaiming(false);
     }
@@ -85,8 +96,9 @@ export default function DisputeDetailClient({
         "Chuyển tiếp lên Admin để xử lý",
       );
       setDetail(updated);
+      addToast("Đã chuyển tiếp khiếu nại lên Admin", "success");
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"));
+      addToast(getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"), "error");
     } finally {
       setEscalating(false);
     }
@@ -103,8 +115,9 @@ export default function DisputeDetailClient({
       setDetail(updated);
       setShowRequestInfo(false);
       setRequestInfoMessage("");
+      addToast("Đã gửi yêu cầu bổ sung thông tin đến người mua", "success");
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"));
+      addToast(getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"), "error");
     } finally {
       setRequestingInfo(false);
     }
@@ -400,6 +413,11 @@ export default function DisputeDetailClient({
                 </span>
               </div>
 
+              {evidenceError && (
+                <p className="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3">
+                  ⚠ {evidenceError}
+                </p>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {detail.evidence.length > 0 ? (
                   detail.evidence.map((item, index) => (
@@ -410,17 +428,34 @@ export default function DisputeDetailClient({
                       disabled={!item.url || openingEvidenceIndex === index}
                       className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 text-left hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-[0.98] overflow-hidden"
                     >
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-brand-primary group-hover:border-brand-primary/30 transition-all">
-                          {openingEvidenceIndex === index ? (
-                            <Loader2 size={24} className="animate-spin" />
-                          ) : (
-                            <FileText size={24} />
-                          )}
-                        </div>
+                      <div className="flex items-center justify-between mb-4">
+                        {item.type === "IMAGE" && item.url ? (
+                          <div className="w-full h-28 rounded-xl overflow-hidden bg-white/5 border border-white/10 mb-2">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.url}
+                              alt={`Bằng chứng ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-brand-primary group-hover:border-brand-primary/30 transition-all">
+                            {openingEvidenceIndex === index ? (
+                              <Loader2 size={24} className="animate-spin" />
+                            ) : (
+                              <FileText size={24} />
+                            )}
+                          </div>
+                        )}
+                        {openingEvidenceIndex === index && (
+                          <Loader2 size={16} className="animate-spin text-brand-primary ml-2" />
+                        )}
                         <ExternalLink
                           size={16}
-                          className="text-gray-700 group-hover:text-brand-primary transition-colors"
+                          className="text-gray-700 group-hover:text-brand-primary transition-colors ml-auto"
                         />
                       </div>
                       <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">

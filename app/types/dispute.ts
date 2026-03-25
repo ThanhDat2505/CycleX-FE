@@ -86,6 +86,7 @@ export interface Dispute {
     reason: string;
     status: DisputeStatus;
     evidenceUrls: string[];
+    evidence?: EvidenceDTO[];
     adminNote?: string;
     resolvedAt?: string;
     isOverridden?: boolean;

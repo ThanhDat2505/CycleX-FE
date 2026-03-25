@@ -522,20 +522,29 @@ export const disputeService = {
   },
 
   async getEvidenceBlobUrl(evidenceUrl: string): Promise<string> {
-    const token = getAuthToken();
+    if (!evidenceUrl) throw new Error("URL bằng chứng không hợp lệ");
+
     const isAbsolute = /^https?:\/\//i.test(evidenceUrl);
-    const path = isAbsolute
+
+    // FE-hosted static files (uploaded via Next.js API route) are served
+    // at the same origin — no auth header or /backend proxy needed.
+    if (!isAbsolute && evidenceUrl.startsWith("/public/")) {
+      return evidenceUrl;
+    }
+
+    const token = getAuthToken();
+    const fetchPath = isAbsolute
       ? evidenceUrl
       : `/backend${evidenceUrl.startsWith("/") ? "" : "/"}${evidenceUrl}`;
 
-    const response = await fetch(path, {
+    const response = await fetch(fetchPath, {
       method: "GET",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       credentials: "omit",
     });
 
     if (!response.ok) {
-      throw new Error(`Khong tai duoc evidence (${response.status})`);
+      throw new Error(`Không tải được bằng chứng (${response.status})`);
     }
 
     const blob = await response.blob();
