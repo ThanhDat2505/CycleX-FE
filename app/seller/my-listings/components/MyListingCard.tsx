@@ -141,6 +141,16 @@ export function MyListingCard({ listing }: MyListingCardProps) {
             <p className="text-sm text-gray-700 mt-1">
               {listing.rejectionReason}
             </p>
+            <p className="text-sm text-gray-600 mt-2 italic">
+              Mọi thắc mắc thì vui lòng liên hệ qua gmail{" "}
+              <a
+                href="mailto:inspector@gmail.com"
+                className="text-blue-600 underline hover:text-blue-800"
+              >
+                inspector@gmail.com
+              </a>{" "}
+              của chúng tôi
+            </p>
           </div>
         )}
       </div>

@@ -72,12 +72,12 @@ export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 
                 image: resolveImageUrl(d.bike?.image || d.productImage)
             },
             sender: {
-                name: String(d.sender?.name || d.sellerName || 'Khách gửi'),
+                name: String(d.sender?.name || d.sellerName || 'Người bán'),
                 phone: String(d.sender?.phone || d.sellerPhone || '---'),
                 address: String(d.sender?.address || d.pickupAddress || '---')
             },
             receiver: {
-                name: String(d.receiver?.name || d.buyerName || 'Khách nhận'),
+                name: String(d.receiver?.name || d.buyerName || 'Người mua'),
                 phone: String(d.receiver?.phone || d.buyerPhone || '---'),
                 address: String(d.receiver?.address || d.dropoffAddress || '---')
             }
@@ -107,19 +107,19 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
             assignedDate: String(data.timeline?.assignedTime || data.assignedDate || new Date().toISOString()),
             scheduledDate: String(data.timeline?.expectedDeliveryTime || data.scheduledDate || new Date().toISOString()),
             completedDate: data.timeline?.completedTime ? String(data.timeline.completedTime) : undefined,
-            codAmount: typeof data.codAmount === 'number' ? data.codAmount : undefined,
+            codAmount: typeof data.codAmount === 'number' ? data.codAmount : (data.codAmount != null ? Number(data.codAmount) : undefined),
             note: data.note ? String(data.note) : undefined,
             bike: {
                 name: String(data.bike?.name || data.productName || 'Xe đạp'),
                 image: resolveImageUrl(data.bike?.image || data.productImage)
             },
             sender: {
-                name: String(data.seller?.fullName || data.pickup?.contactName || 'Khách gửi'),
+                name: String(data.seller?.fullName || data.pickup?.contactName || 'Người bán'),
                 phone: String(data.seller?.phone || data.pickup?.contactPhone || '---'),
                 address: String(data.pickup?.address || data.seller?.address || '---')
             },
             receiver: {
-                name: String(data.buyer?.fullName || data.delivery?.contactName || 'Khách nhận'),
+                name: String(data.buyer?.fullName || data.delivery?.contactName || 'Người mua'),
                 phone: String(data.buyer?.phone || data.delivery?.contactPhone || '---'),
                 address: String(data.delivery?.address || data.buyer?.address || '---')
             }
