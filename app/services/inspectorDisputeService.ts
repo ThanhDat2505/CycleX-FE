@@ -91,6 +91,11 @@ export type DisputeDetail = {
     updatedAt: string;
   };
   evidence: DisputeEvidence[];
+  // Escalation info (populated when status = ESCALATED)
+  escalationNote?: string;
+  escalationSuggestion?: string;
+  escalatedBy?: DisputeActor;
+  escalatedAt?: string;
 };
 
 export type DisputeResolutionPayload = {
@@ -338,6 +343,10 @@ function mapDetail(raw: JsonRecord): DisputeDetail {
       updatedAt: toDisplayDate(transaction.updatedAt),
     },
     evidence: mapEvidence(evidenceItems),
+    escalationNote: raw.escalationNote ? getString(raw.escalationNote, "") : undefined,
+    escalationSuggestion: raw.escalationSuggestion ? getString(raw.escalationSuggestion, "") : undefined,
+    escalatedBy: raw.escalatedBy ? mapActor(raw.escalatedBy) : undefined,
+    escalatedAt: raw.escalatedAt ? toDisplayDate(raw.escalatedAt) : undefined,
   };
 }
 
@@ -600,18 +609,18 @@ export const disputeService = {
    * Escalate dispute to admin
    * PUT /api/disputes/{id}/escalate
    */
-  async escalateDispute(disputeId: string, note?: string): Promise<DisputeDetail> {
+  async escalateDispute(disputeId: string, note?: string, suggestion?: string): Promise<DisputeDetail> {
     const id = encodeURIComponent(getString(disputeId, "").trim());
     const payload: unknown = await tryFirstSuccess<unknown>([
       () =>
         requestJson<unknown>(`/disputes/${id}/escalate`, {
           method: "PUT",
-          body: JSON.stringify({ note: note || "" }),
+          body: JSON.stringify({ note: note || "", suggestion: suggestion || "" }),
         }),
       () =>
         requestJson<unknown>(`/disputes/${id}/escalate`, {
           method: "POST",
-          body: JSON.stringify({ note: note || "" }),
+          body: JSON.stringify({ note: note || "", suggestion: suggestion || "" }),
         }),
     ]);
     return mapDetail(toRecord(payload));
