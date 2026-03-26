@@ -333,17 +333,7 @@ export default function SellerTransactionsPage() {
                   ? `Không có kết quả cho "${searchTerm}". Thử từ khóa khác nhé.`
                   : "Các giao dịch của bạn sẽ xuất hiện ở đây sau khi có đơn hàng."}
               </p>
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="mt-4 text-sm font-bold text-orange-500 hover:text-orange-600 transition-colors flex items-center gap-1.5"
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Xóa bộ lọc
-                </button>
-              )}
+
             </div>
           ) : (
             <>
