@@ -9,6 +9,7 @@ import {
   RefreshCw,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
   Filter,
   Loader2,
   Ban,
@@ -363,17 +364,17 @@ export default function AdminUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                <tr className="border-b border-gray-200 bg-gray-50">
+                  <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">
                     Người dùng
                   </th>
-                  <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                  <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">
                     Vai trò
                   </th>
-                  <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
+                  <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">
                     Trạng thái
                   </th>
-                  <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] text-right">
+                  <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-right">
                     Thao tác
                   </th>
                 </tr>
@@ -384,23 +385,23 @@ export default function AdminUsersPage() {
                     key={user.userId}
                     className="group hover:bg-white transition-colors"
                   >
-                    <td className="px-8 py-6">
-                      <div className="flex items-center gap-5">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-gray-200 to-transparent border border-gray-200 text-gray-900 flex items-center justify-center font-black text-sm group-hover:scale-110 transition-transform origin-left">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 flex items-center justify-center font-bold text-sm shrink-0">
                           {user.fullName?.charAt(0).toUpperCase() ?? "?"}
                         </div>
                         <div>
-                          <p className="text-sm font-black text-gray-900 group-hover:text-brand-primary transition-colors">
+                          <p className="text-sm font-semibold text-gray-900 group-hover:text-brand-primary transition-colors">
                             {user.fullName ?? "N/A"}
                           </p>
-                          <p className="text-[11px] font-bold text-gray-500 mt-0.5 tracking-tight">
+                          <p className="text-xs text-gray-500 mt-0.5">
                             {user.email}
                           </p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-8 py-6">
-                      <div className="relative group/role">
+                    <td className="px-8 py-5">
+                      <div className="relative w-fit">
                         <select
                           value={user.role}
                           onChange={(e) =>
@@ -410,52 +411,50 @@ export default function AdminUsersPage() {
                               e.target.value as UserRole,
                             )
                           }
-                          className={`appearance-none px-4 py-1.5 rounded-xl border text-[10px] font-black tracking-widest uppercase transition-all focus:outline-none cursor-pointer pr-8 ${getRoleBadge(user.role)}`}
+                          className={`appearance-none pl-3 pr-8 py-1.5 rounded-xl border text-xs font-bold uppercase cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary/20 transition-all ${getRoleBadge(user.role)}`}
                         >
                           {["BUYER", "SELLER", "SHIPPER", "INSPECTOR"].map(
                             (r) => (
                               <option
                                 key={r}
                                 value={r}
-                                className="bg-white text-gray-900"
+                                className="bg-white text-gray-900 font-normal normal-case"
                               >
                                 {r}
                               </option>
                             ),
                           )}
                         </select>
-                        <UserCog
-                          size={10}
-                          className="absolute right-3 top-1/2 -translate-y-1/2 opacity-50 pointer-events-none"
+                        <ChevronDown
+                          size={12}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-60"
                         />
                       </div>
                     </td>
-                    <td className="px-8 py-6">
+                    <td className="px-8 py-5">
                       <span
-                        className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest border uppercase transition-all ${getStatusStyle(user.status)}`}
+                        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border ${getStatusStyle(user.status)}`}
                       >
-                        <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
-                        {user.status}
+                        <span className="w-2 h-2 rounded-full bg-current"></span>
+                        {user.status === "ACTIVE" ? "Hoạt động" : "Đã khóa"}
                       </span>
                     </td>
-                    <td className="px-8 py-6 text-right">
+                    <td className="px-8 py-5 text-right">
                       <div className="flex justify-end gap-2">
                         {user.status === "ACTIVE" ? (
                           <button
                             onClick={() => triggerAction(user, "BAN")}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl hover:bg-rose-600 hover:text-white transition-all text-xs font-semibold active:scale-95"
-                            title="Khóa tài khoản"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-rose-50 text-rose-600 border border-rose-200 rounded-xl hover:bg-rose-600 hover:text-white transition-all text-xs font-semibold active:scale-95"
                           >
-                            <Ban size={15} strokeWidth={2.5} />
+                            <Ban size={14} strokeWidth={2.5} />
                             Khóa
                           </button>
                         ) : (
                           <button
                             onClick={() => triggerAction(user, "UNBAN")}
-                            className="inline-flex items-center gap-2 px-3 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl hover:bg-emerald-600 hover:text-white transition-all text-xs font-semibold active:scale-95"
-                            title="Mở khóa tài khoản"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-xl hover:bg-emerald-600 hover:text-white transition-all text-xs font-semibold active:scale-95"
                           >
-                            <ShieldCheck size={15} strokeWidth={2.5} />
+                            <ShieldCheck size={14} strokeWidth={2.5} />
                             Mở khóa
                           </button>
                         )}
