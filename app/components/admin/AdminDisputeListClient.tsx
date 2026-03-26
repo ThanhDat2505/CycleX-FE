@@ -109,19 +109,19 @@ export default function AdminDisputeListClient() {
     const s = String(status).toUpperCase();
     switch (s) {
       case "OPEN":
-        return "text-blue-400 bg-blue-500/10 border-blue-500/20";
+        return "text-blue-700 bg-blue-50 border-blue-200";
       case "IN_PROGRESS":
-        return "text-amber-400 bg-amber-500/10 border-amber-500/20";
+        return "text-amber-700 bg-amber-50 border-amber-200";
       case "NEED_MORE_INFO":
-        return "text-purple-400 bg-purple-500/10 border-purple-500/20";
+        return "text-purple-700 bg-purple-50 border-purple-200";
       case "ESCALATED":
-        return "text-rose-400 bg-rose-500/10 border-rose-500/20";
+        return "text-rose-700 bg-rose-50 border-rose-200";
       case "RESOLVED":
-        return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
+        return "text-emerald-700 bg-emerald-50 border-emerald-200";
       case "REJECTED":
-        return "text-gray-400 bg-gray-500/10 border-gray-500/20";
+        return "text-gray-600 bg-gray-100 border-gray-200";
       default:
-        return "text-gray-400 bg-white/5 border-white/10";
+        return "text-gray-600 bg-gray-50 border-gray-200";
     }
   };
 
@@ -146,9 +146,9 @@ export default function AdminDisputeListClient() {
 
   if (loading && !refreshing) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 bg-brand-bg min-h-[60vh]">
+      <div className="flex flex-col items-center justify-center py-32 bg-white min-h-[60vh]">
         <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
-        <p className="mt-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] animate-pulse">
+        <p className="mt-6 text-xs font-semibold text-gray-600 uppercase tracking-widest animate-pulse">
           Đang tải...
         </p>
       </div>
@@ -156,7 +156,7 @@ export default function AdminDisputeListClient() {
   }
 
   return (
-    <div className="min-h-screen text-gray-900 p-4 lg:p-10 font-sans">
+    <div className="min-h-screen bg-white text-gray-900 p-4 lg:p-10 font-sans">
       <div className="max-w-7xl mx-auto">
         <div className="contentWrapper">
           {/* Filter Card */}
@@ -258,7 +258,7 @@ export default function AdminDisputeListClient() {
             <div className="overflow-x-auto min-h-[400px]">
               {error ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-red-500">
+                  <div className="w-24 h-24 bg-red-50 rounded-[2rem] flex items-center justify-center mb-6 text-red-400">
                     <Gavel size={48} />
                   </div>
                   <h3 className="text-2xl font-black text-black mb-2 tracking-tight">
@@ -268,7 +268,7 @@ export default function AdminDisputeListClient() {
                 </div>
               ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
+                  <div className="w-24 h-24 bg-gray-100 rounded-[2rem] flex items-center justify-center mb-6 text-gray-400">
                     <Gavel size={48} />
                   </div>
                   <h3 className="text-2xl font-black text-black mb-2 tracking-tight">
@@ -281,7 +281,7 @@ export default function AdminDisputeListClient() {
               ) : (
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <tr className="border-b border-gray-100 bg-gray-50/50">
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         ID
                       </th>
@@ -302,26 +302,26 @@ export default function AdminDisputeListClient() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-gray-100">
                     {items.map((row) => (
                       <tr
                         key={row.id}
-                        className="group hover:bg-white/[0.02] transition-colors"
+                        className="group hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                            <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
                               #{row.id}
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <div>
-                            <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
+                            <p className="text-sm font-black text-gray-900 mb-1 group-hover:text-brand-primary transition-colors">
                               {row.listingTitle || "—"}
                             </p>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                              <span className="text-[10px] font-black text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
                                 Order-{row.transactionId}
                               </span>
                               <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
@@ -331,7 +331,7 @@ export default function AdminDisputeListClient() {
                           </div>
                         </td>
                         <td className="px-8 py-6">
-                          <span className="text-sm font-bold text-gray-300">
+                          <span className="text-sm font-bold text-gray-600">
                             {row.requesterName || "—"}
                           </span>
                         </td>
@@ -345,10 +345,10 @@ export default function AdminDisputeListClient() {
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-black text-white">
+                            <span className="text-[11px] font-black text-gray-900">
                               {row.createdAt?.split("T")[0] || "—"}
                             </span>
-                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
+                            <span className="text-[9px] font-bold text-gray-500 uppercase tracking-tighter mt-1">
                               {row.createdAt?.split("T")[1]?.split(".")[0] ||
                                 ""}
                             </span>
@@ -357,7 +357,7 @@ export default function AdminDisputeListClient() {
                         <td className="px-8 py-6 text-right">
                           <Link
                             href={`/admin/disputes/${row.id}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-white hover:bg-brand-primary hover:border-brand-primary transition-all active:scale-95"
                           >
                             <Eye size={14} /> Xem chi tiết
                           </Link>

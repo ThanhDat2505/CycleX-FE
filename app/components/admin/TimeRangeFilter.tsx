@@ -28,37 +28,37 @@ const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ currentRange, onRange
     return (
         <div className="flex flex-col md:flex-row items-center gap-3">
             {currentRange === 'CUSTOM' && (
-                <div className="flex items-center gap-2 animate-fade-in bg-white/5 backdrop-blur-md p-1.5 rounded-2xl border border-white/10 shadow-2xl">
-                    <div className="flex items-center gap-2 px-3 py-1">
-                        <Calendar size={14} className="text-brand-primary" />
-                        <input 
-                            type="date" 
+                <div className="flex items-center gap-2 animate-fade-in bg-white border border-gray-200 rounded-2xl p-1.5 shadow-sm">
+                    <div className="flex items-center gap-2 px-3 py-1.5">
+                        <Calendar size={14} className="text-brand-primary shrink-0" />
+                        <input
+                            type="date"
                             value={customDates.start}
                             onChange={(e) => handleCustomDateChange('start', e.target.value)}
-                            className="text-[10px] font-black uppercase tracking-widest text-gray-300 focus:outline-none bg-transparent [color-scheme:dark]"
+                            className="text-sm font-medium text-gray-700 focus:outline-none bg-transparent [color-scheme:light]"
                         />
                     </div>
-                    <span className="text-gray-600 font-bold">→</span>
-                    <div className="flex items-center gap-2 px-3 py-1">
-                        <input 
-                            type="date" 
+                    <span className="text-gray-400 font-bold">→</span>
+                    <div className="flex items-center gap-2 px-3 py-1.5">
+                        <input
+                            type="date"
                             value={customDates.end}
                             onChange={(e) => handleCustomDateChange('end', e.target.value)}
-                            className="text-[10px] font-black uppercase tracking-widest text-gray-300 focus:outline-none bg-transparent [color-scheme:dark]"
+                            className="text-sm font-medium text-gray-700 focus:outline-none bg-transparent [color-scheme:light]"
                         />
                     </div>
                 </div>
             )}
-            
-            <div className="flex items-center p-1 bg-white/5 backdrop-blur-md rounded-2xl border border-white/10 shadow-xl overflow-hidden">
+
+            <div className="flex items-center p-1 bg-gray-100 rounded-2xl border border-gray-200 overflow-hidden">
                 {filters.map((filter) => (
                     <button
                         key={filter.value}
                         onClick={() => onRangeChange(filter.value)}
-                        className={`px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 ${
+                        className={`px-4 py-2 text-xs font-bold rounded-xl transition-all duration-200 ${
                             currentRange === filter.value
-                                ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20 scale-100'
-                                : 'text-gray-400 hover:text-white hover:bg-white/5'
+                                ? 'bg-brand-primary text-white shadow-sm'
+                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'
                         }`}
                     >
                         {filter.label}
