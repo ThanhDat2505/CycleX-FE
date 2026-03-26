@@ -81,7 +81,7 @@ export function buildStatsConfig(summary: DeliverySummary) {
             id: 'failed',
             label: MESSAGES.S60_STAT_FAILED_LABEL,
             value: summary.failed,
-            subtext: MESSAGES.S60_STAT_FAILED_SUBTEXT,
+            subtext: '',
             icon: AlertCircle,
             bgColor: 'bg-red-50',
             textColor: 'text-red-600',
