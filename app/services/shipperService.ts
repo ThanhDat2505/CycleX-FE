@@ -11,6 +11,33 @@ function resolveImageUrl(rawPath: unknown): string {
     return path || '/placeholder-bike.png';
 }
 
+function safeString(value: any, fallback: string): string {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+    return fallback;
+}
+
+function extractShipperAddress(data: any, rootFields: string[], nestedBlocks: any[]): string {
+    for (const field of rootFields) {
+        if (typeof data[field] === 'string' && data[field].trim()) {
+            return data[field].trim();
+        }
+    }
+    for (const block of nestedBlocks) {
+        if (block && typeof block.address === 'string' && block.address.trim()) {
+            return block.address.trim();
+        }
+    }
+    return '---';
+}
+
+function mapShipperDeliveryStatus(rawStatus: any, fallbackStatus?: any): 'ASSIGNED' | 'IN_PROGRESS' | 'DELIVERED' | 'FAILED' {
+    const s = String(rawStatus || fallbackStatus || '').toUpperCase();
+    if (s.includes('DELIVERED') || s === 'SUCCESS' || s === 'COMPLETED') return 'DELIVERED';
+    if (s.includes('FAIL') || s === 'CANCELLED') return 'FAILED';
+    if (s.includes('PROGRESS') || s.includes('DELIVERING') || s === 'SHIPPING') return 'IN_PROGRESS';
+    return 'ASSIGNED';
+}
+
 /**
  * Get delivery summary for a shipper
  * endpoint: S-60/S-61 GET /api/shipper/dashboard/summary
@@ -58,10 +85,10 @@ export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 
         validateArray(itemsArray, 'Shipper Deliveries API S-61');
 
         // Safe Fallback Value mappings to assure standard display for UI component:
-        return itemsArray.map((d: any) => ({
+        const mappedDeliveries = itemsArray.map((d: any) => ({
             id: String(d.id || d.deliveryId || ''),
             orderId: String(d.orderId || '---'),
-            status: (d.status as Delivery['status']) || 'ASSIGNED',
+            status: mapShipperDeliveryStatus(d.status, d.deliveryStatus),
             assignedDate: String(d.assignedDate || d.scheduledTime || new Date().toISOString()),
             scheduledDate: String(d.scheduledDate || d.scheduledTime || new Date().toISOString()),
             completedDate: d.completedDate ? String(d.completedDate) : undefined,
@@ -72,16 +99,24 @@ export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 
                 image: resolveImageUrl(d.bike?.image || d.productImage)
             },
             sender: {
-                name: String(d.sender?.name || d.sellerName || 'Người bán'),
-                phone: String(d.sender?.phone || d.sellerPhone || '---'),
-                address: String(d.sender?.address || d.pickupAddress || '---')
+                name: safeString(d.sender?.name || d.sellerName, 'Người bán'),
+                phone: safeString(d.sender?.phone || d.sellerPhone, '---'),
+                address: extractShipperAddress(d, ['pickupAddress', 'sellerAddress', 'senderAddress'], [d.sender, d.seller, d.pickup])
             },
             receiver: {
-                name: String(d.receiver?.name || d.buyerName || 'Người mua'),
-                phone: String(d.receiver?.phone || d.buyerPhone || '---'),
-                address: String(d.receiver?.address || d.dropoffAddress || '---')
+                name: safeString(d.receiver?.name || d.buyerName, 'Người mua'),
+                phone: safeString(d.receiver?.phone || d.buyerPhone, '---'),
+                address: extractShipperAddress(d, ['dropoffAddress', 'deliveryAddress', 'shippingAddress', 'receiverAddress', 'buyerAddress'], [d.receiver, d.buyer, d.delivery])
             }
         }));
+
+        // Aggressive Client-Side Filtering Fallback:
+        // Ensures that even if Backend's ?status= query fails or ignores conditions, the UI remains perfectly clean.
+        if (filter !== 'ALL') {
+            return mappedDeliveries.filter((d: Delivery) => d.status === filter);
+        }
+
+        return mappedDeliveries;
 
     } catch (error) {
         console.error('Lỗi API Shipper Deliveries List: ', error);
@@ -103,7 +138,7 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
         return {
             id: String(data.id || data.deliveryId || deliveryId),
             orderId: String(data.orderId || '---'),
-            status: (data.status as Delivery['status']) || 'ASSIGNED',
+            status: mapShipperDeliveryStatus(data.status, data.deliveryStatus),
             assignedDate: String(data.timeline?.assignedTime || data.assignedDate || new Date().toISOString()),
             scheduledDate: String(data.timeline?.expectedDeliveryTime || data.scheduledDate || new Date().toISOString()),
             completedDate: data.timeline?.completedTime ? String(data.timeline.completedTime) : undefined,
@@ -114,14 +149,14 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
                 image: resolveImageUrl(data.bike?.image || data.productImage)
             },
             sender: {
-                name: String(data.seller?.fullName || data.pickup?.contactName || 'Người bán'),
-                phone: String(data.seller?.phone || data.pickup?.contactPhone || '---'),
-                address: String(data.pickup?.address || data.seller?.address || '---')
+                name: safeString(data.seller?.fullName || data.pickup?.contactName || data.sellerName || data.sender?.name, 'Người bán'),
+                phone: safeString(data.seller?.phone || data.pickup?.contactPhone || data.sellerPhone || data.sender?.phone, '---'),
+                address: extractShipperAddress(data, ['pickupAddress', 'sellerAddress', 'senderAddress'], [data.pickup, data.seller, data.sender])
             },
             receiver: {
-                name: String(data.buyer?.fullName || data.delivery?.contactName || 'Người mua'),
-                phone: String(data.buyer?.phone || data.delivery?.contactPhone || '---'),
-                address: String(data.delivery?.address || data.buyer?.address || '---')
+                name: safeString(data.buyer?.fullName || data.delivery?.contactName || data.buyerName || data.receiver?.name, 'Người mua'),
+                phone: safeString(data.buyer?.phone || data.delivery?.contactPhone || data.buyerPhone || data.receiver?.phone, '---'),
+                address: extractShipperAddress(data, ['deliveryAddress', 'dropoffAddress', 'shippingAddress', 'receiverAddress', 'buyerAddress'], [data.delivery, data.buyer, data.receiver])
             }
         };
     } catch (error) {
@@ -207,7 +242,9 @@ export async function confirmDelivery(
     payload: DeliveryConfirmRequest
 ): Promise<void> {
     try {
-        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/confirm`, payload);
+        // To match Postman Collection (S-63.B), the Backend API does NOT accept a JSON body.
+        // Sending large base64 signatureImages or unrecognized fields will cause 400 or 413 Payload Too Large errors.
+        const response = await apiCallPOST<any>(`/shipper/deliveries/${deliveryId}/confirm`, {});
 
         // Strict Validation: Don't trust Backend completely
         if (response) {

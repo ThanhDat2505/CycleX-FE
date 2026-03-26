@@ -150,6 +150,16 @@ async function fetchListingPrimaryImage(listingId?: number): Promise<string | un
     }
 }
 
+function extractAddress(source: any, buyerObj?: any): string | undefined {
+    if (!source) return undefined;
+    if (typeof source.receiverAddress === 'string' && source.receiverAddress.trim()) return source.receiverAddress;
+    if (typeof source.shippingAddress === 'string' && source.shippingAddress.trim()) return source.shippingAddress;
+    if (typeof source.deliveryAddress === 'string' && source.deliveryAddress.trim()) return source.deliveryAddress;
+    if (typeof source.buyerAddress === 'string' && source.buyerAddress.trim()) return source.buyerAddress;
+    if (buyerObj && typeof buyerObj.address === 'string' && buyerObj.address.trim()) return buyerObj.address;
+    return undefined;
+}
+
 async function resolveBuyerTransactionType(orderId: number): Promise<TransactionType> {
     try {
         const list = await apiCallGET<any[]>('/buyer/transactions');
@@ -184,9 +194,9 @@ async function normalizeBuyerTransactionDetail(response: any, orderId: number): 
         transactionType,
         status: mapStatusToFrontend(source.orderStatus || source.status),
         desiredTime: typeof source.desiredTransactionTime === 'string' ? source.desiredTransactionTime : new Date().toISOString(),
-        receiverName: undefined,
-        receiverPhone: undefined,
-        receiverAddress: undefined,
+        receiverName: typeof source.receiverName === 'string' ? source.receiverName : undefined,
+        receiverPhone: typeof source.receiverPhone === 'string' ? source.receiverPhone : undefined,
+        receiverAddress: extractAddress(source),
         depositAmount: toNumber(source.depositAmount),
         note: typeof source.note === 'string' ? source.note : undefined,
         platformFee: toNumber(source.platformFee) ?? 0,
@@ -219,6 +229,16 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
     const productPrice = toNumber(source.productPrice);
     const totalAmount = productPrice ?? toNumber(source.totalAmount) ?? calculateTotalAmount(source);
 
+    const buyerObj = (source.buyer && typeof source.buyer === 'object') ? source.buyer : null;
+    let extractedBuyerName = 'Khách hàng';
+    if (typeof source.buyerName === 'string' && source.buyerName.trim()) {
+        extractedBuyerName = source.buyerName;
+    } else if (buyerObj && typeof buyerObj.fullName === 'string' && buyerObj.fullName.trim()) {
+        extractedBuyerName = buyerObj.fullName;
+    } else if (typeof source.receiverName === 'string' && source.receiverName.trim()) {
+        extractedBuyerName = source.receiverName;
+    }
+
     return {
         transactionId: requestId,
         listingId,
@@ -227,9 +247,9 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         transactionType,
         status: mapStatusToFrontend(source.status),
         desiredTime: typeof source.desiredTransactionTime === 'string' ? source.desiredTransactionTime : new Date().toISOString(),
-        receiverName: undefined,
+        receiverName: typeof source.receiverName === 'string' ? source.receiverName : undefined,
         receiverPhone: typeof source.buyerPhone === 'string' ? source.buyerPhone : undefined,
-        receiverAddress: undefined,
+        receiverAddress: extractAddress(source, buyerObj),
         depositAmount: toNumber(source.depositAmount),
         note: typeof source.note === 'string' ? source.note : undefined,
         platformFee: toNumber(source.platformFee) ?? 0,
@@ -240,8 +260,8 @@ async function normalizeSellerTransactionDetail(response: any, requestId: number
         updatedAt: typeof source.updatedAt === 'string' ? source.updatedAt : (typeof source.createdAt === 'string' ? source.createdAt : new Date().toISOString()),
         listingTitle: typeof source.listingTitle === 'string' ? source.listingTitle : `Xe #${listingId}`,
         listingImage,
-        buyerName: typeof source.buyerName === 'string' ? source.buyerName : 'Khach hang',
-        sellerName: 'Ban',
+        buyerName: extractedBuyerName,
+        sellerName: 'Bạn',
         sellerPhone: undefined,
     };
 }
@@ -361,6 +381,16 @@ export async function getSellerTransactions(
             } catch {
                 const listingId = toNumber(item?.listingId) ?? 0;
                 const productPrice = toNumber(item?.productPrice) ?? 0;
+                const itemBuyerObj = (item?.buyer && typeof item.buyer === 'object') ? item.buyer : null;
+                let fallbackBuyerName = 'Khách hàng';
+                if (typeof item?.buyerName === 'string' && item.buyerName.trim()) {
+                    fallbackBuyerName = item.buyerName;
+                } else if (itemBuyerObj && typeof itemBuyerObj.fullName === 'string' && itemBuyerObj.fullName.trim()) {
+                    fallbackBuyerName = itemBuyerObj.fullName;
+                } else if (typeof item?.receiverName === 'string' && item.receiverName.trim()) {
+                    fallbackBuyerName = item.receiverName;
+                }
+
                 return {
                     transactionId: orderId,
                     listingId,
@@ -376,8 +406,8 @@ export async function getSellerTransactions(
                     updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
                     listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
                     listingImage: await fetchListingPrimaryImage(listingId),
-                    buyerName: typeof item?.buyerName === 'string' ? item.buyerName : 'Khach hang',
-                    sellerName: 'Ban',
+                    buyerName: fallbackBuyerName,
+                    sellerName: 'Bạn',
                 } as TransactionWithDetails;
             }
         }));
@@ -423,6 +453,16 @@ export async function getAllSellerTransactions(
             } catch {
                 const listingId = toNumber(item?.listingId) ?? 0;
                 const productPrice = toNumber(item?.productPrice) ?? 0;
+                const itemBuyerObj = (item?.buyer && typeof item.buyer === 'object') ? item.buyer : null;
+                let fallbackBuyerName = 'Khách hàng';
+                if (typeof item?.buyerName === 'string' && item.buyerName.trim()) {
+                    fallbackBuyerName = item.buyerName;
+                } else if (itemBuyerObj && typeof itemBuyerObj.fullName === 'string' && itemBuyerObj.fullName.trim()) {
+                    fallbackBuyerName = itemBuyerObj.fullName;
+                } else if (typeof item?.receiverName === 'string' && item.receiverName.trim()) {
+                    fallbackBuyerName = item.receiverName;
+                }
+
                 return {
                     transactionId: orderId,
                     listingId,
@@ -438,7 +478,7 @@ export async function getAllSellerTransactions(
                     updatedAt: typeof item?.createdAt === 'string' ? item.createdAt : new Date().toISOString(),
                     listingTitle: typeof item?.listingTitle === 'string' ? item.listingTitle : `Xe #${listingId}`,
                     listingImage: await fetchListingPrimaryImage(listingId),
-                    buyerName: typeof item?.buyerName === 'string' ? item.buyerName : 'Khách hàng',
+                    buyerName: fallbackBuyerName,
                     sellerName: 'Bạn',
                 } as TransactionWithDetails;
             }
