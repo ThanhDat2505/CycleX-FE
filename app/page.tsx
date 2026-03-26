@@ -37,7 +37,9 @@ export default function Home() {
 
     useEffect(() => {
         if (!isLoading) {
-            if (user?.role === 'SHIPPER') {
+            if (user?.role === 'ADMIN') {
+                router.replace('/admin/dashboard');
+            } else if (user?.role === 'SHIPPER') {
                 router.replace('/shipper');
             } else if (user?.role === 'INSPECTOR') {
                 router.replace('/inspector/dashboard');

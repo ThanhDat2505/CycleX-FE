@@ -69,7 +69,7 @@ export default function Header() {
 
             {/* Logo */}
             <Link
-              href={user?.role === "INSPECTOR" ? "/inspector/dashboard" : "/"}
+              href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "INSPECTOR" ? "/inspector/dashboard" : "/"}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
