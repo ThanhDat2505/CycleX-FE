@@ -62,6 +62,20 @@ export interface ForgotPasswordRequest {
     email: string;
 }
 
+export interface ForgotPasswordResponse {
+    message: string;
+}
+
+export interface ResetPasswordRequest {
+    email: string;
+    otp: string;
+    newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+    message: string;
+}
+
 /**
  * OTP Verification Interfaces (BR-12, BR-13, BR-14)
  */

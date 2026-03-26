@@ -179,6 +179,41 @@ export const authService = {
     },
 
     /**
+     * Request a password reset (Forgot Password)
+     * TODO (Backend Integration): BE can change the endpoint '/auth/forgot-password'
+     * @param email - User email
+     */
+    forgotPassword: async (email: string): Promise<{ message: string }> => {
+        try {
+            const data = await apiCallPOST<{ message: string }>('/auth/forgot-password', { email });
+            return data;
+        } catch (error: any) {
+            console.error('Lỗi API Forgot Password:', error);
+            if (error.response?.status === 404) {
+                throw new Error('Không tìm thấy tài khoản với email này.');
+            }
+            throw new Error(error.response?.data?.message || 'Có lỗi xảy ra khi yêu cầu cấp lại mật khẩu.');
+        }
+    },
+
+    /**
+     * Reset password with OTP
+     * TODO (Backend Integration): BE can change the endpoint '/auth/reset-password'
+     */
+    resetPassword: async (email: string, otp: string, newPassword: string): Promise<{ message: string }> => {
+        try {
+            const data = await apiCallPOST<{ message: string }>('/auth/reset-password', { email, otp, newPassword });
+            return data;
+        } catch (error: any) {
+            console.error('Lỗi API Reset Password:', error);
+            if (error.response?.status === 400 || error.response?.status === 401) {
+                throw new Error('Mã OTP không hợp lệ hoặc đã hết hạn.');
+            }
+            throw new Error(error.response?.data?.message || 'Có lỗi xảy ra khi đặt lại mật khẩu.');
+        }
+    },
+
+    /**
      * Save authentication token to localStorage
      * @param token - JWT token from backend
      */
