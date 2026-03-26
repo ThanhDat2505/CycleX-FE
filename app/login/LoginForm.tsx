@@ -88,6 +88,8 @@ export function LoginForm() {
 
       if (response.user.role === "SHIPPER") {
         router.push("/shipper");
+      } else if (response.user.role === "INSPECTOR") {
+        router.push("/inspector/dashboard");
       } else {
         router.push(returnUrl);
       }

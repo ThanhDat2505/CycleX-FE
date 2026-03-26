@@ -51,8 +51,13 @@ export const authService = {
             }
             // Save token and user data if login successful
             if (data.accessToken) {
-                authService.saveToken(data.accessToken, rememberMe); 
-                authService.saveUser(data.user, rememberMe); 
+                authService.saveToken(data.accessToken, rememberMe);
+                authService.saveUser(data.user, rememberMe);
+                // Dispatch sau khi cả token lẫn user đã được lưu
+                // để syncAuth đọc được đầy đủ dữ liệu
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('auth-changed'));
+                }
             }
 
             return data;
@@ -184,7 +189,6 @@ export const authService = {
             } else {
                 sessionStorage.setItem('authToken', token);
             }
-            window.dispatchEvent(new Event('auth-changed'));
         }
     },
 

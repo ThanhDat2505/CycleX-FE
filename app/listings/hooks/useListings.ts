@@ -101,6 +101,8 @@ export function useListings(): UseListingsReturn {
         if (!isAuthLoading) {
             if (user?.role === 'SHIPPER') {
                 router.replace('/shipper');
+            } else if (user?.role === 'INSPECTOR') {
+                router.replace('/inspector/dashboard');
             } else if (user?.role === 'SELLER') {
                 addToast('Bạn không có quyền truy cập trang này', 'error');
                 router.replace('/seller/dashboard');
