@@ -150,11 +150,11 @@ async function fetchListingPrimaryImage(listingId?: number): Promise<string | un
     }
 }
 
-async function resolveBuyerTransactionType(requestId: number): Promise<TransactionType> {
+async function resolveBuyerTransactionType(orderId: number): Promise<TransactionType> {
     try {
         const list = await apiCallGET<any[]>('/buyer/transactions');
         const matched = Array.isArray(list)
-            ? list.find((item) => toNumber(item?.requestId) === requestId)
+            ? list.find((item) => toNumber(item?.orderId) === orderId)
             : null;
 
         const type = typeof matched?.transactionType === 'string' ? matched.transactionType.toUpperCase() : '';
@@ -164,7 +164,7 @@ async function resolveBuyerTransactionType(requestId: number): Promise<Transacti
     }
 }
 
-async function normalizeBuyerTransactionDetail(response: any, requestId: number): Promise<TransactionWithDetails> {
+async function normalizeBuyerTransactionDetail(response: any, orderId: number): Promise<TransactionWithDetails> {
     if (response) validateObject(response, 'Buyer Transaction Detail Response');
     const source = (response && typeof response === 'object') ? response : {};
     const listing = (source.listing && typeof source.listing === 'object') ? source.listing : {};
@@ -174,10 +174,10 @@ async function normalizeBuyerTransactionDetail(response: any, requestId: number)
     const listingImage = (await fetchListingPrimaryImage(listingId)) || undefined;
     const user = getCurrentUserSnapshot();
 
-    const transactionType = await resolveBuyerTransactionType(requestId);
+    const transactionType = await resolveBuyerTransactionType(orderId);
 
     const transaction: TransactionWithDetails = {
-        transactionId: requestId,
+        transactionId: orderId,
         listingId,
         buyerId: user.userId ?? 0,
         sellerId: toNumber(seller.userId) ?? 0,
@@ -531,8 +531,8 @@ export async function cancelTransaction(transactionId: number): Promise<boolean>
 
         if (response) {
             validateObject(response, 'Cancel Transaction Response');
-            if (response.status !== 'CANCELLED') {
-                console.warn(`[API Warning] Received unexpectedly non-CANCELLED status after cancelling transaction: ${response.status}`);
+            if (response.newStatus !== 'CANCELLED' && response.status !== 'CANCELLED') {
+                console.warn(`[API Warning] Received unexpectedly non-CANCELLED status after cancelling transaction: ${response.newStatus ?? response.status}`);
             }
         }
         return true;

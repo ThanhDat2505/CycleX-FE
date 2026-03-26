@@ -12,14 +12,12 @@ export interface NavItem {
 export const MAIN_NAV_ITEMS: NavItem[] = [
     { label: 'Mua Xe', path: '/search', requiresAuth: false },
     { label: 'Bán Xe', path: '/seller/create-listing', requiresAuth: true },
-    { label: 'Cẩm Nang', path: '/guide', requiresAuth: false },
 ] as const;
 
 export const FOOTER_LINKS: NavItem[] = [
     { label: 'Trang Chủ', path: '/', requiresAuth: false },
     { label: 'Mua Xe', path: '/search', requiresAuth: false },
     { label: 'Bán Xe', path: '/sell', requiresAuth: true },
-    { label: 'Cẩm Nang', path: '/guide', requiresAuth: false },
 ] as const;
 
 export const ELEMENT_IDS = {

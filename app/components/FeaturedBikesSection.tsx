@@ -20,7 +20,6 @@ import SectionHeader from './ui/SectionHeader';
 import BikeSkeleton from './ui/BikeSkeleton';
 
 const MAX_FEATURED_BIKES = 6;
-const SKELETON_DELAY_MS = 300;
 
 /** Style constants — tách riêng để JSX gọn gàng */
 const STYLES = {
@@ -56,11 +55,7 @@ export default function FeaturedBikesSection() {
                     setError('Không thể tải danh sách xe. Vui lòng thử lại sau.');
                 }
             } finally {
-                if (isMounted) {
-                    setTimeout(() => {
-                        if (isMounted) setLoading(false);
-                    }, SKELETON_DELAY_MS);
-                }
+                if (isMounted) setLoading(false);
             }
         };
 

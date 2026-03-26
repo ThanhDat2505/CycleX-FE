@@ -2,13 +2,19 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   disputeService,
   type DisputeDetail,
   type DisputeResolutionPayload,
 } from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
+
+const SUGGESTION_LABELS: Record<string, string> = {
+  REFUND_BUYER: "Hoàn tiền toàn bộ",
+  PARTIAL_REFUND: "Hoàn tiền một phần",
+  RELEASE_FUND_SELLER: "Từ chối khiếu nại",
+};
 
 const RESOLUTION_OPTIONS: Array<{
   value: DisputeResolutionPayload["action"];
@@ -17,27 +23,33 @@ const RESOLUTION_OPTIONS: Array<{
 }> = [
   {
     value: "REFUND_BUYER",
-    label: "Hoan tien",
-    helper: "Hoan tien cho buyer va dong dispute.",
+    label: "Hoàn tiền cho Buyer",
+    helper: "Hoàn tiền cho buyer và đóng tranh chấp.",
   },
   {
     value: "RELEASE_FUND_SELLER",
-    label: "Giai ngan cho seller",
-    helper: "Xac nhan seller hop le, giai ngan va ket thuc tranh chap.",
+    label: "Giải ngân cho Seller",
+    helper: "Xác nhận seller hợp lệ, giải ngân và kết thúc tranh chấp.",
   },
   {
     value: "CLOSE_CASE",
-    label: "Dong case",
-    helper: "Dong tranh chap sau khi da xac minh va chot ket qua.",
+    label: "Đóng case",
+    helper: "Đóng tranh chấp sau khi đã xác minh và chốt kết quả.",
   },
 ];
 
 export default function DisputeResolutionClient({
   disputeId,
+  backPath,
+  successPath,
 }: {
   disputeId: string;
+  backPath?: string;
+  successPath?: string;
 }) {
   const router = useRouter();
+  const resolvedBackPath = backPath ?? `/inspector/disputes/${encodeURIComponent(disputeId)}`;
+  const resolvedSuccessPath = successPath ?? "/inspector/disputes";
   const [detail, setDetail] = useState<DisputeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -93,20 +105,32 @@ export default function DisputeResolutionClient({
         action,
         resolutionNote: resolutionNote.trim(),
       });
-      router.push("/inspector/disputes");
+      router.push(resolvedSuccessPath);
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Resolve dispute that bai"));
+      setError(getErrorMessage(err, "Giải quyết tranh chấp thất bại"));
     } finally {
       setSubmitting(false);
     }
   };
 
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat("vi-VN").format(amount) + "đ";
+
+  const imageEvidence = useMemo(
+    () =>
+      detail?.evidence.filter(
+        (e) => e.type === "IMAGE" && e.url,
+      ) ?? [],
+    [detail?.evidence],
+  );
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      {/* Header */}
       <div className="disputeHeaderBar">
         <div>
           <Link
-            href={`/inspector/disputes/${encodeURIComponent(disputeId)}`}
+            href={resolvedBackPath}
             className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
             style={{ textDecoration: "none", marginBottom: "8px" }}
           >
@@ -116,80 +140,244 @@ export default function DisputeResolutionClient({
             Quay lại chi tiết
           </Link>
           <h1 className="page-title" style={{ marginTop: 8 }}>
-            Dispute Resolution #{disputeId}
+            Xử lý tranh chấp #{disputeId}
           </h1>
           {detail && (
             <p className="text-gray-600">
-              Transaction: TX-{detail.transaction.id}
+              Giao dịch: TX-{detail.transaction.id}
             </p>
           )}
         </div>
       </div>
 
-      {loading && <div className="box">Dang tai du lieu resolve...</div>}
+      {loading && <div className="box">Đang tải dữ liệu...</div>}
 
-      {!loading && (
-        <section className="box">
-          <h3 className="boxTitle">Phan quyet cuoi cung</h3>
+      {!loading && detail && (
+        <>
+          {/* ===== SUMMARY PANEL ===== */}
+          <section className="box">
+            <h3 className="boxTitle">Tóm tắt tranh chấp</h3>
 
-          {error && <div className="text-red-700 mb-4">{error}</div>}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              {/* Buyer */}
+              <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                <span className="material-symbols-outlined text-blue-600 mt-0.5">person</span>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Người mua (Buyer)</p>
+                  <p className="text-sm font-medium text-gray-900">{detail.buyer.name}</p>
+                  <p className="text-xs text-gray-500">{detail.buyer.email}</p>
+                </div>
+              </div>
 
-          <div className="disputeResolutionGrid">
-            <label className="field">
-              <span className="filterLabel">Huong giai quyet</span>
-              <select
-                className="select"
-                value={action}
-                onChange={(e) =>
-                  setAction(
-                    e.target.value as DisputeResolutionPayload["action"] | "",
-                  )
-                }
-                disabled={!!error}
-              >
-                <option value="">-- Chon huong giai quyet --</option>
-                {RESOLUTION_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
+              {/* Seller */}
+              <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                <span className="material-symbols-outlined text-green-600 mt-0.5">storefront</span>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Người bán (Seller)</p>
+                  <p className="text-sm font-medium text-gray-900">{detail.seller.name}</p>
+                  <p className="text-xs text-gray-500">{detail.seller.email}</p>
+                </div>
+              </div>
 
-            <label className="field">
-              <span className="filterLabel">Ly do phan xu (bat buoc)</span>
-              <textarea
-                className="textarea"
-                rows={5}
-                value={resolutionNote}
-                onChange={(e) => setResolutionNote(e.target.value)}
-                placeholder="Nhap ly do phan xu ro rang de cap nhat dispute va transaction"
-                disabled={!!error}
-              />
-            </label>
-          </div>
+              {/* Amount */}
+              <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+                <span className="material-symbols-outlined text-yellow-600 mt-0.5">payments</span>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Số tiền giao dịch</p>
+                  <p className="text-sm font-bold text-gray-900">
+                    {formatCurrency(detail.transaction.amountVnd)}
+                  </p>
+                </div>
+              </div>
 
-          {selectedOption && (
-            <div className="disputeResolutionHint">{selectedOption.helper}</div>
+              {/* Reason */}
+              <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
+                <span className="material-symbols-outlined text-red-600 mt-0.5">report</span>
+                <div>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">Lý do khiếu nại</p>
+                  <p className="text-sm font-medium text-gray-900">{detail.reasonText}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Listing info */}
+            <div className="mt-4 flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+              {detail.listing.imageUrl && (
+                <img
+                  src={detail.listing.imageUrl}
+                  alt={detail.listing.title}
+                  className="w-12 h-12 rounded object-cover border"
+                />
+              )}
+              <div>
+                <p className="text-xs text-gray-500 uppercase font-semibold">Sản phẩm</p>
+                <p className="text-sm font-medium text-gray-900">{detail.listing.title}</p>
+                <p className="text-xs text-gray-500">
+                  {formatCurrency(detail.listing.priceVnd)}
+                </p>
+              </div>
+            </div>
+
+            {/* Description */}
+            {detail.description && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Mô tả chi tiết</p>
+                <p className="text-sm text-gray-800 whitespace-pre-line">{detail.description}</p>
+              </div>
+            )}
+          </section>
+
+          {/* ===== ESCALATION INFO (if present) ===== */}
+          {detail.escalationNote && (
+            <section className="box border-l-4 border-purple-500">
+              <h3 className="boxTitle flex items-center gap-2">
+                <span className="material-symbols-outlined text-purple-600">swap_horiz</span>
+                Thông tin chuyển từ Inspector
+              </h3>
+
+              <div className="mt-3 space-y-3">
+                {detail.escalationSuggestion && (
+                  <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
+                    <span className="material-symbols-outlined text-purple-600 mt-0.5">lightbulb</span>
+                    <div>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">Đề xuất hướng xử lý</p>
+                      <p className="text-sm font-bold text-purple-800">
+                        {SUGGESTION_LABELS[detail.escalationSuggestion] ?? detail.escalationSuggestion}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                <div className="p-3 bg-purple-50 rounded-lg">
+                  <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Lý do chuyển</p>
+                  <p className="text-sm text-gray-800 whitespace-pre-line">{detail.escalationNote}</p>
+                </div>
+
+                {detail.escalatedBy && (
+                  <p className="text-xs text-gray-500">
+                    Chuyển bởi: <span className="font-medium text-gray-700">{detail.escalatedBy.name}</span>
+                    {detail.escalatedAt && (
+                      <> — {new Date(detail.escalatedAt).toLocaleString("vi-VN")}</>
+                    )}
+                  </p>
+                )}
+              </div>
+            </section>
           )}
 
-          <div className="disputeResolutionActions">
-            <Link
-              href={`/inspector/disputes/${encodeURIComponent(disputeId)}`}
-              className="btn btnGhost"
-            >
-              Huy
-            </Link>
-            <button
-              className="btn btn-primary"
-              type="button"
-              onClick={handleSubmit}
-              disabled={!canSubmit}
-            >
-              {submitting ? "Dang gui..." : "Confirm Resolution"}
-            </button>
-          </div>
-        </section>
+          {/* ===== EVIDENCE PREVIEW ===== */}
+          {detail.evidence.length > 0 && (
+            <section className="box">
+              <h3 className="boxTitle flex items-center gap-2">
+                <span className="material-symbols-outlined text-gray-600">photo_library</span>
+                Bằng chứng ({detail.evidence.length})
+              </h3>
+
+              {/* Image thumbnails */}
+              {imageEvidence.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {imageEvidence.map((ev, idx) => (
+                    <a
+                      key={idx}
+                      href={ev.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-20 h-20 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-400 transition-colors"
+                    >
+                      <img
+                        src={ev.url}
+                        alt={ev.name ?? `Bằng chứng ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </a>
+                  ))}
+                </div>
+              )}
+
+              {/* Text evidence */}
+              {detail.evidence
+                .filter((e) => e.type === "TEXT" && e.text)
+                .map((ev, idx) => (
+                  <div
+                    key={`text-${idx}`}
+                    className="mt-2 p-2 bg-gray-50 rounded text-sm text-gray-700 border-l-2 border-gray-300"
+                  >
+                    <span className="text-xs text-gray-400 uppercase">
+                      {ev.uploaderRole ?? "Unknown"}:
+                    </span>{" "}
+                    {ev.text}
+                  </div>
+                ))}
+            </section>
+          )}
+
+          {/* ===== ACTION FORM ===== */}
+          <section className="box">
+            <h3 className="boxTitle">Phán quyết cuối cùng</h3>
+
+            {error && <div className="text-red-700 mb-4">{error}</div>}
+
+            <div className="disputeResolutionGrid">
+              <label className="field">
+                <span className="filterLabel">Hướng giải quyết</span>
+                <select
+                  className="select"
+                  value={action}
+                  onChange={(e) =>
+                    setAction(
+                      e.target.value as DisputeResolutionPayload["action"] | "",
+                    )
+                  }
+                  disabled={!!error}
+                >
+                  <option value="">-- Chọn hướng giải quyết --</option>
+                  {RESOLUTION_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="field">
+                <span className="filterLabel">Lý do phán xử (bắt buộc)</span>
+                <textarea
+                  className="textarea"
+                  rows={5}
+                  value={resolutionNote}
+                  onChange={(e) => setResolutionNote(e.target.value)}
+                  placeholder="Nhập lý do phán xử rõ ràng để cập nhật tranh chấp và giao dịch"
+                  disabled={!!error}
+                />
+              </label>
+            </div>
+
+            {selectedOption && (
+              <div className="disputeResolutionHint">{selectedOption.helper}</div>
+            )}
+
+            <div className="disputeResolutionActions">
+              <Link
+                href={resolvedBackPath}
+                className="btn btnGhost"
+              >
+                Huỷ
+              </Link>
+              <button
+                className="btn btn-primary"
+                type="button"
+                onClick={handleSubmit}
+                disabled={!canSubmit}
+              >
+                {submitting ? "Đang gửi..." : "Xác nhận phán quyết"}
+              </button>
+            </div>
+          </section>
+        </>
+      )}
+
+      {!loading && !detail && error && (
+        <div className="box text-red-700">{error}</div>
       )}
     </div>
   );

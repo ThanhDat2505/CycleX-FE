@@ -48,9 +48,11 @@ export function useMyListings(
       return;
     }
 
+    const abortController = new AbortController();
+
     const loadListings = async () => {
       setLoading(true);
-      setError(null); // Clear previous errors
+      setError(null);
 
       try {
         const response = await getMyListings({
@@ -60,20 +62,29 @@ export function useMyListings(
           status,
           sortBy,
         });
-        setListings(response.listings);
-        setTotalItems(response.totalItems);
-        setTotalPages(response.totalPages);
-        setCurrentPage(response.currentPage);
+
+        if (!abortController.signal.aborted) {
+          setListings(response.listings);
+          setTotalItems(response.totalItems);
+          setTotalPages(response.totalPages);
+          setCurrentPage(response.currentPage);
+        }
       } catch (err) {
-        console.error("Failed to load listings:", err);
-        setError("Unable to load listings. Please try again.");
+        if (!abortController.signal.aborted) {
+          console.error("Failed to load listings:", err);
+          setError("Unable to load listings. Please try again.");
+        }
       } finally {
-        setLoading(false);
+        if (!abortController.signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     loadListings();
-  }, [sellerId, page, pageSize, status, sortBy, retryCount]); // Reload when params or retry changes
+
+    return () => abortController.abort();
+  }, [sellerId, page, pageSize, status, sortBy, retryCount]);
 
   const retry = () => {
     setRetryCount((prev) => prev + 1);

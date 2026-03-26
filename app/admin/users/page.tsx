@@ -753,7 +753,7 @@ export default function AdminUsersPage() {
                     <MapPin size={14} />
                     Địa chỉ
                   </div>
-                  <div className="[&_label]:text-gray-400 [&_select]:bg-white/5 [&_select]:border-white/10 [&_select]:text-white [&_select]:rounded-xl [&_input]:bg-white/5 [&_input]:border-white/10 [&_input]:text-white [&_input]:rounded-xl [&_select]:text-sm [&_input]:text-sm">
+                  <div className="[&_label]:text-gray-400 [&_select]:bg-white/5 [&_select]:border-white/10 [&_select]:text-white [&_select]:rounded-xl [&_input]:bg-white/5 [&_input]:border-white/10 [&_input]:text-white [&_input]:rounded-xl [&_select]:text-sm [&_input]:text-sm [&_option]:bg-gray-800 [&_option]:text-white">
                     <VietnameseAddressPicker
                       onChange={(data) =>
                         setCreateForm({
