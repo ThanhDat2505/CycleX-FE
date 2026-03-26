@@ -52,17 +52,27 @@ export const useAuth = (): UseAuthReturn => {
 
     // Sync trạng thái khi localStorage thay đổi từ tab khác
     // (ví dụ: user logout ở tab A → tab B tự động cập nhật)
+    // Hoặc khi login trong cùng tab (auth-changed event)
     useEffect(() => {
-        const handleStorageChange = () => {
+        const syncAuth = () => {
             const token = authService.getToken();
-            if (!token) {
+            const userData = authService.getUser();
+            if (token && userData) {
+                setUser(userData);
+                setRole(userData.role);
+                setIsLoggedIn(true);
+            } else {
                 setUser(null);
                 setRole(null);
                 setIsLoggedIn(false);
             }
         };
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+        window.addEventListener('storage', syncAuth);
+        window.addEventListener('auth-changed', syncAuth);
+        return () => {
+            window.removeEventListener('storage', syncAuth);
+            window.removeEventListener('auth-changed', syncAuth);
+        };
     }, []);
 
     const logout = useCallback(() => {

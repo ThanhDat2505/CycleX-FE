@@ -184,6 +184,7 @@ export const authService = {
             } else {
                 sessionStorage.setItem('authToken', token);
             }
+            window.dispatchEvent(new Event('auth-changed'));
         }
     },
 
