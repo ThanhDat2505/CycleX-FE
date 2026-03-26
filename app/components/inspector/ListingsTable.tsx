@@ -44,7 +44,7 @@ export default function ListingsTable({
       case "DISPUTE":
         return "Cần xem xét";
       case "FLAGGED":
-        return "Bị flag";
+        return "Bị gắn cờ";
       case "APPROVED":
         return "Đã duyệt";
       case "DONE":

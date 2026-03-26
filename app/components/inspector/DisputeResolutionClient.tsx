@@ -48,7 +48,8 @@ export default function DisputeResolutionClient({
   successPath?: string;
 }) {
   const router = useRouter();
-  const resolvedBackPath = backPath ?? `/inspector/disputes/${encodeURIComponent(disputeId)}`;
+  const resolvedBackPath =
+    backPath ?? `/inspector/disputes/${encodeURIComponent(disputeId)}`;
   const resolvedSuccessPath = successPath ?? "/inspector/disputes";
   const [detail, setDetail] = useState<DisputeDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -72,11 +73,13 @@ export default function DisputeResolutionClient({
         setDetail(data);
 
         if (data.status === "RESOLVED" || data.status === "REJECTED") {
-          setError("Dispute này đã được xử lý. Không thể resolve lại.");
+          setError("Khiếu nại này đã được xử lý. Không thể giải quyết lại.");
         }
       } catch (err: unknown) {
         if (!mounted) return;
-        setError(getErrorMessage(err, "Khong tai duoc dispute de resolve"));
+        setError(
+          getErrorMessage(err, "Không tải được khiếu nại để giải quyết"),
+        );
       } finally {
         if (mounted) setLoading(false);
       }
@@ -117,10 +120,7 @@ export default function DisputeResolutionClient({
     new Intl.NumberFormat("vi-VN").format(amount) + "đ";
 
   const imageEvidence = useMemo(
-    () =>
-      detail?.evidence.filter(
-        (e) => e.type === "IMAGE" && e.url,
-      ) ?? [],
+    () => detail?.evidence.filter((e) => e.type === "IMAGE" && e.url) ?? [],
     [detail?.evidence],
   );
 
@@ -161,29 +161,45 @@ export default function DisputeResolutionClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {/* Buyer */}
               <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                <span className="material-symbols-outlined text-blue-600 mt-0.5">person</span>
+                <span className="material-symbols-outlined text-blue-600 mt-0.5">
+                  person
+                </span>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Người mua (Buyer)</p>
-                  <p className="text-sm font-medium text-gray-900">{detail.buyer.name}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">
+                    Người mua
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {detail.buyer.name}
+                  </p>
                   <p className="text-xs text-gray-500">{detail.buyer.email}</p>
                 </div>
               </div>
 
               {/* Seller */}
               <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                <span className="material-symbols-outlined text-green-600 mt-0.5">storefront</span>
+                <span className="material-symbols-outlined text-green-600 mt-0.5">
+                  storefront
+                </span>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Người bán (Seller)</p>
-                  <p className="text-sm font-medium text-gray-900">{detail.seller.name}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">
+                    Người bán
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {detail.seller.name}
+                  </p>
                   <p className="text-xs text-gray-500">{detail.seller.email}</p>
                 </div>
               </div>
 
               {/* Amount */}
               <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                <span className="material-symbols-outlined text-yellow-600 mt-0.5">payments</span>
+                <span className="material-symbols-outlined text-yellow-600 mt-0.5">
+                  payments
+                </span>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Số tiền giao dịch</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">
+                    Số tiền giao dịch
+                  </p>
                   <p className="text-sm font-bold text-gray-900">
                     {formatCurrency(detail.transaction.amountVnd)}
                   </p>
@@ -192,10 +208,16 @@ export default function DisputeResolutionClient({
 
               {/* Reason */}
               <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                <span className="material-symbols-outlined text-red-600 mt-0.5">report</span>
+                <span className="material-symbols-outlined text-red-600 mt-0.5">
+                  report
+                </span>
                 <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold">Lý do khiếu nại</p>
-                  <p className="text-sm font-medium text-gray-900">{detail.reasonText}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold">
+                    Lý do khiếu nại
+                  </p>
+                  <p className="text-sm font-medium text-gray-900">
+                    {detail.reasonText}
+                  </p>
                 </div>
               </div>
             </div>
@@ -210,8 +232,12 @@ export default function DisputeResolutionClient({
                 />
               )}
               <div>
-                <p className="text-xs text-gray-500 uppercase font-semibold">Sản phẩm</p>
-                <p className="text-sm font-medium text-gray-900">{detail.listing.title}</p>
+                <p className="text-xs text-gray-500 uppercase font-semibold">
+                  Sản phẩm
+                </p>
+                <p className="text-sm font-medium text-gray-900">
+                  {detail.listing.title}
+                </p>
                 <p className="text-xs text-gray-500">
                   {formatCurrency(detail.listing.priceVnd)}
                 </p>
@@ -221,8 +247,12 @@ export default function DisputeResolutionClient({
             {/* Description */}
             {detail.description && (
               <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Mô tả chi tiết</p>
-                <p className="text-sm text-gray-800 whitespace-pre-line">{detail.description}</p>
+                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                  Mô tả chi tiết
+                </p>
+                <p className="text-sm text-gray-800 whitespace-pre-line">
+                  {detail.description}
+                </p>
               </div>
             )}
           </section>
@@ -231,33 +261,50 @@ export default function DisputeResolutionClient({
           {detail.escalationNote && (
             <section className="box border-l-4 border-purple-500">
               <h3 className="boxTitle flex items-center gap-2">
-                <span className="material-symbols-outlined text-purple-600">swap_horiz</span>
+                <span className="material-symbols-outlined text-purple-600">
+                  swap_horiz
+                </span>
                 Thông tin chuyển từ Inspector
               </h3>
 
               <div className="mt-3 space-y-3">
                 {detail.escalationSuggestion && (
                   <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                    <span className="material-symbols-outlined text-purple-600 mt-0.5">lightbulb</span>
+                    <span className="material-symbols-outlined text-purple-600 mt-0.5">
+                      lightbulb
+                    </span>
                     <div>
-                      <p className="text-xs text-gray-500 uppercase font-semibold">Đề xuất hướng xử lý</p>
+                      <p className="text-xs text-gray-500 uppercase font-semibold">
+                        Đề xuất hướng xử lý
+                      </p>
                       <p className="text-sm font-bold text-purple-800">
-                        {SUGGESTION_LABELS[detail.escalationSuggestion] ?? detail.escalationSuggestion}
+                        {SUGGESTION_LABELS[detail.escalationSuggestion] ??
+                          detail.escalationSuggestion}
                       </p>
                     </div>
                   </div>
                 )}
 
                 <div className="p-3 bg-purple-50 rounded-lg">
-                  <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Lý do chuyển</p>
-                  <p className="text-sm text-gray-800 whitespace-pre-line">{detail.escalationNote}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold mb-1">
+                    Lý do chuyển
+                  </p>
+                  <p className="text-sm text-gray-800 whitespace-pre-line">
+                    {detail.escalationNote}
+                  </p>
                 </div>
 
                 {detail.escalatedBy && (
                   <p className="text-xs text-gray-500">
-                    Chuyển bởi: <span className="font-medium text-gray-700">{detail.escalatedBy.name}</span>
+                    Chuyển bởi:{" "}
+                    <span className="font-medium text-gray-700">
+                      {detail.escalatedBy.name}
+                    </span>
                     {detail.escalatedAt && (
-                      <> — {new Date(detail.escalatedAt).toLocaleString("vi-VN")}</>
+                      <>
+                        {" "}
+                        — {new Date(detail.escalatedAt).toLocaleString("vi-VN")}
+                      </>
                     )}
                   </p>
                 )}
@@ -269,7 +316,9 @@ export default function DisputeResolutionClient({
           {detail.evidence.length > 0 && (
             <section className="box">
               <h3 className="boxTitle flex items-center gap-2">
-                <span className="material-symbols-outlined text-gray-600">photo_library</span>
+                <span className="material-symbols-outlined text-gray-600">
+                  photo_library
+                </span>
                 Bằng chứng ({detail.evidence.length})
               </h3>
 
@@ -353,14 +402,13 @@ export default function DisputeResolutionClient({
             </div>
 
             {selectedOption && (
-              <div className="disputeResolutionHint">{selectedOption.helper}</div>
+              <div className="disputeResolutionHint">
+                {selectedOption.helper}
+              </div>
             )}
 
             <div className="disputeResolutionActions">
-              <Link
-                href={resolvedBackPath}
-                className="btn btnGhost"
-              >
+              <Link href={resolvedBackPath} className="btn btnGhost">
                 Huỷ
               </Link>
               <button

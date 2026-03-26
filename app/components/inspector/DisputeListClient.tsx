@@ -148,7 +148,7 @@ export default function DisputeListClient() {
       <div className="flex flex-col items-center justify-center py-32 bg-brand-bg min-h-[60vh]">
         <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] animate-pulse">
-          Syncing cases...
+          Đang đồng bộ danh sách...
         </p>
       </div>
     );
@@ -247,7 +247,7 @@ export default function DisputeListClient() {
                   size={14}
                   className={refreshing ? "animate-spin" : ""}
                 />
-                Refresh
+                Làm mới
               </button>
             </div>
           </div>
@@ -274,7 +274,7 @@ export default function DisputeListClient() {
                         ID
                       </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
-                        Transaction & Listing
+                        Giao Dịch & Tin Đăng
                       </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         Người tạo
@@ -324,7 +324,7 @@ export default function DisputeListClient() {
                               <User size={12} className="text-gray-500" />
                             </div>
                             <span className="text-xs font-bold text-gray-300">
-                              {row.requesterName || "N/A"}
+                              {row.requesterName || "—"}
                             </span>
                           </div>
                         </td>
@@ -342,7 +342,7 @@ export default function DisputeListClient() {
                             </span>
                             <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
                               {row.createdAt.split("T")[1]?.split(".")[0] ||
-                                "Unknown"}
+                                "—"}
                             </span>
                           </div>
                         </td>
@@ -351,7 +351,7 @@ export default function DisputeListClient() {
                             href={`/inspector/disputes/${encodeURIComponent(row.id)}`}
                             className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
                           >
-                            <ExternalLink size={14} /> View Details
+                            <ExternalLink size={14} /> Xem Chi Tiết
                           </Link>
                         </td>
                       </tr>

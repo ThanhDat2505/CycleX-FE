@@ -89,7 +89,7 @@ export const MESSAGES = {
     S50_PAYMENT_DEPOSIT_TITLE: 'Thanh toán cọc (COD phần còn lại)',
     S50_PAYMENT_DEPOSIT_DESC: 'Đặt cọc một phần tiền để giữ xe. Phần còn lại thanh toán khi nhận xe.',
     S50_PAYMENT_ONLINE_TITLE: 'Thanh toán Online (Thẻ/Ví điện tử)',
-    S50_PAYMENT_ONLINE_SOON: 'Coming Soon',
+    S50_PAYMENT_ONLINE_SOON: 'Sắp ra mắt',
     S50_PAYMENT_ONLINE_DESC: 'Tính năng đang được phát triển.',
     S50_DEPOSIT_LABEL: 'Số tiền đặt cọc (VND)',
     S50_DEPOSIT_PLACEHOLDER: 'Ví dụ: 500000',

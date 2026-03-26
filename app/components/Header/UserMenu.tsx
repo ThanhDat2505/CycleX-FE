@@ -140,7 +140,19 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
               <p className="text-sm font-semibold text-gray-900 truncate">
                 {user?.fullName}
               </p>
-              <p className="text-xs text-gray-500 truncate">{userRole}</p>
+              <p className="text-xs text-gray-500 truncate">
+                {userRole === "ADMIN"
+                  ? "Quản trị viên"
+                  : userRole === "SELLER"
+                    ? "Người bán"
+                    : userRole === "BUYER"
+                      ? "Người mua"
+                      : userRole === "INSPECTOR"
+                        ? "Kiểm định viên"
+                        : userRole === "SHIPPER"
+                          ? "Shipper"
+                          : userRole}
+              </p>
             </div>
 
             {userRole === "SELLER" && (
@@ -211,7 +223,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  🚛 Shipper Dashboard
+                  🚛 Bảng Điều Khiển Giao Hàng
                 </Link>
                 <hr className="my-2 border-gray-100" />
               </>
@@ -224,14 +236,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  📊 Inspector Dashboard
+                  📊 Bảng Điều Khiển Kiểm Định
                 </Link>
                 <Link
                   href="/inspector/disputes"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  ⚖️ Dispute Queue
+                  ⚖️ Hàng Đợi Khiếu Nại
                 </Link>
                 <Link
                   href="/inspector/pending-list"
@@ -250,14 +262,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  ⚡ Admin Dashboard
+                  ⚡ Bảng Điều Khiển Admin
                 </Link>
                 <Link
                   href="/admin/users"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                  👥 User Management
+                  👥 Quản Lý Người Dùng
                 </Link>
                 {/* <Link
                   href="/admin/audit-logs"

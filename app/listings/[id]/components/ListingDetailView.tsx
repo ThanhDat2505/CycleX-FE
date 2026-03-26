@@ -290,7 +290,7 @@ export default function ListingDetailView({
         >
           <h2 className={STYLES.descTitle}>
             <Video size={24} className="inline mr-2 text-brand-primary" />
-            Video
+            Video xe
           </h2>
           <div className="rounded-3xl overflow-hidden border border-gray-100 bg-black">
             <video
@@ -325,7 +325,7 @@ export default function ListingDetailView({
             {listing.inspectionStatus && (
               <div className={inspectionStyles.badge}>
                 {inspectionStyles.icon}
-                <span>CycleX Verified: {listing.inspectionStatus}</span>
+                <span>CycleX Đã Kiểm Định: {listing.inspectionStatus}</span>
               </div>
             )}
 

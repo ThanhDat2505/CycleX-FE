@@ -82,16 +82,16 @@ const RatingsPage: React.FC = () => {
   return (
     <div className="p-8 max-w-6xl mx-auto">
       <h1 className="text-4xl font-bold text-gray-900 mb-2">
-        Ratings & Reviews
+        Đánh Giá & Nhận Xét
       </h1>
       <p className="text-gray-600 mb-8">
-        Your seller reputation and customer feedback
+        Uy tín người bán và phản hồi từ khách hàng
       </p>
 
       {/* Overall Rating */}
       <div className="bg-white rounded-lg p-8 border border-gray-200 mb-8 text-center">
         <p className="text-gray-600 text-sm font-semibold mb-2">
-          OVERALL RATING
+          ĐÁNH GIÁ TỔNG THỂ
         </p>
         <p className="text-6xl font-bold text-gray-900 mb-2">{avgRating}</p>
         <div className="flex justify-center gap-1 mb-4">
@@ -101,14 +101,14 @@ const RatingsPage: React.FC = () => {
             </span>
           ))}
         </div>
-        <p className="text-gray-600">From {userRatings.length} reviews</p>
+        <p className="text-gray-600">Từ {userRatings.length} đánh giá</p>
       </div>
 
       {/* Rating Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <div className="lg:col-span-2 bg-white rounded-lg p-6 border border-gray-200">
           <h2 className="text-xl font-bold text-gray-900 mb-6">
-            Rating Breakdown
+            Phân Tích Đánh Giá
           </h2>
           {ratingBreakdown.map(({ stars, count }) => {
             const percentage = (count / userRatings.length) * 100;
@@ -136,22 +136,22 @@ const RatingsPage: React.FC = () => {
         </div>
 
         <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Statistics</h2>
+          <h2 className="text-xl font-bold text-gray-900 mb-4">Thống Kê</h2>
           <div className="space-y-4">
             <div>
-              <p className="text-gray-600 text-sm">Total Reviews</p>
+              <p className="text-gray-600 text-sm">Tổng số đánh giá</p>
               <p className="text-2xl font-bold text-gray-900">
                 {userRatings.length}
               </p>
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Positive (4-5 ⭐)</p>
+              <p className="text-gray-600 text-sm">Tích cực (4-5 ⭐)</p>
               <p className="text-2xl font-bold text-green-600">
                 {userRatings.filter((r) => r.stars >= 4).length}
               </p>
             </div>
             <div>
-              <p className="text-gray-600 text-sm">Neutral (3 ⭐)</p>
+              <p className="text-gray-600 text-sm">Trung bình (3 ⭐)</p>
               <p className="text-2xl font-bold text-yellow-600">
                 {userRatings.filter((r) => r.stars === 3).length}
               </p>
@@ -163,7 +163,7 @@ const RatingsPage: React.FC = () => {
       {/* Recent Reviews */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Recent Reviews</h2>
+          <h2 className="text-xl font-bold text-gray-900">Đánh Giá Gần Đây</h2>
         </div>
 
         <div className="divide-y divide-gray-100">

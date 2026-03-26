@@ -22,37 +22,37 @@ export const STATUS_COLORS: Record<ListingStatus, StatusColorConfig> = {
     DRAFT: {
         bg: 'bg-gray-100',
         text: 'text-gray-800',
-        label: 'Draft'
+        label: 'Nháp'
     },
     PENDING: {
         bg: 'bg-yellow-100',
         text: 'text-yellow-800',
-        label: 'Pending'
+        label: 'Chờ duyệt'
     },
     REVIEWING: {
         bg: 'bg-blue-100',
         text: 'text-blue-800',
-        label: 'Reviewing'
+        label: 'Đang xem xét'
     },
     APPROVE: {
         bg: 'bg-green-100',
         text: 'text-green-800',
-        label: 'Approved'
+        label: 'Đã duyệt'
     },
     REJECT: {
         bg: 'bg-red-100',
         text: 'text-red-800',
-        label: 'Rejected'
+        label: 'Bị từ chối'
     },
     ACTIVE: {
         bg: 'bg-green-100',
         text: 'text-green-800',
-        label: 'Active'
+        label: 'Đang bán'
     },
     SOLD: {
         bg: 'bg-purple-100',
         text: 'text-purple-800',
-        label: 'Sold'
+        label: 'Đã bán'
     },
     // Transaction Statuses
     PENDING_SELLER_CONFIRM: {

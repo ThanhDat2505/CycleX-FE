@@ -222,7 +222,7 @@ export default function BuyerDisputeListClient() {
                   size={14}
                   className={refreshing ? "animate-spin" : ""}
                 />
-                Refresh
+                Làm mới
               </button>
             </div>
           </div>
@@ -305,7 +305,13 @@ export default function BuyerDisputeListClient() {
                           <span
                             className={`inline-flex px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
                           >
-                            {row.status}
+                            {row.status === "OPEN"
+                              ? "Đang mở"
+                              : row.status === "IN_PROGRESS"
+                                ? "Đang xử lý"
+                                : row.status === "RESOLVED"
+                                  ? "Đã giải quyết"
+                                  : row.status}
                           </span>
                         </td>
                         <td className="px-8 py-6">

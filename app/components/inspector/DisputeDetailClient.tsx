@@ -71,10 +71,14 @@ export default function DisputeDetailClient({
         setTimeout(() => URL.revokeObjectURL(resolvedUrl), 60_000);
       }
       if (!opened) {
-        setEvidenceError("Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép popup.");
+        setEvidenceError(
+          "Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép popup.",
+        );
       }
     } catch (err: unknown) {
-      setEvidenceError(getErrorMessage(err, "Không thể mở bằng chứng. Vui lòng thử lại."));
+      setEvidenceError(
+        getErrorMessage(err, "Không thể mở bằng chứng. Vui lòng thử lại."),
+      );
     } finally {
       setOpeningEvidenceIndex(null);
     }
@@ -112,7 +116,10 @@ export default function DisputeDetailClient({
       setEscalateSuggestion("");
       addToast("Đã chuyển tiếp khiếu nại lên Admin", "success");
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"), "error");
+      addToast(
+        getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"),
+        "error",
+      );
     } finally {
       setEscalating(false);
     }
@@ -131,7 +138,10 @@ export default function DisputeDetailClient({
       setRequestInfoMessage("");
       addToast("Đã gửi yêu cầu bổ sung thông tin đến người mua", "success");
     } catch (err: unknown) {
-      addToast(getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"), "error");
+      addToast(
+        getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"),
+        "error",
+      );
     } finally {
       setRequestingInfo(false);
     }
@@ -178,7 +188,7 @@ export default function DisputeDetailClient({
           />
         </div>
         <p className="mt-8 text-[11px] font-black text-gray-500 uppercase tracking-[0.3em] animate-pulse">
-          Decrypting Case Data...
+          Đang tải dữ liệu khiếu nại...
         </p>
       </div>
     );
@@ -192,7 +202,7 @@ export default function DisputeDetailClient({
             <ShieldAlert size={40} />
           </div>
           <h2 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase leading-tight">
-            Access Error
+            Lỗi Truy Cập
           </h2>
           <p className="text-gray-400 font-medium mb-10 leading-relaxed">
             {error || "Dữ liệu khiếu nại bị hỏng hoặc không tồn tại."}
@@ -255,7 +265,7 @@ export default function DisputeDetailClient({
             </Link>
             <div className="flex items-center gap-4 mb-4">
               <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
-                Case{" "}
+                Khiếu Nại{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-orange-400">
                   #{detail.id}
                 </span>
@@ -301,7 +311,9 @@ export default function DisputeDetailClient({
             )}
 
             {/* Request more info button */}
-            {((isInProgress || isNeedMoreInfo) || (isEscalated && viewerRole === "ADMIN")) && (
+            {(isInProgress ||
+              isNeedMoreInfo ||
+              (isEscalated && viewerRole === "ADMIN")) && (
               <button
                 onClick={() => setShowRequestInfo(!showRequestInfo)}
                 className="group flex items-center gap-3 px-6 py-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95"
@@ -323,98 +335,110 @@ export default function DisputeDetailClient({
             )}
 
             {/* Resolution button */}
-            {canAct && ((isInProgress || isNeedMoreInfo) || (isEscalated && viewerRole === "ADMIN")) && (
-              <Link
-                href={
-                  viewerRole === "ADMIN"
-                    ? `/admin/disputes/${encodeURIComponent(detail.id)}/resolution`
-                    : `/inspector/disputes/${encodeURIComponent(detail.id)}/resolution`
-                }
-                className="group flex items-center gap-4 px-8 py-4 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-glow-orange transition-all active:scale-95"
-              >
-                <Gavel
-                  size={18}
-                  className="group-hover:rotate-12 transition-transform"
-                />
-                Xử lý
-                <ArrowRight
-                  size={16}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
-              </Link>
-            )}
+            {canAct &&
+              (isInProgress ||
+                isNeedMoreInfo ||
+                (isEscalated && viewerRole === "ADMIN")) && (
+                <Link
+                  href={
+                    viewerRole === "ADMIN"
+                      ? `/admin/disputes/${encodeURIComponent(detail.id)}/resolution`
+                      : `/inspector/disputes/${encodeURIComponent(detail.id)}/resolution`
+                  }
+                  className="group flex items-center gap-4 px-8 py-4 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-glow-orange transition-all active:scale-95"
+                >
+                  <Gavel
+                    size={18}
+                    className="group-hover:rotate-12 transition-transform"
+                  />
+                  Xử lý
+                  <ArrowRight
+                    size={16}
+                    className="group-hover:translate-x-1 transition-transform"
+                  />
+                </Link>
+              )}
           </div>
         </div>
 
         {/* Escalate to Admin form */}
-        {showEscalateForm && canAct && !isEscalated && viewerRole !== "ADMIN" && (
-          <div className="bg-purple-500/10 border border-purple-500/20 rounded-3xl p-8 animate-fade-in">
-            <h4 className="text-sm font-black text-purple-400 uppercase tracking-wider mb-6 flex items-center gap-2">
-              <AlertTriangle size={16} />
-              Chuyển tiếp lên Admin
-            </h4>
-            <div className="space-y-5">
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
-                  Lý do chuyển <span className="text-rose-400">*</span>
-                </label>
-                <textarea
-                  value={escalateNote}
-                  onChange={(e) => {
-                    setEscalateNote(e.target.value);
-                    if (escalateValidationError) setEscalateValidationError("");
+        {showEscalateForm &&
+          canAct &&
+          !isEscalated &&
+          viewerRole !== "ADMIN" && (
+            <div className="bg-purple-500/10 border border-purple-500/20 rounded-3xl p-8 animate-fade-in">
+              <h4 className="text-sm font-black text-purple-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+                <AlertTriangle size={16} />
+                Chuyển tiếp lên Admin
+              </h4>
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                    Lý do chuyển <span className="text-rose-400">*</span>
+                  </label>
+                  <textarea
+                    value={escalateNote}
+                    onChange={(e) => {
+                      setEscalateNote(e.target.value);
+                      if (escalateValidationError)
+                        setEscalateValidationError("");
+                    }}
+                    placeholder="VD: Không đủ bằng chứng để kết luận, seller phản hồi không hợp tác..."
+                    rows={3}
+                    className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none"
+                  />
+                  {escalateValidationError && (
+                    <p className="mt-1 text-xs font-bold text-rose-400">
+                      {escalateValidationError}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                    Đề xuất hướng xử lý{" "}
+                    <span className="text-gray-600">(tuỳ chọn)</span>
+                  </label>
+                  <select
+                    value={escalateSuggestion}
+                    onChange={(e) => setEscalateSuggestion(e.target.value)}
+                    className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  >
+                    <option value="">-- Không có đề xuất --</option>
+                    <option value="REFUND_BUYER">Hoàn tiền toàn bộ</option>
+                    <option value="PARTIAL_REFUND">Hoàn tiền một phần</option>
+                    <option value="RELEASE_FUND_SELLER">
+                      Từ chối khiếu nại
+                    </option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  onClick={() => {
+                    setShowEscalateForm(false);
+                    setEscalateNote("");
+                    setEscalateSuggestion("");
+                    setEscalateValidationError("");
                   }}
-                  placeholder="VD: Không đủ bằng chứng để kết luận, seller phản hồi không hợp tác..."
-                  rows={3}
-                  className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none"
-                />
-                {escalateValidationError && (
-                  <p className="mt-1 text-xs font-bold text-rose-400">{escalateValidationError}</p>
-                )}
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
-                  Đề xuất hướng xử lý <span className="text-gray-600">(tuỳ chọn)</span>
-                </label>
-                <select
-                  value={escalateSuggestion}
-                  onChange={(e) => setEscalateSuggestion(e.target.value)}
-                  className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white focus:outline-none focus:border-purple-500/50"
+                  className="px-6 py-3 bg-white/5 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 transition-all"
                 >
-                  <option value="">-- Không có đề xuất --</option>
-                  <option value="REFUND_BUYER">Hoàn tiền toàn bộ</option>
-                  <option value="PARTIAL_REFUND">Hoàn tiền một phần</option>
-                  <option value="RELEASE_FUND_SELLER">Từ chối khiếu nại</option>
-                </select>
+                  Hủy
+                </button>
+                <button
+                  onClick={() => void handleEscalate()}
+                  disabled={escalating || !escalateNote.trim()}
+                  className="px-6 py-3 bg-purple-500 text-white font-bold text-xs rounded-xl hover:bg-purple-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                >
+                  {escalating ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <ArrowUpRight size={14} />
+                  )}
+                  Xác nhận chuyển
+                </button>
               </div>
             </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                onClick={() => {
-                  setShowEscalateForm(false);
-                  setEscalateNote("");
-                  setEscalateSuggestion("");
-                  setEscalateValidationError("");
-                }}
-                className="px-6 py-3 bg-white/5 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 transition-all"
-              >
-                Hủy
-              </button>
-              <button
-                onClick={() => void handleEscalate()}
-                disabled={escalating || !escalateNote.trim()}
-                className="px-6 py-3 bg-purple-500 text-white font-bold text-xs rounded-xl hover:bg-purple-600 transition-all disabled:opacity-50 flex items-center gap-2"
-              >
-                {escalating ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <ArrowUpRight size={14} />
-                )}
-                Xác nhận chuyển
-              </button>
-            </div>
-          </div>
-        )}
+          )}
 
         {/* Request more info form */}
         {showRequestInfo && (
@@ -520,7 +544,9 @@ export default function DisputeDetailClient({
                               alt={`Bằng chứng ${index + 1}`}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                                (
+                                  e.currentTarget as HTMLImageElement
+                                ).style.display = "none";
                               }}
                             />
                           </div>
@@ -534,7 +560,10 @@ export default function DisputeDetailClient({
                           </div>
                         )}
                         {openingEvidenceIndex === index && (
-                          <Loader2 size={16} className="animate-spin text-brand-primary ml-2" />
+                          <Loader2
+                            size={16}
+                            className="animate-spin text-brand-primary ml-2"
+                          />
                         )}
                         <ExternalLink
                           size={16}
@@ -592,7 +621,8 @@ export default function DisputeDetailClient({
                           ? "Hoàn tiền toàn bộ"
                           : detail.escalationSuggestion === "PARTIAL_REFUND"
                             ? "Hoàn tiền một phần"
-                            : detail.escalationSuggestion === "RELEASE_FUND_SELLER"
+                            : detail.escalationSuggestion ===
+                                "RELEASE_FUND_SELLER"
                               ? "Từ chối khiếu nại"
                               : detail.escalationSuggestion}
                       </p>
@@ -606,7 +636,9 @@ export default function DisputeDetailClient({
                       <p className="text-sm font-bold text-white">
                         {detail.escalatedBy.name}
                       </p>
-                      <p className="text-xs text-gray-500">{detail.escalatedBy.email}</p>
+                      <p className="text-xs text-gray-500">
+                        {detail.escalatedBy.email}
+                      </p>
                     </div>
                   )}
                   {detail.escalatedAt && (
@@ -614,7 +646,9 @@ export default function DisputeDetailClient({
                       <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
                         Thời gian chuyển
                       </p>
-                      <p className="text-sm font-bold text-white">{detail.escalatedAt}</p>
+                      <p className="text-sm font-bold text-white">
+                        {detail.escalatedAt}
+                      </p>
                     </div>
                   )}
                 </div>

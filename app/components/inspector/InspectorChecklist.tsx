@@ -72,11 +72,11 @@ export default function InspectorChecklist() {
                 </button>
               </div>
               <h1 className="title">
-                Perform Inspection: <span>#{idParam}</span>
+                Thực Hiện Kiểm Định: <span>#{idParam}</span>
               </h1>
               <div className="meta">
                 <div className="metaItem">
-                  <span className="metaLabel">Listing:</span>
+                  <span className="metaLabel">Tin đăng:</span>
                   <strong>Giant Propel Advanced SL 0 (2025)</strong>
                 </div>
               </div>
@@ -87,7 +87,7 @@ export default function InspectorChecklist() {
         <div className="layout">
           <section className="left">
             <div className="box">
-              <div className="boxTitle">1. Đánh giá chi tiết (Checklist)</div>
+              <div className="boxTitle">1. Đánh giá chi tiết</div>
 
               <table className="styled-table" style={{ marginBottom: "20px" }}>
                 <thead>
@@ -119,8 +119,8 @@ export default function InspectorChecklist() {
                         }
                       >
                         <option value="">-- Chọn --</option>
-                        <option value="pass">PASS</option>
-                        <option value="fail">FAIL</option>
+                        <option value="pass">Đạt</option>
+                        <option value="fail">Không đạt</option>
                       </select>
                     </td>
                     <td>
@@ -159,8 +159,8 @@ export default function InspectorChecklist() {
                         }
                       >
                         <option value="">-- Chọn --</option>
-                        <option value="pass">PASS</option>
-                        <option value="fail">FAIL</option>
+                        <option value="pass">Đạt</option>
+                        <option value="fail">Không đạt</option>
                       </select>
                     </td>
                     <td>
@@ -183,9 +183,7 @@ export default function InspectorChecklist() {
                     </td>
                   </tr>
                   <tr>
-                    <td style={{ fontWeight: 800 }}>
-                      Bộ truyền động (Drivetrain)
-                    </td>
+                    <td style={{ fontWeight: 800 }}>Bộ truyền động</td>
                     <td style={{ textAlign: "center" }}>
                       <select
                         className="select"
@@ -201,8 +199,8 @@ export default function InspectorChecklist() {
                         }
                       >
                         <option value="">-- Chọn --</option>
-                        <option value="pass">PASS</option>
-                        <option value="fail">FAIL</option>
+                        <option value="pass">Đạt</option>
+                        <option value="fail">Không đạt</option>
                       </select>
                     </td>
                     <td>
@@ -229,7 +227,7 @@ export default function InspectorChecklist() {
             </div>
 
             <div className="box">
-              <div className="boxTitle">2. Upload Bằng Chứng (Media)</div>
+              <div className="boxTitle">2. Tải Lên Bằng Chứng (Ảnh/Video)</div>
               <p
                 style={{
                   fontSize: "14px",
@@ -326,7 +324,7 @@ export default function InspectorChecklist() {
                       color: "var(--muted)",
                     }}
                   >
-                    Upload
+                    Tải lên
                   </span>
                 </label>
               </div>

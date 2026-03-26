@@ -74,27 +74,29 @@ const ListingStatusPage: React.FC = () => {
 
   return (
     <div className="p-8 max-w-7xl mx-auto">
-      <h1 className="text-4xl font-bold text-gray-900 mb-2">Listing Status</h1>
+      <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        Trạng Thái Tin Đăng
+      </h1>
       <p className="text-gray-600 mb-8">
-        Track the status of all your listings
+        Theo dõi trạng thái tất cả tin đăng của bạn
       </p>
 
       {/* Status Summary */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm font-semibold mb-2">Active</p>
+          <p className="text-gray-600 text-sm font-semibold mb-2">Đang bán</p>
           <p className="text-3xl font-bold text-green-600">{stats.active}</p>
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm font-semibold mb-2">Pending</p>
+          <p className="text-gray-600 text-sm font-semibold mb-2">Chờ duyệt</p>
           <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm font-semibold mb-2">Sold</p>
+          <p className="text-gray-600 text-sm font-semibold mb-2">Đã bán</p>
           <p className="text-3xl font-bold text-red-600">{stats.sold}</p>
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm font-semibold mb-2">Draft</p>
+          <p className="text-gray-600 text-sm font-semibold mb-2">Nháp</p>
           <p className="text-3xl font-bold text-gray-600">{stats.draft}</p>
         </div>
       </div>
@@ -106,19 +108,19 @@ const ListingStatusPage: React.FC = () => {
             <thead>
               <tr className="border-b border-gray-200 bg-gray-50">
                 <th className="text-left px-6 py-4 font-semibold text-gray-700">
-                  Bike Name
+                  Tên Xe
                 </th>
                 <th className="text-left px-6 py-4 font-semibold text-gray-700">
-                  Price
+                  Giá
                 </th>
                 <th className="text-left px-6 py-4 font-semibold text-gray-700">
-                  Status
+                  Trạng thái
                 </th>
                 <th className="text-left px-6 py-4 font-semibold text-gray-700">
-                  Views
+                  Lượt xem
                 </th>
                 <th className="text-left px-6 py-4 font-semibold text-gray-700">
-                  Listed
+                  Ngày đăng
                 </th>
               </tr>
             </thead>
@@ -132,14 +134,12 @@ const ListingStatusPage: React.FC = () => {
                     {listing.brand} {listing.model}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
-                    ${listing.price}
+                    {listing.price.toLocaleString("vi-VN")}đ
                   </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={listing.status} />
                   </td>
-                  <td className="px-6 py-4 text-gray-600">
-                    {listing.views}
-                  </td>
+                  <td className="px-6 py-4 text-gray-600">{listing.views}</td>
                   <td className="px-6 py-4 text-gray-600">
                     {new Date(listing.createdDate).toLocaleDateString()}
                   </td>
@@ -154,4 +154,3 @@ const ListingStatusPage: React.FC = () => {
 };
 
 export default ListingStatusPage;
-

@@ -29,14 +29,16 @@ const InquiriesPage: React.FC = () => {
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
-      <h1 className="text-4xl font-bold text-gray-900 mb-2">Inquiries</h1>
-      <p className="text-gray-600 mb-8">Manage buyer inquiries and messages</p>
+      <h1 className="text-4xl font-bold text-gray-900 mb-2">Yêu Cầu Hỏi Mua</h1>
+      <p className="text-gray-600 mb-8">
+        Quản lý tin nhắn và câu hỏi từ người mua
+      </p>
 
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-lg p-6 border border-gray-200">
           <p className="text-gray-600 text-sm font-semibold mb-2">
-            Total Inquiries
+            Tổng Số Hỏi Mua
           </p>
           <p className="text-3xl font-bold text-gray-900">
             {userInquiries.length}
@@ -44,13 +46,13 @@ const InquiriesPage: React.FC = () => {
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
           <p className="text-gray-600 text-sm font-semibold mb-2">
-            Awaiting Response
+            Chờ Phản Hồi
           </p>
           <p className="text-3xl font-bold text-orange-600">{newCount}</p>
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
           <p className="text-gray-600 text-sm font-semibold mb-2">
-            Avg Response Time
+            Thời Gian Phản Hồi TB
           </p>
           <p className="text-3xl font-bold text-gray-900">{avgResponseTime}</p>
         </div>
@@ -59,7 +61,7 @@ const InquiriesPage: React.FC = () => {
       {/* Inquiries List */}
       <div className="bg-white rounded-lg border border-gray-200">
         <div className="p-6 border-b border-gray-200">
-          <h2 className="text-xl font-bold text-gray-900">Recent Inquiries</h2>
+          <h2 className="text-xl font-bold text-gray-900">Hỏi Mua Gần Đây</h2>
         </div>
 
         <div className="divide-y divide-gray-100">
@@ -70,7 +72,7 @@ const InquiriesPage: React.FC = () => {
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-2">
                       <h3 className="font-semibold text-gray-900">
-                        Inquiry on {inquiry.bikeTitle}
+                        Hỏi về {inquiry.bikeTitle}
                       </h3>
                       <span
                         className={`px-2 py-1 rounded text-xs font-semibold ${
@@ -79,7 +81,7 @@ const InquiriesPage: React.FC = () => {
                             : "bg-green-100 text-green-800"
                         }`}
                       >
-                        {inquiry.status}
+                        {inquiry.status === "NEW" ? "Mới" : "Đã phản hồi"}
                       </span>
                     </div>
                     <p className="text-gray-700 mb-2">{inquiry.message}</p>
@@ -89,7 +91,7 @@ const InquiriesPage: React.FC = () => {
                   </div>
                   {inquiry.status === "NEW" && (
                     <button className="px-4 py-2 bg-[#FF8A00] text-white rounded-lg font-medium hover:bg-[#FF7A00] transition">
-                      Reply
+                      Phản hồi
                     </button>
                   )}
                 </div>
@@ -103,4 +105,3 @@ const InquiriesPage: React.FC = () => {
 };
 
 export default InquiriesPage;
-
