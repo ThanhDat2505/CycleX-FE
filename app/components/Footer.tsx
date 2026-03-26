@@ -11,7 +11,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { scrollToElementById } from "../utils/scroll";
 import { ELEMENT_IDS } from "../constants/navigation";
 
-const AUTH_ROUTES = ["/login", "/register", "/verify-email"];
+const AUTH_ROUTES = ["/login", "/register", "/verify-email", "/forgot-password"];
 
 export default function Footer() {
   const router = useRouter();

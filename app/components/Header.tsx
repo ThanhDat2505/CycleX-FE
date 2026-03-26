@@ -24,7 +24,7 @@ import { SearchBar } from "./Header/SearchBar";
 import { UserMenu } from "./Header/UserMenu";
 import { MobileMenu } from "./Header/MobileMenu";
 
-const AUTH_ROUTES = ["/login", "/register", "/verify-email"];
+const AUTH_ROUTES = ["/login", "/register", "/verify-email", "/forgot-password"];
 
 export default function Header() {
   const router = useRouter();
