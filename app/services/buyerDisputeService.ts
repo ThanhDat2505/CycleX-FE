@@ -52,6 +52,7 @@ function mapToDispute(res: DisputeDetailResponse): Dispute {
         reason: res.reasonText || '',
         status: (res.status as Dispute['status']) || 'OPEN',
         evidenceUrls: res.evidence?.filter(e => e.type === 'IMAGE').map(e => e.url) ?? [],
+        evidence: res.evidence ?? [],
         adminNote: res.resolutionNote,
         resolvedAt: res.resolvedAt,
         isOverridden: !!res.resolutionAction,
@@ -208,10 +209,13 @@ export async function getDisputeResult(disputeId: number): Promise<DisputeResult
 }
 
 /**
- * Reply to a dispute (buyer provides more info)
+ * Reply to a dispute (buyer provides more info + optional evidence images)
  */
-export async function replyToDispute(disputeId: number, content: string): Promise<Dispute> {
-    const res = await apiCallPUT<DisputeDetailResponse>(`/disputes/${disputeId}/reply`, { content });
+export async function replyToDispute(disputeId: number, content: string, evidenceUrls?: string[]): Promise<Dispute> {
+    const res = await apiCallPUT<DisputeDetailResponse>(`/disputes/${disputeId}/reply`, {
+        content,
+        evidenceUrls: evidenceUrls ?? [],
+    });
     return mapToDispute(res);
 }
 

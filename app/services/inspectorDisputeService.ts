@@ -91,6 +91,11 @@ export type DisputeDetail = {
     updatedAt: string;
   };
   evidence: DisputeEvidence[];
+  // Escalation info (populated when status = ESCALATED)
+  escalationNote?: string;
+  escalationSuggestion?: string;
+  escalatedBy?: DisputeActor;
+  escalatedAt?: string;
 };
 
 export type DisputeResolutionPayload = {
@@ -338,6 +343,10 @@ function mapDetail(raw: JsonRecord): DisputeDetail {
       updatedAt: toDisplayDate(transaction.updatedAt),
     },
     evidence: mapEvidence(evidenceItems),
+    escalationNote: raw.escalationNote ? getString(raw.escalationNote, "") : undefined,
+    escalationSuggestion: raw.escalationSuggestion ? getString(raw.escalationSuggestion, "") : undefined,
+    escalatedBy: raw.escalatedBy ? mapActor(raw.escalatedBy) : undefined,
+    escalatedAt: raw.escalatedAt ? toDisplayDate(raw.escalatedAt) : undefined,
   };
 }
 
@@ -522,20 +531,29 @@ export const disputeService = {
   },
 
   async getEvidenceBlobUrl(evidenceUrl: string): Promise<string> {
-    const token = getAuthToken();
+    if (!evidenceUrl) throw new Error("URL bằng chứng không hợp lệ");
+
     const isAbsolute = /^https?:\/\//i.test(evidenceUrl);
-    const path = isAbsolute
+
+    // FE-hosted static files (uploaded via Next.js API route) are served
+    // at the same origin — no auth header or /backend proxy needed.
+    if (!isAbsolute && evidenceUrl.startsWith("/public/")) {
+      return evidenceUrl;
+    }
+
+    const token = getAuthToken();
+    const fetchPath = isAbsolute
       ? evidenceUrl
       : `/backend${evidenceUrl.startsWith("/") ? "" : "/"}${evidenceUrl}`;
 
-    const response = await fetch(path, {
+    const response = await fetch(fetchPath, {
       method: "GET",
       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       credentials: "omit",
     });
 
     if (!response.ok) {
-      throw new Error(`Khong tai duoc evidence (${response.status})`);
+      throw new Error(`Không tải được bằng chứng (${response.status})`);
     }
 
     const blob = await response.blob();
@@ -591,18 +609,18 @@ export const disputeService = {
    * Escalate dispute to admin
    * PUT /api/disputes/{id}/escalate
    */
-  async escalateDispute(disputeId: string, note?: string): Promise<DisputeDetail> {
+  async escalateDispute(disputeId: string, note?: string, suggestion?: string): Promise<DisputeDetail> {
     const id = encodeURIComponent(getString(disputeId, "").trim());
     const payload: unknown = await tryFirstSuccess<unknown>([
       () =>
         requestJson<unknown>(`/disputes/${id}/escalate`, {
           method: "PUT",
-          body: JSON.stringify({ note: note || "" }),
+          body: JSON.stringify({ note: note || "", suggestion: suggestion || "" }),
         }),
       () =>
         requestJson<unknown>(`/disputes/${id}/escalate`, {
           method: "POST",
-          body: JSON.stringify({ note: note || "" }),
+          body: JSON.stringify({ note: note || "", suggestion: suggestion || "" }),
         }),
     ]);
     return mapDetail(toRecord(payload));

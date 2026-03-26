@@ -9,6 +9,7 @@ import {
   type DisputeEvidence,
 } from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
+import { useToast } from "@/app/contexts/ToastContext";
 import {
   ChevronLeft,
   Loader2,
@@ -28,6 +29,7 @@ import {
   ArrowUpRight,
   HelpCircle,
   Send,
+  AlertTriangle,
 } from "lucide-react";
 import { formatDate } from "@/app/utils/format";
 
@@ -39,27 +41,40 @@ export default function DisputeDetailClient({
   viewerRole?: "INSPECTOR" | "ADMIN";
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [detail, setDetail] = useState<DisputeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [openingEvidenceIndex, setOpeningEvidenceIndex] = useState<
     number | null
   >(null);
+  const [evidenceError, setEvidenceError] = useState<string | null>(null);
   const [claiming, setClaiming] = useState(false);
   const [escalating, setEscalating] = useState(false);
+  const [showEscalateForm, setShowEscalateForm] = useState(false);
+  const [escalateNote, setEscalateNote] = useState("");
+  const [escalateSuggestion, setEscalateSuggestion] = useState("");
+  const [escalateValidationError, setEscalateValidationError] = useState("");
   const [showRequestInfo, setShowRequestInfo] = useState(false);
   const [requestInfoMessage, setRequestInfoMessage] = useState("");
   const [requestingInfo, setRequestingInfo] = useState(false);
 
   const handleOpenEvidence = async (item: DisputeEvidence, index: number) => {
     if (!item.url) return;
+    setEvidenceError(null);
     try {
       setOpeningEvidenceIndex(index);
-      const blobUrl = await disputeService.getEvidenceBlobUrl(item.url);
-      window.open(blobUrl, "_blank", "noopener,noreferrer");
-      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+      const resolvedUrl = await disputeService.getEvidenceBlobUrl(item.url);
+      const opened = window.open(resolvedUrl, "_blank", "noopener,noreferrer");
+      // Only schedule revoke for blob: URLs; /public/ paths are static and don't need revocation
+      if (resolvedUrl.startsWith("blob:")) {
+        setTimeout(() => URL.revokeObjectURL(resolvedUrl), 60_000);
+      }
+      if (!opened) {
+        setEvidenceError("Trình duyệt đã chặn cửa sổ mới. Vui lòng cho phép popup.");
+      }
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể mở bằng chứng bảo mật"));
+      setEvidenceError(getErrorMessage(err, "Không thể mở bằng chứng. Vui lòng thử lại."));
     } finally {
       setOpeningEvidenceIndex(null);
     }
@@ -70,23 +85,34 @@ export default function DisputeDetailClient({
       setClaiming(true);
       const updated = await disputeService.claimDispute(disputeId);
       setDetail(updated);
+      addToast("Đã nhận xử lý khiếu nại thành công", "success");
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể nhận xử lý khiếu nại"));
+      addToast(getErrorMessage(err, "Không thể nhận xử lý khiếu nại"), "error");
     } finally {
       setClaiming(false);
     }
   };
 
   const handleEscalate = async () => {
+    if (!escalateNote.trim()) {
+      setEscalateValidationError("Lý do chuyển là bắt buộc");
+      return;
+    }
     try {
       setEscalating(true);
+      setEscalateValidationError("");
       const updated = await disputeService.escalateDispute(
         disputeId,
-        "Chuyển tiếp lên Admin để xử lý",
+        escalateNote.trim(),
+        escalateSuggestion || undefined,
       );
       setDetail(updated);
+      setShowEscalateForm(false);
+      setEscalateNote("");
+      setEscalateSuggestion("");
+      addToast("Đã chuyển tiếp khiếu nại lên Admin", "success");
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"));
+      addToast(getErrorMessage(err, "Không thể chuyển tiếp khiếu nại"), "error");
     } finally {
       setEscalating(false);
     }
@@ -103,8 +129,9 @@ export default function DisputeDetailClient({
       setDetail(updated);
       setShowRequestInfo(false);
       setRequestInfoMessage("");
+      addToast("Đã gửi yêu cầu bổ sung thông tin đến người mua", "success");
     } catch (err: unknown) {
-      setError(getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"));
+      addToast(getErrorMessage(err, "Không thể gửi yêu cầu bổ sung thông tin"), "error");
     } finally {
       setRequestingInfo(false);
     }
@@ -274,7 +301,7 @@ export default function DisputeDetailClient({
             )}
 
             {/* Request more info button */}
-            {(isInProgress || isNeedMoreInfo) && (
+            {((isInProgress || isNeedMoreInfo) || (isEscalated && viewerRole === "ADMIN")) && (
               <button
                 onClick={() => setShowRequestInfo(!showRequestInfo)}
                 className="group flex items-center gap-3 px-6 py-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95"
@@ -287,23 +314,22 @@ export default function DisputeDetailClient({
             {/* Escalate button - only show for inspectors, not for admins */}
             {canAct && !isEscalated && viewerRole !== "ADMIN" && (
               <button
-                onClick={handleEscalate}
-                disabled={escalating}
-                className="group flex items-center gap-3 px-6 py-4 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 disabled:opacity-50"
+                onClick={() => setShowEscalateForm(!showEscalateForm)}
+                className="group flex items-center gap-3 px-6 py-4 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95"
               >
-                {escalating ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <ArrowUpRight size={16} />
-                )}
+                <ArrowUpRight size={16} />
                 Chuyển Admin
               </button>
             )}
 
             {/* Resolution button */}
-            {canAct && (isInProgress || isNeedMoreInfo) && (
+            {canAct && ((isInProgress || isNeedMoreInfo) || (isEscalated && viewerRole === "ADMIN")) && (
               <Link
-                href={`/inspector/disputes/${encodeURIComponent(detail.id)}/resolution`}
+                href={
+                  viewerRole === "ADMIN"
+                    ? `/admin/disputes/${encodeURIComponent(detail.id)}/resolution`
+                    : `/inspector/disputes/${encodeURIComponent(detail.id)}/resolution`
+                }
                 className="group flex items-center gap-4 px-8 py-4 bg-brand-primary hover:bg-brand-primary-hover text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-glow-orange transition-all active:scale-95"
               >
                 <Gavel
@@ -319,6 +345,76 @@ export default function DisputeDetailClient({
             )}
           </div>
         </div>
+
+        {/* Escalate to Admin form */}
+        {showEscalateForm && canAct && !isEscalated && viewerRole !== "ADMIN" && (
+          <div className="bg-purple-500/10 border border-purple-500/20 rounded-3xl p-8 animate-fade-in">
+            <h4 className="text-sm font-black text-purple-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+              <AlertTriangle size={16} />
+              Chuyển tiếp lên Admin
+            </h4>
+            <div className="space-y-5">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                  Lý do chuyển <span className="text-rose-400">*</span>
+                </label>
+                <textarea
+                  value={escalateNote}
+                  onChange={(e) => {
+                    setEscalateNote(e.target.value);
+                    if (escalateValidationError) setEscalateValidationError("");
+                  }}
+                  placeholder="VD: Không đủ bằng chứng để kết luận, seller phản hồi không hợp tác..."
+                  rows={3}
+                  className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none"
+                />
+                {escalateValidationError && (
+                  <p className="mt-1 text-xs font-bold text-rose-400">{escalateValidationError}</p>
+                )}
+              </div>
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                  Đề xuất hướng xử lý <span className="text-gray-600">(tuỳ chọn)</span>
+                </label>
+                <select
+                  value={escalateSuggestion}
+                  onChange={(e) => setEscalateSuggestion(e.target.value)}
+                  className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white focus:outline-none focus:border-purple-500/50"
+                >
+                  <option value="">-- Không có đề xuất --</option>
+                  <option value="REFUND_BUYER">Hoàn tiền toàn bộ</option>
+                  <option value="PARTIAL_REFUND">Hoàn tiền một phần</option>
+                  <option value="RELEASE_FUND_SELLER">Từ chối khiếu nại</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowEscalateForm(false);
+                  setEscalateNote("");
+                  setEscalateSuggestion("");
+                  setEscalateValidationError("");
+                }}
+                className="px-6 py-3 bg-white/5 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 transition-all"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => void handleEscalate()}
+                disabled={escalating || !escalateNote.trim()}
+                className="px-6 py-3 bg-purple-500 text-white font-bold text-xs rounded-xl hover:bg-purple-600 transition-all disabled:opacity-50 flex items-center gap-2"
+              >
+                {escalating ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <ArrowUpRight size={14} />
+                )}
+                Xác nhận chuyển
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Request more info form */}
         {showRequestInfo && (
@@ -400,6 +496,11 @@ export default function DisputeDetailClient({
                 </span>
               </div>
 
+              {evidenceError && (
+                <p className="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3">
+                  ⚠ {evidenceError}
+                </p>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 {detail.evidence.length > 0 ? (
                   detail.evidence.map((item, index) => (
@@ -410,17 +511,34 @@ export default function DisputeDetailClient({
                       disabled={!item.url || openingEvidenceIndex === index}
                       className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 text-left hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-[0.98] overflow-hidden"
                     >
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-brand-primary group-hover:border-brand-primary/30 transition-all">
-                          {openingEvidenceIndex === index ? (
-                            <Loader2 size={24} className="animate-spin" />
-                          ) : (
-                            <FileText size={24} />
-                          )}
-                        </div>
+                      <div className="flex items-center justify-between mb-4">
+                        {item.type === "IMAGE" && item.url ? (
+                          <div className="w-full h-28 rounded-xl overflow-hidden bg-white/5 border border-white/10 mb-2">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={item.url}
+                              alt={`Bằng chứng ${index + 1}`}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-brand-primary group-hover:border-brand-primary/30 transition-all">
+                            {openingEvidenceIndex === index ? (
+                              <Loader2 size={24} className="animate-spin" />
+                            ) : (
+                              <FileText size={24} />
+                            )}
+                          </div>
+                        )}
+                        {openingEvidenceIndex === index && (
+                          <Loader2 size={16} className="animate-spin text-brand-primary ml-2" />
+                        )}
                         <ExternalLink
                           size={16}
-                          className="text-gray-700 group-hover:text-brand-primary transition-colors"
+                          className="text-gray-700 group-hover:text-brand-primary transition-colors ml-auto"
                         />
                       </div>
                       <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
@@ -443,6 +561,65 @@ export default function DisputeDetailClient({
                 )}
               </div>
             </div>
+
+            {/* Inspector Escalation info — visible to admin when dispute is ESCALATED */}
+            {isEscalated && viewerRole === "ADMIN" && detail.escalationNote && (
+              <div className="bg-purple-500/10 border border-purple-500/20 rounded-[2.5rem] p-8 animate-fade-in">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                    <AlertTriangle size={18} />
+                  </div>
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">
+                    Inspector Escalation
+                  </h4>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                      Lý do chuyển
+                    </p>
+                    <p className="text-sm font-medium text-white leading-relaxed">
+                      &ldquo;{detail.escalationNote}&rdquo;
+                    </p>
+                  </div>
+                  {detail.escalationSuggestion && (
+                    <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                        Đề xuất xử lý
+                      </p>
+                      <p className="text-sm font-bold text-purple-300">
+                        {detail.escalationSuggestion === "REFUND_BUYER"
+                          ? "Hoàn tiền toàn bộ"
+                          : detail.escalationSuggestion === "PARTIAL_REFUND"
+                            ? "Hoàn tiền một phần"
+                            : detail.escalationSuggestion === "RELEASE_FUND_SELLER"
+                              ? "Từ chối khiếu nại"
+                              : detail.escalationSuggestion}
+                      </p>
+                    </div>
+                  )}
+                  {detail.escalatedBy && (
+                    <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                        Người chuyển
+                      </p>
+                      <p className="text-sm font-bold text-white">
+                        {detail.escalatedBy.name}
+                      </p>
+                      <p className="text-xs text-gray-500">{detail.escalatedBy.email}</p>
+                    </div>
+                  )}
+                  {detail.escalatedAt && (
+                    <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                        Thời gian chuyển
+                      </p>
+                      <p className="text-sm font-bold text-white">{detail.escalatedAt}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-200">

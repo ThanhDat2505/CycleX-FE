@@ -15,9 +15,10 @@ interface RouteInfoCardProps {
 }
 
 /** Contact point display (pickup or dropoff) */
-function ContactPoint({ contact, label, dotColor, borderColor }: {
+function ContactPoint({ contact, label, roleLabel, dotColor, borderColor }: {
     contact: ContactInfo;
     label: string;
+    roleLabel: string;
     dotColor: string;
     borderColor: string;
 }) {
@@ -29,7 +30,12 @@ function ContactPoint({ contact, label, dotColor, borderColor }: {
                 </div>
                 <div className="flex-1">
                     <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">{label}</p>
-                    <h4 className="text-base font-semibold text-gray-900">{contact.name}</h4>
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="text-base font-semibold text-gray-900">{roleLabel}</h4>
+                        {contact.name && contact.name !== roleLabel && (
+                            <span className="text-sm text-gray-500">({contact.name})</span>
+                        )}
+                    </div>
                     <p className="text-sm text-gray-600 mt-1">{contact.address}</p>
                     <div className="flex items-center gap-3 mt-3">
                         <a href={`tel:${contact.phone}`} className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-full transition-colors">
@@ -62,6 +68,7 @@ export function RouteInfoCard({ sender, receiver }: RouteInfoCardProps) {
             <ContactPoint
                 contact={sender}
                 label={MESSAGES.S62_PICKUP_LABEL}
+                roleLabel="Người bán"
                 dotColor="bg-blue-500"
                 borderColor="border-blue-100"
             />
@@ -71,6 +78,7 @@ export function RouteInfoCard({ sender, receiver }: RouteInfoCardProps) {
             <ContactPoint
                 contact={receiver}
                 label={MESSAGES.S62_DROPOFF_LABEL}
+                roleLabel="Người mua"
                 dotColor="bg-orange-500"
                 borderColor="border-orange-100"
             />

@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
     ChevronLeft, Loader2, AlertTriangle, CheckCircle, 
     XCircle, ShieldAlert, History, MessageSquare, 
     Image as ImageIcon, ExternalLink, Zap, Clock,
-    ArrowUpRight, Send
+    ArrowUpRight, Send, Upload, X
 } from "lucide-react";
 import { getDisputeById, overrideDispute, replyToDispute, getDisputeResult } from "@/app/services/buyerDisputeService";
+import { uploadImage } from "@/app/services/imageUploadService";
 import { Dispute, DisputeResultResponse } from "@/app/types/dispute";
 import { useToast } from "@/app/contexts/ToastContext";
 import { formatDate } from "@/app/utils/format";
@@ -26,6 +27,17 @@ export default function DisputeResultPage() {
     // Reply state (for NEED_MORE_INFO)
     const [replyContent, setReplyContent] = useState('');
     const [isReplying, setIsReplying] = useState(false);
+    const [selectedImages, setSelectedImages] = useState<File[]>([]);
+    const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Cleanup blob URLs on unmount
+    useEffect(() => {
+        return () => {
+            imagePreviews.forEach(p => URL.revokeObjectURL(p));
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const disputeId = Number(params.id);
 
@@ -64,17 +76,43 @@ export default function DisputeResultPage() {
         }
     }, [disputeId]);
 
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files ?? []);
+        if (files.length === 0) return;
+        const newPreviews = files.map(f => URL.createObjectURL(f));
+        setSelectedImages(prev => [...prev, ...files]);
+        setImagePreviews(prev => [...prev, ...newPreviews]);
+        // Reset input so same file can be re-selected
+        e.target.value = '';
+    };
+
+    const handleRemoveImage = (idx: number) => {
+        URL.revokeObjectURL(imagePreviews[idx]);
+        setSelectedImages(prev => prev.filter((_, i) => i !== idx));
+        setImagePreviews(prev => prev.filter((_, i) => i !== idx));
+    };
+
     const handleReply = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!replyContent.trim()) {
-            addToast('Vui lòng nhập nội dung phản hồi.', 'error');
+        if (!replyContent.trim() && selectedImages.length === 0) {
+            addToast('Vui lòng nhập nội dung hoặc đính kèm ít nhất 1 hình ảnh.', 'error');
             return;
         }
         setIsReplying(true);
         try {
-            const updated = await replyToDispute(disputeId, replyContent);
+            // Upload images before submitting
+            let uploadedUrls: string[] = [];
+            if (selectedImages.length > 0) {
+                uploadedUrls = await Promise.all(
+                    selectedImages.map(img => uploadImage(img, `dispute_${disputeId}`))
+                );
+            }
+            const updated = await replyToDispute(disputeId, replyContent.trim() || '(Đính kèm hình ảnh)', uploadedUrls);
             setDispute(updated);
             setReplyContent('');
+            imagePreviews.forEach(p => URL.revokeObjectURL(p));
+            setSelectedImages([]);
+            setImagePreviews([]);
             addToast('Đã gửi phản hồi bổ sung thành công!', 'success');
         } catch (err: any) {
             addToast(err.message || 'Lỗi khi gửi phản hồi.', 'error');
@@ -298,9 +336,21 @@ export default function DisputeResultPage() {
                                         <Clock size={16} className="text-amber-400" />
                                         <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">Yêu cầu bổ sung thông tin</h4>
                                     </div>
-                                    <p className="text-sm font-medium text-gray-300 leading-relaxed mb-2">
-                                        Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc bằng chứng cho khiếu nại này. Vui lòng phản hồi bên dưới.
-                                    </p>
+                                    {/* Show latest inspector message if exists */}
+                                    {(() => {
+                                        const inspectorMsg = [...(dispute.evidence ?? [])]
+                                            .reverse()
+                                            .find(e => e.uploaderRole === 'INSPECTOR' && e.type === 'TEXT');
+                                        return inspectorMsg?.text ? (
+                                            <p className="text-sm font-medium text-amber-200/80 leading-relaxed italic mb-2 bg-amber-500/10 px-4 py-3 rounded-xl border border-amber-500/20">
+                                                &ldquo;{inspectorMsg.text}&rdquo;
+                                            </p>
+                                        ) : (
+                                            <p className="text-sm font-medium text-gray-300 leading-relaxed mb-2">
+                                                Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc bằng chứng cho khiếu nại này. Vui lòng phản hồi bên dưới.
+                                            </p>
+                                        );
+                                    })()}
                                 </div>
                             )}
                         </div>
@@ -320,13 +370,63 @@ export default function DisputeResultPage() {
                                         onChange={(e) => setReplyContent(e.target.value)}
                                         placeholder="Nhập thông tin bổ sung, mô tả chi tiết hơn hoặc đính kèm thêm bằng chứng..."
                                         rows={4}
-                                        required
                                         className="w-full px-6 py-4 bg-black/20 border border-amber-500/20 rounded-2xl text-sm font-medium text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none"
                                     />
+
+                                    {/* Image upload section */}
+                                    <div className="mt-4">
+                                        <input
+                                            ref={fileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            className="hidden"
+                                            onChange={handleImageSelect}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="flex items-center gap-2 px-4 py-2 bg-black/20 border border-amber-500/20 hover:border-amber-500/50 rounded-xl text-xs font-bold text-amber-400 hover:text-amber-300 transition-all"
+                                        >
+                                            <Upload size={14} />
+                                            Đính kèm hình ảnh bằng chứng
+                                            {selectedImages.length > 0 && (
+                                                <span className="ml-1 px-2 py-0.5 bg-amber-500/20 rounded-full text-amber-300">
+                                                    {selectedImages.length}
+                                                </span>
+                                            )}
+                                        </button>
+
+                                        {/* Image previews */}
+                                        {imagePreviews.length > 0 && (
+                                            <div className="flex flex-wrap gap-3 mt-3">
+                                                {imagePreviews.map((preview, idx) => (
+                                                    <div
+                                                        key={idx}
+                                                        className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-500/30 group"
+                                                    >
+                                                        <img
+                                                            src={preview}
+                                                            alt={`Ảnh ${idx + 1}`}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleRemoveImage(idx)}
+                                                            className="absolute top-1 right-1 w-5 h-5 bg-black/70 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-rose-500"
+                                                        >
+                                                            <X size={10} className="text-white" />
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
                                     <div className="flex justify-end gap-3 mt-4">
                                         <button
                                             type="submit"
-                                            disabled={isReplying || !replyContent.trim()}
+                                            disabled={isReplying || (!replyContent.trim() && selectedImages.length === 0)}
                                             className="px-8 py-3 bg-amber-500 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-amber-600 transition-all shadow-lg active:scale-[0.98] disabled:opacity-50 flex items-center gap-2"
                                         >
                                             {isReplying ? <><Loader2 size={14} className="animate-spin" /> Đang gửi...</> : <><Send size={14} /> Gửi phản hồi</>}
