@@ -58,10 +58,7 @@ export default function InspectorSummary() {
     return (
       <div style={{ padding: "40px" }}>
         <h2>Không tìm thấy biên bản kiểm định</h2>
-        <button
-
-          className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer mt-4"
-        >
+        <button className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer mt-4">
           <span className="material-symbols-outlined text-[18px]">
             arrow_back
           </span>
@@ -79,7 +76,10 @@ export default function InspectorSummary() {
 
   return (
     <div className="summary-container fade-in">
-      <div className="meta" style={{ marginBottom: "16px", marginTop: "16px", padding: "0 40px" }}>
+      <div
+        className="meta"
+        style={{ marginBottom: "16px", marginTop: "16px", padding: "0 40px" }}
+      >
         <button
           onClick={() => router.back()}
           className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
@@ -92,7 +92,7 @@ export default function InspectorSummary() {
         </button>
       </div>
 
-      <h1 className="summary-title">Inspection Summary #{report.id}</h1>
+      <h1 className="summary-title">Tóm Tắt Kiểm Định #{report.id}</h1>
 
       <div className="summary-grid">
         <div className="summary-card hover-card">
@@ -112,13 +112,13 @@ export default function InspectorSummary() {
                 report.status === "approve" ? "badge-pass" : "badge-fail"
               }
             >
-              {report.status === "approve" ? "PASS" : "FAIL"}
+              {report.status === "approve" ? "Đạt" : "Không đạt"}
             </span>
           </div>
 
           <div className="score-section">
             <div className="score-header">
-              <span>Overall Score</span>
+              <span>Điểm tổng</span>
               <strong>{animatedScore}/100</strong>
             </div>
 
@@ -138,7 +138,7 @@ export default function InspectorSummary() {
 
         <div className="summary-card hover-card">
           <h2>
-            <strong>2. Checklist kiểm định</strong>
+            <strong>2. Bảng kiểm định</strong>
           </h2>
 
           <table className="summary-table">
@@ -157,7 +157,7 @@ export default function InspectorSummary() {
                       ? "Khung sườn"
                       : key === "paint"
                         ? "Sơn / Decal"
-                        : "Drivetrain"}
+                        : "Hệ thống truyền động"}
                   </td>
                   <td>
                     <span
@@ -167,7 +167,9 @@ export default function InspectorSummary() {
                           : "badge-fail"
                       }
                     >
-                      {report.checklist[key].result.toUpperCase()}
+                      {report.checklist[key].result === "pass"
+                        ? "Đạt"
+                        : "Không đạt"}
                     </span>
                   </td>
                   <td>{report.checklist[key].remark}</td>
@@ -185,8 +187,15 @@ export default function InspectorSummary() {
 
         <div className="summary-media-grid">
           {report.media.map((img, idx) => (
-            <div key={idx} className="w-full aspect-[4/3] overflow-hidden rounded-lg">
-              <img src={img} alt={`media-${idx}`} className="w-full h-full object-cover" />
+            <div
+              key={idx}
+              className="w-full aspect-[4/3] overflow-hidden rounded-lg"
+            >
+              <img
+                src={img}
+                alt={`media-${idx}`}
+                className="w-full h-full object-cover"
+              />
             </div>
           ))}
         </div>

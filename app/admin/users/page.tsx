@@ -33,7 +33,7 @@ import { useToast } from "../../contexts/ToastContext";
 
 export default function AdminUsersPage() {
   useEffect(() => {
-    document.title = "User Management | CycleX Admin";
+    document.title = "Quản Lý Người Dùng | CycleX Admin";
   }, []);
 
   const { addToast } = useToast();
@@ -261,9 +261,9 @@ export default function AdminUsersPage() {
               </span>
             </div>
             <h1 className="text-5xl md:text-6xl font-extrabold tracking-tighter leading-none mb-4">
-              User{" "}
+              Quản Lý{" "}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-blue-400">
-                Management
+                Người Dùng
               </span>
             </h1>
             <p className="text-gray-400 text-lg max-w-xl font-medium">

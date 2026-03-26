@@ -122,7 +122,7 @@ export default function InspectorRequestDetail() {
               </h1>
               <div className="meta">
                 <div className="metaItem">
-                  <span className="metaLabel">Listing:</span>
+                  <span className="metaLabel">Tin đăng:</span>
                   <strong>#{idParam}</strong>
                 </div>
                 <div className="metaItem">
@@ -278,20 +278,20 @@ export default function InspectorRequestDetail() {
                   </div>
                   <div className="irdSpecGrid">
                     <div className="specItem">
-                      <div className="specLabel">Brand</div>
+                      <div className="specLabel">Hãng</div>
                       <div className="specValue">{brand}</div>
                     </div>
                     <div className="specItem">
-                      <div className="specLabel">Frame</div>
+                      <div className="specLabel">Khung</div>
                       <div className="specValue">{frame}</div>
                     </div>
                     <div className="specItem">
-                      <div className="specLabel">Weight</div>
+                      <div className="specLabel">Trọng lượng</div>
                       <div className="specValue">{weight}</div>
                     </div>
                     <div className="specItem">
-                      <div className="specLabel">Condition</div>
-                      <div className="specValue">Used</div>
+                      <div className="specLabel">Tình trạng</div>
+                      <div className="specValue">Đã qua sử dụng</div>
                     </div>
                   </div>
                 </div>

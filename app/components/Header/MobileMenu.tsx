@@ -8,76 +8,88 @@
  * - Guest: sees both
  */
 
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
+import React from "react";
+import Link from "next/link";
 
 interface MobileMenuProps {
-    isOpen: boolean;
-    isLoggedIn: boolean;
-    isRestrictedRole: boolean;
-    userRole?: string;
-    onClose: () => void;
-    onSellClick: () => void;
-    isLoading?: boolean;
+  isOpen: boolean;
+  isLoggedIn: boolean;
+  isRestrictedRole: boolean;
+  userRole?: string;
+  onClose: () => void;
+  onSellClick: () => void;
+  isLoading?: boolean;
 }
 
-const LINK_STYLE = 'text-white hover:text-brand-primary transition-colors text-left';
+const LINK_STYLE =
+  "text-white hover:text-brand-primary transition-colors text-left";
 
 export const MobileMenu: React.FC<MobileMenuProps> = ({
-    isOpen,
-    isLoggedIn,
-    isRestrictedRole,
-    userRole,
-    onClose,
-    onSellClick,
-    isLoading,
+  isOpen,
+  isLoggedIn,
+  isRestrictedRole,
+  userRole,
+  onClose,
+  onSellClick,
+  isLoading,
 }) => {
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    const isSeller = userRole === 'SELLER';
-    const isBuyer = userRole === 'BUYER';
+  const isSeller = userRole === "SELLER";
+  const isBuyer = userRole === "BUYER";
 
-    return (
-        <nav className="md:hidden mt-4 pb-4 border-t border-gray-700 pt-4">
-            <div className="flex flex-col gap-4">
-                {/* "Mua Xe" — NOT for SELLER */}
-                {!isLoading && !isRestrictedRole && !isSeller && (
-                    <Link href="/listings" onClick={onClose} className={LINK_STYLE}>
-                        Mua Xe
-                    </Link>
-                )}
-                {/* "Bán Xe" — NOT for BUYER */}
-                {!isLoading && !isRestrictedRole && !isBuyer && (
-                    <button
-                        onClick={() => { onSellClick(); onClose(); }}
-                        className={LINK_STYLE}
-                    >
-                        Bán Xe
-                    </button>
-                )}
-                <Link href="/guide" onClick={onClose} className={LINK_STYLE}>
-                    Cẩm Nang
-                </Link>
-                {isLoggedIn && (
-                    <>
-                        {userRole === 'INSPECTOR' && (
-                            <Link href="/inspector/dashboard" onClick={onClose} className={LINK_STYLE}>
-                                Inspector Dashboard
-                            </Link>
-                        )}
-                        <Link href="/profile" onClick={onClose} className={LINK_STYLE}>
-                            Hồ sơ cá nhân
-                        </Link>
-                        <Link href="/notifications" onClick={onClose} className={LINK_STYLE}>
-                            Thông báo
-                        </Link>
-                    </>
-                )}
-            </div>
-        </nav>
-    );
+  return (
+    <nav className="md:hidden mt-4 pb-4 border-t border-gray-700 pt-4">
+      <div className="flex flex-col gap-4">
+        {/* "Mua Xe" — NOT for SELLER */}
+        {!isLoading && !isRestrictedRole && !isSeller && (
+          <Link href="/listings" onClick={onClose} className={LINK_STYLE}>
+            Mua Xe
+          </Link>
+        )}
+        {/* "Bán Xe" — NOT for BUYER */}
+        {!isLoading && !isRestrictedRole && !isBuyer && (
+          <button
+            onClick={() => {
+              onSellClick();
+              onClose();
+            }}
+            className={LINK_STYLE}
+          >
+            Bán Xe
+          </button>
+        )}
+        <Link href="/guide" onClick={onClose} className={LINK_STYLE}>
+          Cẩm Nang
+        </Link>
+        {isLoggedIn && (
+          <>
+            {userRole === "INSPECTOR" && (
+              <Link
+                href="/inspector/dashboard"
+                onClick={onClose}
+                className={LINK_STYLE}
+              >
+                Inspector
+              </Link>
+            )}
+            <Link href="/profile" onClick={onClose} className={LINK_STYLE}>
+              Hồ sơ cá nhân
+            </Link>
+            <Link
+              href="/notifications"
+              onClick={onClose}
+              className={LINK_STYLE}
+            >
+              Thông báo
+            </Link>
+          </>
+        )}
+      </div>
+    </nav>
+  );
 };
 
 export default MobileMenu;

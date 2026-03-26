@@ -9,7 +9,7 @@ import type { PendingStatus } from "@/app/types/pendingTypes";
 
 const STATUS_LABEL: Record<PendingStatus | "DONE", string> = {
   PENDING: "Đang chờ duyệt",
-  REVIEWING: "Đang review",
+  REVIEWING: "Đang xem xét",
   NEED_MORE_INFO: "Cần bổ sung",
   DISPUTE: "Tranh chấp",
   FLAGGED: "Bị flag",
@@ -120,118 +120,124 @@ export default function PendingListClient() {
     <div className="page">
       <div className="contentWrapper">
         <div className="filterCard">
-        <div className="filterRow">
-          <div className="filterField filterGrow">
-            <label className="filterLabel">Tìm kiếm</label>
-            <input
-              className="filterInput"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="Tìm theo tên sản phẩm, cửa hàng, #ID..."
-            />
+          <div className="filterRow">
+            <div className="filterField filterGrow">
+              <label className="filterLabel">Tìm kiếm</label>
+              <input
+                className="filterInput"
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Tìm theo tên sản phẩm, cửa hàng, #ID..."
+              />
+            </div>
+
+            <div className="filterField" style={{ minWidth: 260 }}>
+              <label className="filterLabel">Sắp xếp</label>
+              <select
+                className="filterInput"
+                value={sort}
+                onChange={(e) => setSort(e.target.value as "new" | "old")}
+              >
+                <option value="new">Mới nhất</option>
+                <option value="old">Cũ nhất</option>
+              </select>
+            </div>
           </div>
 
-          <div className="filterField" style={{ minWidth: 260 }}>
-            <label className="filterLabel">Sắp xếp</label>
-            <select
-              className="filterInput"
-              value={sort}
-              onChange={(e) => setSort(e.target.value as "new" | "old")}
+          <div className="filterActions">
+            <button
+              className="btn btnGhost"
+              type="button"
+              onClick={() => {
+                setQ("");
+                setSort("new");
+              }}
             >
-              <option value="new">Mới nhất</option>
-              <option value="old">Cũ nhất</option>
-            </select>
+              Xóa bộ lọc
+            </button>
           </div>
         </div>
 
-        <div className="filterActions">
-          <button
-            className="btn btnGhost"
-            type="button"
-            onClick={() => {
-              setQ("");
-              setSort("new");
-            }}
-          >
-            Xóa bộ lọc
-          </button>
-        </div>
-      </div>
+        <section className="tableCard">
+          {loading && <div style={{ padding: 20 }}>Đang tải dữ liệu...</div>}
+          {!loading && error && (
+            <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
+          )}
+          {!loading && !error && (
+            <table
+              className="table"
+              style={{ tableLayout: "fixed", width: "100%" }}
+            >
+              <colgroup>
+                <col style={{ width: "35%" }} />
+                <col style={{ width: "25%" }} />
+                <col style={{ width: "20%" }} />
+                <col style={{ width: "20%" }} />
+              </colgroup>
 
-      <section className="tableCard">
-        {loading && <div style={{ padding: 20 }}>Đang tải dữ liệu...</div>}
-        {!loading && error && (
-          <div style={{ padding: 20, color: "#b91c1c" }}>{error}</div>
-        )}
-        {!loading && !error && (
-          <table className="table" style={{ tableLayout: "fixed", width: "100%" }}>
-            <colgroup>
-              <col style={{ width: "35%" }} />
-              <col style={{ width: "25%" }} />
-              <col style={{ width: "20%" }} />
-              <col style={{ width: "20%" }} />
-            </colgroup>
-
-            <thead className="thead" style={{ color: "black" }}>
-              <tr>
-                <th>Tên sản phẩm</th>
-                <th>Người bán</th>
-                <th>Ngày gửi duyệt</th>
-                <th style={{ textAlign: "center" }}>Hành động</th>
-              </tr>
-            </thead>
-
-            <tbody className="tbody">
-              {rows.map((x) => (
-                <tr key={x.id}>
-                  <td>
-                    <div className="productCell">
-                      <div className="productName">{x.productName}</div>
-
-                      <div className={`statusBadge ${statusClass(x.status)}`}>
-                        {STATUS_LABEL[x.status]}
-                      </div>
-
-                      <div className="productId">#{x.id}</div>
-                    </div>
-                  </td>
-
-                  <td>
-                    <div className="storeName">{x.sellerName}</div>
-                  </td>
-
-                  <td>
-                    <div className="dateText">{formatDate(x.dateISO)}</div>
-                  </td>
-
-                  <td className="actionCell" style={{ textAlign: "center" }}>
-                    <Link
-                      className="viewBtn"
-                      href={`/inspector/review-detail?id=${encodeURIComponent(x.id)}`}
-                    >
-                      <span
-                        className="material-symbols-outlined"
-                        aria-hidden="true"
-                      >
-                        north_east
-                      </span>
-                      Xem chi tiết
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-
-              {rows.length === 0 && (
+              <thead className="thead" style={{ color: "black" }}>
                 <tr>
-                  <td colSpan={4} style={{ padding: 20, textAlign: "center" }}>
-                    Không có listing nào trong danh sách chờ duyệt.
-                  </td>
+                  <th>Tên sản phẩm</th>
+                  <th>Người bán</th>
+                  <th>Ngày gửi duyệt</th>
+                  <th style={{ textAlign: "center" }}>Hành động</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </section>
+              </thead>
+
+              <tbody className="tbody">
+                {rows.map((x) => (
+                  <tr key={x.id}>
+                    <td>
+                      <div className="productCell">
+                        <div className="productName">{x.productName}</div>
+
+                        <div className={`statusBadge ${statusClass(x.status)}`}>
+                          {STATUS_LABEL[x.status]}
+                        </div>
+
+                        <div className="productId">#{x.id}</div>
+                      </div>
+                    </td>
+
+                    <td>
+                      <div className="storeName">{x.sellerName}</div>
+                    </td>
+
+                    <td>
+                      <div className="dateText">{formatDate(x.dateISO)}</div>
+                    </td>
+
+                    <td className="actionCell" style={{ textAlign: "center" }}>
+                      <Link
+                        className="viewBtn"
+                        href={`/inspector/review-detail?id=${encodeURIComponent(x.id)}`}
+                      >
+                        <span
+                          className="material-symbols-outlined"
+                          aria-hidden="true"
+                        >
+                          north_east
+                        </span>
+                        Xem chi tiết
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+
+                {rows.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={4}
+                      style={{ padding: 20, textAlign: "center" }}
+                    >
+                      Không có listing nào trong danh sách chờ duyệt.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
+        </section>
       </div>
     </div>
   );

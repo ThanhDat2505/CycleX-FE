@@ -3,16 +3,16 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  PlusSquare, 
-  ListOrdered, 
-  Activity, 
-  FileText, 
+import {
+  LayoutDashboard,
+  PlusSquare,
+  ListOrdered,
+  Activity,
+  FileText,
   History,
   X,
   User,
-  LogOut
+  LogOut,
 } from "lucide-react";
 import { useSellerNav } from "@/app/contexts/SellerNavContext";
 import { useAuth } from "@/app/hooks/useAuth";
@@ -21,7 +21,7 @@ import "../../seller/seller-drawer.css";
 const NAV_ITEMS = [
   {
     href: "/seller/dashboard",
-    label: "Dashboard",
+    label: "Tổng Quan",
     icon: LayoutDashboard,
   },
   {
@@ -78,14 +78,16 @@ export default function SellerSidebar() {
     <>
       {/* Backdrop */}
       {isSidebarOpen && (
-        <div 
+        <div
           className="seller-drawer-overlay opacity-100 pointer-events-auto"
           onClick={closeSidebar}
         />
       )}
 
       {/* Drawer */}
-      <aside className={`seller-drawer ${isSidebarOpen ? "seller-drawer-open" : "seller-drawer-closed"}`}>
+      <aside
+        className={`seller-drawer ${isSidebarOpen ? "seller-drawer-open" : "seller-drawer-closed"}`}
+      >
         <div className="flex flex-col h-full">
           {/* Header */}
           <div className="p-6 flex items-center justify-between border-b border-white/10">
@@ -93,9 +95,11 @@ export default function SellerSidebar() {
               <div className="w-8 h-8 bg-brand-primary rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">C</span>
               </div>
-              <span className="text-xl font-bold text-white">Seller Center</span>
+              <span className="text-xl font-bold text-white">
+                Kênh Người Bán
+              </span>
             </div>
-            <button 
+            <button
               onClick={closeSidebar}
               className="p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors"
             >
@@ -108,7 +112,7 @@ export default function SellerSidebar() {
             {NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.href);
-              
+
               return (
                 <Link
                   key={item.href}
@@ -129,11 +133,15 @@ export default function SellerSidebar() {
                 {user?.fullName?.charAt(0) || <User size={20} />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">{user?.fullName || "Seller"}</p>
-                <p className="text-xs text-gray-400 truncate">Professional Seller</p>
+                <p className="text-sm font-bold text-white truncate">
+                  {user?.fullName || "Seller"}
+                </p>
+                <p className="text-xs text-gray-400 truncate">
+                  Người Bán Chuyên Nghiệp
+                </p>
               </div>
             </div>
-            <button 
+            <button
               onClick={logout}
               className="flex items-center gap-2 w-full px-4 py-3 rounded-xl text-sm font-semibold text-red-400 hover:bg-red-400/10 transition-all active:scale-95"
             >

@@ -29,9 +29,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900 mb-6">
-        Thông tin xe
-      </h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-6">Thông tin xe</h2>
 
       {/* Title */}
       <div>
@@ -133,7 +131,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
           >
             <option value="New">Mới 100%</option>
-            <option value="Like New">Như mới (Like New)</option>
+            <option value="Like New">Như mới</option>
             <option value="Excellent">Rất tốt</option>
             <option value="Good">Tốt</option>
             <option value="Fair">Khá</option>
@@ -187,7 +185,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
         {/* Usage Time */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Usage Time (Ngày bắt đầu sử dụng)
+            Thời Gian Sử Dụng (Ngày bắt đầu sử dụng)
           </label>
           <input
             type="date"

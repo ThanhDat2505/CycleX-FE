@@ -248,7 +248,7 @@ export default function AdminDisputeListClient() {
                   size={14}
                   className={refreshing ? "animate-spin" : ""}
                 />
-                Refresh
+                Làm mới
               </button>
             </div>
           </div>
@@ -286,7 +286,7 @@ export default function AdminDisputeListClient() {
                         ID
                       </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
-                        Listing & Order
+                        Tin Đăng & Giao Dịch
                       </th>
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         Người tạo
@@ -318,21 +318,21 @@ export default function AdminDisputeListClient() {
                         <td className="px-8 py-6">
                           <div>
                             <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
-                              {row.listingTitle || "N/A"}
+                              {row.listingTitle || "—"}
                             </p>
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
                                 Order-{row.transactionId}
                               </span>
                               <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
-                                {row.reasonText || "N/A"}
+                                {row.reasonText || "—"}
                               </span>
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <span className="text-sm font-bold text-gray-300">
-                            {row.requesterName || "N/A"}
+                            {row.requesterName || "—"}
                           </span>
                         </td>
                         <td className="px-8 py-6 text-center">
@@ -346,7 +346,7 @@ export default function AdminDisputeListClient() {
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
                             <span className="text-[11px] font-black text-white">
-                              {row.createdAt?.split("T")[0] || "N/A"}
+                              {row.createdAt?.split("T")[0] || "—"}
                             </span>
                             <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
                               {row.createdAt?.split("T")[1]?.split(".")[0] ||
