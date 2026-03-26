@@ -15,8 +15,6 @@ import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
-import { useSellerNav } from "../contexts/SellerNavContext";
-import { Menu } from "lucide-react";
 
 // Sub-components (explicit imports to avoid circular reference)
 import { NavLinks } from "./Header/NavLinks";
@@ -30,7 +28,6 @@ export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoggedIn, logout, user, isLoading } = useAuth();
-  const { toggleSidebar } = useSellerNav();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Role restrictions: ADMIN, SHIPPER, INSPECTOR get no nav/search/sell
@@ -56,17 +53,6 @@ export default function Header() {
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* Seller Hamburger (Visible after login, hidden for INSPECTOR) */}
-            {isLoggedIn && user?.role !== "INSPECTOR" && (
-              <button
-                onClick={toggleSidebar}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white hover:text-brand-primary"
-                aria-label="Toggle Seller Menu"
-              >
-                <Menu size={24} />
-              </button>
-            )}
-
             {/* Logo */}
             <Link
               href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "INSPECTOR" ? "/inspector/dashboard" : "/"}
