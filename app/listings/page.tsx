@@ -119,7 +119,7 @@ function ListingsContent() {
         return <ListingsPageSkeleton />;
     }
 
-    if (userRole === 'SHIPPER' || userRole === 'SELLER') {
+    if (userRole === 'SHIPPER' || userRole === 'SELLER' || userRole === 'INSPECTOR') {
         return null;
     }
 

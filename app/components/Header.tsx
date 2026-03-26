@@ -33,9 +33,8 @@ export default function Header() {
   const { toggleSidebar } = useSellerNav();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Role restrictions:
-  // Keep navigator visible for INSPECTOR (only restrict ADMIN/SHIPPER here)
-  const isRestrictedRole = !!user && ["ADMIN", "SHIPPER"].includes(user.role);
+  // Role restrictions: ADMIN, SHIPPER, INSPECTOR get no nav/search/sell
+  const isRestrictedRole = !!user && ["ADMIN", "SHIPPER", "INSPECTOR"].includes(user.role);
   const isBuyer = user?.role === "BUYER";
 
   // Handle sell button click with auth check — blocks BUYER and restricted roles
@@ -57,8 +56,8 @@ export default function Header() {
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* Seller Hamburger (Visible after login) - Far Left */}
-            {isLoggedIn && (
+            {/* Seller Hamburger (Visible after login, hidden for INSPECTOR) */}
+            {isLoggedIn && user?.role !== "INSPECTOR" && (
               <button
                 onClick={toggleSidebar}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white hover:text-brand-primary"
@@ -70,7 +69,7 @@ export default function Header() {
 
             {/* Logo */}
             <Link
-              href="/"
+              href={user?.role === "INSPECTOR" ? "/inspector/dashboard" : "/"}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
