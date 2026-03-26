@@ -110,7 +110,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
             <option value="">Chọn loại xe</option>
             {BIKE_CATEGORIES.map((cat) => (
               <option key={cat.slug} value={cat.apiValue}>
-                {cat.icon} {cat.name}
+                {cat.name}
               </option>
             ))}
           </select>
