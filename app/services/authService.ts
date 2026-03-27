@@ -46,7 +46,7 @@ export const authService = {
             if (!data.user.status || data.user.status !== 'ACTIVE') {
                 throw {
                     status: 401,
-                    message: 'Please verify your email',
+                    message: 'Vui lòng xác minh email của bạn',
                 }
             }
             // Save token and user data if login successful

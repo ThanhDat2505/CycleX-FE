@@ -151,9 +151,9 @@ export function VerifyEmailForm() {
       }
     } catch (err: any) {
       if (err.status === 404) {
-        setError("Email not found. Please register first.");
+        setError("Email không tồn tại. Vui lòng đăng ký trước.");
       } else if (err.status === 429) {
-        setError("Too many requests. Please try again later.");
+        setError("Quá nhiều yêu cầu. Vui lòng thử lại sau.");
       } else {
         setError(handleAuthError(err));
       }
@@ -193,12 +193,12 @@ export function VerifyEmailForm() {
       {/* OTP Input */}
       <div>
         <Input
-          label="OTP Code"
+          label="Mã OTP"
           id="otp"
           type="text"
           value={otp}
           onChange={setOtp}
-          placeholder="Enter 6-digit code"
+          placeholder="Nhập mã 6 chữ số"
           maxLength={6}
           disabled={isLoading}
         />

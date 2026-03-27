@@ -306,7 +306,7 @@ export default function InspectorRequestDetail() {
                     <div className="irdCheckTitle">
                       Ảnh số khung / serial (bắt buộc)
                     </div>
-                    <span className="irdPill missing">MISSING</span>
+                    <span className="irdPill missing">BỊ THIẾU</span>
                   </div>
                 </div>
               </div>
