@@ -39,10 +39,12 @@ export function StatCard({
                     <div className="flex items-baseline gap-2 mt-2">
                         <p className={`text-4xl font-bold ${textColor}`}>{value}</p>
                     </div>
+                    {subtext && (
                     <p className="text-xs text-gray-400 mt-1 flex items-center gap-1">
                         {subtext}
                         <ArrowRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity -ml-1 group-hover:ml-0" />
                     </p>
+                    )}
                 </div>
                 <div className={`w-12 h-12 ${bgColor} rounded-lg flex items-center justify-center ${textColor}`}>
                     <Icon className="w-6 h-6" />

@@ -211,9 +211,7 @@ export default function DisputeDetailClient({
             onClick={() => router.back()}
             className="text-sm font-extrabold text-gray-500 hover:text-white transition-colors inline-flex items-center justify-center gap-1 bg-transparent border-none p-0 cursor-pointer w-full mt-4"
           >
-            <span className="material-symbols-outlined text-[18px]">
-              arrow_back
-            </span>
+            <ChevronLeft size={18} />
             Quay lại
           </button>
         </div>
@@ -254,13 +252,11 @@ export default function DisputeDetailClient({
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5">
           <div className="animate-slide-up">
             <Link
-              href="/inspector/disputes"
+              href={viewerRole === "ADMIN" ? "/admin/disputes" : "/inspector/disputes"}
               className="text-sm font-extrabold text-gray-500 hover:text-white transition-colors mb-6 inline-flex items-center gap-1"
               style={{ textDecoration: "none" }}
             >
-              <span className="material-symbols-outlined text-[18px]">
-                arrow_back
-              </span>
+              <ChevronLeft size={18} />
               Quay lại
             </Link>
             <div className="flex items-center gap-4 mb-4">
