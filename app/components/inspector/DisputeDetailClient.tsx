@@ -32,6 +32,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { formatDate } from "@/app/utils/format";
+import { TRANSACTION_STATUS_LABELS, type TransactionStatus } from "@/app/constants/transactionStatus";
 
 export default function DisputeDetailClient({
   disputeId,
@@ -508,11 +509,11 @@ export default function DisputeDetailClient({
                     <ImageIcon size={20} />
                   </div>
                   <h3 className="text-lg font-black tracking-widest uppercase">
-                    Evidence Repositories
+                    Kho Bằng Chứng
                   </h3>
                 </div>
                 <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  {detail.evidence.length} OBJECTS
+                  {detail.evidence.length} đối tượng
                 </span>
               </div>
 
@@ -568,8 +569,8 @@ export default function DisputeDetailClient({
                       </div>
                       <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
                         {item.uploaderRole
-                          ? `SOURCE: ${item.uploaderRole}`
-                          : "SYSTEM OBJECT"}
+                          ? `Nguồn: ${item.uploaderRole}`
+                          : "Đối tượng hệ thống"}
                       </span>
                       <h4 className="text-xs font-bold text-white truncate group-hover:text-brand-primary transition-colors">
                         {formatDate(detail.createdAt).split(" ")[0]} -{" "}
@@ -595,7 +596,7 @@ export default function DisputeDetailClient({
                     <AlertTriangle size={18} />
                   </div>
                   <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">
-                    Inspector Escalation
+                    Chuyển Tiếp Lên Admin
                   </h4>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -656,14 +657,14 @@ export default function DisputeDetailClient({
                 <div className="flex items-center gap-3 mb-2">
                   <History size={18} className="text-brand-primary" />
                   <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
-                    Transaction Registry
+                    Thông Tin Giao Dịch
                   </h4>
                 </div>
 
                 <div className="space-y-6">
                   <div className="flex justify-between items-center p-5 bg-black/20 rounded-2xl border border-white/5">
                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                      Protocol ID
+                      Mã Giao Dịch
                     </span>
                     <span className="text-sm font-mono font-bold text-brand-primary">
                       #TX-{detail.transaction.id}
@@ -671,10 +672,10 @@ export default function DisputeDetailClient({
                   </div>
                   <div className="flex justify-between items-center p-5 bg-black/20 rounded-2xl border border-white/5">
                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                      Order Status
+                      Trạng Thái Đơn Hàng
                     </span>
                     <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
-                      {detail.transaction.status}
+                      {TRANSACTION_STATUS_LABELS[detail.transaction.status as TransactionStatus] ?? detail.transaction.status}
                     </span>
                   </div>
                 </div>
@@ -682,7 +683,7 @@ export default function DisputeDetailClient({
                 <div className="pt-8 border-t border-white/5 grid grid-cols-2 gap-6">
                   <div className="group">
                     <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">
-                      BUYER
+                      Người Mua
                     </p>
                     <p className="text-xs font-black text-white group-hover:text-brand-primary transition-colors">
                       {detail.buyer.name}
@@ -693,7 +694,7 @@ export default function DisputeDetailClient({
                   </div>
                   <div className="group">
                     <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">
-                      SELLER
+                      Người Bán
                     </p>
                     <p className="text-xs font-black text-white group-hover:text-brand-primary transition-colors">
                       {detail.seller.name}
@@ -709,7 +710,7 @@ export default function DisputeDetailClient({
                 <div className="flex items-center gap-3 mb-2">
                   <ShoppingBag size={18} className="text-brand-primary" />
                   <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
-                    Asset Profile
+                    Thông Tin Xe
                   </h4>
                 </div>
 
@@ -742,7 +743,7 @@ export default function DisputeDetailClient({
 
                 <div className="pt-8 border-t border-white/5">
                   <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-3">
-                    ASSIGNED INSPECTOR
+                    Inspector Phụ Trách
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
@@ -765,8 +766,7 @@ export default function DisputeDetailClient({
 
         <div className="text-center pt-20 border-t border-white/5">
           <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.4em]">
-            CycleX Case ID: {detail.id} • Protocol S-74 Enforcement • Premium AI
-            Workflow
+            CycleX Mã Hồ Sơ: {detail.id}
           </p>
         </div>
       </div>
