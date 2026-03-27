@@ -62,3 +62,13 @@ export const validateOtp = (otp: string): boolean => {
     const otpRegex = /^\d{6}$/;
     return otpRegex.test(otp);
 };
+
+/**
+ * Validate full name (2-50 characters, not blank)
+ * @param name - Full name string to validate
+ * @returns true if valid, false otherwise
+ */
+export const validateFullName = (name: string): boolean => {
+    const trimmed = name.trim();
+    return trimmed.length >= 2 && trimmed.length <= 50;
+};

@@ -84,14 +84,15 @@ export const authService = {
      * @param role - User role (BUYER or SELLER)
      * @returns Promise with register response (no token, fullName will be null)
      */
-    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER', fullName: string): Promise<RegisterResponse> => {
         try {
             const data = await apiCallPOST<RegisterResponse>('/auth/register', {
                 email,
                 password,
                 phone,
                 cccd,
-                role
+                role,
+                fullName
             } as RegisterRequest);
 
             // VALIDATION
@@ -180,7 +181,6 @@ export const authService = {
 
     /**
      * Request a password reset (Forgot Password)
-     * TODO (Backend Integration): BE can change the endpoint '/auth/forgot-password'
      * @param email - User email
      */
     forgotPassword: async (email: string): Promise<{ message: string }> => {
@@ -198,7 +198,6 @@ export const authService = {
 
     /**
      * Reset password with OTP
-     * TODO (Backend Integration): BE can change the endpoint '/auth/reset-password'
      */
     resetPassword: async (email: string, otp: string, newPassword: string): Promise<{ message: string }> => {
         try {

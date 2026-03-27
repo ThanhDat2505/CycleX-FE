@@ -46,6 +46,7 @@ export interface RegisterRequest {
     phone: string;        // Required per API doc
     cccd: string;         // 12 characters
     role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // Required per official API
+    fullName: string;     // Required: user display name
 }
 
 /**
