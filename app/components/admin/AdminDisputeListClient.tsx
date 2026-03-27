@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import {
   adminDisputeService,
   AdminDisputeQuery,
@@ -37,6 +37,47 @@ const SORT_OPTIONS = [
   { value: "updatedAt:DESC", label: "Cập nhật gần đây" },
   { value: "status:ASC", label: "Trạng thái A-Z" },
 ];
+
+const DETAIL_LINK_BASE: CSSProperties = {
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 8,
+  padding: "8px 18px",
+  borderRadius: 12,
+  fontSize: 11,
+  fontWeight: 900,
+  textTransform: "uppercase",
+  letterSpacing: "0.1em",
+  border: "1px solid #e5e7eb",
+  backgroundColor: "#f9fafb",
+  color: "#374151",
+  textDecoration: "none",
+  transition: "all 0.18s ease",
+  cursor: "pointer",
+};
+
+const DETAIL_LINK_HOVER: CSSProperties = {
+  backgroundColor: "#fff7ed",
+  color: "#c2410c",
+  borderColor: "#fed7aa",
+};
+
+/** Standalone link component with explicit inline hover styles to avoid CSS conflicts. */
+function DetailLink({ disputeId }: { disputeId: number }) {
+  const [hovered, setHovered] = useState(false);
+
+  return (
+    <Link
+      href={`/admin/disputes/${disputeId}`}
+      style={hovered ? { ...DETAIL_LINK_BASE, ...DETAIL_LINK_HOVER } : DETAIL_LINK_BASE}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+    >
+      <Eye size={14} />
+      Xem chi tiết
+    </Link>
+  );
+}
 
 export default function AdminDisputeListClient() {
   const [items, setItems] = useState<AdminDisputeListRow[]>([]);
@@ -308,13 +349,19 @@ export default function AdminDisputeListClient() {
                         key={row.id}
                         className="group hover:bg-gray-50 transition-colors"
                       >
+                        {/* ID column – always shows orange badge */}
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                            <div
+                              className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-xs font-black transition-all group-hover:scale-110"
+                              style={{ color: "#FF6B00" }}
+                            >
                               #{row.id}
                             </div>
                           </div>
                         </td>
+
+                        {/* Listing & transaction column */}
                         <td className="px-8 py-6">
                           <div>
                             <p className="text-sm font-black text-gray-900 mb-1">
@@ -322,7 +369,7 @@ export default function AdminDisputeListClient() {
                             </p>
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-black text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
-                                Order-{row.transactionId}
+                                TX-{row.transactionId}
                               </span>
                               <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
                                 {row.reasonText || "—"}
@@ -330,16 +377,22 @@ export default function AdminDisputeListClient() {
                             </div>
                           </div>
                         </td>
+
+                        {/* Requester name – handles null/empty/dash from API */}
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                               <User size={14} className="text-gray-500" />
                             </div>
                             <span className="text-sm font-semibold text-gray-700">
-                              {row.requesterName || "Không rõ"}
+                              {row.requesterName && row.requesterName !== "-"
+                                ? row.requesterName
+                                : "Không rõ"}
                             </span>
                           </div>
                         </td>
+
+                        {/* Status badge */}
                         <td className="px-8 py-6 text-center">
                           <span
                             className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
@@ -348,24 +401,22 @@ export default function AdminDisputeListClient() {
                             {row.status}
                           </span>
                         </td>
+
+                        {/* Created at – increased font size for readability */}
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-gray-900">
+                            <span className="text-sm font-bold text-gray-900">
                               {row.createdAt?.split("T")[0] || "—"}
                             </span>
-                            <span className="text-xs text-gray-500 mt-0.5">
-                              {row.createdAt?.split("T")[1]?.split(".")[0] ||
-                                ""}
+                            <span className="text-sm text-gray-500 mt-0.5">
+                              {row.createdAt?.split("T")[1]?.split(".")[0] || ""}
                             </span>
                           </div>
                         </td>
+
+                        {/* Detail link – inline hover style avoids CSS conflicts */}
                         <td className="px-8 py-6 text-right">
-                          <Link
-                            href={`/admin/disputes/${row.id}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-300 transition-all active:scale-95"
-                          >
-                            <Eye size={14} /> Xem chi tiết
-                          </Link>
+                          <DetailLink disputeId={row.id} />
                         </td>
                       </tr>
                     ))}
