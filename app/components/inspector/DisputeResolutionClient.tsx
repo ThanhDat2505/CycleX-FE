@@ -9,6 +9,16 @@ import {
   type DisputeResolutionPayload,
 } from "@/app/services/inspectorDisputeService";
 import { getErrorMessage } from "@/app/services/errorUtils";
+import {
+  ArrowLeft,
+  User,
+  Store,
+  Banknote,
+  AlertTriangle,
+  Image as ImageIcon,
+  ArrowLeftRight,
+  Lightbulb,
+} from "lucide-react";
 
 const SUGGESTION_LABELS: Record<string, string> = {
   REFUND_BUYER: "Hoàn tiền toàn bộ",
@@ -134,9 +144,7 @@ export default function DisputeResolutionClient({
             className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
             style={{ textDecoration: "none", marginBottom: "8px" }}
           >
-            <span className="material-symbols-outlined text-[18px]">
-              arrow_back
-            </span>
+            <ArrowLeft size={18} />
             Quay lại chi tiết
           </Link>
           <h1 className="page-title" style={{ marginTop: 8 }}>
@@ -161,9 +169,7 @@ export default function DisputeResolutionClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
               {/* Buyer */}
               <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
-                <span className="material-symbols-outlined text-blue-600 mt-0.5">
-                  person
-                </span>
+                <User size={20} className="text-blue-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
                     Người mua
@@ -177,9 +183,7 @@ export default function DisputeResolutionClient({
 
               {/* Seller */}
               <div className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
-                <span className="material-symbols-outlined text-green-600 mt-0.5">
-                  storefront
-                </span>
+                <Store size={20} className="text-green-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
                     Người bán
@@ -193,9 +197,7 @@ export default function DisputeResolutionClient({
 
               {/* Amount */}
               <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                <span className="material-symbols-outlined text-yellow-600 mt-0.5">
-                  payments
-                </span>
+                <Banknote size={20} className="text-yellow-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
                     Số tiền giao dịch
@@ -208,9 +210,7 @@ export default function DisputeResolutionClient({
 
               {/* Reason */}
               <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                <span className="material-symbols-outlined text-red-600 mt-0.5">
-                  report
-                </span>
+                <AlertTriangle size={20} className="text-red-600 mt-0.5 shrink-0" />
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
                     Lý do khiếu nại
@@ -261,18 +261,14 @@ export default function DisputeResolutionClient({
           {detail.escalationNote && (
             <section className="box border-l-4 border-purple-500">
               <h3 className="boxTitle flex items-center gap-2">
-                <span className="material-symbols-outlined text-purple-600">
-                  swap_horiz
-                </span>
+                <ArrowLeftRight size={20} className="text-purple-600" />
                 Thông tin chuyển từ Inspector
               </h3>
 
               <div className="mt-3 space-y-3">
                 {detail.escalationSuggestion && (
                   <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                    <span className="material-symbols-outlined text-purple-600 mt-0.5">
-                      lightbulb
-                    </span>
+                    <Lightbulb size={20} className="text-purple-600 mt-0.5 shrink-0" />
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">
                         Đề xuất hướng xử lý
@@ -316,9 +312,7 @@ export default function DisputeResolutionClient({
           {detail.evidence.length > 0 && (
             <section className="box">
               <h3 className="boxTitle flex items-center gap-2">
-                <span className="material-symbols-outlined text-gray-600">
-                  photo_library
-                </span>
+                <ImageIcon size={20} className="text-gray-600" />
                 Bằng chứng ({detail.evidence.length})
               </h3>
 
