@@ -5,6 +5,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ChevronLeft } from "lucide-react";
+import { useToast } from "@/app/contexts/ToastContext";
 import {
   inspectorService,
   type InspectorReviewDetail,
@@ -18,6 +20,7 @@ export default function ReviewDetailClient({
   listingId?: string;
 }) {
   const router = useRouter();
+  const { addToast } = useToast();
   const [listing, setListing] = useState<InspectorReviewDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -142,10 +145,11 @@ export default function ReviewDetailClient({
           <div className="mt-7 mb-2">
             <Link
               href="/inspector/pending-list"
-              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 w-fit"
+              className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 w-fit group"
               style={{ textDecoration: "none" }}
             >
-              Quay lại
+              <ChevronLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+              <span>Quay lại</span>
             </Link>
           </div>
 
@@ -372,23 +376,23 @@ export default function ReviewDetailClient({
                 </div>
               )}
               <button
-                className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? "cursor-not-allowed" : "btn-success opacity-100 hover:brightness-110"}`}
+                className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? "opacity-90 hover:opacity-100" : "btn-success opacity-100 hover:brightness-110"}`}
                 style={
                   !isChecklistComplete
                     ? {
                         backgroundColor: "#86efac",
                         borderColor: "#86efac",
                         color: "#ffffff",
-                        opacity: 0.9,
                       }
                     : {}
                 }
                 type="button"
-                disabled={!isChecklistComplete || submitting}
+                disabled={submitting}
                 onClick={async () => {
                   if (!isChecklistComplete) {
-                    setApproveErrorMessage(
+                    addToast(
                       "Vui lòng check vào tất cả các mục trong checklist trước khi duyệt",
+                      "warning"
                     );
                     return;
                   }
