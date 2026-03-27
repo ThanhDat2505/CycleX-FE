@@ -305,7 +305,7 @@ export default function AdminUsersPage() {
               <select
                 onChange={handleRoleFilter}
                 value={query.role || ""}
-                className="w-full appearance-none px-6 py-4 bg-gray-50 backdrop-blur-xl border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-700 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
+                className="w-full appearance-none pl-6 pr-10 py-4 bg-gray-50 backdrop-blur-xl border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-700 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
               >
                 <option value="" className="bg-white">
                   Tất cả vai trò
@@ -325,7 +325,7 @@ export default function AdminUsersPage() {
               <select
                 onChange={handleStatusFilter}
                 value={query.status || ""}
-                className="w-full appearance-none px-6 py-4 bg-gray-50 backdrop-blur-xl border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-700 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
+                className="w-full appearance-none pl-6 pr-10 py-4 bg-gray-50 backdrop-blur-xl border border-gray-200 rounded-2xl text-xs font-black uppercase tracking-widest text-gray-700 focus:outline-none focus:border-brand-primary/50 cursor-pointer"
               >
                 <option value="" className="bg-white">
                   Tất cả trạng thái
