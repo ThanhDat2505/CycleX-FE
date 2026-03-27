@@ -5,18 +5,10 @@ import { usePathname } from "next/navigation";
 import React from "react";
 
 const NAV_ITEMS = [
-  { href: "/inspector/dashboard", label: "Tổng Quan", icon: "dashboard" },
-  {
-    href: "/inspector/pending-list",
-    label: "Tin Chờ Duyệt",
-    icon: "pending_actions",
-  },
-  {
-    href: "/inspector/review-history",
-    label: "Lịch Sử Duyệt",
-    icon: "history",
-  },
-  { href: "/inspector/disputes", label: "Danh Sách Tranh Chấp", icon: "gavel" },
+  { href: "/inspector/dashboard", label: "Tổng Quan" },
+  { href: "/inspector/pending-list", label: "Tin Chờ Duyệt" },
+  { href: "/inspector/review-history", label: "Lịch Sử Duyệt" },
+  { href: "/inspector/disputes", label: "Danh Sách Tranh Chấp" },
 ];
 
 interface InspectorHeroLayoutProps {
@@ -54,9 +46,6 @@ export default function InspectorHeroLayout({
                         : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                     }`}
                 >
-                  <span className="material-symbols-outlined text-[20px]">
-                    {item.icon}
-                  </span>
                   {item.label}
                 </Link>
               );
