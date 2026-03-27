@@ -180,9 +180,9 @@ export default function DisputeDetailClient({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-brand-bg transition-all">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white transition-all">
         <div className="relative">
-          <div className="w-16 h-16 border-4 border-white/5 border-t-brand-primary rounded-full animate-spin"></div>
+          <div className="w-16 h-16 border-4 border-gray-100 border-t-brand-primary rounded-full animate-spin"></div>
           <Zap
             size={24}
             className="absolute inset-0 m-auto text-brand-primary animate-pulse"
@@ -197,20 +197,20 @@ export default function DisputeDetailClient({
 
   if (!detail || error) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-brand-bg p-8">
-        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-12 text-center max-w-md animate-scale-in">
-          <div className="w-20 h-20 bg-rose-500/10 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-glow-rose">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] bg-white p-8">
+        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center max-w-md animate-scale-in shadow-md">
+          <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8">
             <ShieldAlert size={40} />
           </div>
-          <h2 className="text-3xl font-black text-white mb-4 tracking-tighter uppercase leading-tight">
+          <h2 className="text-3xl font-black text-gray-900 mb-4 tracking-tighter uppercase leading-tight">
             Lỗi Truy Cập
           </h2>
-          <p className="text-gray-400 font-medium mb-10 leading-relaxed">
+          <p className="text-gray-500 font-medium mb-10 leading-relaxed">
             {error || "Dữ liệu khiếu nại bị hỏng hoặc không tồn tại."}
           </p>
           <button
             onClick={() => router.back()}
-            className="text-sm font-extrabold text-gray-500 hover:text-white transition-colors inline-flex items-center justify-center gap-1 bg-transparent border-none p-0 cursor-pointer w-full mt-4"
+            className="text-sm font-extrabold text-gray-500 hover:text-gray-800 transition-colors inline-flex items-center justify-center gap-1 bg-transparent border-none p-0 cursor-pointer w-full mt-4"
           >
             <ChevronLeft size={18} />
             Quay lại
@@ -248,22 +248,22 @@ export default function DisputeDetailClient({
   })();
 
   return (
-    <div className="bg-brand-bg min-h-screen text-white p-4 lg:p-10 font-sans selection:bg-brand-primary/30">
+    <div className="bg-white min-h-screen text-gray-900 p-4 lg:p-10 font-sans selection:bg-brand-primary/20">
       <div className="max-w-6xl mx-auto space-y-12">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-white/5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 pb-10 border-b border-gray-200">
           <div className="animate-slide-up">
             <Link
               href={viewerRole === "ADMIN" ? "/admin/disputes" : "/inspector/disputes"}
-              className="text-sm font-extrabold text-gray-500 hover:text-white transition-colors mb-6 inline-flex items-center gap-1"
+              className="text-sm font-extrabold text-gray-500 hover:text-gray-800 transition-colors mb-6 inline-flex items-center gap-1"
               style={{ textDecoration: "none" }}
             >
               <ChevronLeft size={18} />
               Quay lại
             </Link>
             <div className="flex items-center gap-4 mb-4">
-              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none">
+              <h1 className="text-4xl md:text-5xl font-black tracking-tighter leading-none text-gray-900">
                 Khiếu Nại{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-primary to-orange-400">
+                <span className="text-brand-primary">
                   #{detail.id}
                 </span>
               </h1>
@@ -272,14 +272,14 @@ export default function DisputeDetailClient({
               <div
                 className={`px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border ${
                   isSolved
-                    ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                    ? "text-emerald-700 bg-emerald-50 border-emerald-200"
                     : isRejected
-                      ? "text-rose-400 bg-rose-500/10 border-rose-500/20"
+                      ? "text-rose-700 bg-rose-50 border-rose-200"
                       : isNeedMoreInfo
-                        ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
+                        ? "text-amber-700 bg-amber-50 border-amber-200"
                         : isEscalated
-                          ? "text-purple-400 bg-purple-500/10 border-purple-500/20"
-                          : "text-brand-primary bg-brand-primary/10 border-brand-primary/20 animate-pulse"
+                          ? "text-purple-700 bg-purple-50 border-purple-200"
+                          : "text-brand-primary bg-orange-50 border-orange-200 animate-pulse"
                 }`}
               >
                 {statusLabel}
@@ -313,7 +313,7 @@ export default function DisputeDetailClient({
               (isEscalated && viewerRole === "ADMIN")) && (
               <button
                 onClick={() => setShowRequestInfo(!showRequestInfo)}
-                className="group flex items-center gap-3 px-6 py-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95"
+                className="group flex items-center gap-3 px-6 py-4 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm"
               >
                 <HelpCircle size={16} />
                 Yêu cầu bổ sung
@@ -324,7 +324,7 @@ export default function DisputeDetailClient({
             {canAct && !isEscalated && viewerRole !== "ADMIN" && (
               <button
                 onClick={() => setShowEscalateForm(!showEscalateForm)}
-                className="group flex items-center gap-3 px-6 py-4 bg-purple-500/20 hover:bg-purple-500/30 text-purple-400 border border-purple-500/30 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95"
+                className="group flex items-center gap-3 px-6 py-4 bg-purple-50 text-purple-700 border border-purple-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm"
               >
                 <ArrowUpRight size={16} />
                 Chuyển Admin
@@ -363,15 +363,15 @@ export default function DisputeDetailClient({
           canAct &&
           !isEscalated &&
           viewerRole !== "ADMIN" && (
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded-3xl p-8 animate-fade-in">
-              <h4 className="text-sm font-black text-purple-400 uppercase tracking-wider mb-6 flex items-center gap-2">
+            <div className="bg-purple-50 border border-purple-200 rounded-3xl p-8 animate-fade-in">
+              <h4 className="text-sm font-black text-purple-700 uppercase tracking-wider mb-6 flex items-center gap-2">
                 <AlertTriangle size={16} />
                 Chuyển tiếp lên Admin
               </h4>
               <div className="space-y-5">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
-                    Lý do chuyển <span className="text-rose-400">*</span>
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">
+                    Lý do chuyển <span className="text-rose-500">*</span>
                   </label>
                   <textarea
                     value={escalateNote}
@@ -382,23 +382,23 @@ export default function DisputeDetailClient({
                     }}
                     placeholder="VD: Không đủ bằng chứng để kết luận, seller phản hồi không hợp tác..."
                     rows={3}
-                    className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 resize-none"
+                    className="w-full px-4 py-3 bg-white border border-purple-200 rounded-2xl text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-purple-400 resize-none"
                   />
                   {escalateValidationError && (
-                    <p className="mt-1 text-xs font-bold text-rose-400">
+                    <p className="mt-1 text-xs font-bold text-rose-600">
                       {escalateValidationError}
                     </p>
                   )}
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-wider mb-2">
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">
                     Đề xuất hướng xử lý{" "}
                     <span className="text-gray-600">(tuỳ chọn)</span>
                   </label>
                   <select
                     value={escalateSuggestion}
                     onChange={(e) => setEscalateSuggestion(e.target.value)}
-                    className="w-full px-4 py-3 bg-black/20 border border-purple-500/20 rounded-2xl text-sm text-white focus:outline-none focus:border-purple-500/50"
+                    className="w-full px-4 py-3 bg-white border border-purple-200 rounded-2xl text-sm text-gray-800 focus:outline-none focus:border-purple-400"
                   >
                     <option value="">-- Không có đề xuất --</option>
                     <option value="REFUND_BUYER">Hoàn tiền toàn bộ</option>
@@ -417,14 +417,14 @@ export default function DisputeDetailClient({
                     setEscalateSuggestion("");
                     setEscalateValidationError("");
                   }}
-                  className="px-6 py-3 bg-white/5 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 transition-all"
+                  className="px-6 py-3 bg-gray-100 text-gray-500 font-bold text-xs rounded-xl hover:bg-gray-200 transition-all"
                 >
                   Hủy
                 </button>
                 <button
                   onClick={() => void handleEscalate()}
                   disabled={escalating || !escalateNote.trim()}
-                  className="px-6 py-3 bg-purple-500 text-white font-bold text-xs rounded-xl hover:bg-purple-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                  className="px-6 py-3 bg-purple-600 text-white font-bold text-xs rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50 flex items-center gap-2"
                 >
                   {escalating ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -439,8 +439,8 @@ export default function DisputeDetailClient({
 
         {/* Request more info form */}
         {showRequestInfo && (
-          <div className="bg-amber-500/10 border border-amber-500/20 rounded-3xl p-8 animate-fade-in">
-            <h4 className="text-sm font-black text-amber-400 uppercase tracking-wider mb-4">
+            <div className="bg-amber-50 border border-amber-200 rounded-3xl p-8 animate-fade-in">
+              <h4 className="text-sm font-black text-amber-700 uppercase tracking-wider mb-4">
               Yêu cầu bổ sung thông tin
             </h4>
             <textarea
@@ -448,7 +448,7 @@ export default function DisputeDetailClient({
               onChange={(e) => setRequestInfoMessage(e.target.value)}
               placeholder="Nhập yêu cầu bổ sung cho người mua... VD: Vui lòng gửi thêm ảnh chụp rõ phần hư hỏng"
               rows={3}
-              className="w-full px-4 py-3 bg-black/20 border border-amber-500/20 rounded-2xl text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-amber-500/50 resize-none"
+              className="w-full px-4 py-3 bg-white border border-amber-200 rounded-2xl text-sm text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-amber-400 resize-none"
             />
             <div className="flex justify-end gap-3 mt-4">
               <button
@@ -456,14 +456,14 @@ export default function DisputeDetailClient({
                   setShowRequestInfo(false);
                   setRequestInfoMessage("");
                 }}
-                className="px-6 py-3 bg-white/5 text-gray-400 font-bold text-xs rounded-xl hover:bg-white/10 transition-all"
+                className="px-6 py-3 bg-gray-100 text-gray-600 font-bold text-xs rounded-xl hover:bg-gray-200 transition-all"
               >
                 Hủy
               </button>
               <button
                 onClick={handleRequestMoreInfo}
                 disabled={!requestInfoMessage.trim() || requestingInfo}
-                className="px-6 py-3 bg-amber-500 text-white font-bold text-xs rounded-xl hover:bg-amber-600 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-6 py-3 bg-amber-500 text-amber-950 font-bold text-xs rounded-xl hover:bg-amber-600 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
               >
                 {requestingInfo ? (
                   <Loader2 size={14} className="animate-spin" />
@@ -478,25 +478,25 @@ export default function DisputeDetailClient({
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           <div className="lg:col-span-12 space-y-8">
-            <div className="bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 shadow-2xl animate-fade-in">
+            <div className="bg-white border border-gray-200 rounded-[2.5rem] p-10 shadow-md animate-fade-in">
               <div className="flex items-center gap-4 mb-8">
-                <div className="w-14 h-14 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shadow-glow-orange">
+                <div className="w-14 h-14 rounded-2xl bg-orange-50 border border-orange-200 flex items-center justify-center text-brand-primary">
                   <ShieldAlert size={28} strokeWidth={2.5} />
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">
                     Cơ sở khiếu nại
                   </p>
-                  <h3 className="text-2xl font-black tracking-tight text-white uppercase">
+                  <h3 className="text-2xl font-black tracking-tight text-gray-900 uppercase">
                     {detail.reasonText}
                   </h3>
                 </div>
               </div>
-              <div className="p-8 bg-black/20 rounded-3xl border border-white/5 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6 text-white/5 group-hover:text-white/10 transition-colors">
+              <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100 relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-6 text-gray-200 group-hover:text-gray-300 transition-colors">
                   <MessageSquare size={100} />
                 </div>
-                <p className="text-xl font-medium text-gray-300 leading-relaxed italic relative z-10">
+                <p className="text-xl font-medium text-gray-700 leading-relaxed italic relative z-10">
                   &ldquo;{detail.description}&rdquo;
                 </p>
               </div>
@@ -505,10 +505,10 @@ export default function DisputeDetailClient({
             <div className="space-y-6">
               <div className="flex items-center justify-between px-2">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center">
-                    <ImageIcon size={20} />
-                  </div>
-                  <h3 className="text-lg font-black tracking-widest uppercase">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center">
+                  <ImageIcon size={20} />
+                </div>
+                <h3 className="text-lg font-black tracking-widest uppercase text-gray-900">
                     Kho Bằng Chứng
                   </h3>
                 </div>
@@ -518,7 +518,7 @@ export default function DisputeDetailClient({
               </div>
 
               {evidenceError && (
-                <p className="mb-4 text-xs font-bold text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl px-4 py-3">
+                <p className="mb-4 text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
                   ⚠ {evidenceError}
                 </p>
               )}
@@ -530,11 +530,11 @@ export default function DisputeDetailClient({
                       type="button"
                       onClick={() => void handleOpenEvidence(item, index)}
                       disabled={!item.url || openingEvidenceIndex === index}
-                      className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 text-left hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-[0.98] overflow-hidden"
+                      className="group relative bg-white border border-gray-200 rounded-3xl p-6 text-left hover:border-brand-primary/50 hover:shadow-lg transition-all active:scale-[0.98] overflow-hidden shadow-sm"
                     >
                       <div className="flex items-center justify-between mb-4">
                         {item.type === "IMAGE" && item.url ? (
-                          <div className="w-full h-28 rounded-xl overflow-hidden bg-white/5 border border-white/10 mb-2">
+                          <div className="w-full h-28 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 mb-2">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
                               src={item.url}
@@ -548,7 +548,7 @@ export default function DisputeDetailClient({
                             />
                           </div>
                         ) : (
-                          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 group-hover:text-brand-primary group-hover:border-brand-primary/30 transition-all">
+                            <div className="w-12 h-12 rounded-2xl bg-gray-100 border border-gray-200 flex items-center justify-center text-gray-500 group-hover:text-brand-primary group-hover:border-brand-primary/30 transition-all">
                             {openingEvidenceIndex === index ? (
                               <Loader2 size={24} className="animate-spin" />
                             ) : (
@@ -564,7 +564,7 @@ export default function DisputeDetailClient({
                         )}
                         <ExternalLink
                           size={16}
-                          className="text-gray-700 group-hover:text-brand-primary transition-colors ml-auto"
+                          className="text-gray-500 group-hover:text-brand-primary transition-colors ml-auto"
                         />
                       </div>
                       <span className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">
@@ -572,15 +572,15 @@ export default function DisputeDetailClient({
                           ? `Nguồn: ${item.uploaderRole}`
                           : "Đối tượng hệ thống"}
                       </span>
-                      <h4 className="text-xs font-bold text-white truncate group-hover:text-brand-primary transition-colors">
+                      <h4 className="text-xs font-bold text-gray-700 truncate group-hover:text-brand-primary transition-colors">
                         {formatDate(detail.createdAt).split(" ")[0]} -{" "}
                         {index + 1}
                       </h4>
                     </button>
                   ))
                 ) : (
-                  <div className="col-span-full p-12 text-center bg-white/[0.02] border border-dashed border-white/10 rounded-[2rem]">
-                    <p className="text-gray-600 font-bold uppercase tracking-widest text-xs italic">
+                    <div className="col-span-full p-12 text-center bg-gray-50 border border-dashed border-gray-200 rounded-[2rem]">
+                      <p className="text-gray-500 font-bold uppercase tracking-widest text-xs italic">
                       Không có bằng chứng đi kèm
                     </p>
                   </div>
@@ -590,30 +590,30 @@ export default function DisputeDetailClient({
 
             {/* Inspector Escalation info — visible to admin when dispute is ESCALATED */}
             {isEscalated && viewerRole === "ADMIN" && detail.escalationNote && (
-              <div className="bg-purple-500/10 border border-purple-500/20 rounded-[2.5rem] p-8 animate-fade-in">
+              <div className="bg-purple-50 border border-purple-200 rounded-[2.5rem] p-8 animate-fade-in">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-400 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-xl bg-purple-100 border border-purple-200 text-purple-600 flex items-center justify-center">
                     <AlertTriangle size={18} />
                   </div>
-                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-purple-700">
                     Chuyển Tiếp Lên Admin
                   </h4>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                  <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
-                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                      Lý do chuyển
-                    </p>
-                    <p className="text-sm font-medium text-white leading-relaxed">
+                    <div className="p-5 bg-white rounded-2xl border border-purple-100">
+                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                        Lý do chuyển
+                      </p>
+                      <p className="text-sm font-medium text-gray-800 leading-relaxed">
                       &ldquo;{detail.escalationNote}&rdquo;
                     </p>
                   </div>
                   {detail.escalationSuggestion && (
-                    <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                        Đề xuất xử lý
-                      </p>
-                      <p className="text-sm font-bold text-purple-300">
+                      <div className="p-5 bg-white rounded-2xl border border-purple-100">
+                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                          Đề xuất xử lý
+                        </p>
+                        <p className="text-sm font-bold text-purple-700">
                         {detail.escalationSuggestion === "REFUND_BUYER"
                           ? "Hoàn tiền toàn bộ"
                           : detail.escalationSuggestion === "PARTIAL_REFUND"
@@ -626,11 +626,11 @@ export default function DisputeDetailClient({
                     </div>
                   )}
                   {detail.escalatedBy && (
-                    <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                        Người chuyển
-                      </p>
-                      <p className="text-sm font-bold text-white">
+                      <div className="p-5 bg-white rounded-2xl border border-purple-100">
+                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                          Người chuyển
+                        </p>
+                        <p className="text-sm font-bold text-gray-800">
                         {detail.escalatedBy.name}
                       </p>
                       <p className="text-xs text-gray-500">
@@ -639,11 +639,11 @@ export default function DisputeDetailClient({
                     </div>
                   )}
                   {detail.escalatedAt && (
-                    <div className="p-5 bg-black/20 rounded-2xl border border-purple-500/10">
-                      <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
-                        Thời gian chuyển
-                      </p>
-                      <p className="text-sm font-bold text-white">
+                      <div className="p-5 bg-white rounded-2xl border border-purple-100">
+                        <p className="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">
+                          Thời gian chuyển
+                        </p>
+                        <p className="text-sm font-bold text-gray-800">
                         {detail.escalatedAt}
                       </p>
                     </div>
@@ -653,7 +653,7 @@ export default function DisputeDetailClient({
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-200">
+              <div className="bg-white border border-gray-200 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-200 shadow-sm">
                 <div className="flex items-center gap-3 mb-2">
                   <History size={18} className="text-brand-primary" />
                   <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
@@ -662,30 +662,30 @@ export default function DisputeDetailClient({
                 </div>
 
                 <div className="space-y-6">
-                  <div className="flex justify-between items-center p-5 bg-black/20 rounded-2xl border border-white/5">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                      Mã Giao Dịch
-                    </span>
+                    <div className="flex justify-between items-center p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                        Mã Giao Dịch
+                      </span>
                     <span className="text-sm font-mono font-bold text-brand-primary">
                       #TX-{detail.transaction.id}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center p-5 bg-black/20 rounded-2xl border border-white/5">
-                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                      Trạng Thái Đơn Hàng
-                    </span>
+                    <div className="flex justify-between items-center p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                      <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
+                        Trạng Thái Đơn Hàng
+                      </span>
                     <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">
                       {TRANSACTION_STATUS_LABELS[detail.transaction.status as TransactionStatus] ?? detail.transaction.status}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-8 border-t border-white/5 grid grid-cols-2 gap-6">
+                <div className="pt-8 border-t border-gray-100 grid grid-cols-2 gap-6">
                   <div className="group">
-                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">
-                      Người Mua
-                    </p>
-                    <p className="text-xs font-black text-white group-hover:text-brand-primary transition-colors">
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">
+                    Người Mua
+                  </p>
+                  <p className="text-xs font-black text-gray-800 group-hover:text-brand-primary transition-colors">
                       {detail.buyer.name}
                     </p>
                     <p className="text-[10px] font-medium text-gray-500 truncate">
@@ -693,10 +693,10 @@ export default function DisputeDetailClient({
                     </p>
                   </div>
                   <div className="group">
-                    <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-2">
-                      Người Bán
-                    </p>
-                    <p className="text-xs font-black text-white group-hover:text-brand-primary transition-colors">
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] mb-2">
+                    Người Bán
+                  </p>
+                  <p className="text-xs font-black text-gray-800 group-hover:text-brand-primary transition-colors">
                       {detail.seller.name}
                     </p>
                     <p className="text-[10px] font-medium text-gray-500 truncate">
@@ -706,7 +706,7 @@ export default function DisputeDetailClient({
                 </div>
               </div>
 
-              <div className="bg-white/5 border border-white/10 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-300">
+              <div className="bg-white border border-gray-200 rounded-[2.5rem] p-8 space-y-8 animate-fade-in delay-300 shadow-sm">
                 <div className="flex items-center gap-3 mb-2">
                   <ShoppingBag size={18} className="text-brand-primary" />
                   <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
@@ -714,8 +714,8 @@ export default function DisputeDetailClient({
                   </h4>
                 </div>
 
-                <div className="group flex gap-6 p-6 bg-black/20 rounded-3xl border border-white/5 hover:border-brand-primary/30 transition-all">
-                  <div className="w-24 h-24 rounded-2xl bg-white/5 border border-white/10 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+                  <div className="group flex gap-6 p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:border-brand-primary/30 transition-all">
+                    <div className="w-24 h-24 rounded-2xl bg-gray-200 border border-gray-300 overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
                     {detail.listing.imageUrl ? (
                       <img
                         src={detail.listing.imageUrl}
@@ -723,34 +723,34 @@ export default function DisputeDetailClient({
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-700">
-                        <ShoppingBag size={32} />
+                        <div className="w-full h-full flex items-center justify-center text-gray-500">
+                          <ShoppingBag size={32} />
                       </div>
                     )}
                   </div>
                   <div className="flex flex-col justify-center">
-                    <h5 className="text-sm font-black text-white mb-2 leading-tight group-hover:text-brand-primary transition-colors">
+                      <h5 className="text-sm font-black text-gray-900 mb-2 leading-tight group-hover:text-brand-primary transition-colors">
                       {detail.listing.title}
                     </h5>
                     <p className="text-xs font-mono font-bold text-brand-primary">
                       {priceVnd}
                     </p>
-                    <span className="text-[9px] font-black text-gray-600 uppercase tracking-widest mt-2 px-2 py-0.5 bg-white/5 rounded border border-white/5 w-fit">
+                      <span className="text-[9px] font-black text-gray-500 uppercase tracking-widest mt-2 px-2 py-0.5 bg-gray-100 rounded border border-gray-200 w-fit">
                       PID-{detail.listing.id}
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-8 border-t border-white/5">
-                  <p className="text-[9px] font-black text-gray-600 uppercase tracking-[0.2em] mb-3">
+                <div className="pt-8 border-t border-gray-100">
+                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3">
                     Inspector Phụ Trách
                   </p>
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-orange-500 flex items-center justify-center">
                       <User size={18} strokeWidth={2.5} />
                     </div>
                     <div>
-                      <p className="text-xs font-black text-white">
+                      <p className="text-xs font-black text-gray-800">
                         {detail.assignee.name}
                       </p>
                       <p className="text-[10px] font-medium text-gray-500">
@@ -764,8 +764,8 @@ export default function DisputeDetailClient({
           </div>
         </div>
 
-        <div className="text-center pt-20 border-t border-white/5">
-          <p className="text-[9px] font-bold text-gray-600 uppercase tracking-[0.4em]">
+        <div className="text-center pt-20 border-t border-gray-100">
+          <p className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.4em]">
             CycleX Mã Hồ Sơ: {detail.id}
           </p>
         </div>
