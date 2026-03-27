@@ -111,9 +111,6 @@ export default function InspectorRequestDetail() {
                   className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
                   style={{ textDecoration: "none" }}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
-                    arrow_back
-                  </span>
                   Quay lại
                 </Link>
               </div>
@@ -165,16 +162,6 @@ export default function InspectorRequestDetail() {
                       transition: "opacity 0.3s ease-in-out",
                     }}
                   >
-                    <span
-                      className="material-symbols-outlined"
-                      style={{
-                        fontSize: "64px",
-                        color: "var(--muted)",
-                        opacity: 0.3,
-                      }}
-                    >
-                      image
-                    </span>
                     <strong
                       style={{
                         fontSize: "24px",
@@ -208,9 +195,7 @@ export default function InspectorRequestDetail() {
                         boxShadow: "var(--shadow-md)",
                       }}
                     >
-                      <span className="material-symbols-outlined">
-                        arrow_back
-                      </span>
+                      ←
                     </button>
                     <button
                       onClick={nextImg}
@@ -232,9 +217,7 @@ export default function InspectorRequestDetail() {
                         boxShadow: "var(--shadow-md)",
                       }}
                     >
-                      <span className="material-symbols-outlined">
-                        arrow_forward
-                      </span>
+                      →
                     </button>
 
                     <div
@@ -347,7 +330,6 @@ export default function InspectorRequestDetail() {
                 color: "#fff",
               }}
             >
-              <span className="material-symbols-outlined">chat</span>
               CHAT VỚI SELLER
             </Link>
           </aside>

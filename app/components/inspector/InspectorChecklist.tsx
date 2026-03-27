@@ -65,9 +65,6 @@ export default function InspectorChecklist() {
                   className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
                   style={{ textDecoration: "none" }}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
-                    arrow_back
-                  </span>
                   Quay lại
                 </button>
               </div>
@@ -311,12 +308,6 @@ export default function InspectorChecklist() {
                     transition: "0.2s",
                   }}
                 >
-                  <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "28px", color: "var(--muted)" }}
-                  >
-                    add_photo_alternate
-                  </span>
                   <span
                     style={{
                       fontSize: "13px",

@@ -145,9 +145,6 @@ export default function ReviewDetailClient({
               className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors flex items-center gap-1 w-fit"
               style={{ textDecoration: "none" }}
             >
-              <span className="material-symbols-outlined text-[18px] translate-y-[1px]">
-                arrow_back
-              </span>
               Quay lại
             </Link>
           </div>
@@ -156,9 +153,6 @@ export default function ReviewDetailClient({
 
           <div className="meta">
             <span className="metaItem min-w-0">
-              <span className="material-symbols-outlined text-[18px] text-gray-400">
-                calendar_today
-              </span>
               <span className="metaLabel">Gửi ngày:</span>
               <span className="font-bold wrap-break-word">
                 {listing.submittedAt}
@@ -166,9 +160,6 @@ export default function ReviewDetailClient({
             </span>
 
             <span className="metaItem min-w-0">
-              <span className="material-symbols-outlined text-[18px] text-gray-400">
-                schedule
-              </span>
               <span className="metaLabel">Chờ duyệt:</span>
               <span className="font-bold wrap-break-word">
                 {listing.waitingDays} ngày
@@ -643,21 +634,7 @@ export default function ReviewDetailClient({
             </div>
           ) : (
             <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-xl text-center shadow-inner flex flex-col justify-center items-center gap-2">
-              <span
-                className={`material-symbols-outlined text-3xl ${
-                  listing.status === "APPROVED" || listing.status === "PASSED"
-                    ? "text-green-500"
-                    : listing.status === "REJECTED"
-                      ? "text-red-500"
-                      : "text-gray-400"
-                }`}
-              >
-                {listing.status === "APPROVED" || listing.status === "PASSED"
-                  ? "check_circle"
-                  : listing.status === "REJECTED"
-                    ? "cancel"
-                    : "task_alt"}
-              </span>
+
               <span className="block text-sm text-gray-600 font-medium tracking-wide">
                 {listing.status === "APPROVED" || listing.status === "PASSED"
                   ? "Tin đăng đã được duyệt"

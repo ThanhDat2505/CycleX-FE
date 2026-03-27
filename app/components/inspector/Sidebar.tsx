@@ -37,12 +37,6 @@ export default function Sidebar() {
     <aside className="sidebar" aria-label="Thanh điều hướng">
       <div className="sidebar-top">
         <div className="brand">
-          <span
-            className="material-symbols-outlined icon-btn"
-            title="Thu gọn/Mở rộng"
-          >
-            menu
-          </span>
           <span className="brand-name">CycleX</span>
         </div>
 
@@ -57,12 +51,6 @@ export default function Sidebar() {
                 pathname === item.href ? "active" : ""
               }`}
             >
-              <span
-                className="material-symbols-outlined"
-                style={{ fontSize: "20px" }}
-              >
-                {item.icon}
-              </span>
               {item.label}
             </Link>
           ))}
@@ -86,9 +74,7 @@ export default function Sidebar() {
             Example@gmail.com
           </span>
         </div>
-        <span className="material-symbols-outlined text-gray-400 text-[18px]">
-          more_vert
-        </span>
+
       </div>
     </aside>
   );

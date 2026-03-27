@@ -212,12 +212,6 @@ export default function PendingListClient() {
                         className="viewBtn"
                         href={`/inspector/review-detail?id=${encodeURIComponent(x.id)}`}
                       >
-                        <span
-                          className="material-symbols-outlined"
-                          aria-hidden="true"
-                        >
-                          north_east
-                        </span>
                         Xem chi tiết
                       </Link>
                     </td>
