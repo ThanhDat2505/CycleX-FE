@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 export default function InspectorChecklist() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const idParam = searchParams.get("id") || "ID-55555";
+  const idParam = searchParams.get("id") || "";
 
   const [score, setScore] = useState<number | "">("");
   const [conclusion, setConclusion] = useState("");
@@ -74,7 +74,7 @@ export default function InspectorChecklist() {
               <div className="meta">
                 <div className="metaItem">
                   <span className="metaLabel">Tin đăng:</span>
-                  <strong>Giant Propel Advanced SL 0 (2025)</strong>
+                  <strong>Phiếu kiểm định</strong>
                 </div>
               </div>
             </div>

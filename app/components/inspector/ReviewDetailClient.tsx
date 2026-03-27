@@ -345,7 +345,7 @@ export default function ReviewDetailClient({
 
               <div className="specItem">
                 <span className="specLabel">Màu sắc</span>
-                <span className="specValue">Đen / Đỏ</span>
+                <span className="specValue">—</span>
               </div>
               <div className="specItem">
                 <span className="specLabel">Tình trạng</span>
