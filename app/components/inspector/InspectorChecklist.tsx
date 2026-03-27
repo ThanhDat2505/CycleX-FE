@@ -365,7 +365,7 @@ export default function InspectorChecklist() {
               <div className="boxTitle" style={{ marginBottom: 0 }}>
                 Hành động
               </div>
-              <span className="irdBadge">Action Required</span>
+              <span className="irdBadge">Cần xử lý</span>
             </div>
 
             <p

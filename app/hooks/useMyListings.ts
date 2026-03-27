@@ -72,7 +72,7 @@ export function useMyListings(
       } catch (err) {
         if (!abortController.signal.aborted) {
           console.error("Failed to load listings:", err);
-          setError("Unable to load listings. Please try again.");
+          setError("Không thể tải danh sách tin đăng. Vui lòng thử lại.");
         }
       } finally {
         if (!abortController.signal.aborted) {
