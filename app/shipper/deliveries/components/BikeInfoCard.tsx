@@ -20,7 +20,7 @@ export function BikeInfoCard({ delivery }: BikeInfoCardProps) {
             className="w-full h-full object-cover"
             onError={(e) => {
               (e.currentTarget as HTMLImageElement).src =
-                "/placeholder-bike.png";
+                "/images/bike-placeholder.svg";
             }}
           />
         </div>

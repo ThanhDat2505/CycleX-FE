@@ -3,12 +3,12 @@ import { apiCallGET, apiCallPOST } from '../utils/apiHelpers';
 import { validateObject, validateArray, validateString } from '../utils/apiValidation';
 
 function resolveImageUrl(rawPath: unknown): string {
-    if (typeof rawPath !== 'string') return '/placeholder-bike.png';
+    if (typeof rawPath !== 'string') return '/images/bike-placeholder.svg';
     const path = rawPath.trim();
-    if (!path) return '/placeholder-bike.png';
+    if (!path) return '/images/bike-placeholder.svg';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
     if (path.startsWith('/uploads/')) return `/backend${path}`;
-    return path || '/placeholder-bike.png';
+    return path || '/images/bike-placeholder.svg';
 }
 
 function safeString(value: any, fallback: string): string {
