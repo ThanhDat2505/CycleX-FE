@@ -34,6 +34,7 @@ export default function ReviewDetailClient({
   const [approveReason, setApproveReason] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [rejectReasonOther, setRejectReasonOther] = useState("");
+  const [rejectErrorMessage, setRejectErrorMessage] = useState("");
 
   useEffect(() => {
     let mounted = true;
@@ -109,10 +110,22 @@ export default function ReviewDetailClient({
 
   const togglePanel = (panel: ActionPanel) => {
     setActivePanel((prev) => (prev === panel ? "NONE" : panel));
+    if (panel === "REJECT") {
+      setRejectReason("");
+      setRejectReasonOther("");
+      setRejectErrorMessage("");
+    }
   };
 
+  // Lý do nào cần nhập chi tiết
+  const reasonNeedsDetails = (reason: string) => {
+    return ["mismatch_desc", "missing_info", "other"].includes(reason);
+  };
+
+  // Có thể xác nhận reject không
   const canConfirmReject =
-    rejectReason !== "" && rejectReasonOther.trim() !== "";
+    rejectReason !== "" &&
+    (!reasonNeedsDetails(rejectReason) || rejectReasonOther.trim() !== "");
 
   const isChecklistComplete = checklist.every((item) => item === true);
   const isReadOnly = ["APPROVED", "REJECTED", "DONE", "PASSED"].includes(
@@ -339,7 +352,7 @@ export default function ReviewDetailClient({
               </div>
               <div className="specItem">
                 <span className="specLabel">Tình trạng</span>
-                <span className="specValue">Đã qua sử dụng (98%)</span>
+                <span className="specValue">{listing.specs.condition}</span>
               </div>
             </div>
           </section>
@@ -377,7 +390,7 @@ export default function ReviewDetailClient({
                   if (!listing) return;
 
                   const confirmed = window.confirm(
-                    "Bạn có chắc chắn muốn DUYỆT tin đăng này?",
+                    "Bạn có chắc chắn muốn duyệt tin đăng này?",
                   );
                   if (!confirmed) return;
 
@@ -509,6 +522,7 @@ export default function ReviewDetailClient({
                         onChange={(e) => {
                           setRejectReason(e.target.value);
                           setRejectReasonOther("");
+                          setRejectErrorMessage("");
                         }}
                       >
                         <option value="">-- Chọn --</option>
@@ -521,15 +535,26 @@ export default function ReviewDetailClient({
                       </select>
                     </label>
 
-                    {rejectReason && (
+                    {reasonNeedsDetails(rejectReason) && (
                       <div className="mt-3">
                         <textarea
                           className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none"
                           rows={3}
                           placeholder="Vui lòng nhập lý do cụ thể..."
                           value={rejectReasonOther}
-                          onChange={(e) => setRejectReasonOther(e.target.value)}
+                          onChange={(e) => {
+                            setRejectReasonOther(e.target.value);
+                            setRejectErrorMessage("");
+                          }}
                         />
+                      </div>
+                    )}
+
+                    {rejectErrorMessage && (
+                      <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-700 font-medium">
+                          {rejectErrorMessage}
+                        </p>
                       </div>
                     )}
 
@@ -542,10 +567,23 @@ export default function ReviewDetailClient({
                         type="button"
                         disabled={!canConfirmReject || submitting}
                         onClick={async () => {
-                          if (!canConfirmReject) return;
+                          if (!rejectReason) {
+                            setRejectErrorMessage(
+                              "Vui lòng chọn lý do từ chối",
+                            );
+                            return;
+                          }
+
+                          if (
+                            reasonNeedsDetails(rejectReason) &&
+                            !rejectReasonOther.trim()
+                          ) {
+                            setRejectErrorMessage("Vui lòng nhập lý do cụ thể");
+                            return;
+                          }
 
                           const confirmed = window.confirm(
-                            "Bạn có chắc chắn muốn TỪ CHỐI tin đăng này?",
+                            "Bạn có chắc chắn muốn từ chối tin đăng này?",
                           );
                           if (!confirmed) return;
 

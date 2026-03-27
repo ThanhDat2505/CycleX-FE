@@ -7,7 +7,10 @@ import type {
 import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 import { authService } from "./authService";
-import { INSPECTOR_MOCK_ENABLED, handleInspectorMockRequest } from "./inspectorMockData";
+import {
+  INSPECTOR_MOCK_ENABLED,
+  handleInspectorMockRequest,
+} from "./inspectorMockData";
 
 type RawObject = Record<string, any>;
 
@@ -26,6 +29,7 @@ export type InspectorReviewDetail = {
     type: string;
     frame: string;
     weight: string;
+    condition: string;
   };
   waitingDays: number;
   images: {
@@ -378,7 +382,9 @@ function mapToPendingRow(raw: RawObject): PendingRow {
 
   return {
     id: getListingId(raw),
-    status: statusToPendingStatus(getStatus(raw)) as PendingStatus | "DONE" as any,
+    status: statusToPendingStatus(getStatus(raw)) as
+      | PendingStatus
+      | "DONE" as any,
     name: getProductName(raw),
     shop: getStoreName(raw),
     sellerName: getSellerName(raw),
@@ -430,6 +436,7 @@ function mapToReviewDetail(raw: RawObject): InspectorReviewDetail {
       type: raw.specs?.type ?? raw.bikeType ?? raw.type ?? "—",
       frame: raw.specs?.frame ?? raw.frame ?? "—",
       weight: raw.specs?.weight ?? raw.weight ?? "—",
+      condition: raw.specs?.condition ?? raw.condition ?? "—",
     },
     waitingDays:
       Number(raw.waitingDays ?? raw.pendingDays ?? raw.daysWaiting ?? 0) || 0,
@@ -614,13 +621,16 @@ export const inspectorService = {
     payload: { requiredItems: string[]; reasonText?: string; note?: string },
   ): Promise<void> {
     const inspectorId = getInspectorId();
-    await inspectorFetch<void>(`/inspector/${inspectorId}/listings/request-info`, {
-      method: "POST",
-      body: JSON.stringify({
-        listingId: Number(listingId) || listingId,
-        ...payload,
-      }),
-    });
+    await inspectorFetch<void>(
+      `/inspector/${inspectorId}/listings/request-info`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          listingId: Number(listingId) || listingId,
+          ...payload,
+        }),
+      },
+    );
   },
 
   async getReviewHistory(
