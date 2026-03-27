@@ -366,10 +366,10 @@ export default function AdminUsersPage() {
               <thead>
                 <tr className="border-b border-gray-200 bg-gray-50">
                   <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">
-                    Người dùng
+                    Vai trò
                   </th>
                   <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">
-                    Vai trò
+                    Người dùng
                   </th>
                   <th className="px-8 py-4 text-xs font-bold text-gray-600 uppercase tracking-wider text-left">
                     Trạng thái
@@ -385,21 +385,6 @@ export default function AdminUsersPage() {
                     key={user.userId}
                     className="group hover:bg-white transition-colors"
                   >
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 flex items-center justify-center font-bold text-sm shrink-0">
-                          {user.fullName?.charAt(0).toUpperCase() ?? "?"}
-                        </div>
-                        <div>
-                          <p className="text-sm font-semibold text-gray-900 group-hover:text-brand-primary transition-colors">
-                            {user.fullName ?? "N/A"}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
-                            {user.email}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
                     <td className="px-8 py-5">
                       <div className="relative w-fit">
                         <select
@@ -429,6 +414,21 @@ export default function AdminUsersPage() {
                           size={12}
                           className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-60"
                         />
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 flex items-center justify-center font-bold text-sm shrink-0">
+                          {user.fullName?.charAt(0).toUpperCase() ?? "?"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900 group-hover:text-brand-primary transition-colors">
+                            {user.fullName ?? "N/A"}
+                          </p>
+                          <p className="text-xs text-gray-500 mt-0.5">
+                            {user.email}
+                          </p>
+                        </div>
                       </div>
                     </td>
                     <td className="px-8 py-5">
