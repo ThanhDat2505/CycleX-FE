@@ -74,7 +74,6 @@ export default function Sidebar() {
             Example@gmail.com
           </span>
         </div>
-
       </div>
     </aside>
   );

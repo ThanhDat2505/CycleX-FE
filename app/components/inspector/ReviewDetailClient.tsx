@@ -634,7 +634,6 @@ export default function ReviewDetailClient({
             </div>
           ) : (
             <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-xl text-center shadow-inner flex flex-col justify-center items-center gap-2">
-
               <span className="block text-sm text-gray-600 font-medium tracking-wide">
                 {listing.status === "APPROVED" || listing.status === "PASSED"
                   ? "Tin đăng đã được duyệt"

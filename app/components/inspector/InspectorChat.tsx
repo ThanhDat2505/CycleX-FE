@@ -110,9 +110,7 @@ export default function InspectorChat() {
       await inspectorService.sendChatText(inspectionRequestId, input.trim());
       setMessages((prev) => [...prev, newMsg]);
       setInput("");
-    } catch {
-      
-    }
+    } catch {}
   };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
