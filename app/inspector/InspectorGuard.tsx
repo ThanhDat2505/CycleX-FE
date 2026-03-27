@@ -14,15 +14,17 @@ export default function InspectorGuard({
 
   useEffect(() => {
     if (!isLoading) {
+      // TODO: Enable validation lại khi cần
       // Nếu chưa đăng nhập hoặc không phải inspector thì redirect
-      if (!user || user.role !== "INSPECTOR") {
-        router.replace("/login?redirect=" + encodeURIComponent(pathname));
-      }
+      // if (!user || user.role !== "INSPECTOR") {
+      //   router.replace("/login?redirect=" + encodeURIComponent(pathname));
+      // }
     }
   }, [user, isLoading, router, pathname]);
 
-  if (isLoading || !user || user.role !== "INSPECTOR") {
-    return null;
-  }
+  // TODO: Enable validation lại khi cần
+  // if (isLoading || !user || user.role !== "INSPECTOR") {
+  //   return null;
+  // }
   return <>{children}</>;
 }

@@ -32,6 +32,7 @@ export default function ReviewDetailClient({
   });
 
   const [approveReason, setApproveReason] = useState("");
+  const [approveErrorMessage, setApproveErrorMessage] = useState("");
   const [rejectReason, setRejectReason] = useState("");
   const [rejectReasonOther, setRejectReasonOther] = useState("");
   const [rejectErrorMessage, setRejectErrorMessage] = useState("");
@@ -320,6 +321,7 @@ export default function ReviewDetailClient({
                         const newChecklist = [...checklist];
                         newChecklist[idx] = e.target.checked;
                         setChecklist(newChecklist);
+                        setApproveErrorMessage("");
                       }}
                       className="w-5 h-5 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer transition-colors"
                     />
@@ -371,6 +373,13 @@ export default function ReviewDetailClient({
 
           {!isReadOnly ? (
             <div className="flex flex-col gap-3 mt-5 w-full">
+              {approveErrorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700 font-medium">
+                    {approveErrorMessage}
+                  </p>
+                </div>
+              )}
               <button
                 className={`btn w-full py-3.5 text-[14px] font-bold shadow-sm transition-all duration-300 ${!isChecklistComplete ? "cursor-not-allowed" : "btn-success opacity-100 hover:brightness-110"}`}
                 style={
@@ -386,7 +395,12 @@ export default function ReviewDetailClient({
                 type="button"
                 disabled={!isChecklistComplete || submitting}
                 onClick={async () => {
-                  if (!isChecklistComplete) return;
+                  if (!isChecklistComplete) {
+                    setApproveErrorMessage(
+                      "Vui lòng check vào tất cả các mục trong checklist trước khi duyệt",
+                    );
+                    return;
+                  }
                   if (!listing) return;
 
                   const confirmed = window.confirm(

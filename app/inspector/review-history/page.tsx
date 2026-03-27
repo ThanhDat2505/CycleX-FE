@@ -62,11 +62,12 @@ function ReviewHistoryPageContent() {
   const filtered = useMemo(
     () =>
       rows.filter((item) => {
-        // Chỉ lấy trạng thái APPROVED hoặc REJECTED
+        // Chỉ lấy trạng thái APPROVED, REJECTED, hoặc SOLD
         const status = String(item.status ?? "")
           .trim()
           .toUpperCase();
-        if (status !== "APPROVED" && status !== "REJECTED") return false;
+        if (status !== "APPROVED" && status !== "REJECTED" && status !== "SOLD")
+          return false;
 
         if (
           filterId &&
@@ -98,6 +99,8 @@ function ReviewHistoryPageContent() {
         return <span className="badge badgeApproved">Đã duyệt</span>;
       case "DONE":
         return <span className="badge badgeApproved">Hoàn tất</span>;
+      case "SOLD":
+        return <span className="badge badgeApproved">Đã bán</span>;
       case "REJECTED":
         return <span className="badge badgeDanger">Đã từ chối</span>;
       case "NEED_INFO":
