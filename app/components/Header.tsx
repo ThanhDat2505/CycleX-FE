@@ -15,8 +15,6 @@ import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "../hooks/useAuth";
-import { useSellerNav } from "../contexts/SellerNavContext";
-import { Menu } from "lucide-react";
 
 // Sub-components (explicit imports to avoid circular reference)
 import { NavLinks } from "./Header/NavLinks";
@@ -24,18 +22,16 @@ import { SearchBar } from "./Header/SearchBar";
 import { UserMenu } from "./Header/UserMenu";
 import { MobileMenu } from "./Header/MobileMenu";
 
-const AUTH_ROUTES = ["/login", "/register", "/verify-email"];
+const AUTH_ROUTES = ["/login", "/register", "/verify-email", "/forgot-password"];
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { isLoggedIn, logout, user, isLoading } = useAuth();
-  const { toggleSidebar } = useSellerNav();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Role restrictions:
-  // Keep navigator visible for INSPECTOR (only restrict ADMIN/SHIPPER here)
-  const isRestrictedRole = !!user && ["ADMIN", "SHIPPER"].includes(user.role);
+  // Role restrictions: ADMIN, SHIPPER, INSPECTOR get no nav/search/sell
+  const isRestrictedRole = !!user && ["ADMIN", "SHIPPER", "INSPECTOR"].includes(user.role);
   const isBuyer = user?.role === "BUYER";
 
   // Handle sell button click with auth check — blocks BUYER and restricted roles
@@ -57,20 +53,9 @@ export default function Header() {
       <div className="w-full max-w-7xl mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            {/* Seller Hamburger (Visible after login) - Far Left */}
-            {isLoggedIn && (
-              <button
-                onClick={toggleSidebar}
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white hover:text-brand-primary"
-                aria-label="Toggle Seller Menu"
-              >
-                <Menu size={24} />
-              </button>
-            )}
-
             {/* Logo */}
             <Link
-              href="/"
+              href={user?.role === "ADMIN" ? "/admin/dashboard" : user?.role === "INSPECTOR" ? "/inspector/dashboard" : "/"}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity"
             >
               <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">

@@ -136,11 +136,11 @@ export default function DisputeListClient() {
   const statusStyle = (status: string) => {
     const s = String(status).toUpperCase();
     if (s === "RESOLVED")
-      return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-    if (s === "OPEN") return "text-rose-400 bg-rose-500/10 border-rose-500/20";
+      return "text-emerald-700 bg-emerald-50 border-emerald-200";
+    if (s === "OPEN") return "text-rose-600 bg-rose-50 border-rose-200";
     if (s === "IN_PROGRESS")
-      return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-    return "text-gray-400 bg-white/5 border-white/10";
+      return "text-amber-700 bg-amber-50 border-amber-200";
+    return "text-gray-600 bg-gray-100 border-gray-200";
   };
 
   if (loading && !refreshing) {
@@ -256,7 +256,7 @@ export default function DisputeListClient() {
             <div className="overflow-x-auto min-h-[400px]">
               {items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
+                  <div className="w-24 h-24 bg-gray-100 rounded-[2rem] flex items-center justify-center mb-6 text-gray-400">
                     <Gavel size={48} />
                   </div>
                   <h3 className="text-2xl font-black text-black mb-2 tracking-tight">
@@ -269,7 +269,7 @@ export default function DisputeListClient() {
               ) : (
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <tr className="border-b border-gray-100 bg-gray-50">
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         ID
                       </th>
@@ -290,29 +290,29 @@ export default function DisputeListClient() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-gray-100">
                     {items.map((row) => (
                       <tr
                         key={row.id}
-                        className="group hover:bg-white/[0.02] transition-colors"
+                        className="group hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                            <div className="w-10 h-10 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
                               #{row.id}
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <div>
-                            <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
+                            <p className="text-sm font-black text-gray-900 mb-1 group-hover:text-brand-primary transition-colors">
                               {row.listingTitle}
                             </p>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                              <span className="text-[10px] font-black text-gray-500 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
                                 TX-{row.transactionId}
                               </span>
-                              <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
+                              <span className="text-[10px] font-bold text-gray-400 truncate max-w-[200px]">
                                 {row.reason}
                               </span>
                             </div>
@@ -320,10 +320,10 @@ export default function DisputeListClient() {
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center">
+                            <div className="w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center">
                               <User size={12} className="text-gray-500" />
                             </div>
-                            <span className="text-xs font-bold text-gray-300">
+                            <span className="text-xs font-bold text-gray-700">
                               {row.requesterName || "—"}
                             </span>
                           </div>
@@ -337,10 +337,10 @@ export default function DisputeListClient() {
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-black text-white">
+                            <span className="text-[11px] font-black text-gray-900">
                               {row.createdAt.split("T")[0]}
                             </span>
-                            <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter mt-1">
                               {row.createdAt.split("T")[1]?.split(".")[0] ||
                                 "—"}
                             </span>
@@ -349,7 +349,7 @@ export default function DisputeListClient() {
                         <td className="px-8 py-6 text-right">
                           <Link
                             href={`/inspector/disputes/${encodeURIComponent(row.id)}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-white hover:bg-brand-primary hover:border-brand-primary transition-all active:scale-95"
                           >
                             <ExternalLink size={14} /> Xem Chi Tiết
                           </Link>

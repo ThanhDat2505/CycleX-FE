@@ -96,9 +96,9 @@ const ToastContainer: React.FC<{ toasts: Toast[]; removeToast: (id: string) => v
                                     toast.type === 'error' ? 'text-red-800' :
                                         toast.type === 'warning' ? 'text-yellow-800' : 'text-blue-800'}
                             `}>
-                                {toast.type === 'success' ? 'Success' :
-                                    toast.type === 'error' ? 'Error' :
-                                        toast.type === 'warning' ? 'Warning' : 'Info'}
+                                {toast.type === 'success' ? 'Thành công' :
+                                    toast.type === 'error' ? 'Lỗi' :
+                                        toast.type === 'warning' ? 'Cảnh báo' : 'Thông tin'}
                             </h4>
                             <p className="text-sm text-gray-600 mt-0.5">{toast.message}</p>
                         </div>

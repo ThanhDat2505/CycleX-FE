@@ -9,7 +9,7 @@ import {Suspense} from "react";
  */
 export default function VerifyEmailPage() {
     return (
-        <AuthLayout title="Verify Your Email">
+        <AuthLayout title="Xác minh Email">
             <Suspense fallback={<div>Đang xác thực...</div>}>
                 <VerifyEmailForm/>
             </Suspense>

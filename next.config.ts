@@ -5,12 +5,27 @@ const API_HOST =
 
 const nextConfig: NextConfig = {
     async rewrites() {
-        return [
-            {
-                source: "/backend/:path*",
-                destination: `${API_HOST}/:path*`,
-            },
-        ];
+        return {
+            beforeFiles: [
+                // Serve user-uploaded images and videos via API route
+                // (Next.js production does NOT serve files added to public/ after build)
+                {
+                    source: "/public/:path*",
+                    destination: "/api/files/public/:path*",
+                },
+                {
+                    source: "/video/:path*",
+                    destination: "/api/files/video/:path*",
+                },
+            ],
+            afterFiles: [],
+            fallback: [
+                {
+                    source: "/backend/:path*",
+                    destination: `${API_HOST}/:path*`,
+                },
+            ],
+        };
     },
     async headers() {
         return [

@@ -65,9 +65,6 @@ export default function InspectorChecklist() {
                   className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
                   style={{ textDecoration: "none" }}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
-                    arrow_back
-                  </span>
                   Quay lại
                 </button>
               </div>
@@ -312,12 +309,6 @@ export default function InspectorChecklist() {
                   }}
                 >
                   <span
-                    className="material-symbols-outlined"
-                    style={{ fontSize: "28px", color: "var(--muted)" }}
-                  >
-                    add_photo_alternate
-                  </span>
-                  <span
                     style={{
                       fontSize: "13px",
                       fontWeight: 800,
@@ -365,7 +356,7 @@ export default function InspectorChecklist() {
               <div className="boxTitle" style={{ marginBottom: 0 }}>
                 Hành động
               </div>
-              <span className="irdBadge">Action Required</span>
+              <span className="irdBadge">Cần xử lý</span>
             </div>
 
             <p

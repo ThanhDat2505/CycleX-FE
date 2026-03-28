@@ -108,10 +108,10 @@ const AdminDashboardPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-brand-bg">
+      <div className="flex items-center justify-center min-h-screen bg-white">
         <div className="flex flex-col items-center">
           <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="mt-4 text-gray-400 font-bold uppercase tracking-widest text-xs animate-pulse">
+          <p className="mt-4 text-gray-600 font-bold uppercase tracking-widest text-xs animate-pulse">
             Đang tải phân tích...
           </p>
         </div>
@@ -121,15 +121,15 @@ const AdminDashboardPage = () => {
 
   if (error || !data) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-brand-bg p-4">
-        <div className="max-w-md w-full bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 text-center animate-scale-in">
+      <div className="flex items-center justify-center min-h-screen bg-white p-4">
+        <div className="max-w-md w-full bg-gray-50 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-gray-200 text-center animate-scale-in">
           <div className="w-20 h-20 bg-brand-primary/10 text-brand-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
             <RefreshCw size={40} />
           </div>
-          <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
+          <h2 className="text-2xl font-black text-gray-900 mb-2 tracking-tight">
             Lỗi Kết Nối
           </h2>
-          <p className="text-gray-400 mb-8 leading-relaxed font-medium">
+          <p className="text-gray-600 mb-8 leading-relaxed font-medium">
             {error || "Không có dữ liệu hệ thống"}
           </p>
           <button
@@ -158,17 +158,17 @@ const AdminDashboardPage = () => {
   }) => {
     const colorStyles = {
       orange: "text-brand-primary bg-brand-primary/10 border-brand-primary/20",
-      blue: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-      green: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-      red: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-      purple: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+      blue: "text-blue-600 bg-blue-50 border-blue-200",
+      green: "text-emerald-600 bg-emerald-50 border-emerald-200",
+      red: "text-rose-600 bg-rose-50 border-rose-200",
+      purple: "text-purple-600 bg-purple-50 border-purple-200",
     };
     const colorText = {
       orange: "text-brand-primary",
-      blue: "text-blue-400",
-      green: "text-emerald-400",
-      red: "text-rose-400",
-      purple: "text-purple-400",
+      blue: "text-blue-600",
+      green: "text-emerald-600",
+      red: "text-rose-600",
+      purple: "text-purple-600",
     };
 
     const style =
@@ -177,14 +177,14 @@ const AdminDashboardPage = () => {
       colorText[color as keyof typeof colorText] || colorText.orange;
 
     return (
-      <div className="group relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl hover:bg-white/10 transition-all duration-300 animate-fade-in-up">
+      <div className="group relative bg-gray-50 backdrop-blur-xl border border-gray-200 rounded-3xl p-6 shadow-2xl hover:bg-gray-100 transition-all duration-300 animate-fade-in-up">
         <div className="flex justify-between items-start mb-6">
           <div className={`p-3 rounded-2xl border ${style}`}>
             <Icon size={22} strokeWidth={2.5} />
           </div>
         </div>
         <div>
-          <p className="text-gray-400 text-[11px] font-black uppercase tracking-[0.2em] mb-2">
+          <p className="text-gray-600 text-[11px] font-black uppercase tracking-[0.2em] mb-2">
             {title}
           </p>
           <div className="flex items-baseline gap-1.5">
@@ -232,28 +232,28 @@ const AdminDashboardPage = () => {
       },
       emerald: {
         bar: "bg-emerald-500",
-        bg: "bg-emerald-500/10",
-        text: "text-emerald-400",
-        border: "border-emerald-500/20",
+        bg: "bg-emerald-50",
+        text: "text-emerald-600",
+        border: "border-emerald-200",
       },
       blue: {
         bar: "bg-blue-500",
-        bg: "bg-blue-500/10",
-        text: "text-blue-400",
-        border: "border-blue-500/20",
+        bg: "bg-blue-50",
+        text: "text-blue-600",
+        border: "border-blue-200",
       },
     };
     const c = colorMap[color] || colorMap.orange;
 
     return (
-      <div className="relative bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl hover:bg-white/10 transition-all duration-300">
+      <div className="relative bg-gray-50 backdrop-blur-xl border border-gray-200 rounded-3xl p-6 shadow-2xl hover:bg-gray-100 transition-all duration-300">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className={`p-2 rounded-xl border ${c.bg} ${c.border}`}>
               <Icon size={18} strokeWidth={2.5} className={c.text} />
             </div>
             <div>
-              <h3 className="text-sm font-black text-white">{title}</h3>
+              <h3 className="text-sm font-black text-gray-900">{title}</h3>
               <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
                 {subtitle}
               </p>
@@ -296,16 +296,16 @@ const AdminDashboardPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30">
+    <div className="min-h-screen bg-white text-gray-900 p-4 lg:p-10 selection:bg-brand-primary/30">
       <div className="max-w-7xl mx-auto">
         {/* Header Phase - Home Style */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-white/5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-gray-100">
           <div className="animate-slide-up">
-            <div className="inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-4 py-1.5 mb-4 shadow-xl">
+            <div className="inline-flex items-center gap-2 bg-gray-50 backdrop-blur-md border border-gray-200 rounded-full px-4 py-1.5 mb-4 shadow-xl">
               <span className="text-brand-primary text-xs animate-pulse">
                 ●
               </span>
-              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-400">
+              <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-gray-600">
                 Hệ Thống Phân Tích CycleX
               </span>
             </div>
@@ -315,7 +315,7 @@ const AdminDashboardPage = () => {
                 Admin
               </span>
             </h1>
-            <p className="text-gray-400 text-lg max-w-xl font-medium">
+            <p className="text-gray-600 text-lg max-w-xl font-medium">
               Giám sát hiệu suất hệ thống, quản lý người dùng và theo dõi khiếu
               nại theo thời gian thực.
             </p>
@@ -328,7 +328,7 @@ const AdminDashboardPage = () => {
             />
             <button
               onClick={handleRefresh}
-              className={`flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-2xl text-sm font-bold text-gray-300 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all ${refreshing ? "animate-spin" : ""}`}
+              className={`flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 hover:border-brand-primary/50 transition-all ${refreshing ? "animate-spin" : ""}`}
             >
               <RefreshCw size={16} />
               Cập nhật dữ liệu
@@ -425,11 +425,11 @@ const AdminDashboardPage = () => {
               </h2>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="relative group overflow-hidden bg-gradient-to-br from-emerald-500/10 to-transparent border border-white/10 rounded-3xl p-8 backdrop-blur-xl transition-all hover:bg-white/5">
+              <div className="relative group overflow-hidden bg-gradient-to-br from-emerald-500/10 to-transparent border border-gray-200 rounded-3xl p-8 backdrop-blur-xl transition-all hover:bg-gray-100">
                 <div className="absolute top-0 right-0 p-8 text-emerald-500/10 group-hover:text-emerald-500/20 transition-colors">
                   <ShoppingBag size={120} />
                 </div>
-                <p className="text-gray-400 text-xs font-black uppercase tracking-[0.2em] mb-4">
+                <p className="text-gray-600 text-xs font-black uppercase tracking-[0.2em] mb-4">
                   Tổng Số Đơn Hàng Thành Công
                 </p>
                 <h3 className="text-6xl font-black text-emerald-400 tracking-tighter mb-2 group-hover:scale-110 transition-transform origin-left">
@@ -440,11 +440,11 @@ const AdminDashboardPage = () => {
                 </p>
               </div>
 
-              <div className="relative group overflow-hidden bg-gradient-to-br from-brand-primary/10 to-transparent border border-white/10 rounded-3xl p-8 backdrop-blur-xl transition-all hover:bg-white/5">
+              <div className="relative group overflow-hidden bg-gradient-to-br from-brand-primary/10 to-transparent border border-gray-200 rounded-3xl p-8 backdrop-blur-xl transition-all hover:bg-gray-100">
                 <div className="absolute top-0 right-0 p-8 text-brand-primary/10 group-hover:text-brand-primary/20 transition-colors">
                   <DollarSign size={120} />
                 </div>
-                <p className="text-gray-400 text-xs font-black uppercase tracking-[0.2em] mb-4">
+                <p className="text-gray-600 text-xs font-black uppercase tracking-[0.2em] mb-4">
                   Tổng Doanh Thu Hệ Thống
                 </p>
                 <div className="flex items-baseline gap-2 group-hover:scale-110 transition-transform origin-left">
@@ -501,7 +501,7 @@ const AdminDashboardPage = () => {
         </div>
 
         {/* Footer Decor */}
-        <div className="mt-24 pt-12 border-t border-white/5 text-center">
+        <div className="mt-24 pt-12 border-t border-gray-100 text-center">
           <p className="text-gray-500 text-[10px] font-bold uppercase tracking-[0.4em]">
             Mô-đun Phân Tích CycleX v2.0 • Giao Diện Quản Trị
           </p>

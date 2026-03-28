@@ -71,7 +71,7 @@ export async function apiCallPOST<T>(
                 // If can't parse JSON, throw generic error with status code
                 throw {
                     status: response.status,
-                    message: `Server error: ${response.statusText}`,
+                    message: `Lỗi máy chủ: ${response.statusText}`,
                 };
             }
         }
@@ -82,7 +82,7 @@ export async function apiCallPOST<T>(
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
                 status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+                message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.',
             };
         }
 
@@ -116,7 +116,7 @@ export async function apiCallGET<T>(endpoint: string): Promise<T> {
                 // If can't parse JSON, throw generic error with status code
                 throw {
                     status: response.status,
-                    message: `Server error: ${response.statusText}`,
+                    message: `Lỗi máy chủ: ${response.statusText}`,
                 };
             }
         }
@@ -127,7 +127,7 @@ export async function apiCallGET<T>(endpoint: string): Promise<T> {
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
                 status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+                message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.',
             };
         }
 
@@ -164,7 +164,7 @@ export async function apiCallPUT<T>(
             } catch (parseError) {
                 throw {
                     status: response.status,
-                    message: `Server error: ${response.statusText}`,
+                    message: `Lỗi máy chủ: ${response.statusText}`,
                 };
             }
         }
@@ -174,7 +174,7 @@ export async function apiCallPUT<T>(
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
                 status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+                message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.',
             };
         }
         throw error;
@@ -209,7 +209,7 @@ export async function apiCallPATCH<T>(
             } catch (parseError) {
                 throw {
                     status: response.status,
-                    message: `Server error: ${response.statusText}`,
+                    message: `Lỗi máy chủ: ${response.statusText}`,
                 };
             }
         }
@@ -219,7 +219,7 @@ export async function apiCallPATCH<T>(
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
                 status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+                message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.',
             };
         }
         throw error;
@@ -251,7 +251,7 @@ export async function apiCallDELETE<T>(
             } catch (parseError) {
                 throw {
                     status: response.status,
-                    message: `Server error: ${response.statusText}`,
+                    message: `Lỗi máy chủ: ${response.statusText}`,
                 };
             }
         }
@@ -263,7 +263,7 @@ export async function apiCallDELETE<T>(
         if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
             throw {
                 status: 503,
-                message: 'Cannot connect to server. Please check if backend is running or if you have internet connection.',
+                message: 'Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.',
             };
         }
         throw error;

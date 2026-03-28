@@ -46,13 +46,18 @@ export const authService = {
             if (!data.user.status || data.user.status !== 'ACTIVE') {
                 throw {
                     status: 401,
-                    message: 'Please verify your email',
+                    message: 'Vui lòng xác minh email của bạn',
                 }
             }
             // Save token and user data if login successful
             if (data.accessToken) {
-                authService.saveToken(data.accessToken, rememberMe); 
-                authService.saveUser(data.user, rememberMe); 
+                authService.saveToken(data.accessToken, rememberMe);
+                authService.saveUser(data.user, rememberMe);
+                // Dispatch sau khi cả token lẫn user đã được lưu
+                // để syncAuth đọc được đầy đủ dữ liệu
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new Event('auth-changed'));
+                }
             }
 
             return data;
@@ -79,14 +84,15 @@ export const authService = {
      * @param role - User role (BUYER or SELLER)
      * @returns Promise with register response (no token, fullName will be null)
      */
-    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER'): Promise<RegisterResponse> => {
+    register: async (email: string, password: string, phone: string, cccd: string, role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER', fullName: string): Promise<RegisterResponse> => {
         try {
             const data = await apiCallPOST<RegisterResponse>('/auth/register', {
                 email,
                 password,
                 phone,
                 cccd,
-                role
+                role,
+                fullName
             } as RegisterRequest);
 
             // VALIDATION
@@ -174,6 +180,39 @@ export const authService = {
     },
 
     /**
+     * Request a password reset (Forgot Password)
+     * @param email - User email
+     */
+    forgotPassword: async (email: string): Promise<{ message: string }> => {
+        try {
+            const data = await apiCallPOST<{ message: string }>('/auth/forgot-password', { email });
+            return data;
+        } catch (error: any) {
+            console.error('Lỗi API Forgot Password:', error);
+            if (error.response?.status === 404) {
+                throw new Error('Không tìm thấy tài khoản với email này.');
+            }
+            throw new Error(error.response?.data?.message || 'Có lỗi xảy ra khi yêu cầu cấp lại mật khẩu.');
+        }
+    },
+
+    /**
+     * Reset password with OTP
+     */
+    resetPassword: async (email: string, otp: string, newPassword: string): Promise<{ message: string }> => {
+        try {
+            const data = await apiCallPOST<{ message: string }>('/auth/reset-password', { email, otp, newPassword });
+            return data;
+        } catch (error: any) {
+            console.error('Lỗi API Reset Password:', error);
+            if (error.response?.status === 400 || error.response?.status === 401) {
+                throw new Error('Mã OTP không hợp lệ hoặc đã hết hạn.');
+            }
+            throw new Error(error.response?.data?.message || 'Có lỗi xảy ra khi đặt lại mật khẩu.');
+        }
+    },
+
+    /**
      * Save authentication token to localStorage
      * @param token - JWT token from backend
      */
@@ -184,7 +223,6 @@ export const authService = {
             } else {
                 sessionStorage.setItem('authToken', token);
             }
-            window.dispatchEvent(new Event('auth-changed'));
         }
     },
 

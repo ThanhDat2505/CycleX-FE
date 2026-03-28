@@ -88,9 +88,7 @@ export default function ListingsTable({
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <span className="material-symbols-outlined text-[20px]">
-                      image
-                    </span>
+                    <span className="text-xs text-gray-400">N/A</span>
                   )}
                 </div>
               </td>
@@ -121,9 +119,6 @@ export default function ListingsTable({
             <tr>
               <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                 <div className="flex flex-col items-center justify-center">
-                  <span className="material-symbols-outlined text-4xl mb-2 text-gray-300">
-                    inbox
-                  </span>
                   <p>Không tìm thấy tin đăng nào.</p>
                 </div>
               </td>

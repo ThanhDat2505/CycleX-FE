@@ -41,8 +41,9 @@ export async function POST(request: Request) {
         const nameWithoutExt = baseName.replace(/\.[^/.]+$/, "") || "image";
         const savedFileName = `${Date.now()}-${nameWithoutExt}${extension}`;
 
-        // Save as /public/public/{listingId}/{fileName} so it is served at /public/{listingId}/{fileName}
-        const relativeDir = path.join("public", "public", listingId);
+        // Save to uploads/public/{listingId}/{fileName}
+        // Served via /api/files/public/... route, rewritten from /public/...
+        const relativeDir = path.join("uploads", "public", listingId);
         const outputDir = path.join(process.cwd(), relativeDir);
         await mkdir(outputDir, { recursive: true });
 

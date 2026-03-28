@@ -45,7 +45,7 @@ export function useDashboard(enabled: boolean = true, sellerId?: number): UseDas
                 setTopListings(data.topListings);
             } catch (err) {
                 console.error('Failed to load dashboard:', err);
-                setError('Unable to load dashboard data. Please try again.');
+                setError('Không thể tải dữ liệu dashboard. Vui lòng thử lại.');
             } finally {
                 setLoading(false);
             }

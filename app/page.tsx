@@ -37,8 +37,12 @@ export default function Home() {
 
     useEffect(() => {
         if (!isLoading) {
-            if (user?.role === 'SHIPPER') {
+            if (user?.role === 'ADMIN') {
+                router.replace('/admin/dashboard');
+            } else if (user?.role === 'SHIPPER') {
                 router.replace('/shipper');
+            } else if (user?.role === 'INSPECTOR') {
+                router.replace('/inspector/dashboard');
             } else if (user?.role === 'SELLER') {
                 addToast('Bạn không có quyền truy cập trang này', 'error');
                 router.replace('/seller/dashboard');
@@ -47,7 +51,24 @@ export default function Home() {
     }, [user, isLoading, router, addToast]);
 
     if (isLoading) {
-        return <div className="min-h-screen bg-white" />; // Prevent flash of content
+        return (
+            <div className="min-h-screen bg-gray-100 animate-pulse">
+                <div className="h-16 bg-gray-300 w-full" />
+                <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
+                    <div className="h-64 bg-gray-300 rounded-xl" />
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="h-24 bg-gray-300 rounded-lg" />
+                        <div className="h-24 bg-gray-300 rounded-lg" />
+                        <div className="h-24 bg-gray-300 rounded-lg" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="h-48 bg-gray-300 rounded-lg" />
+                        ))}
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     if (user?.role === 'SHIPPER' || user?.role === 'SELLER') {

@@ -57,9 +57,9 @@ export function AuthDecorativePanel() {
 
             {/* Footer Branding */}
             <div className={STYLES.footer}>
-                <span>CycleX Platform</span>
+                <span>Nền tảng CycleX</span>
                 <div className={STYLES.footerDot} />
-                <span>Premium Quality</span>
+                <span>Chất lượng cao cấp</span>
             </div>
         </div>
     );

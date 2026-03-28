@@ -46,6 +46,7 @@ export interface RegisterRequest {
     phone: string;        // Required per API doc
     cccd: string;         // 12 characters
     role: 'BUYER' | 'SELLER' | 'ADMIN' | 'INSPECTOR' | 'SHIPPER';  // Required per official API
+    fullName: string;     // Required: user display name
 }
 
 /**
@@ -60,6 +61,20 @@ export interface RegisterResponse {
 
 export interface ForgotPasswordRequest {
     email: string;
+}
+
+export interface ForgotPasswordResponse {
+    message: string;
+}
+
+export interface ResetPasswordRequest {
+    email: string;
+    otp: string;
+    newPassword: string;
+}
+
+export interface ResetPasswordResponse {
+    message: string;
 }
 
 /**

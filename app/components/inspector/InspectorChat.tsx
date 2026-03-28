@@ -110,9 +110,7 @@ export default function InspectorChat() {
       await inspectorService.sendChatText(inspectionRequestId, input.trim());
       setMessages((prev) => [...prev, newMsg]);
       setInput("");
-    } catch {
-      
-    }
+    } catch {}
   };
 
   const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +143,7 @@ export default function InspectorChat() {
       <aside className="chat-info-sidebar">
         <div className="chat-side-header">
           <button className="back-circle-btn" onClick={() => router.back()}>
-            <span className="material-symbols-outlined">arrow_back</span>
+            ←
           </button>
           <h3>Kiểm định</h3>
         </div>
@@ -170,7 +168,6 @@ export default function InspectorChat() {
         </div>
 
         <div className="chat-guide">
-          <span className="material-symbols-outlined">info</span>
           <p>
             Mọi tin nhắn đều được ghi lại để làm bằng chứng giải quyết khiếu
             nại.
@@ -244,7 +241,7 @@ export default function InspectorChat() {
                 className="attach-btn"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <span className="material-symbols-outlined">image</span>
+                📎
               </button>
               <input
                 className="main-chat-input"
@@ -258,7 +255,7 @@ export default function InspectorChat() {
                 onClick={handleSend}
                 disabled={!input.trim()}
               >
-                <span className="material-symbols-outlined">send</span>
+                ↑
               </button>
             </div>
           )}

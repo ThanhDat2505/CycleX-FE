@@ -18,7 +18,12 @@ export function AuthGuard({ children }: AuthGuardProps) {
 
     useEffect(() => {
         if (authService.isAuthenticated()) {
-            router.push('/');
+            const user = authService.getUser();
+            if (user?.role === 'ADMIN') {
+                router.push('/admin/dashboard');
+            } else {
+                router.push('/');
+            }
         }
     }, [router]);
 

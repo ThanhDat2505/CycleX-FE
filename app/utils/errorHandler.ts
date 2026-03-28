@@ -9,7 +9,7 @@ import { AuthError } from '@/app/types/auth';
 export const handleAuthError = (err: any): string => {
     // Handle null/undefined errors
     if (!err) {
-        return 'An error occurred. Please try again.';
+        return 'Đã có lỗi xảy ra. Vui lòng thử lại.';
     }
 
     // Handle AuthError type with status codes
@@ -17,7 +17,7 @@ export const handleAuthError = (err: any): string => {
         switch (err.status) {
             case 400:
                 // Bad request - could be validation or duplicate email
-                return err.message || 'Invalid request';
+                return err.message || 'Yêu cầu không hợp lệ';
 
             case 401:
 
@@ -27,23 +27,23 @@ export const handleAuthError = (err: any): string => {
                 // Forbidden - could be not verified, suspended, or inactive
                 if (err.message?.toLowerCase().includes('not verified') ||
                     err.message?.toLowerCase().includes('verify')) {
-                    return 'Please verify your email before logging in';
+                    return 'Vui lòng xác minh email trước khi đăng nhập';
                 }
                 if (err.message?.toLowerCase().includes('suspended')) {
-                    return 'Your account has been suspended. Please contact Admin or Inspector.';
+                    return 'Tài khoản của bạn đã bị đình chỉ. Vui lòng liên hệ Admin.';
                 }
                 if (err.message?.toLowerCase().includes('inactive')) {
-                    return 'Your account is inactive. Please verify your email.';
+                    return 'Tài khoản chưa kích hoạt. Vui lòng xác minh email.';
                 }
-                return err.message || 'Your account has been locked';
+                return err.message || 'Tài khoản của bạn đã bị khóa';
 
             case 404:
                 // Not found - account doesn't exist
-                return 'Account not found';
+                return 'Không tìm thấy tài khoản';
 
             case 409:
                 // Conflict - duplicate email
-                return 'Email already exists';
+                return 'Email đã được sử dụng';
 
             case 422:
                 // Validation errors from backend
@@ -59,19 +59,19 @@ export const handleAuthError = (err: any): string => {
                 if (err.errors?.phone) {
                     return err.errors.phone[0];
                 }
-                return 'Validation failed. Please check your input.';
+                return 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
 
             case 500:
                 // Server error
-                return 'Server error. Please try again later.';
+                return 'Lỗi máy chủ. Vui lòng thử lại sau.';
 
             case 503:
                 // Service unavailable
-                return 'Service temporarily unavailable. Please try again later.';
+                return 'Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.';
 
             default:
                 // Other status codes
-                return err.message || 'An error occurred. Please try again.';
+                return err.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
         }
     }
 
@@ -86,15 +86,15 @@ export const handleAuthError = (err: any): string => {
 
     // Handle network errors
     if (err.message === 'Failed to fetch') {
-        return 'Network error. Please check your internet connection.';
+        return 'Lỗi mạng. Vui lòng kiểm tra kết nối internet.';
     }
 
     // Handle timeout errors
     if (err.name === 'AbortError' || err.message?.includes('timeout')) {
-        return 'Request timeout. Please try again.';
+        return 'Hết thời gian chờ. Vui lòng thử lại.';
     }
 
     // Default fallback
-    return err.message || 'An error occurred. Please try again.';
+    return err.message || 'Đã có lỗi xảy ra. Vui lòng thử lại.';
 };
 

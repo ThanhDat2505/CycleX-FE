@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     const fileName = `${randomUUID()}${ext}`;
 
     // Ensure video directory exists
-    const videoDir = path.join(process.cwd(), "public", "video");
+    const videoDir = path.join(process.cwd(), "uploads", "video");
     await mkdir(videoDir, { recursive: true });
 
     // Write file to disk

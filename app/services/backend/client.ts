@@ -76,7 +76,7 @@ export async function backendRequest<TResponse>(
 
     throw {
       status: parsed?.status ?? response.status,
-      message: parsed?.message ?? `Server error: ${response.statusText}`,
+      message: parsed?.message ?? `Lỗi máy chủ: ${response.statusText}`,
       errors: parsed?.errors,
     } as BackendErrorShape;
   }

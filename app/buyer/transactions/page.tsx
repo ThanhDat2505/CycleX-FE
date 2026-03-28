@@ -187,8 +187,14 @@ export default function BuyerTransactionsPage() {
                           <div className="flex-shrink-0 h-10 w-10 relative rounded overflow-hidden">
                             <img
                               className="h-10 w-10 object-cover"
-                              src={t.listingImage || "/placeholder-bike.png"}
+                              src={
+                                t.listingImage || "/images/bike-placeholder.svg"
+                              }
                               alt=""
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src =
+                                  "/images/bike-placeholder.svg";
+                              }}
                             />
                           </div>
                           <div className="ml-4">
@@ -271,10 +277,14 @@ export default function BuyerTransactionsPage() {
                   <img
                     src={
                       selectedTransaction.listingImage ||
-                      "/placeholder-bike.png"
+                      "/images/bike-placeholder.svg"
                     }
                     alt={selectedTransaction.listingTitle}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        "/images/bike-placeholder.svg";
+                    }}
                   />
                 </div>
                 <div className="flex-1 min-w-0">

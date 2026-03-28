@@ -211,7 +211,7 @@ export const useCreateListing = () => {
         }
       } catch {
         if (!isMountedRef.current || cancelled) return;
-        setSubmitError("Failed to load draft listing. Please try again.");
+        setSubmitError("Không thể tải tin đăng nháp. Vui lòng thử lại.");
       } finally {
         if (!isMountedRef.current || cancelled) return;
         setIsCreatingDraft(false);
@@ -244,18 +244,18 @@ export const useCreateListing = () => {
   // Validation
   const validateStep1 = useCallback(() => {
     const newErrors: Record<string, string> = {};
-    if (!formData.title.trim()) newErrors.title = "Title is required";
-    if (!formData.brand.trim()) newErrors.brand = "Brand is required";
-    if (!formData.model.trim()) newErrors.model = "Model is required";
-    if (!formData.category) newErrors.category = "Category is required";
+    if (!formData.title.trim()) newErrors.title = "Vui lòng nhập tiêu đề tin đăng";
+    if (!formData.brand.trim()) newErrors.brand = "Vui lòng nhập thương hiệu xe";
+    if (!formData.model.trim()) newErrors.model = "Vui lòng nhập dòng xe";
+    if (!formData.category) newErrors.category = "Vui lòng chọn loại xe";
     if (!formData.price) {
-      newErrors.price = "Price is required";
+      newErrors.price = "Vui lòng nhập giá bán";
     } else if (Number(formData.price) <= 0) {
-      newErrors.price = "Price must be greater than 0";
+      newErrors.price = "Giá bán phải lớn hơn 0";
     }
-    if (!formData.location.trim()) newErrors.location = "Location is required";
+    if (!formData.location.trim()) newErrors.location = "Vui lòng chọn tỉnh/thành phố";
     if (!formData.description.trim())
-      newErrors.description = "Description is required";
+      newErrors.description = "Vui lòng nhập mô tả chi tiết";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -264,7 +264,7 @@ export const useCreateListing = () => {
   const validateStep2 = useCallback(() => {
     if (imageUrls.length < LISTING_CONFIG.MIN_IMAGES) {
       setUploadError(
-        `Please upload at least ${LISTING_CONFIG.MIN_IMAGES} images.`,
+        `Vui lòng tải lên ít nhất ${LISTING_CONFIG.MIN_IMAGES} ảnh.`,
       );
       return false;
     }
@@ -416,17 +416,17 @@ export const useCreateListing = () => {
 
   const handleCancelPublish = useCallback(async () => {
     if (!user?.userId) {
-      setSubmitError("You must be logged in to cancel publish.");
+      setSubmitError("Bạn cần đăng nhập để hủy đăng tin.");
       return;
     }
 
     if (!listingId) {
-      setSubmitError("No listing found to cancel publish.");
+      setSubmitError("Không tìm thấy tin đăng để hủy.");
       return;
     }
 
     if (!canCancelPublish) {
-      setSubmitError("Cancel publish is only available for pending listings.");
+      setSubmitError("Chỉ có thể hủy khi tin đăng đang ở trạng thái chờ duyệt.");
       return;
     }
 
@@ -453,7 +453,7 @@ export const useCreateListing = () => {
           "Backend chưa hỗ trợ Cancel Publish cho listing đang PENDING. Vui lòng nhờ BE mở endpoint này.",
         );
       } else {
-        setSubmitError("Failed to cancel publish. Please try again.");
+        setSubmitError("Hủy đăng tin thất bại. Vui lòng thử lại.");
       }
     } finally {
       setIsCancellingPublish(false);
@@ -462,7 +462,7 @@ export const useCreateListing = () => {
 
   const getPayload = useCallback((): CreateListingPayload => {
     if (!user || !user.userId) {
-      throw new Error("User not identified. Please try logging in again.");
+      throw new Error("Không xác định được người dùng. Vui lòng đăng nhập lại.");
     }
 
     return {
@@ -500,7 +500,7 @@ export const useCreateListing = () => {
           const draft = await saveDraft(payload);
           setListingId(draft.id);
         } catch (error) {
-          setSubmitError("Failed to save draft. Please try again.");
+          setSubmitError("Không thể lưu bản nháp. Vui lòng thử lại.");
           setIsCreatingDraft(false);
           return;
         } finally {
@@ -542,10 +542,10 @@ export const useCreateListing = () => {
         file.type,
       )
     ) {
-      return `File "${file.name}" is not a valid image. Only JPG, PNG, GIF, and WEBP are allowed.`;
+      return `File "${file.name}" không hợp lệ. Chỉ chấp nhận JPG, PNG, GIF và WEBP.`;
     }
     if (file.size > LISTING_CONFIG.MAX_FILE_SIZE) {
-      return `File "${file.name}" exceeds the 5MB size limit.`;
+      return `File "${file.name}" vượt quá giới hạn 5MB.`;
     }
     return null;
   }, []);
@@ -562,19 +562,19 @@ export const useCreateListing = () => {
 
       if (!listingId) {
         setUploadError(
-          "Draft not ready yet. Please complete Step 1 and try again.",
+          "Bản nháp chưa sẵn sàng. Vui lòng hoàn thành Bước 1 trước.",
         );
         return;
       }
 
       if (!user?.userId) {
-        setUploadError("You must be logged in to upload images.");
+        setUploadError("Bạn cần đăng nhập để tải ảnh lên.");
         return;
       }
 
       if (imageUrls.length + files.length > LISTING_CONFIG.MAX_IMAGES) {
         setUploadError(
-          `You can only upload a maximum of ${LISTING_CONFIG.MAX_IMAGES} images.`,
+          `Bạn chỉ có thể tải lên tối đa ${LISTING_CONFIG.MAX_IMAGES} ảnh.`,
         );
         return;
       }
@@ -746,13 +746,13 @@ export const useCreateListing = () => {
     }
 
     if (!user) {
-      setSubmitError("You must be logged in to save a draft.");
+      setSubmitError("Bạn cần đăng nhập để lưu bản nháp.");
       return;
     }
 
     if (!formData.title.trim()) {
-      setSubmitError("Please enter a Listing Title to save as draft.");
-      setErrors((prev) => ({ ...prev, title: "Title is required for drafts" }));
+      setSubmitError("Vui lòng nhập tiêu đề tin đăng để lưu bản nháp.");
+      setErrors((prev) => ({ ...prev, title: "Vui lòng nhập tiêu đề tin đăng" }));
       if (step !== CREATE_LISTING_STEPS.VEHICLE_INFO) {
         setStep(CREATE_LISTING_STEPS.VEHICLE_INFO);
       }
@@ -778,7 +778,7 @@ export const useCreateListing = () => {
         addToast("Đã lưu bản nháp thành công!", "success");
         router.push("/seller/my-listings");
       } else {
-        setSubmitError("Failed to save draft. Please try again.");
+        setSubmitError("Không thể lưu bản nháp. Vui lòng thử lại.");
       }
     } finally {
       setIsSaving(false);
@@ -789,12 +789,12 @@ export const useCreateListing = () => {
     if (e) e.preventDefault();
 
     if (!user) {
-      setSubmitError("You must be logged in to create a listing.");
+      setSubmitError("Bạn cần đăng nhập để đăng tin.");
       return;
     }
 
     if (!listingId) {
-      setSubmitError("No draft found. Please start from the beginning.");
+      setSubmitError("Không tìm thấy bản nháp. Vui lòng bắt đầu lại từ đầu.");
       return;
     }
 
@@ -812,7 +812,7 @@ export const useCreateListing = () => {
         addToast("Tin đăng đã được gửi duyệt!", "success");
         router.push("/seller/my-listings");
       } else {
-        setSubmitError("Failed to submit listing. Please try again.");
+        setSubmitError("Đăng tin thất bại. Vui lòng thử lại.");
       }
     } finally {
       setIsSaving(false);
