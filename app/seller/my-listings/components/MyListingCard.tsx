@@ -127,8 +127,8 @@ export function MyListingCard({ listing, onDelete, isDeleting }: MyListingCardPr
           >
             Xem
           </Link>
-          {/* Delete button only for DRAFT status */}
-          {listing.status === "DRAFT" && onDelete && (
+          {/* Delete button */}
+          {onDelete && (
             <button
               onClick={() => onDelete(listing.id)}
               disabled={isDeleting}
