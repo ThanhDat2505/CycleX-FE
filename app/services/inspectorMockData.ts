@@ -1,5 +1,5 @@
-// TODO: Đổi lại thành false khi cần gọi API thật
-export const INSPECTOR_MOCK_ENABLED = true;
+// TODO: Bật lại thành true nếu cần dùng mock data để test
+export const INSPECTOR_MOCK_ENABLED = false;
 
 const MOCK_DELAY_MS = 300;
 

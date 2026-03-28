@@ -1,18 +1,13 @@
 "use client";
-// import { useAuth } from "@/app/hooks/useAuth";
-// import { useRouter, usePathname } from "next/navigation";
-// import { useEffect } from "react";
+import { useAuth } from "@/app/hooks/useAuth";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect } from "react";
 
-// TODO: Bật lại validation khi cần thiết
 export default function InspectorGuard({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  // Tạm tắt validation đăng nhập để test
-  return <>{children}</>;
-
-  /* === VALIDATION GỐC (bật lại khi cần) ===
   const { user, isLoading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
@@ -29,5 +24,4 @@ export default function InspectorGuard({
     return null;
   }
   return <>{children}</>;
-  === KẾT THÚC VALIDATION GỐC === */
 }
