@@ -82,8 +82,10 @@ export default function Header() {
 
           {/* Right Side Actions */}
           <div className="flex items-center gap-4">
-            {/* Search */}
-            <div className="relative">{!isRestrictedRole && <SearchBar />}</div>
+            {/* Search - only for Guest and BUYER */}
+            <div className="relative">
+              {(!isLoggedIn || user?.role === "BUYER") && <SearchBar />}
+            </div>
 
             {isLoading ? (
               <div className="w-32 h-10 animate-pulse rounded-lg bg-gray-600" />
