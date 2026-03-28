@@ -1,4 +1,5 @@
-export const INSPECTOR_MOCK_ENABLED = false;
+// TODO: Đổi lại thành false khi cần gọi API thật
+export const INSPECTOR_MOCK_ENABLED = true;
 
 const MOCK_DELAY_MS = 300;
 
