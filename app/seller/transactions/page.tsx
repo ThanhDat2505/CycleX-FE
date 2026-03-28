@@ -450,15 +450,7 @@ export default function SellerTransactionsPage() {
   );
 }
 
-{/* ═══════════ BANNER HEADER ═══════════ */ }
-<div className="relative bg-white border-b border-gray-100 overflow-hidden">
-  {/* Accent line top */}
-  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-orange-400 via-orange-500 to-amber-400" />
-  {/* Decorative blobs */}
-  <div className="absolute -top-24 -right-20 w-80 h-80 rounded-full bg-orange-50 blur-3xl opacity-70 pointer-events-none" />
-  <div className="absolute -bottom-16 left-1/3 w-56 h-56 rounded-full bg-blue-50 blur-3xl opacity-50 pointer-events-none" />
 
-  <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-20">
     {/* Page title */}
     <div className="mb-8">
       <div className="flex items-center gap-2 mb-2">
