@@ -179,6 +179,10 @@ export const authService = {
      */
     saveToken: (token: string, remember: boolean = true): void => {
         if (typeof window !== 'undefined') {
+            // Xóa cả hai nơi trước khi ghi — tránh getToken() đọc token cũ ở localStorage
+            // khi lần đăng nhập mới chỉ lưu sessionStorage (không ghi nhớ).
+            localStorage.removeItem('authToken');
+            sessionStorage.removeItem('authToken');
             if (remember) {
                 localStorage.setItem('authToken', token);
             } else {
@@ -195,11 +199,14 @@ export const authService = {
     saveUser: (user: User, remember: boolean = true): void => {
         if (typeof window !== 'undefined') {
             const userData = JSON.stringify(user);
+            localStorage.removeItem('userData');
+            sessionStorage.removeItem('userData');
             if (remember) {
                 localStorage.setItem('userData', userData);
             } else {
                 sessionStorage.setItem('userData', userData);
             }
+            window.dispatchEvent(new Event('auth-changed'));
         }
     },
 
