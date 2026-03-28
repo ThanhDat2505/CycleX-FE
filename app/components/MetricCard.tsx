@@ -6,7 +6,7 @@ interface MetricCardProps {
     label: string;
     value: string | number;
     icon: string;
-    change: string;
+    change?: string;
     href?: string;
     isPositive?: boolean;
 }
