@@ -126,6 +126,9 @@ export default function NotificationsPage() {
                     // All go to Transaction detail as per system logic for these states
                     router.push(`/transactions/${notif.relatedId}`);
                     break;
+                case 'INSPECTOR_PENDING_REVIEW':
+                    router.push(`/inspector/review-detail?id=${notif.relatedId}`);
+                    break;
                 case 'SYSTEM':
                 default:
                     break;
