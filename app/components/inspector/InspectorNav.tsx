@@ -3,34 +3,63 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import {
-  LayoutDashboard,
-  ClipboardList,
-  History,
-  Gavel,
-  Fingerprint,
-} from "lucide-react";
+
+// Inline SVG icons — no external dependencies
+const IconDashboard = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </svg>
+);
+
+const IconClipboardList = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <line x1="9" y1="12" x2="15" y2="12" />
+    <line x1="9" y1="16" x2="13" y2="16" />
+  </svg>
+);
+
+const IconHistory = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+    <path d="M3 3v5h5" />
+    <path d="M12 7v5l4 2" />
+  </svg>
+);
+
+const IconGavel = ({ size = 16, className = "" }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M14 13L4 3l-1 1 9 10" />
+    <path d="m14.5 13.5 5 5a2.12 2.12 0 0 1-3 3l-5-5" />
+    <path d="m5 8-1.5-1.5A2 2 0 0 1 6.34 3.66L8 5" />
+    <line x1="3" y1="21" x2="21" y2="21" />
+  </svg>
+);
 
 const NAV_ITEMS = [
   {
     href: "/inspector/dashboard",
     label: "Tổng Quan",
-    icon: LayoutDashboard,
+    icon: IconDashboard,
   },
   {
     href: "/inspector/pending-list",
     label: "Tin Chờ Duyệt",
-    icon: ClipboardList,
+    icon: IconClipboardList,
   },
   {
     href: "/inspector/review-history",
     label: "Lịch Sử Duyệt",
-    icon: History,
+    icon: IconHistory,
   },
   {
     href: "/inspector/disputes",
     label: "Danh Sách Tranh Chấp",
-    icon: Gavel,
+    icon: IconGavel,
   },
 ];
 

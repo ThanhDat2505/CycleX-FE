@@ -14,7 +14,6 @@ export default function InspectorGuard({
 
   useEffect(() => {
     if (!isLoading) {
-      // Nếu chưa đăng nhập hoặc không phải inspector thì redirect
       if (!user || user.role !== "INSPECTOR") {
         router.replace("/login?redirect=" + encodeURIComponent(pathname));
       }
