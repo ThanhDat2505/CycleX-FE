@@ -169,14 +169,12 @@ export default function ListingDetailView({
               {listing.condition && (
                 <span
                   className={
-                    listing.condition === "new"
+                    listing.condition.toLowerCase().includes("new")
                       ? STYLES.badgeNew
                       : STYLES.badgeUsed
                   }
                 >
-                  {listing.condition === "new"
-                    ? MESSAGES.DETAIL_CONDITION_NEW
-                    : MESSAGES.DETAIL_CONDITION_USED}
+                  {listing.condition}
                 </span>
               )}
 
@@ -237,9 +235,7 @@ export default function ListingDetailView({
                   {MESSAGES.DETAIL_SPEC_CONDITION}
                 </span>
                 <span className={STYLES.specValue}>
-                  {listing.condition === "new"
-                    ? MESSAGES.DETAIL_CONDITION_NEW
-                    : MESSAGES.DETAIL_CONDITION_USED}
+                  {listing.condition || "---"}
                 </span>
               </div>
             </div>
