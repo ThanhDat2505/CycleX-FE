@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useToast } from "@/app/contexts/ToastContext";
+import { ConfirmModal } from "@/app/components/ui";
 import {
   inspectorService,
   type InspectorReviewDetail,
@@ -39,6 +40,7 @@ export default function ReviewDetailClient({
   const [rejectReason, setRejectReason] = useState("");
   const [rejectReasonOther, setRejectReasonOther] = useState("");
   const [rejectErrorMessage, setRejectErrorMessage] = useState("");
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -384,39 +386,25 @@ export default function ReviewDetailClient({
                 }
                 type="button"
                 disabled={submitting}
-                onClick={async () => {
+                onClick={() => {
                   if (!isChecklistComplete) {
                     addToast(
-                      "Vui lòng check vào tất cả các mục trong checklist trước khi duyệt",
+                      "Vui lòng hoàn thành tất cả các mục trong checklist trước khi duyệt",
                       "warning"
                     );
                     return;
                   }
                   if (!listing) return;
-
-                  const confirmed = window.confirm(
-                    "Bạn có chắc chắn muốn duyệt tin đăng này?",
-                  );
-                  if (!confirmed) return;
-
-                  try {
-                    setSubmitting(true);
-                    const payload = {
-                      reasonCode: "MEETS_STANDARDS",
-                      reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
-                    };
-                    await inspectorService.approveListing(listing.id, payload);
-                    alert("Đã duyệt tin thành công!");
-                    router.push("/inspector/dashboard");
-                  } catch (err: any) {
-                    alert(err?.message || "Duyệt tin thất bại");
-                  } finally {
-                    setSubmitting(false);
-                  }
+                  setShowApproveConfirm(true);
                 }}
               >
                 DUYỆT TIN
               </button>
+              {!isChecklistComplete && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-300 rounded-lg px-3 py-2 text-center font-medium">
+                  ⚠️ Hãy tích đủ tất cả mục trong checklist bên dưới để có thể duyệt tin
+                </p>
+              )}
               <button
                 className="btn btn-danger btn-reject-solid w-full py-3.5 text-[14px] font-bold shadow-sm"
                 type="button"
@@ -658,6 +646,36 @@ export default function ReviewDetailClient({
       </div>
 
       {/* Đã xóa nút chat với seller */}
+
+      <ConfirmModal
+        isOpen={showApproveConfirm}
+        onClose={() => { if (!submitting) setShowApproveConfirm(false); }}
+        onConfirm={async () => {
+          if (!listing) return;
+          try {
+            setSubmitting(true);
+            const payload = {
+              reasonCode: "MEETS_STANDARDS",
+              reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
+            };
+            await inspectorService.approveListing(listing.id, payload);
+            setShowApproveConfirm(false);
+            addToast("Đã duyệt tin thành công!", "success");
+            router.push("/inspector/dashboard");
+          } catch (err: any) {
+            addToast(err?.message || "Duyệt tin thất bại", "error");
+          } finally {
+            setSubmitting(false);
+          }
+        }}
+        title="Xác nhận duyệt tin"
+        message="Bạn có chắc chắn muốn duyệt tin đăng này? Tin sẽ được hiển thị công khai trên hệ thống."
+        confirmLabel="Duyệt tin"
+        cancelLabel="Hủy"
+        variant="primary"
+        isLoading={submitting}
+        iconType="info"
+      />
     </div>
   );
 }
