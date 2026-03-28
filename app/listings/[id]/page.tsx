@@ -15,7 +15,6 @@ import { use, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/app/contexts/ToastContext";
 import { MESSAGES } from "../../constants";
 import { useListingDetail } from "./hooks/useListingDetail";
 import ListingDetailView from "./components/ListingDetailView";
@@ -51,11 +50,10 @@ const STYLES = {
 
 export default function ListingDetailPage({ params }: ListingDetailPageProps) {
   const resolvedParams = use(params);
-  const listingId = parseInt(resolvedParams.id);
+  const listingId = Number.parseInt(resolvedParams.id);
 
   const router = useRouter();
-  const { addToast } = useToast();
-  const { listing, isLoading, error, isAuthLoading, userRole, userId } =
+  const { listing, isLoading, error, isAuthLoading, userRole } =
     useListingDetail(listingId);
 
   // Block SHIPPER and unauthorized SELLER from viewing
