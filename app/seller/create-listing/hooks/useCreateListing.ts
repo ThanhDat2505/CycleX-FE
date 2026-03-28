@@ -483,6 +483,34 @@ export const useCreateListing = () => {
     };
   }, [formData, user]);
 
+  const getDraftPayload = useCallback((): CreateListingPayload => {
+    if (!user || !user.userId) {
+      throw new Error("Không xác định được người dùng. Vui lòng đăng nhập lại.");
+    }
+
+    const fallbackTitle =
+      formData.title.trim() ||
+      [formData.brand.trim(), formData.model.trim()].filter(Boolean).join(" ") ||
+      "Tin nháp chưa đặt tên";
+
+    return {
+      sellerId: user.userId,
+      title: fallbackTitle,
+      description: formData.description || undefined,
+      bikeType: formData.category || "Other",
+      brand: formData.brand || "Chưa chọn hãng",
+      model: formData.model || "Chưa chọn mẫu",
+      manufactureYear: formData.year ? Number(formData.year) : undefined,
+      condition: formData.condition || undefined,
+      usageTime: formData.usageTime || undefined,
+      reasonForSale: formData.reasonForSale || undefined,
+      price: formData.price ? Number(formData.price) : 0,
+      locationCity: formData.location || "Chưa chọn địa điểm",
+      pickupAddress: formData.pickupAddress || formData.location || "Chưa nhập địa chỉ",
+      saveDraft: true,
+    };
+  }, [formData, user]);
+
   const handleNext = useCallback(async () => {
     if (isReadOnly) return;
 
@@ -750,18 +778,9 @@ export const useCreateListing = () => {
       return;
     }
 
-    if (!formData.title.trim()) {
-      setSubmitError("Vui lòng nhập tiêu đề tin đăng để lưu bản nháp.");
-      setErrors((prev) => ({ ...prev, title: "Vui lòng nhập tiêu đề tin đăng" }));
-      if (step !== CREATE_LISTING_STEPS.VEHICLE_INFO) {
-        setStep(CREATE_LISTING_STEPS.VEHICLE_INFO);
-      }
-      return;
-    }
-
     setIsSaving(true);
     try {
-      const payload = getPayload();
+      const payload = getDraftPayload();
       if (listingId) {
         await updateDraft(listingId, payload);
       } else {
