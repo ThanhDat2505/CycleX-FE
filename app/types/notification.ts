@@ -6,6 +6,8 @@ export type NotificationType =
     | 'BUYER_CONFIRMED'
     | 'INSPECTION_COMPLETE'
     | 'INSPECTOR_PENDING_REVIEW'
+    | 'LISTING_APPROVED'
+    | 'LISTING_REJECTED'
     | 'SYSTEM';
 
 export interface NotificationResponse {

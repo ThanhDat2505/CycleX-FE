@@ -24,6 +24,10 @@ export function NotificationItem({
       case "SELLER_CONFIRMED":
       case "BUYER_CONFIRMED":
         return <ShoppingBag className="w-5 h-5 text-blue-600" />;
+      case "LISTING_APPROVED":
+        return <Box className="w-5 h-5 text-green-600" />;
+      case "LISTING_REJECTED":
+        return <AlertOctagon className="w-5 h-5 text-red-600" />;
       case "INSPECTOR_PENDING_REVIEW":
         return <AlertOctagon className="w-5 h-5 text-amber-600" />;
       case "DELIVERY_SUCCESS":
@@ -43,6 +47,10 @@ export function NotificationItem({
       case "SELLER_CONFIRMED":
       case "BUYER_CONFIRMED":
         return "bg-blue-100";
+      case "LISTING_APPROVED":
+        return "bg-green-100";
+      case "LISTING_REJECTED":
+        return "bg-red-100";
       case "INSPECTOR_PENDING_REVIEW":
         return "bg-amber-100";
       case "DELIVERY_SUCCESS":

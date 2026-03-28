@@ -3,9 +3,12 @@ import { apiCallGET, apiCallPATCH } from '../utils/apiHelpers';
 import { validateObject, validateArray, validateNumber } from '../utils/apiValidation';
 import { authService } from './authService';
 import { inspectorService } from './inspectorService';
+import { getMyListings } from './myListingsService';
 
 const INSPECTOR_NOTIFICATION_ID_OFFSET = 900000000;
 const INSPECTOR_READ_STORAGE_KEY = 'cyclex.inspector.readNotifications';
+const SELLER_NOTIFICATION_ID_OFFSET = 800000000;
+const SELLER_READ_STORAGE_KEY = 'cyclex.seller.readNotifications';
 
 function getCurrentUserRole(): string | undefined {
     const user = authService.getUser() as { role?: string } | null;
@@ -14,6 +17,10 @@ function getCurrentUserRole(): string | undefined {
 
 function isInspectorRole(): boolean {
     return getCurrentUserRole() === 'INSPECTOR';
+}
+
+function isSellerRole(): boolean {
+    return getCurrentUserRole() === 'SELLER';
 }
 
 function getStoredInspectorReadIds(): number[] {
@@ -49,6 +56,39 @@ function setStoredInspectorReadIds(ids: number[]): void {
     window.localStorage.setItem(INSPECTOR_READ_STORAGE_KEY, JSON.stringify(normalized));
 }
 
+function getStoredSellerReadIds(): number[] {
+    if (typeof window === 'undefined') {
+        return [];
+    }
+
+    try {
+        const raw = window.localStorage.getItem(SELLER_READ_STORAGE_KEY);
+        if (!raw) {
+            return [];
+        }
+
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+            return [];
+        }
+
+        return parsed
+            .map((value) => Number(value))
+            .filter((value) => Number.isFinite(value) && value > 0);
+    } catch {
+        return [];
+    }
+}
+
+function setStoredSellerReadIds(ids: number[]): void {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const normalized = Array.from(new Set(ids.filter((value) => Number.isFinite(value) && value > 0)));
+    window.localStorage.setItem(SELLER_READ_STORAGE_KEY, JSON.stringify(normalized));
+}
+
 function toInspectorNotificationId(listingId: string): number {
     const numericId = Number(listingId);
     if (Number.isFinite(numericId) && numericId > 0) {
@@ -66,6 +106,14 @@ function toInspectorNotificationId(listingId: string): number {
 
 function isSyntheticInspectorNotification(notificationId: number): boolean {
     return notificationId >= INSPECTOR_NOTIFICATION_ID_OFFSET;
+}
+
+function toSellerNotificationId(listingId: number, status: 'APPROVE' | 'REJECT'): number {
+    return SELLER_NOTIFICATION_ID_OFFSET + (listingId * 10) + (status === 'APPROVE' ? 1 : 2);
+}
+
+function isSyntheticSellerNotification(notificationId: number): boolean {
+    return notificationId >= SELLER_NOTIFICATION_ID_OFFSET && notificationId < INSPECTOR_NOTIFICATION_ID_OFFSET;
 }
 
 async function getBackendNotifications(
@@ -141,6 +189,41 @@ async function getInspectorSyntheticNotifications(): Promise<NotificationRespons
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
+async function getSellerSyntheticNotifications(userId: number): Promise<NotificationResponse[]> {
+    if (!isSellerRole() || !userId) {
+        return [];
+    }
+
+    const readIds = getStoredSellerReadIds();
+    const response = await getMyListings({
+        sellerId: userId,
+        page: 1,
+        pageSize: 100,
+        sortBy: 'recent',
+    });
+
+    return response.listings
+        .filter((listing) => listing.status === 'APPROVE' || listing.status === 'REJECT')
+        .map((listing) => {
+            const isApproved = listing.status === 'APPROVE';
+            const notificationId = toSellerNotificationId(listing.id, isApproved ? 'APPROVE' : 'REJECT');
+            const listingName = `${listing.brand} ${listing.model}`.trim();
+
+            return {
+                id: notificationId,
+                title: isApproved ? 'Tin đăng đã được duyệt' : 'Tin đăng bị từ chối',
+                message: isApproved
+                    ? `${listingName || 'Tin đăng của bạn'} đã được duyệt và có thể hiển thị trên hệ thống.`
+                    : `${listingName || 'Tin đăng của bạn'} đã bị từ chối.${listing.rejectionReason ? ` Lý do: ${listing.rejectionReason}` : ''}`,
+                type: isApproved ? 'LISTING_APPROVED' as NotificationType : 'LISTING_REJECTED' as NotificationType,
+                relatedId: listing.id,
+                isRead: readIds.includes(notificationId),
+                createdAt: listing.updatedDate || listing.createdDate || new Date().toISOString(),
+            };
+        })
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
 export const notificationService = {
     /**
      * S-05 Get Notifications (Paginated)
@@ -153,7 +236,7 @@ export const notificationService = {
         type?: NotificationType
     ): Promise<PaginatedNotificationResponse> => {
         try {
-            const backendPromise = type === 'INSPECTOR_PENDING_REVIEW'
+            const backendPromise = type === 'INSPECTOR_PENDING_REVIEW' || type === 'LISTING_APPROVED' || type === 'LISTING_REJECTED'
                 ? Promise.resolve({ items: [], page, size, totalElements: 0, totalPages: 0 })
                 : getBackendNotifications(page, size, isRead, type);
 
@@ -161,12 +244,17 @@ export const notificationService = {
                 ? getInspectorSyntheticNotifications()
                 : Promise.resolve([]);
 
-            const [backendResponse, syntheticItems] = await Promise.all([
+            const sellerSyntheticPromise = isSellerRole() && (type === undefined || type === 'LISTING_APPROVED' || type === 'LISTING_REJECTED')
+                ? getSellerSyntheticNotifications(userId)
+                : Promise.resolve([]);
+
+            const [backendResponse, inspectorSyntheticItems, sellerSyntheticItems] = await Promise.all([
                 backendPromise,
                 syntheticPromise,
+                sellerSyntheticPromise,
             ]);
 
-            const mergedItems = [...syntheticItems, ...backendResponse.items]
+            const mergedItems = [...inspectorSyntheticItems, ...sellerSyntheticItems, ...backendResponse.items]
                 .filter((item) => isRead === undefined ? true : item.isRead === isRead)
                 .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
@@ -190,12 +278,15 @@ export const notificationService = {
      */
     getUnreadCount: async (userId: number): Promise<number> => {
         try {
-            const [backendUnreadCount, syntheticItems] = await Promise.all([
+            const [backendUnreadCount, inspectorSyntheticItems, sellerSyntheticItems] = await Promise.all([
                 getBackendUnreadCount().catch(() => 0),
                 isInspectorRole() ? getInspectorSyntheticNotifications().catch(() => []) : Promise.resolve([]),
+                isSellerRole() ? getSellerSyntheticNotifications(userId).catch(() => []) : Promise.resolve([]),
             ]);
 
-            return backendUnreadCount + syntheticItems.filter((item) => !item.isRead).length;
+            return backendUnreadCount
+                + inspectorSyntheticItems.filter((item) => !item.isRead).length
+                + sellerSyntheticItems.filter((item) => !item.isRead).length;
         } catch (error) {
             console.error('Lỗi lấy số lượng chưa đọc:', error);
             return 0; // fallback to 0 instead of crashing hook
@@ -240,6 +331,14 @@ export const notificationService = {
             syntheticMarked = true;
         }
 
+        if (isSyntheticSellerNotification(notificationId)) {
+            const current = getStoredSellerReadIds();
+            if (!current.includes(notificationId)) {
+                setStoredSellerReadIds([...current, notificationId]);
+            }
+            syntheticMarked = true;
+        }
+
         try {
             const response = await apiCallPATCH<any>(`/notifications/${notificationId}/read`, {});
 
@@ -274,6 +373,14 @@ export const notificationService = {
             }
         }
 
+        if (isSellerRole()) {
+            const syntheticItems = await getSellerSyntheticNotifications(userId).catch(() => []);
+            if (syntheticItems.length > 0) {
+                setStoredSellerReadIds(syntheticItems.map((item) => item.id));
+                syntheticMarked = true;
+            }
+        }
+
         try {
             const response = await apiCallPATCH<any>(`/notifications/read-all`, {});
 
@@ -296,7 +403,7 @@ export const notificationService = {
      * S-05 Validation object exists before routing
      */
     validateRelatedObject: async (type: string, relatedId: number): Promise<boolean> => {
-        if (type === 'INSPECTOR_PENDING_REVIEW') {
+        if (type === 'INSPECTOR_PENDING_REVIEW' || type === 'LISTING_APPROVED' || type === 'LISTING_REJECTED') {
             return relatedId > 0;
         }
         return true;

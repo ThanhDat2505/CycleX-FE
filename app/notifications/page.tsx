@@ -129,6 +129,10 @@ export default function NotificationsPage() {
                 case 'INSPECTOR_PENDING_REVIEW':
                     router.push(`/inspector/review-detail?id=${notif.relatedId}`);
                     break;
+                case 'LISTING_APPROVED':
+                case 'LISTING_REJECTED':
+                    router.push('/seller/my-listings');
+                    break;
                 case 'SYSTEM':
                 default:
                     break;
