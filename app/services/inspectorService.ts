@@ -414,8 +414,40 @@ function mapHistoryItems(raw: RawObject): InspectorReviewDetail["history"] {
   });
 }
 
+function normalizeImageUrl(img: unknown): string {
+  if (typeof img === "string") return img.trim();
+  if (img && typeof img === "object") {
+    const o = img as RawObject;
+    return String(o.imageUrl ?? o.url ?? o.imagePath ?? o.src ?? "").trim();
+  }
+  return "";
+}
+
 function mapToReviewDetail(raw: RawObject): InspectorReviewDetail {
   const id = getListingId(raw);
+
+  // API có thể trả về images là array (string[] hoặc object[]) hoặc object {main, thumbs}
+  let thumbs: string[] = [];
+  if (Array.isArray(raw.images)) {
+    thumbs = raw.images.map(normalizeImageUrl).filter(Boolean);
+  } else if (Array.isArray(raw.images?.thumbs)) {
+    thumbs = raw.images.thumbs.map(normalizeImageUrl).filter(Boolean);
+  } else if (Array.isArray(raw.imageUrls)) {
+    thumbs = raw.imageUrls.map(normalizeImageUrl).filter(Boolean);
+  }
+
+  const mainImage =
+    thumbs[0] ??
+    normalizeImageUrl(raw.images?.main) ||
+    normalizeImageUrl(raw.mainImageUrl) ||
+    normalizeImageUrl(raw.thumbnailUrl) ||
+    "";
+
+  // Nếu thumbs rỗng nhưng có mainImage, dùng mainImage làm thumb
+  if (thumbs.length === 0 && mainImage) {
+    thumbs = [mainImage];
+  }
+
   return {
     id,
     productName: getProductName(raw),
@@ -434,14 +466,8 @@ function mapToReviewDetail(raw: RawObject): InspectorReviewDetail {
     waitingDays:
       Number(raw.waitingDays ?? raw.pendingDays ?? raw.daysWaiting ?? 0) || 0,
     images: {
-      main: raw.images?.main ?? raw.mainImageUrl ?? raw.thumbnailUrl ?? "",
-      thumbs: Array.isArray(raw.images?.thumbs)
-        ? raw.images.thumbs
-        : Array.isArray(raw.imageUrls)
-          ? raw.imageUrls
-          : raw.thumbnailUrl
-            ? [raw.thumbnailUrl]
-            : [],
+      main: mainImage,
+      thumbs,
     },
     history: mapHistoryItems(raw),
   };
