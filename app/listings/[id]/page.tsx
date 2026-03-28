@@ -67,15 +67,11 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
         if (!isAuthLoading) {
             if (userRole === 'SHIPPER') {
                 router.replace('/shipper');
-            } else if (userRole === 'SELLER' && listing && userId !== listing.sellerId) {
-                addToast('Bạn không có quyền truy cập trang này', 'error');
-                router.replace('/seller/dashboard');
             }
         }
-    }, [isAuthLoading, userRole, listing, userId, router, addToast]);
+    }, [isAuthLoading, userRole, router]);
 
     if (!isAuthLoading && userRole === 'SHIPPER') return null;
-    if (!isAuthLoading && userRole === 'SELLER' && listing && userId !== listing.sellerId) return null;
 
     // Loading state
     if (isLoading || isAuthLoading) {

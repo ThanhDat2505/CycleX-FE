@@ -66,6 +66,9 @@ export default function NotificationsPage() {
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         setUnreadCount(0);
 
+        // Notify header bell to update immediately
+        window.dispatchEvent(new CustomEvent('notifications-read', { detail: { count: 0 } }));
+
         try {
             setIsUpdating(true);
             const success = await notificationService.markAllAsRead(user.userId);
@@ -96,6 +99,9 @@ export default function NotificationsPage() {
                 prev.map(n => n.id === notif.id ? { ...n, isRead: true } : n)
             );
             setUnreadCount(prev => Math.max(0, prev - 1));
+
+            // Notify header bell to update immediately
+            window.dispatchEvent(new CustomEvent('notifications-read', { detail: { delta: 1 } }));
             // Fire API in background
             notificationService.markAsRead(user.userId, notif.id).catch(() => {
                 // Ignore rollback on failure to keep UI smooth, or show silent warning

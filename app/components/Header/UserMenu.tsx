@@ -58,7 +58,24 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
       };
       fetchNotifsCount();
       const interval = setInterval(fetchNotifsCount, 30000);
-      return () => clearInterval(interval);
+
+      // Listen for immediate updates from notifications page
+      const handleNotificationsRead = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.count === 0) {
+          setUnreadNotifCount(0);
+        } else if (typeof detail?.delta === 'number') {
+          setUnreadNotifCount(prev => Math.max(0, prev - detail.delta));
+        } else {
+          fetchNotifsCount();
+        }
+      };
+      window.addEventListener('notifications-read', handleNotificationsRead);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener('notifications-read', handleNotificationsRead);
+      };
     }
   }, [user?.userId]);
 
