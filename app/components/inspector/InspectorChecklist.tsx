@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 
 export default function InspectorChecklist() {
   const router = useRouter();
@@ -62,9 +63,10 @@ export default function InspectorChecklist() {
               <div className="meta" style={{ marginBottom: "8px" }}>
                 <button
                   onClick={() => router.back()}
-                  className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer"
+                  className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 bg-transparent border-none p-0 cursor-pointer group"
                   style={{ textDecoration: "none" }}
                 >
+                  <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
                   Quay lại
                 </button>
               </div>

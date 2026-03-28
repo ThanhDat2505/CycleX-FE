@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
+import { ChevronLeft } from "lucide-react";
 import {
   inspectorService,
   type InspectorReviewDetail,
@@ -108,9 +109,10 @@ export default function InspectorRequestDetail() {
               <div className="meta" style={{ marginBottom: "8px" }}>
                 <Link
                   href="/inspector/pending-list"
-                  className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1"
+                  className="text-sm font-extrabold text-gray-500 hover:text-gray-900 transition-colors inline-flex items-center gap-1 group"
                   style={{ textDecoration: "none" }}
                 >
+                  <ChevronLeft size={16} className="transition-transform group-hover:-translate-x-1" />
                   Quay lại
                 </Link>
               </div>
