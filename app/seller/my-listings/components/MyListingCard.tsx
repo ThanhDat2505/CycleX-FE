@@ -37,9 +37,11 @@ export interface MyListingCardProps {
       | "SOLD";
     rejectionReason?: string;
   };
+  onDelete?: (id: number) => void;
+  isDeleting?: boolean;
 }
 
-export function MyListingCard({ listing }: MyListingCardProps) {
+export function MyListingCard({ listing, onDelete, isDeleting }: MyListingCardProps) {
   const editHref = `/seller/create-listing?draft=${listing.id}`;
   const viewHref =
     listing.status === "APPROVE" || listing.status === "SOLD"
@@ -128,6 +130,16 @@ export function MyListingCard({ listing }: MyListingCardProps) {
           >
             Xem
           </Link>
+          {/* Delete button only for DRAFT status */}
+          {listing.status === "DRAFT" && onDelete && (
+            <button
+              onClick={() => onDelete(listing.id)}
+              disabled={isDeleting}
+              className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded text-sm font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa"}
+            </button>
+          )}
         </div>
 
         {/* BR-S11-F06: Rejection Reason Display */}

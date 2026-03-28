@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
+import { deleteDraft } from "@/app/services/myListingsService";
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
 import Pagination from "../../listings/components/Pagination";
@@ -76,6 +77,9 @@ function MyListingsContent() {
   // BR-S11-F01: Pagination state
   const [page, setPage] = useState(1);
 
+  // Delete state
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
   // Use custom hook for data fetching and state management
   const { listings, totalItems, totalPages, loading, error, retry } =
     useMyListings({
@@ -90,6 +94,22 @@ function MyListingsContent() {
   useEffect(() => {
     setPage(1);
   }, [filterStatus, sortBy]);
+
+  const handleDelete = async (listingId: number) => {
+    if (!user?.userId) return;
+    const confirmed = window.confirm("Bạn có chắc muốn xóa tin đăng này không?");
+    if (!confirmed) return;
+
+    setDeletingId(listingId);
+    try {
+      await deleteDraft(user.userId, listingId);
+      retry();
+    } catch {
+      alert("Xóa tin đăng thất bại. Vui lòng thử lại.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -166,7 +186,12 @@ function MyListingsContent() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {listings.map((listing) => (
-            <MyListingCard key={listing.id} listing={listing} />
+            <MyListingCard
+                key={listing.id}
+                listing={listing}
+                onDelete={handleDelete}
+                isDeleting={deletingId === listing.id}
+              />
           ))}
         </div>
       )}

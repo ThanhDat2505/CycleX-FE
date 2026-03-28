@@ -56,13 +56,13 @@ const DraftListingsPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isAuthLoading && isLoggedIn && user?.id) {
-      loadDrafts(user.id);
+    if (!isAuthLoading && isLoggedIn && user?.userId) {
+      loadDrafts(user.userId);
     }
-  }, [isAuthLoading, isLoggedIn, user?.id, loadDrafts]);
+  }, [isAuthLoading, isLoggedIn, user?.userId, loadDrafts]);
 
   const handleDeleteDraft = async (draftId: number) => {
-    if (!user?.id) return;
+    if (!user?.userId) return;
     const confirmed = window.confirm(
       "Bạn có chắc muốn xóa tin nháp này không?"
     );
@@ -70,7 +70,7 @@ const DraftListingsPage: React.FC = () => {
 
     setDeletingId(draftId);
     try {
-      await deleteDraft(user.id, draftId);
+      await deleteDraft(user.userId, draftId);
       setDraftListings((prev) => prev.filter((item) => item.id !== draftId));
     } catch {
       alert("Xóa tin nháp thất bại. Vui lòng thử lại.");
@@ -112,7 +112,7 @@ const DraftListingsPage: React.FC = () => {
         <div className="text-center py-12 bg-red-50 rounded-lg border border-red-200">
           <p className="text-red-600 mb-4">{fetchError}</p>
           <button
-            onClick={() => user?.id && loadDrafts(user.id)}
+            onClick={() => user?.userId && loadDrafts(user.userId)}
             className="px-4 py-2 bg-[#FF8A00] text-white rounded-lg font-medium hover:bg-[#FF7A00] transition"
           >
             Thử lại
