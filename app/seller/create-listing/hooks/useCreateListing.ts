@@ -282,10 +282,14 @@ export const useCreateListing = () => {
 
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
+      const normalizedValue =
+        name === "price"
+          ? value.replace(/[^\d]/g, "")
+          : value;
 
       setFormData((prev) => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value,
+        [name]: type === "checkbox" ? checked : normalizedValue,
       }));
 
       setErrors((prev) => {
