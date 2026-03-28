@@ -4,11 +4,37 @@ import { validateObject, validateArray, validateString } from '../utils/apiValid
 
 function resolveImageUrl(rawPath: unknown): string {
     if (typeof rawPath !== 'string') return '/images/bike-placeholder.svg';
+
     const path = rawPath.trim();
     if (!path) return '/images/bike-placeholder.svg';
     if (path.startsWith('http://') || path.startsWith('https://')) return path;
     if (path.startsWith('/uploads/')) return `/backend${path}`;
-    return path || '/images/bike-placeholder.svg';
+    if (path.startsWith('uploads/')) return `/backend/${path}`;
+    if (path.startsWith('/')) return path;
+
+    return `/${path}`;
+}
+
+function extractBikeImage(data: any): string {
+    const candidates = [
+        data?.bike?.image,
+        data?.bike?.imageUrl,
+        data?.bike?.imagePath,
+        data?.bike?.url,
+        data?.productImage,
+        data?.productImageUrl,
+        data?.image,
+        data?.imageUrl,
+    ];
+
+    for (const candidate of candidates) {
+        const resolved = resolveImageUrl(candidate);
+        if (resolved !== '/images/bike-placeholder.svg') {
+            return resolved;
+        }
+    }
+
+    return '/images/bike-placeholder.svg';
 }
 
 function safeString(value: any, fallback: string): string {
@@ -96,7 +122,7 @@ export async function getDeliveries(shipperId: number, filter: DeliveryFilter = 
             note: d.note ? String(d.note) : undefined,
             bike: {
                 name: String(d.bike?.name || d.productName || 'Xe đạp'),
-                image: resolveImageUrl(d.bike?.image || d.productImage)
+                image: extractBikeImage(d)
             },
             sender: {
                 name: safeString(d.sender?.name || d.sellerName, 'Người bán'),
@@ -146,7 +172,7 @@ export async function getDeliveryDetail(deliveryId: string): Promise<Delivery | 
             note: data.note ? String(data.note) : undefined,
             bike: {
                 name: String(data.bike?.name || data.productName || 'Xe đạp'),
-                image: resolveImageUrl(data.bike?.image || data.productImage)
+                image: extractBikeImage(data)
             },
             sender: {
                 name: safeString(data.seller?.fullName || data.pickup?.contactName || data.sellerName || data.sender?.name, 'Người bán'),

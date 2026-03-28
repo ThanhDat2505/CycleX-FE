@@ -22,6 +22,11 @@ export function OrderInfoSection({ delivery }: OrderInfoSectionProps) {
                         src={delivery.bike.image}
                         alt={delivery.bike.name}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                            const imageElement = e.currentTarget as HTMLImageElement;
+                            imageElement.onerror = null;
+                            imageElement.src = '/images/bike-placeholder.svg';
+                        }}
                     />
                 </div>
                 <div className="flex-1 min-w-0 space-y-2">

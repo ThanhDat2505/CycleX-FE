@@ -110,9 +110,7 @@ const DashboardPage: React.FC = () => {
                 label="Tin đang hiển thị"
                 value={activeListings}
                 icon="📋"
-                change="↑ 2 so với tháng trước"
                 href="/seller/my-listings?status=active"
-                isPositive={true}
               />
               {/* BR-S10-F01: PENDING listings */}
               <MetricCard
@@ -147,27 +145,13 @@ const DashboardPage: React.FC = () => {
                   <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
                   Hoạt động gần đây
                 </h2>
-                <div className="space-y-4">
-                  <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">Hôm nay</p>
-                    <p className="font-semibold text-gray-900">💬 Có người hỏi mua Trek Domane</p>
-                    <p className="text-sm text-gray-600">Khách hàng hỏi về phí giao hàng</p>
-                  </div>
-                  <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">Hôm qua</p>
-                    <p className="font-semibold text-gray-900">👁️ Tin đăng được xem 25 lần</p>
-                    <p className="text-sm text-gray-600">Xe Specialized Tarmac SL7 đang được chú ý</p>
-                  </div>
-                  <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">2 ngày trước</p>
-                    <p className="font-semibold text-gray-900">✅ Giao dịch thành công mới</p>
-                    <p className="text-sm text-gray-600">Trek Domane AL 3 - $1,200</p>
-                  </div>
-                  <div className="pb-4 border-b border-gray-50 last:border-0">
-                    <p className="text-sm text-gray-500 mb-1">3 ngày trước</p>
-                    <p className="font-semibold text-gray-900">⭐ Nhận được đánh giá 5 sao</p>
-                    <p className="text-sm text-gray-600">Từ người mua đã xác thực</p>
-                  </div>
+                <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold border border-blue-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    Sắp ra mắt
+                  </span>
+                  <p className="text-gray-500 text-sm font-medium">Tính năng đang được phát triển</p>
+                  <p className="text-gray-400 text-xs">Lịch sử hoạt động sẽ hiển thị tại đây trong phiên bản tới</p>
                 </div>
               </div>
 

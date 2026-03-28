@@ -21,6 +21,7 @@ import {
   Phone,
   MapPin,
   CreditCard,
+  Pencil,
 } from "lucide-react";
 import { adminUserService } from "../../services/adminUserService";
 import VietnameseAddressPicker from "../../components/address/VietnameseAddressPicker";
@@ -58,6 +59,28 @@ export default function AdminUsersPage() {
 
   // Create Account State
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // Edit Name State (for SELLER / BUYER)
+  const [editNameUser, setEditNameUser] = useState<AdminUser | null>(null);
+  const [editNameValue, setEditNameValue] = useState("");
+  const [editingName, setEditingName] = useState(false);
+
+  const handleEditName = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editNameUser || !editNameValue.trim()) return;
+    setEditingName(true);
+    try {
+      await adminUserService.updateUser(editNameUser.userId, { fullName: editNameValue.trim() });
+      addToast(`Đã cập nhật tên cho ${editNameValue.trim()}`, "success");
+      setEditNameUser(null);
+      fetchUsers(query);
+    } catch (error: any) {
+      addToast(error.message || "Cập nhật tên thất bại", "error");
+    } finally {
+      setEditingName(false);
+    }
+  };
+
   const [createForm, setCreateForm] = useState({
     email: "",
     password: "",
@@ -441,6 +464,16 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex justify-end gap-2">
+                        {/* Edit name button for SELLER and BUYER */}
+                        {(user.role === "SELLER" || user.role === "BUYER") && (
+                          <button
+                            onClick={() => { setEditNameUser(user); setEditNameValue(user.fullName ?? ""); }}
+                            className="inline-flex items-center gap-1.5 px-3 py-2 bg-indigo-50 text-indigo-600 border border-indigo-200 rounded-xl hover:bg-indigo-600 hover:text-white transition-all text-xs font-semibold active:scale-95"
+                          >
+                            <Pencil size={14} strokeWidth={2.5} />
+                            Sửa tên
+                          </button>
+                        )}
                         {user.status === "ACTIVE" ? (
                           <button
                             onClick={() => triggerAction(user, "BAN")}
@@ -508,6 +541,70 @@ export default function AdminUsersPage() {
             </div>
           )}
         </div>
+
+        {/* EDIT NAME MODAL */}
+        {editNameUser && (
+          <div
+            onMouseDown={() => setEditNameUser(null)}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-xl animate-fade-in cursor-default"
+          >
+            <div
+              onMouseDown={(e) => e.stopPropagation()}
+              className="bg-gray-50 backdrop-blur-2xl border border-gray-300 rounded-[2.5rem] p-10 max-w-md w-full shadow-2xl animate-scale-in relative overflow-hidden"
+            >
+              <div className="absolute top-0 inset-x-0 h-2 bg-indigo-500" />
+              <button
+                onClick={() => setEditNameUser(null)}
+                className="absolute top-8 right-8 text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <X size={24} />
+              </button>
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center bg-indigo-500/20 text-indigo-500">
+                  <Pencil size={36} strokeWidth={2.5} />
+                </div>
+                <h2 className="text-2xl font-black text-gray-900 tracking-tight">Sửa tên người dùng</h2>
+                <p className="text-gray-500 text-sm font-medium mt-2">
+                  {editNameUser.email} &bull;{" "}
+                  <span className={`font-bold ${editNameUser.role === "SELLER" ? "text-indigo-600" : "text-emerald-600"}`}>
+                    {editNameUser.role}
+                  </span>
+                </p>
+              </div>
+              <form onSubmit={handleEditName} className="space-y-5">
+                <div className="relative">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                  <input
+                    type="text"
+                    required
+                    placeholder="H᳙ và tên *"
+                    value={editNameValue}
+                    onChange={(e) => setEditNameValue(e.target.value)}
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-400/30 focus:border-indigo-400/60 placeholder:text-gray-400"
+                    autoFocus
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditNameUser(null)}
+                    className="py-4 bg-gray-100 text-gray-700 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-gray-200 transition-all active:scale-[0.98]"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={editingName || !editNameValue.trim()}
+                    className="py-4 bg-indigo-600 text-white font-black uppercase tracking-widest text-[10px] rounded-2xl shadow-xl shadow-indigo-900/20 hover:bg-indigo-500 transition-all active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {editingName ? <Loader2 size={16} className="animate-spin" /> : <Pencil size={16} />}
+                    Lưu tên
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* CONFIRMATION MODAL */}
         {isConfirmModalOpen && selectedUser && confirmAction && (

@@ -159,10 +159,8 @@ export const useCreateListing = () => {
       setSubmitError(null);
 
       try {
-        const [draft, images] = await Promise.all([
-          getListingDetail(user.userId, draftId),
-          getListingImages(user.userId, draftId),
-        ]);
+        const draft = await getListingDetail(user.userId, draftId);
+        const images = await getListingImages(user.userId, draftId).catch(() => []);
 
         if (!isMountedRef.current || cancelled) return;
 
@@ -212,6 +210,8 @@ export const useCreateListing = () => {
       } catch {
         if (!isMountedRef.current || cancelled) return;
         setSubmitError("Không thể tải tin đăng nháp. Vui lòng thử lại.");
+        addToast("Không thể tiếp tục tin nháp này. Vui lòng thử lại.", "error");
+        router.replace("/seller/draft-listings");
       } finally {
         if (!isMountedRef.current || cancelled) return;
         setIsCreatingDraft(false);
@@ -223,7 +223,7 @@ export const useCreateListing = () => {
     return () => {
       cancelled = true;
     };
-  }, [draftId, isLoading, isLoggedIn, role, user?.userId, isViewMode]);
+  }, [addToast, draftId, isLoading, isLoggedIn, role, router, user?.userId, isViewMode]);
 
   // Auto clear upload error
   useEffect(() => {
@@ -282,10 +282,14 @@ export const useCreateListing = () => {
 
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
+      const normalizedValue =
+        name === "price"
+          ? value.replace(/[^\d]/g, "")
+          : value;
 
       setFormData((prev) => ({
         ...prev,
-        [name]: type === "checkbox" ? checked : value,
+        [name]: type === "checkbox" ? checked : normalizedValue,
       }));
 
       setErrors((prev) => {
@@ -479,6 +483,34 @@ export const useCreateListing = () => {
       price: Number(formData.price),
       locationCity: formData.location,
       pickupAddress: formData.pickupAddress || formData.location,
+      saveDraft: true,
+    };
+  }, [formData, user]);
+
+  const getDraftPayload = useCallback((): CreateListingPayload => {
+    if (!user || !user.userId) {
+      throw new Error("Không xác định được người dùng. Vui lòng đăng nhập lại.");
+    }
+
+    const fallbackTitle =
+      formData.title.trim() ||
+      [formData.brand.trim(), formData.model.trim()].filter(Boolean).join(" ") ||
+      "Tin nháp chưa đặt tên";
+
+    return {
+      sellerId: user.userId,
+      title: fallbackTitle,
+      description: formData.description || undefined,
+      bikeType: formData.category || "Other",
+      brand: formData.brand || "Chưa chọn hãng",
+      model: formData.model || "Chưa chọn mẫu",
+      manufactureYear: formData.year ? Number(formData.year) : undefined,
+      condition: formData.condition || undefined,
+      usageTime: formData.usageTime || undefined,
+      reasonForSale: formData.reasonForSale || undefined,
+      price: formData.price ? Number(formData.price) : 0,
+      locationCity: formData.location || "Chưa chọn địa điểm",
+      pickupAddress: formData.pickupAddress || formData.location || "Chưa nhập địa chỉ",
       saveDraft: true,
     };
   }, [formData, user]);
@@ -750,18 +782,9 @@ export const useCreateListing = () => {
       return;
     }
 
-    if (!formData.title.trim()) {
-      setSubmitError("Vui lòng nhập tiêu đề tin đăng để lưu bản nháp.");
-      setErrors((prev) => ({ ...prev, title: "Vui lòng nhập tiêu đề tin đăng" }));
-      if (step !== CREATE_LISTING_STEPS.VEHICLE_INFO) {
-        setStep(CREATE_LISTING_STEPS.VEHICLE_INFO);
-      }
-      return;
-    }
-
     setIsSaving(true);
     try {
-      const payload = getPayload();
+      const payload = getDraftPayload();
       if (listingId) {
         await updateDraft(listingId, payload);
       } else {

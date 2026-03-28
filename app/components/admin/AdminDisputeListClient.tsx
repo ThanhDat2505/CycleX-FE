@@ -38,6 +38,19 @@ const SORT_OPTIONS = [
   { value: "status:ASC", label: "Trạng thái A-Z" },
 ];
 
+/** Detail link with Tailwind-only styling to avoid inspector.css conflicts */
+function DetailLink({ disputeId }: { disputeId: number }) {
+  return (
+    <Link
+      href={`/admin/disputes/${disputeId}`}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider border border-gray-200 bg-gray-50 text-gray-700 no-underline transition-all duration-150 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200"
+    >
+      <Eye size={14} />
+      Xem chi tiết
+    </Link>
+  );
+}
+
 export default function AdminDisputeListClient() {
   const [items, setItems] = useState<AdminDisputeListRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -308,13 +321,14 @@ export default function AdminDisputeListClient() {
                         key={row.id}
                         className="group hover:bg-gray-50 transition-colors"
                       >
+                        {/* ID column – always visible orange */}
                         <td className="px-8 py-6">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
-                              #{row.id}
-                            </div>
-                          </div>
+                          <span className="inline-flex items-center justify-center min-w-[48px] px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-sm font-black text-orange-600">
+                            #{row.id}
+                          </span>
                         </td>
+
+                        {/* Listing & transaction column */}
                         <td className="px-8 py-6">
                           <div>
                             <p className="text-sm font-black text-gray-900 mb-1">
@@ -322,7 +336,7 @@ export default function AdminDisputeListClient() {
                             </p>
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-black text-gray-600 bg-gray-50 px-2 py-0.5 rounded border border-gray-200">
-                                Order-{row.transactionId}
+                                TX-{row.transactionId}
                               </span>
                               <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
                                 {row.reasonText || "—"}
@@ -330,16 +344,22 @@ export default function AdminDisputeListClient() {
                             </div>
                           </div>
                         </td>
+
+                        {/* Requester name */}
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                               <User size={14} className="text-gray-500" />
                             </div>
                             <span className="text-sm font-semibold text-gray-700">
-                              {row.requesterName || "Không rõ"}
+                              {row.requesterName && row.requesterName.trim().length > 1 && row.requesterName !== "-"
+                                ? row.requesterName
+                                : "Không rõ"}
                             </span>
                           </div>
                         </td>
+
+                        {/* Status badge */}
                         <td className="px-8 py-6 text-center">
                           <span
                             className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
@@ -348,24 +368,22 @@ export default function AdminDisputeListClient() {
                             {row.status}
                           </span>
                         </td>
+
+                        {/* Created at */}
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-gray-900">
+                            <span className="text-sm font-bold text-gray-900">
                               {row.createdAt?.split("T")[0] || "—"}
                             </span>
-                            <span className="text-xs text-gray-500 mt-0.5">
-                              {row.createdAt?.split("T")[1]?.split(".")[0] ||
-                                ""}
+                            <span className="text-sm font-medium text-gray-500 mt-0.5">
+                              {row.createdAt?.split("T")[1]?.split(".")[0] || ""}
                             </span>
                           </div>
                         </td>
+
+                        {/* Detail link – inline hover style avoids CSS conflicts */}
                         <td className="px-8 py-6 text-right">
-                          <Link
-                            href={`/admin/disputes/${row.id}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-600 hover:text-orange-600 hover:bg-orange-50 hover:border-orange-300 transition-all active:scale-95"
-                          >
-                            <Eye size={14} /> Xem chi tiết
-                          </Link>
+                          <DetailLink disputeId={row.id} />
                         </td>
                       </tr>
                     ))}

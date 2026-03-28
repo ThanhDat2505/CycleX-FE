@@ -19,8 +19,9 @@ export function BikeInfoCard({ delivery }: BikeInfoCardProps) {
             alt={delivery.bike.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src =
-                "/images/bike-placeholder.svg";
+              const imageElement = e.currentTarget as HTMLImageElement;
+              imageElement.onerror = null;
+              imageElement.src = "/images/bike-placeholder.svg";
             }}
           />
         </div>

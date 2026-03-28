@@ -34,12 +34,15 @@ export interface MyListingCardProps {
       | "APPROVE"
       | "REJECT"
       | "NEED_MORE_INFO"
+      | "HELD"
       | "SOLD";
     rejectionReason?: string;
   };
+  onDelete?: (id: number) => void;
+  isDeleting?: boolean;
 }
 
-export function MyListingCard({ listing }: MyListingCardProps) {
+export function MyListingCard({ listing, onDelete, isDeleting }: MyListingCardProps) {
   const editHref = `/seller/create-listing?draft=${listing.id}`;
   const viewHref =
     listing.status === "APPROVE" || listing.status === "SOLD"
@@ -72,7 +75,7 @@ export function MyListingCard({ listing }: MyListingCardProps) {
           </svg>
         )}
         <div className="absolute top-3 right-3">
-          <StatusBadge status={listing.status} />
+          <StatusBadge status={listing.status} showLabel />
         </div>
       </div>
 
@@ -81,32 +84,28 @@ export function MyListingCard({ listing }: MyListingCardProps) {
         <h3 className="font-bold text-gray-900 mb-2">
           {listing.brand} {listing.model}
         </h3>
-        <div className="text-sm text-gray-600 mb-3">
-          <span>{listing.type}</span> • <span>{listing.condition}</span>
-        </div>
+        {(listing.type || listing.condition) && (
+          <div className="text-sm text-gray-600 mb-3">
+            {listing.type && <span>{listing.type}</span>}
+            {listing.type && listing.condition && <span> • </span>}
+            {listing.condition && <span>{listing.condition}</span>}
+          </div>
+        )}
 
         <div className="flex justify-between items-center mb-4">
           <span className="text-2xl font-bold text-[#FF8A00]">
             {formatPrice(listing.price)}
           </span>
-          <span className="text-xs text-gray-500">{listing.location}</span>
+          {listing.location && (
+            <span className="text-xs text-gray-500">{listing.location}</span>
+          )}
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-2 mb-4 text-center text-sm">
+        <div className="grid grid-cols-1 gap-2 mb-4 text-center text-sm">
           <div>
             <div className="font-bold text-gray-900">{listing.views}</div>
             <div className="text-gray-500 text-xs">Lượt xem</div>
-          </div>
-          <div>
-            <div className="font-bold text-gray-900">{listing.inquiries}</div>
-            <div className="text-gray-500 text-xs">Lượt hỏi</div>
-          </div>
-          <div>
-            <div className="font-bold text-gray-900">
-              {listing.shipping ? "✓" : "—"}
-            </div>
-            <div className="text-gray-500 text-xs">Giao hàng</div>
           </div>
         </div>
 
@@ -128,6 +127,16 @@ export function MyListingCard({ listing }: MyListingCardProps) {
           >
             Xem
           </Link>
+          {/* Delete button */}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(listing.id)}
+              disabled={isDeleting}
+              className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded text-sm font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isDeleting ? "Đang xóa..." : "Xóa"}
+            </button>
+          )}
         </div>
 
         {/* BR-S11-F06: Rejection Reason Display */}

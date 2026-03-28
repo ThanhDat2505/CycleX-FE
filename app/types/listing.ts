@@ -21,7 +21,7 @@ export interface Listing {
     model?: string;
     viewsCount?: number;        // Changed from views_count
     category?: string;
-    condition?: 'new' | 'used';
+    condition?: string;         // ✅ Condition: New, Like New, Excellent, Good, Fair, Used
     year?: number;
     isFeatured?: boolean;       // Changed from is_featured
     discountPercentage?: number; // Changed from discount_percentage
@@ -147,7 +147,7 @@ export interface ListingDetail {
 
     // Optional fields (not in current backend - make optional)
     model?: string;                 // ⚠️ Missing in backend
-    condition?: 'new' | 'used';     // ⚠️ Missing in backend
+    condition?: string;             // ✅ Condition: New, Like New, Excellent, Good, Fair, Used
     status?: ListingStatus;         // ⚠️ Missing in backend
     productStatus?: string;         // Product availability: AVAILABLE, RESERVED, SOLD
 
@@ -194,16 +194,12 @@ export function validateListingDetail(data: any): ListingDetail {
         throw new Error('Invalid listing data: price must be non-negative number');
     }
 
-    const normalizeCondition = (condition: unknown): 'new' | 'used' | undefined => {
+    const normalizeCondition = (condition: unknown): string | undefined => {
         if (typeof condition !== 'string' || condition.trim().length === 0) {
             return undefined;
         }
-
-        const normalized = condition.trim().toUpperCase();
-        if (normalized.includes('NEW')) {
-            return 'new';
-        }
-        return 'used';
+        // Preserve the original condition value (New, Like New, Excellent, Good, Fair, Used)
+        return condition.trim();
     };
 
     if (data.status) {

@@ -166,15 +166,22 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
             Giá bán (VNĐ) <span className="text-red-500">*</span>
           </label>
           <input
-            type="number"
+            type="text"
             name="price"
             value={formData.price}
             onChange={onChange}
-            placeholder="VD: 5000000"
+            inputMode="numeric"
+            autoComplete="off"
+            placeholder="VD: 5000000 hoặc 5.000.000"
             className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
               errors.price ? "border-red-500" : "border-gray-300"
             }`}
           />
+          {!errors.price && (
+            <p className="text-xs text-gray-500 mt-1">
+              FE sẽ tự bỏ dấu chấm hoặc dấu phẩy để lưu đúng giá trị số.
+            </p>
+          )}
           {errors.price && (
             <p className="text-red-500 text-sm mt-1">{errors.price}</p>
           )}

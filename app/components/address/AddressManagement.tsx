@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { Plus, MapPin } from "lucide-react";
 import { UserAddress, CreateAddressRequest } from "@/app/types/address";
 import { addressService } from "@/app/services/addressService";
+import { ConfirmModal } from "@/app/components/ui";
 import AddressCard from "./AddressCard";
 import AddressFormModal from "./AddressFormModal";
 
@@ -27,6 +28,10 @@ export default function AddressManagement({
     null,
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState<UserAddress | null>(
+    null,
+  );
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -92,19 +97,21 @@ export default function AddressManagement({
     [userId, editingAddress, fetchAddresses, onSuccess, onError],
   );
 
-  const handleDelete = useCallback(
-    async (addressId: number) => {
-      if (!confirm("Bạn có chắc muốn xóa địa chỉ này?")) return;
-      try {
-        await addressService.deleteAddress(userId, addressId);
-        onSuccess("Đã xóa địa chỉ");
-        fetchAddresses();
-      } catch {
-        onError("Không thể xóa địa chỉ");
-      }
-    },
-    [userId, fetchAddresses, onSuccess, onError],
-  );
+  const handleDelete = useCallback(async () => {
+    if (!addressToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await addressService.deleteAddress(userId, addressToDelete.addressId);
+      onSuccess("Đã xóa địa chỉ");
+      setAddressToDelete(null);
+      fetchAddresses();
+    } catch {
+      onError("Không thể xóa địa chỉ");
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [addressToDelete, userId, fetchAddresses, onSuccess, onError]);
 
   const handleSetDefault = useCallback(
     async (addressId: number) => {
@@ -128,6 +135,17 @@ export default function AddressManagement({
     setEditingAddress(null);
     setIsModalOpen(true);
   };
+
+  const openDeleteConfirm = useCallback(
+    (addressId: number) => {
+      const matchedAddress = addresses.find(
+        (address) => address.addressId === addressId,
+      );
+      if (!matchedAddress) return;
+      setAddressToDelete(matchedAddress);
+    },
+    [addresses],
+  );
 
   return (
     <div className="space-y-4">
@@ -190,8 +208,9 @@ export default function AddressManagement({
               key={addr.addressId}
               address={addr}
               onEdit={openEdit}
-              onDelete={handleDelete}
+              onDelete={openDeleteConfirm}
               onSetDefault={handleSetDefault}
+              disabled={isSubmitting || isDeleting}
             />
           ))}
         </div>
@@ -206,6 +225,26 @@ export default function AddressManagement({
         onSubmit={editingAddress ? handleUpdate : handleCreate}
         editingAddress={editingAddress}
         isSubmitting={isSubmitting}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(addressToDelete)}
+        onClose={() => {
+          if (isDeleting) return;
+          setAddressToDelete(null);
+        }}
+        onConfirm={handleDelete}
+        title="Xóa địa chỉ"
+        message={
+          addressToDelete
+            ? `Bạn có chắc muốn xóa địa chỉ "${addressToDelete.label}" không?`
+            : "Bạn có chắc muốn xóa địa chỉ này không?"
+        }
+        confirmLabel="Xóa địa chỉ"
+        cancelLabel="Giữ lại"
+        variant="danger"
+        isLoading={isDeleting}
+        iconType="warning"
       />
     </div>
   );

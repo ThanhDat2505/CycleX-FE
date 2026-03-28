@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
+import { deleteDraft, getDrafts, type Listing } from "@/app/services/myListingsService";
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
 import Pagination from "../../listings/components/Pagination";
@@ -76,6 +77,45 @@ function MyListingsContent() {
   // BR-S11-F01: Pagination state
   const [page, setPage] = useState(1);
 
+  // Delete state
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  // Draft listings state — loaded when filterStatus === "draft"
+  // Reason: /listings/search endpoint does NOT return DRAFT listings (served by /drafts endpoint)
+  const [draftListings, setDraftListings] = useState<Listing[]>([]);
+  const [draftLoading, setDraftLoading] = useState(false);
+  const [draftError, setDraftError] = useState<string | null>(null);
+
+  const isShowingDrafts = filterStatus === "draft";
+
+  useEffect(() => {
+    if (!isShowingDrafts || !user?.userId) {
+      setDraftListings([]);
+      return;
+    }
+    const controller = new AbortController();
+    const loadDrafts = async () => {
+      setDraftLoading(true);
+      setDraftError(null);
+      try {
+        const response = await getDrafts({ sellerId: user.userId });
+        if (!controller.signal.aborted) {
+          setDraftListings(response.items);
+        }
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setDraftError(err instanceof Error ? err.message : "Không thể tải bản nháp.");
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setDraftLoading(false);
+        }
+      }
+    };
+    loadDrafts();
+    return () => controller.abort();
+  }, [isShowingDrafts, user?.userId]);
+
   // Use custom hook for data fetching and state management
   const { listings, totalItems, totalPages, loading, error, retry } =
     useMyListings({
@@ -91,8 +131,34 @@ function MyListingsContent() {
     setPage(1);
   }, [filterStatus, sortBy]);
 
+  const handleDelete = async (listingId: number) => {
+    if (!user?.userId) return;
+    const confirmed = window.confirm("Bạn có chắc muốn xóa tin đăng này không?");
+    if (!confirmed) return;
+
+    setDeletingId(listingId);
+    try {
+      await deleteDraft(user.userId, listingId);
+      if (isShowingDrafts) {
+        setDraftListings((prev) => prev.filter((l) => l.id !== listingId));
+      } else {
+        retry();
+      }
+    } catch {
+      alert("Xóa tin đăng thất bại. Vui lòng thử lại.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  // Resolve display data: draft view uses dedicated API data
+  const displayListings = isShowingDrafts ? draftListings : listings;
+  const displayLoading = isShowingDrafts ? draftLoading : loading;
+  const displayError = isShowingDrafts ? draftError : error;
+  const displayTotal = isShowingDrafts ? draftListings.length : totalItems;
 
   if (authLoading) {
     return <PageLoading message="Đang xác thực tài khoản..." />;
@@ -158,21 +224,26 @@ function MyListingsContent() {
       </div>
 
       {/* Error Banner */}
-      {error && <ErrorBanner message={error} onRetry={retry} />}
+      {displayError && <ErrorBanner message={displayError} onRetry={isShowingDrafts ? () => { setDraftListings([]); setDraftError(null); } : retry} />}
 
       {/* Listings Grid */}
-      {loading ? (
+      {displayLoading ? (
         <PageLoading message="Đang tải danh sách tin đăng..." />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {listings.map((listing) => (
-            <MyListingCard key={listing.id} listing={listing} />
+          {displayListings.map((listing) => (
+            <MyListingCard
+                key={listing.id}
+                listing={listing}
+                onDelete={handleDelete}
+                isDeleting={deletingId === listing.id}
+              />
           ))}
         </div>
       )}
 
-      {/* BR-S11-F01: Pagination Controls */}
-      {totalItems > 0 && totalPages > 1 && (
+      {/* BR-S11-F01: Pagination Controls (hidden for draft view) */}
+      {!isShowingDrafts && totalItems > 0 && totalPages > 1 && (
         <div className="mt-8">
           {/* Page Info */}
           <div className="text-sm text-gray-600 text-center mb-4">
@@ -189,7 +260,7 @@ function MyListingsContent() {
         </div>
       )}
 
-      {!loading && totalItems === 0 && (
+      {!displayLoading && displayTotal === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-600 text-lg">Không tìm thấy tin đăng nào</p>
         </div>

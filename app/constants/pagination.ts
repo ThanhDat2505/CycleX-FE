@@ -28,5 +28,5 @@ export const API_DELAY_MS = 800;
 /**
  * Valid listing statuses for filtering
  */
-export const VALID_LISTING_STATUSES = ['DRAFT', 'PENDING', 'APPROVE', 'REJECT', 'SOLD'] as const;
+export const VALID_LISTING_STATUSES = ['DRAFT', 'PENDING', 'APPROVE', 'REJECT', 'SOLD', 'NEED_MORE_INFO', 'HELD'] as const;
 export type ListingStatus = typeof VALID_LISTING_STATUSES[number];
