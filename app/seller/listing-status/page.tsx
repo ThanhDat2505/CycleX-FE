@@ -4,7 +4,11 @@
 import React, { useState, useEffect } from "react";
 import { StatusBadge } from "@/app/components/ui/StatusBadge";
 import { useAuth } from "@/app/hooks/useAuth";
-import { getMyListings, Listing } from "@/app/services/myListingsService";
+import {
+  getMyListings,
+  getDrafts,
+  Listing,
+} from "@/app/services/myListingsService";
 
 const ListingStatusPage: React.FC = () => {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -26,13 +30,36 @@ const ListingStatusPage: React.FC = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const result = await getMyListings({
-          sellerId: user.userId,
-          pageSize: 200,
-          sortBy: "recent",
+        const [listingResult, draftResult] = await Promise.all([
+          getMyListings({
+            sellerId: user.userId,
+            pageSize: 200,
+            sortBy: "recent",
+          }),
+          getDrafts({
+            sellerId: user.userId,
+            pageSize: 200,
+            sort: "newest",
+          }),
+        ]);
+
+        const mergedListings = [...listingResult.listings];
+        const existingIds = new Set(mergedListings.map((listing) => listing.id));
+
+        draftResult.items.forEach((draft) => {
+          if (!existingIds.has(draft.id)) {
+            mergedListings.push(draft);
+          }
         });
+
+        mergedListings.sort(
+          (a, b) =>
+            new Date(b.updatedDate || b.createdDate).getTime() -
+            new Date(a.updatedDate || a.createdDate).getTime(),
+        );
+
         if (!controller.signal.aborted) {
-          setListings(result.listings);
+          setListings(mergedListings);
         }
       } catch (err: any) {
         if (!controller.signal.aborted) {
@@ -50,10 +77,12 @@ const ListingStatusPage: React.FC = () => {
   }, [user?.userId, isAuthLoading]);
 
   const stats = {
-    active: listings.filter((l) => l.status === "APPROVE").length,
-    pending: listings.filter((l) => l.status === "PENDING").length,
-    sold: listings.filter((l) => l.status === "SOLD").length,
-    draft: listings.filter((l) => l.status === "DRAFT").length,
+    active: listings.filter((listing: Listing) => listing.status === "APPROVE").length,
+    pending: listings.filter(
+      (listing: Listing) => ["PENDING", "NEED_MORE_INFO", "HELD"].includes(listing.status),
+    ).length,
+    sold: listings.filter((listing: Listing) => listing.status === "SOLD").length,
+    draft: listings.filter((listing: Listing) => listing.status === "DRAFT").length,
   };
 
   if (isAuthLoading || isLoading) {

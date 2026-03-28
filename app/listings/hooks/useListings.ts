@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/app/hooks/useAuth';
 import { useToast } from '@/app/contexts/ToastContext';
 import { searchListings } from '@/app/services/listingService';
+import { BIKE_CATEGORIES } from '@/app/constants/categories';
 import { HomeBike, SearchFilters, SortOption, PaginationInfo } from '@/app/types/listing';
 import { DEFAULT_PAGE_SIZE, DEFAULT_PAGE } from '@/app/constants';
 
@@ -32,9 +33,18 @@ interface UseListingsReturn {
 /** Parse filters từ URLSearchParams — dùng cho lazy state initialization */
 function parseFiltersFromURL(params: ReturnType<typeof useSearchParams>): SearchFilters {
     const keyword = params.get('keyword') || undefined;
+    const categorySlug = params.get('category') || undefined;
     const minPrice = params.get('minPrice');
     const maxPrice = params.get('maxPrice');
-    const bikeTypes = params.getAll('bikeType');
+    const bikeTypesFromURL = params.getAll('bikeType');
+    const categoryBikeType = categorySlug
+        ? BIKE_CATEGORIES.find((category) => category.slug === categorySlug)?.apiValue
+        : undefined;
+    const bikeTypes = bikeTypesFromURL.length > 0
+        ? bikeTypesFromURL
+        : categoryBikeType
+            ? [categoryBikeType]
+            : [];
     const brands = params.getAll('brand');
     const conditions = params.getAll('condition') as ('new' | 'used')[];
     return {
