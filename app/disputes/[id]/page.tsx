@@ -178,10 +178,10 @@ export default function DisputeResultPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-brand-bg">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="flex flex-col items-center">
           <Loader2 className="w-12 h-12 text-brand-primary animate-spin" />
-          <p className="mt-4 text-gray-400 font-bold uppercase tracking-widest text-xs">
+          <p className="mt-4 text-gray-500 font-bold uppercase tracking-widest text-xs">
             Đang tải chi tiết mã #{disputeId}...
           </p>
         </div>
@@ -191,15 +191,15 @@ export default function DisputeResultPage() {
 
   if (error || !dispute) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-brand-bg p-4 text-white">
-        <div className="max-w-md w-full bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10 text-center animate-scale-in">
+      <div className="flex items-center justify-center min-h-screen bg-gray-50 p-4 text-gray-900">
+        <div className="max-w-md w-full bg-white backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-gray-200 text-center animate-scale-in">
           <div className="w-20 h-20 bg-rose-500/10 text-rose-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
             <AlertTriangle size={40} />
           </div>
           <h2 className="text-2xl font-black mb-2 tracking-tight">
             Truy Cập Thất Bại
           </h2>
-          <p className="text-gray-400 mb-8 leading-relaxed font-medium">
+          <p className="text-gray-500 mb-8 leading-relaxed font-medium">
             {error || "Khiếu nại không tồn tại."}
           </p>
           <button
@@ -262,14 +262,14 @@ export default function DisputeResultPage() {
           : "brand-primary";
 
   return (
-    <div className="min-h-screen bg-brand-bg text-white p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
+    <div className="min-h-screen bg-gray-50 text-gray-900 p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
       <div className="max-w-4xl mx-auto">
         {/* Header Phase */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-white/5">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-gray-200">
           <div className="animate-slide-up">
             <button
               onClick={() => router.back()}
-              className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6 font-bold text-xs uppercase tracking-[0.2em] group"
+              className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors mb-6 font-bold text-xs uppercase tracking-[0.2em] group"
             >
               <ChevronLeft
                 size={16}
@@ -301,7 +301,7 @@ export default function DisputeResultPage() {
           {isAdmin && (
             <button
               onClick={() => setIsOverrideModalOpen(true)}
-              className="group flex items-center gap-3 px-6 py-4 bg-white/5 border border-purple-500/30 hover:border-purple-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] text-purple-400 hover:text-white hover:bg-purple-600 transition-all shadow-xl active:scale-95"
+              className="group flex items-center gap-3 px-6 py-4 bg-purple-50 border border-purple-300 hover:border-purple-500 rounded-2xl text-[10px] font-black uppercase tracking-[0.1em] text-purple-600 hover:text-white hover:bg-purple-600 transition-all shadow-xl active:scale-95"
             >
               <Zap size={16} className="group-hover:animate-bounce" />
               Ghi Đè Kết Quả (BP7)
@@ -314,7 +314,7 @@ export default function DisputeResultPage() {
           {/* Status Section */}
           <div className="animate-fade-in">
             <div
-              className={`relative overflow-hidden bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-10 text-center shadow-2xl`}
+              className={`relative overflow-hidden bg-white border border-gray-200 rounded-[2.5rem] p-10 text-center shadow-xl`}
             >
               {/* Visual Background Glow */}
               <div
@@ -365,13 +365,13 @@ export default function DisputeResultPage() {
 
               <div className="flex items-center justify-center gap-3 text-gray-500 text-xs font-bold uppercase tracking-widest">
                 <span>Order #{dispute.orderId}</span>
-                <span className="w-1 h-1 rounded-full bg-gray-700"></span>
+                <span className="w-1 h-1 rounded-full bg-gray-400"></span>
                 <span>{formatDate(dispute.createdAt)}</span>
               </div>
 
               {/* Dispute Result info (S-74) */}
               {disputeResult && (isSolved || isRejected) && (
-                <div className="mt-10 pt-10 border-t border-white/5 text-left bg-white/[0.02] -mx-10 px-10">
+                <div className="mt-10 pt-10 border-t border-gray-200 text-left bg-gray-50 -mx-10 px-10">
                   <div className="flex items-center gap-3 mb-4">
                     <CheckCircle size={16} className="text-brand-primary" />
                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
@@ -382,12 +382,12 @@ export default function DisputeResultPage() {
                     <span
                       className={`inline-block px-4 py-2 rounded-xl text-sm font-bold ${
                         disputeResult.result === "BUYER_WIN"
-                          ? "bg-emerald-500/20 text-emerald-400"
+                          ? "bg-emerald-50 text-emerald-600"
                           : disputeResult.result === "SELLER_WIN"
-                            ? "bg-blue-500/20 text-blue-400"
+                            ? "bg-blue-50 text-blue-600"
                             : disputeResult.result === "SPLIT"
-                              ? "bg-amber-500/20 text-amber-400"
-                              : "bg-gray-500/20 text-gray-400"
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-gray-100 text-gray-600"
                       }`}
                     >
                       {disputeResult.result === "BUYER_WIN"
@@ -402,7 +402,7 @@ export default function DisputeResultPage() {
                     </span>
                   </div>
                   {disputeResult.message && (
-                    <p className="text-lg font-medium text-gray-300 leading-relaxed italic">
+                    <p className="text-lg font-medium text-gray-700 leading-relaxed italic">
                       &ldquo;{disputeResult.message}&rdquo;
                     </p>
                   )}
@@ -418,14 +418,14 @@ export default function DisputeResultPage() {
               {!disputeResult &&
                 (isSolved || isRejected) &&
                 dispute.adminNote && (
-                  <div className="mt-10 pt-10 border-t border-white/5 text-left bg-white/[0.02] -mx-10 px-10 rounded-b-[2.5rem]">
+                  <div className="mt-10 pt-10 border-t border-gray-200 text-left bg-gray-50 -mx-10 px-10 rounded-b-[2.5rem]">
                     <div className="flex items-center gap-3 mb-4">
                       <MessageSquare size={16} className="text-brand-primary" />
                       <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-500">
                         Quyết định từ CycleX Support
                       </h4>
                     </div>
-                    <p className="text-lg font-medium text-gray-300 leading-relaxed italic">
+                    <p className="text-lg font-medium text-gray-700 leading-relaxed italic">
                       &ldquo;{dispute.adminNote}&rdquo;
                     </p>
                     <p className="mt-4 text-[9px] font-bold text-gray-600 uppercase tracking-widest">
@@ -436,7 +436,7 @@ export default function DisputeResultPage() {
 
               {/* Need More Info notice for buyer */}
               {isNeedMoreInfo && (
-                <div className="mt-10 pt-10 border-t border-white/5 text-left bg-amber-500/[0.03] -mx-10 px-10 rounded-b-[2.5rem] pb-4">
+                <div className="mt-10 pt-10 border-t border-gray-200 text-left bg-amber-50 -mx-10 px-10 rounded-b-[2.5rem] pb-4">
                   <div className="flex items-center gap-3 mb-4">
                     <Clock size={16} className="text-amber-400" />
                     <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
@@ -452,11 +452,11 @@ export default function DisputeResultPage() {
                           e.uploaderRole === "INSPECTOR" && e.type === "TEXT",
                       );
                     return inspectorMsg?.text ? (
-                      <p className="text-sm font-medium text-amber-200/80 leading-relaxed italic mb-2 bg-amber-500/10 px-4 py-3 rounded-xl border border-amber-500/20">
+                      <p className="text-sm font-medium text-amber-700 leading-relaxed italic mb-2 bg-amber-100 px-4 py-3 rounded-xl border border-amber-200">
                         &ldquo;{inspectorMsg.text}&rdquo;
                       </p>
                     ) : (
-                      <p className="text-sm font-medium text-gray-300 leading-relaxed mb-2">
+                      <p className="text-sm font-medium text-gray-600 leading-relaxed mb-2">
                         Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc
                         bằng chứng cho khiếu nại này. Vui lòng phản hồi bên
                         dưới.
@@ -471,10 +471,10 @@ export default function DisputeResultPage() {
           {/* Reply form for NEED_MORE_INFO status */}
           {isNeedMoreInfo && (
             <div className="animate-fade-in">
-              <div className="bg-amber-500/10 border border-amber-500/20 rounded-[2rem] p-8">
+              <div className="bg-amber-50 border border-amber-200 rounded-[2rem] p-8">
                 <div className="flex items-center gap-3 mb-6">
                   <Send size={18} className="text-amber-400" />
-                  <h3 className="text-lg font-black text-white tracking-tight">
+                  <h3 className="text-lg font-black text-gray-900 tracking-tight">
                     Phản hồi bổ sung
                   </h3>
                 </div>
@@ -484,7 +484,7 @@ export default function DisputeResultPage() {
                     onChange={(e) => setReplyContent(e.target.value)}
                     placeholder="Nhập thông tin bổ sung, mô tả chi tiết hơn hoặc đính kèm thêm bằng chứng..."
                     rows={4}
-                    className="w-full px-6 py-4 bg-black/20 border border-amber-500/20 rounded-2xl text-sm font-medium text-white placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none"
+                    className="w-full px-6 py-4 bg-gray-50 border border-amber-200 rounded-2xl text-sm font-medium text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 transition-all resize-none"
                   />
 
                   {/* Image upload section */}
@@ -500,12 +500,12 @@ export default function DisputeResultPage() {
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex items-center gap-2 px-4 py-2 bg-black/20 border border-amber-500/20 hover:border-amber-500/50 rounded-xl text-xs font-bold text-amber-400 hover:text-amber-300 transition-all"
+                      className="flex items-center gap-2 px-4 py-2 bg-gray-50 border border-amber-200 hover:border-amber-400 rounded-xl text-xs font-bold text-amber-600 hover:text-amber-700 transition-all"
                     >
                       <Upload size={14} />
                       Đính kèm hình ảnh bằng chứng
                       {selectedImages.length > 0 && (
-                        <span className="ml-1 px-2 py-0.5 bg-amber-500/20 rounded-full text-amber-300">
+                        <span className="ml-1 px-2 py-0.5 bg-amber-100 rounded-full text-amber-700">
                           {selectedImages.length}
                         </span>
                       )}
@@ -517,7 +517,7 @@ export default function DisputeResultPage() {
                         {imagePreviews.map((preview, idx) => (
                           <div
                             key={idx}
-                            className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-500/30 group"
+                            className="relative w-20 h-20 rounded-xl overflow-hidden border border-amber-200 group"
                           >
                             <img
                               src={preview}
@@ -567,7 +567,7 @@ export default function DisputeResultPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
             {/* Details Card */}
             <div className="lg:col-span-12 space-y-8">
-              <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[2rem] p-8 shadow-xl animate-fade-in delay-100">
+              <div className="bg-white border border-gray-200 rounded-[2rem] p-8 shadow-xl animate-fade-in delay-100">
                 <div className="flex items-center gap-4 mb-8">
                   <div className="w-12 h-12 rounded-2xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary shadow-glow-orange">
                     <ShieldAlert size={24} strokeWidth={2.5} />
@@ -581,8 +581,8 @@ export default function DisputeResultPage() {
                     </span>
                   </div>
                 </div>
-                <div className="p-8 bg-black/20 rounded-2xl border border-white/5">
-                  <p className="text-lg font-medium text-gray-300 leading-relaxed">
+                <div className="p-8 bg-gray-50 rounded-2xl border border-gray-200">
+                  <p className="text-lg font-medium text-gray-700 leading-relaxed">
                     {dispute.content}
                   </p>
                 </div>
@@ -607,7 +607,7 @@ export default function DisputeResultPage() {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="group relative aspect-video rounded-2xl overflow-hidden border border-white/10 shadow-lg hover:border-brand-primary/50 transition-all cursor-zoom-in"
+                      className="group relative aspect-video rounded-2xl overflow-hidden border border-gray-200 shadow-lg hover:border-brand-primary/50 transition-all cursor-zoom-in"
                     >
                       <img
                         src={url}
@@ -629,14 +629,14 @@ export default function DisputeResultPage() {
         </div>
 
         {/* Footer Footer Section */}
-        <div className="mt-20 pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
+        <div className="mt-20 pt-10 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-gray-600 text-[10px] font-bold uppercase tracking-[0.3em]">
             CycleX System • Dispute Module 3.0
           </p>
           <div className="flex gap-4">
             <button
               onClick={() => router.back()}
-              className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 transition-all"
+              className="px-6 py-2.5 bg-gray-100 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-gray-900 hover:bg-gray-200 transition-all"
             >
               Quay lại
             </button>
@@ -646,13 +646,13 @@ export default function DisputeResultPage() {
 
       {/* S-83 REDESIGNED OVERRIDE MODAL */}
       {isOverrideModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand-bg/80 backdrop-blur-xl animate-fade-in">
-          <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-scale-in relative overflow-hidden">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-xl animate-fade-in">
+          <div className="bg-white border border-gray-200 rounded-[2.5rem] p-10 max-w-lg w-full shadow-2xl animate-scale-in relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-2 bg-purple-500 shadow-glow-purple" />
 
             <button
               onClick={() => setIsOverrideModalOpen(false)}
-              className="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors"
+              className="absolute top-8 right-8 text-gray-400 hover:text-gray-900 transition-colors"
             >
               <XCircle size={24} />
             </button>
@@ -661,7 +661,7 @@ export default function DisputeResultPage() {
               <div className="w-20 h-20 rounded-3xl mx-auto mb-6 flex items-center justify-center bg-purple-500/20 text-purple-400 shadow-glow-purple">
                 <Zap size={40} strokeWidth={2.5} />
               </div>
-              <h2 className="text-3xl font-black text-white mb-2 tracking-tight">
+              <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">
                 Admin Dispute Override
               </h2>
               <p className="text-xs text-purple-400 font-black uppercase tracking-widest">
@@ -695,8 +695,8 @@ export default function DisputeResultPage() {
                       onClick={() => setOverrideAction(opt.id as any)}
                       className={`w-full px-6 py-4 rounded-2xl text-left border transition-all flex items-center justify-between ${
                         overrideAction === opt.id
-                          ? "bg-purple-500/10 border-purple-500/50 text-white shadow-lg"
-                          : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10"
+                          ? "bg-purple-50 border-purple-300 text-gray-900 shadow-lg"
+                          : "bg-gray-50 border-gray-200 text-gray-500 hover:bg-gray-100"
                       }`}
                     >
                       <span className="text-sm font-bold">{opt.label}</span>
@@ -718,13 +718,13 @@ export default function DisputeResultPage() {
                   rows={4}
                   required
                   placeholder="Tại sao bạn muốn ghi đè kết quả của Inspector? Lý do này sẽ được gửi trực tiếp tới Buyer và Seller..."
-                  className="w-full px-6 py-4 bg-white/5 border border-white/10 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-white placeholder:text-gray-600 resize-none min-h-[120px]"
+                  className="w-full px-6 py-4 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all text-gray-900 placeholder:text-gray-400 resize-none min-h-[120px]"
                 />
               </div>
 
-              <div className="bg-amber-500/10 p-5 rounded-2xl border border-amber-500/20 flex gap-4">
+              <div className="bg-amber-50 p-5 rounded-2xl border border-amber-200 flex gap-4">
                 <AlertTriangle size={24} className="text-amber-500 shrink-0" />
-                <p className="text-[11px] font-bold text-amber-500/80 leading-relaxed uppercase tracking-tight">
+                <p className="text-[11px] font-bold text-amber-700 leading-relaxed uppercase tracking-tight">
                   Thao tác này sẽ ghi đè quyết định trước đó của Inspector. Hệ
                   thống sẽ tự động gửi thông báo điều chỉnh tới cả hai bên và
                   ghi nhật ký hệ thống.
@@ -736,7 +736,7 @@ export default function DisputeResultPage() {
                   type="button"
                   onClick={() => setIsOverrideModalOpen(false)}
                   disabled={isOverriding}
-                  className="py-4 bg-white/5 text-gray-400 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-white/10 transition-all disabled:opacity-50"
+                  className="py-4 bg-gray-100 text-gray-500 font-black uppercase tracking-widest text-[10px] rounded-2xl hover:bg-gray-200 transition-all disabled:opacity-50"
                 >
                   Hủy bỏ
                 </button>

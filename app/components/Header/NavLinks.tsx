@@ -34,10 +34,6 @@ export const NavLinks: React.FC<NavLinksProps> = ({
           Bán Xe
         </button>
       )}
-
-      <Link href="/guide" className={LINK_STYLE}>
-        Cẩm Nang
-      </Link>
     </nav>
   );
 };

@@ -61,9 +61,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             Bán Xe
           </button>
         )}
-        <Link href="/guide" onClick={onClose} className={LINK_STYLE}>
-          Cẩm Nang
-        </Link>
         {isLoggedIn && (
           <>
             {userRole === "INSPECTOR" && (
