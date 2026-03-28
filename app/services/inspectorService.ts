@@ -7,7 +7,10 @@ import type {
 import type { PendingRow, PendingStatus } from "@/app/types/pendingTypes";
 import { backendRequest, type BackendErrorShape } from "@/app/services/backend";
 import { authService } from "./authService";
-
+import {
+  INSPECTOR_MOCK_ENABLED,
+  handleInspectorMockRequest,
+} from "./inspectorMockData";
 
 type RawObject = Record<string, any>;
 
@@ -102,6 +105,7 @@ function pickPositiveNumber(values: unknown[]): number | null {
 }
 
 function getInspectorId(): number {
+  if (INSPECTOR_MOCK_ENABLED) return 999;
   const token = authService.getToken();
   const payload = getJwtPayload(token);
   const tokenInspectorId = pickPositiveNumber([
@@ -151,6 +155,9 @@ class InspectorApiError extends Error {
 }
 
 async function inspectorFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  if (INSPECTOR_MOCK_ENABLED) {
+    return handleInspectorMockRequest(path, init) as Promise<T>;
+  }
 
   if (isTokenExpired()) {
     if (typeof window !== "undefined") {
@@ -328,30 +335,7 @@ function getStoreName(raw: RawObject): string {
 }
 
 function getSellerName(raw: RawObject): string {
-  const candidates = [
-    raw.sellerName,
-    raw.ownerName,
-    raw.sellerFullName,
-    raw.fullName,
-    raw.userName,
-    raw.username,
-    raw.sellerEmail,
-    raw.ownerEmail,
-    raw.email,
-    raw.storeName,
-    raw.shopName,
-    raw.sellerShopName,
-    raw.shop,
-  ];
-
-  for (const candidate of candidates) {
-    const normalized = String(candidate ?? "").trim();
-    if (normalized && normalized !== "—" && normalized !== "-") {
-      return normalized;
-    }
-  }
-
-  return "Người bán chưa cập nhật tên";
+  return raw.sellerName ?? raw.ownerName ?? raw.sellerFullName ?? "—";
 }
 
 function getSubmittedAt(raw: RawObject): string {

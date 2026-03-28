@@ -5,9 +5,6 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ChevronLeft } from "lucide-react";
-import { useToast } from "@/app/contexts/ToastContext";
-import { ConfirmModal } from "@/app/components/ui";
 import {
   inspectorService,
   type InspectorReviewDetail,
@@ -21,7 +18,6 @@ export default function ReviewDetailClient({
   listingId?: string;
 }) {
   const router = useRouter();
-  const { addToast } = useToast();
   const [listing, setListing] = useState<InspectorReviewDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -40,7 +36,6 @@ export default function ReviewDetailClient({
   const [rejectReason, setRejectReason] = useState("");
   const [rejectReasonOther, setRejectReasonOther] = useState("");
   const [rejectErrorMessage, setRejectErrorMessage] = useState("");
-  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -123,10 +118,15 @@ export default function ReviewDetailClient({
     }
   };
 
-  // Chỉ "Khác" mới cần nhập chi tiết
+  // Lý do nào cần nhập chi tiết
   const reasonNeedsDetails = (reason: string) => {
-    return reason === "other";
+    return ["mismatch_desc", "missing_info", "other"].includes(reason);
   };
+
+  // Có thể xác nhận reject không
+  const canConfirmReject =
+    rejectReason !== "" &&
+    (!reasonNeedsDetails(rejectReason) || rejectReasonOther.trim() !== "");
 
   const isChecklistComplete = checklist.every((item) => item === true);
   const isReadOnly = ["APPROVED", "REJECTED", "DONE", "PASSED"].includes(
@@ -557,7 +557,7 @@ export default function ReviewDetailClient({
 
               <div className="specItem">
                 <span className="specLabel">Màu sắc</span>
-                <span className="specValue">—</span>
+                <span className="specValue">Đen / Đỏ</span>
               </div>
               <div className="specItem">
                 <span className="specLabel">Tình trạng</span>
@@ -845,7 +845,7 @@ export default function ReviewDetailClient({
                       <button
                         className="btn btn-danger btn-reject-solid px-5 py-2 text-sm font-bold"
                         type="button"
-                        disabled={submitting}
+                        disabled={!canConfirmReject || submitting}
                         onClick={async () => {
                           if (!rejectReason) {
                             setRejectErrorMessage(
@@ -948,38 +948,6 @@ export default function ReviewDetailClient({
       </div>
 
       {/* Đã xóa nút chat với seller */}
-
-      <ConfirmModal
-        isOpen={showApproveConfirm}
-        onClose={() => {
-          if (!submitting) setShowApproveConfirm(false);
-        }}
-        onConfirm={async () => {
-          if (!listing) return;
-          try {
-            setSubmitting(true);
-            const payload = {
-              reasonCode: "MEETS_STANDARDS",
-              reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
-            };
-            await inspectorService.approveListing(listing.id, payload);
-            setShowApproveConfirm(false);
-            addToast("Đã duyệt tin thành công!", "success");
-            router.push("/inspector/dashboard");
-          } catch (err: any) {
-            addToast(err?.message || "Duyệt tin thất bại", "error");
-          } finally {
-            setSubmitting(false);
-          }
-        }}
-        title="Xác nhận duyệt tin"
-        message="Bạn có chắc chắn muốn duyệt tin đăng này? Tin sẽ được hiển thị công khai trên hệ thống."
-        confirmLabel="Duyệt tin"
-        cancelLabel="Hủy"
-        variant="primary"
-        isLoading={submitting}
-        iconType="info"
-      />
     </div>
   );
 }
