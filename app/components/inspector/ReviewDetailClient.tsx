@@ -121,9 +121,9 @@ export default function ReviewDetailClient({
     }
   };
 
-  // Lý do nào cần nhập chi tiết
+  // Chỉ "Khác" mới cần nhập chi tiết
   const reasonNeedsDetails = (reason: string) => {
-    return ["mismatch_desc", "missing_info", "other"].includes(reason);
+    return reason === "other";
   };
 
 
