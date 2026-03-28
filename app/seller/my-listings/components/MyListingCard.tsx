@@ -101,14 +101,6 @@ export function MyListingCard({ listing, onDelete, isDeleting }: MyListingCardPr
           )}
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-2 mb-4 text-center text-sm">
-          <div>
-            <div className="font-bold text-gray-900">{listing.views}</div>
-            <div className="text-gray-500 text-xs">Lượt xem</div>
-          </div>
-        </div>
-
         {/* Actions */}
         <div className="flex gap-2">
           {/* BR-S11-F05: Edit button only for DRAFT and NEED_MORE_INFO status */}

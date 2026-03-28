@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { MESSAGES } from "@/app/constants/messages";
 import { UserProfileResponse, UpdateProfileRequest } from "@/app/types/user";
 import { Button, Input } from "@/app/components/ui";
-import { Upload, X, User } from "lucide-react";
+import { User } from "lucide-react";
 
 const PHONE_REGEX = /^0\d{9}$/;
 
@@ -12,7 +12,6 @@ interface ProfileInfoFormProps {
   profile: UserProfileResponse;
   isSubmitting: boolean;
   onSubmit: (data: UpdateProfileRequest) => void;
-  onImageError?: (msg: string) => void;
 }
 
 interface FormErrors {
@@ -24,14 +23,10 @@ export function ProfileInfoForm({
   profile,
   isSubmitting,
   onSubmit,
-  onImageError,
 }: ProfileInfoFormProps) {
   const [fullName, setFullName] = useState(profile.fullName);
   const [phone, setPhone] = useState(profile.phone);
   const [address, setAddress] = useState(profile.address || "");
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(
-    profile.avatarUrl || null,
-  );
 
   const [errors, setErrors] = useState<FormErrors>({});
 
@@ -40,36 +35,7 @@ export function ProfileInfoForm({
     setFullName(profile.fullName);
     setPhone(profile.phone);
     setAddress(profile.address || "");
-    if (profile.avatarUrl) setAvatarPreview(profile.avatarUrl);
   }, [profile]);
-
-  const handleAvatarUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validate Size (S-04-BR03: <= 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        if (onImageError) onImageError(MESSAGES.S04_VAL_AVATAR_SIZE);
-        return;
-      }
-
-      // Validate Type (JPG/PNG)
-      const validTypes = ["image/jpeg", "image/png"];
-      if (!validTypes.includes(file.type)) {
-        if (onImageError) onImageError(MESSAGES.S04_VAL_AVATAR_FORMAT);
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setAvatarPreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const clearAvatar = () => {
-    setAvatarPreview(null);
-  };
 
   const handleSubmit = useCallback(
     (e: React.FormEvent) => {
@@ -95,11 +61,10 @@ export function ProfileInfoForm({
           fullName: fullName.trim(),
           phone: phone.trim(),
           address: address.trim() || undefined,
-          avatarUrl: avatarPreview,
         });
       }
     },
-    [fullName, phone, address, avatarPreview, onSubmit],
+    [fullName, phone, address, onSubmit],
   );
 
   const clearNameError = () => {
@@ -113,13 +78,13 @@ export function ProfileInfoForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Avatar Section */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+      {/* Avatar Section (read-only) */}
+      <div className="flex items-center gap-6">
         <div className="relative">
-          {avatarPreview ? (
-            <div className="relative w-24 h-24 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+          {profile.avatarUrl ? (
+            <div className="w-24 h-24 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
               <img
-                src={avatarPreview}
+                src={profile.avatarUrl}
                 alt="Avatar"
                 className="w-full h-full object-cover"
               />
@@ -129,37 +94,6 @@ export function ProfileInfoForm({
               <User className="w-10 h-10 text-gray-400" />
             </div>
           )}
-
-          {avatarPreview && (
-            <button
-              type="button"
-              onClick={clearAvatar}
-              disabled={isSubmitting}
-              className="absolute top-0 right-0 p-1 bg-white border border-gray-200 shadow-sm rounded-full hover:bg-red-50 transition-colors z-10"
-            >
-              <X className="w-3.5 h-3.5 text-gray-500 hover:text-red-500" />
-            </button>
-          )}
-        </div>
-
-        <div className="flex-1">
-          <h3 className="text-sm font-medium text-gray-900 mb-1">
-            {MESSAGES.S04_AVATAR_LABEL}
-          </h3>
-          <p className="text-sm text-gray-500 mb-3">
-            {MESSAGES.S04_AVATAR_HINT}
-          </p>
-          <label className="inline-flex items-center justify-center px-4 py-2 border border-brand-primary rounded-lg text-sm font-medium text-brand-primary bg-white hover:bg-orange-50 cursor-pointer transition-colors focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-brand-primary">
-            <Upload className="w-4 h-4 mr-2" />
-            {MESSAGES.S04_AVATAR_UPLOAD_TEXT}
-            <input
-              type="file"
-              className="sr-only"
-              accept="image/jpeg, image/png"
-              onChange={handleAvatarUpload}
-              disabled={isSubmitting}
-            />
-          </label>
         </div>
       </div>
 

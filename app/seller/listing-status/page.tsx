@@ -6,7 +6,6 @@ import { StatusBadge } from "@/app/components/ui/StatusBadge";
 import { useAuth } from "@/app/hooks/useAuth";
 import {
   getMyListings,
-  getDrafts,
   Listing,
 } from "@/app/services/myListingsService";
 
@@ -30,36 +29,22 @@ const ListingStatusPage: React.FC = () => {
       try {
         setIsLoading(true);
         setError(null);
-        const [listingResult, draftResult] = await Promise.all([
-          getMyListings({
-            sellerId: user.userId,
-            pageSize: 200,
-            sortBy: "recent",
-          }),
-          getDrafts({
-            sellerId: user.userId,
-            pageSize: 200,
-            sort: "newest",
-          }),
-        ]);
-
-        const mergedListings = [...listingResult.listings];
-        const existingIds = new Set(mergedListings.map((listing) => listing.id));
-
-        draftResult.items.forEach((draft) => {
-          if (!existingIds.has(draft.id)) {
-            mergedListings.push(draft);
-          }
+        const listingResult = await getMyListings({
+          sellerId: user.userId,
+          pageSize: 200,
+          sortBy: "recent",
         });
 
-        mergedListings.sort(
+        const allListings = [...listingResult.listings];
+
+        allListings.sort(
           (a, b) =>
             new Date(b.updatedDate || b.createdDate).getTime() -
             new Date(a.updatedDate || a.createdDate).getTime(),
         );
 
         if (!controller.signal.aborted) {
-          setListings(mergedListings);
+          setListings(allListings);
         }
       } catch (err: any) {
         if (!controller.signal.aborted) {
@@ -82,7 +67,7 @@ const ListingStatusPage: React.FC = () => {
       (listing: Listing) => ["PENDING", "NEED_MORE_INFO", "HELD"].includes(listing.status),
     ).length,
     sold: listings.filter((listing: Listing) => listing.status === "SOLD").length,
-    draft: listings.filter((listing: Listing) => listing.status === "DRAFT").length,
+    rejected: listings.filter((listing: Listing) => listing.status === "REJECT").length,
   };
 
   if (isAuthLoading || isLoading) {
@@ -120,11 +105,11 @@ const ListingStatusPage: React.FC = () => {
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
           <p className="text-gray-600 text-sm font-semibold mb-2">Đã bán</p>
-          <p className="text-3xl font-bold text-red-600">{stats.sold}</p>
+          <p className="text-3xl font-bold text-blue-600">{stats.sold}</p>
         </div>
         <div className="bg-white rounded-lg p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm font-semibold mb-2">Nháp</p>
-          <p className="text-3xl font-bold text-gray-600">{stats.draft}</p>
+          <p className="text-gray-600 text-sm font-semibold mb-2">Bị từ chối</p>
+          <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
         </div>
       </div>
 
@@ -144,9 +129,6 @@ const ListingStatusPage: React.FC = () => {
                   Trạng thái
                 </th>
                 <th className="text-left px-6 py-4 font-semibold text-gray-700">
-                  Lượt xem
-                </th>
-                <th className="text-left px-6 py-4 font-semibold text-gray-700">
                   Ngày đăng
                 </th>
               </tr>
@@ -155,7 +137,7 @@ const ListingStatusPage: React.FC = () => {
               {listings.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={4}
                     className="px-6 py-12 text-center text-gray-500"
                   >
                     Chưa có tin đăng nào.
@@ -175,9 +157,6 @@ const ListingStatusPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4">
                       <StatusBadge status={listing.status} showLabel />
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {listing.views}
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {new Date(listing.createdDate).toLocaleDateString(

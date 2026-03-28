@@ -444,25 +444,11 @@ export default function DisputeResultPage() {
                     </h4>
                   </div>
                   {/* Show latest inspector message if exists */}
-                  {(() => {
-                    const inspectorMsg = [...(dispute.evidence ?? [])]
-                      .reverse()
-                      .find(
-                        (e) =>
-                          e.uploaderRole === "INSPECTOR" && e.type === "TEXT",
-                      );
-                    return inspectorMsg?.text ? (
-                      <p className="text-sm font-medium text-amber-700 leading-relaxed italic mb-2 bg-amber-100 px-4 py-3 rounded-xl border border-amber-200">
-                        &ldquo;{inspectorMsg.text}&rdquo;
-                      </p>
-                    ) : (
-                      <p className="text-sm font-medium text-gray-600 leading-relaxed mb-2">
-                        Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc
-                        bằng chứng cho khiếu nại này. Vui lòng phản hồi bên
-                        dưới.
-                      </p>
-                    );
-                  })()}
+                  <p className="text-sm font-medium text-gray-600 leading-relaxed mb-2">
+                    Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc
+                    bằng chứng cho khiếu nại này. Vui lòng phản hồi bên
+                    dưới.
+                  </p>
                 </div>
               )}
             </div>
