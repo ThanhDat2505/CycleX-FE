@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState } from "react";
 import {
   adminDisputeService,
   AdminDisputeQuery,
@@ -38,40 +38,12 @@ const SORT_OPTIONS = [
   { value: "status:ASC", label: "Trạng thái A-Z" },
 ];
 
-const DETAIL_LINK_BASE: CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 8,
-  padding: "8px 18px",
-  borderRadius: 12,
-  fontSize: 11,
-  fontWeight: 900,
-  textTransform: "uppercase",
-  letterSpacing: "0.1em",
-  border: "1px solid #e5e7eb",
-  backgroundColor: "#f9fafb",
-  color: "#374151",
-  textDecoration: "none",
-  transition: "all 0.18s ease",
-  cursor: "pointer",
-};
-
-const DETAIL_LINK_HOVER: CSSProperties = {
-  backgroundColor: "#fff7ed",
-  color: "#c2410c",
-  borderColor: "#fed7aa",
-};
-
-/** Standalone link component with explicit inline hover styles to avoid CSS conflicts. */
+/** Detail link with Tailwind-only styling to avoid inspector.css conflicts */
 function DetailLink({ disputeId }: { disputeId: number }) {
-  const [hovered, setHovered] = useState(false);
-
   return (
     <Link
       href={`/admin/disputes/${disputeId}`}
-      style={hovered ? { ...DETAIL_LINK_BASE, ...DETAIL_LINK_HOVER } : DETAIL_LINK_BASE}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-wider border border-gray-200 bg-gray-50 text-gray-700 no-underline transition-all duration-150 hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200"
     >
       <Eye size={14} />
       Xem chi tiết
@@ -349,16 +321,11 @@ export default function AdminDisputeListClient() {
                         key={row.id}
                         className="group hover:bg-gray-50 transition-colors"
                       >
-                        {/* ID column – always shows orange badge */}
+                        {/* ID column – always visible orange */}
                         <td className="px-8 py-6">
-                          <div className="flex items-center gap-3">
-                            <div
-                              className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-xs font-black transition-all group-hover:scale-110"
-                              style={{ color: "#FF6B00" }}
-                            >
-                              #{row.id}
-                            </div>
-                          </div>
+                          <span className="inline-flex items-center justify-center min-w-[48px] px-3 py-1.5 rounded-xl bg-orange-50 border border-orange-200 text-sm font-black text-orange-600">
+                            #{row.id}
+                          </span>
                         </td>
 
                         {/* Listing & transaction column */}
@@ -378,14 +345,14 @@ export default function AdminDisputeListClient() {
                           </div>
                         </td>
 
-                        {/* Requester name – handles null/empty/dash from API */}
+                        {/* Requester name */}
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-2">
                             <div className="w-7 h-7 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center flex-shrink-0">
                               <User size={14} className="text-gray-500" />
                             </div>
                             <span className="text-sm font-semibold text-gray-700">
-                              {row.requesterName && row.requesterName !== "-"
+                              {row.requesterName && row.requesterName.trim().length > 1 && row.requesterName !== "-"
                                 ? row.requesterName
                                 : "Không rõ"}
                             </span>
@@ -402,13 +369,13 @@ export default function AdminDisputeListClient() {
                           </span>
                         </td>
 
-                        {/* Created at – increased font size for readability */}
+                        {/* Created at */}
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
                             <span className="text-sm font-bold text-gray-900">
                               {row.createdAt?.split("T")[0] || "—"}
                             </span>
-                            <span className="text-sm text-gray-500 mt-0.5">
+                            <span className="text-sm font-medium text-gray-500 mt-0.5">
                               {row.createdAt?.split("T")[1]?.split(".")[0] || ""}
                             </span>
                           </div>
