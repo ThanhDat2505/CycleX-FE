@@ -328,7 +328,30 @@ function getStoreName(raw: RawObject): string {
 }
 
 function getSellerName(raw: RawObject): string {
-  return raw.sellerName ?? raw.ownerName ?? raw.sellerFullName ?? "—";
+  const candidates = [
+    raw.sellerName,
+    raw.ownerName,
+    raw.sellerFullName,
+    raw.fullName,
+    raw.userName,
+    raw.username,
+    raw.sellerEmail,
+    raw.ownerEmail,
+    raw.email,
+    raw.storeName,
+    raw.shopName,
+    raw.sellerShopName,
+    raw.shop,
+  ];
+
+  for (const candidate of candidates) {
+    const normalized = String(candidate ?? "").trim();
+    if (normalized && normalized !== "—" && normalized !== "-") {
+      return normalized;
+    }
+  }
+
+  return "Người bán chưa cập nhật tên";
 }
 
 function getSubmittedAt(raw: RawObject): string {
