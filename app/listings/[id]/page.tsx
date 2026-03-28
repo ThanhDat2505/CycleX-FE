@@ -115,7 +115,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     return (
         <div className={STYLES.container}>
             {/* Back button */}
-            <Link href="/listings" className={STYLES.backLink}>
+            <Link href={userRole === 'SELLER' ? '/seller/my-listings' : '/listings'} className={STYLES.backLink}>
                 <ArrowLeft size={20} />
                 {MESSAGES.DETAIL_BACK_TO_LISTINGS}
             </Link>
