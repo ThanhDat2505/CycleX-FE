@@ -9,6 +9,7 @@
 
 export type ListingStatus =
     | 'DRAFT' | 'PENDING' | 'REVIEWING' | 'APPROVE' | 'REJECT' | 'ACTIVE' | 'SOLD'
+    | 'NEED_MORE_INFO' | 'HELD'
     | 'PENDING_SELLER_CONFIRM' | 'CONFIRMED' | 'PENDING_DELIVERY' | 'IN_DELIVERY' | 'DELIVERED'
     | 'COMPLETED' | 'CANCELLED' | 'DISPUTED' | 'SOLVED' | 'REJECTED';
 
@@ -53,6 +54,16 @@ export const STATUS_COLORS: Record<ListingStatus, StatusColorConfig> = {
         bg: 'bg-purple-100',
         text: 'text-purple-800',
         label: 'Đã bán'
+    },
+    NEED_MORE_INFO: {
+        bg: 'bg-blue-100',
+        text: 'text-blue-800',
+        label: 'Cần bổ sung'
+    },
+    HELD: {
+        bg: 'bg-indigo-100',
+        text: 'text-indigo-800',
+        label: 'Đang giữ chỗ'
     },
     // Transaction Statuses
     PENDING_SELLER_CONFIRM: {

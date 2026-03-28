@@ -145,7 +145,7 @@ const ListingStatusPage: React.FC = () => {
                       {listing.price.toLocaleString("vi-VN")}đ
                     </td>
                     <td className="px-6 py-4">
-                      <StatusBadge status={listing.status} />
+                      <StatusBadge status={listing.status} showLabel />
                     </td>
                     <td className="px-6 py-4 text-gray-600">
                       {listing.views}

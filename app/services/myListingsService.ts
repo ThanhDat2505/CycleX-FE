@@ -78,6 +78,8 @@ interface SellerListingSearchItemResponse {
     status: string;
     viewsCount?: number;
     rejectionReason?: string;
+    condition?: string;
+    locationCity?: string;
     createdAt?: string;
     updatedAt?: string;
 }
@@ -136,9 +138,10 @@ function mapStatusFromBackend(status: string): ListingStatus {
     if (normalized === 'APPROVED') return 'APPROVE';
     if (normalized === 'REJECTED') return 'REJECT';
     if (normalized === 'SOLD') return 'SOLD';
-    if (normalized === 'PENDING' || normalized === 'DRAFT') {
-        return normalized as ListingStatus;
-    }
+    if (normalized === 'DRAFT') return 'DRAFT';
+    if (normalized === 'PENDING') return 'PENDING';
+    if (normalized === 'NEED_MORE_INFO') return 'NEED_MORE_INFO';
+    if (normalized === 'HELD') return 'HELD';
 
     // Treat in-review/non-editable statuses as PENDING on My Listings card.
     if (normalized === 'REVIEWING' || normalized === 'WAITING_INSPECTOR_REVIEW' || normalized === 'ARCHIVED') {
@@ -167,10 +170,10 @@ function mapSearchItemToListing(item: SellerListingSearchItemResponse): Listing 
         id: item.listingId,
         brand: item.brand,
         model: item.model,
-        type: item.title || 'Bike Listing',
-        condition: '-',
+        type: item.title || '',
+        condition: item.condition || '',
         price: Number.isFinite(parsedPrice) ? parsedPrice : 0,
-        location: '-',
+        location: item.locationCity || '',
         status: mapStatusFromBackend(item.status),
         rejectionReason: item.rejectionReason,
         shipping: false,
