@@ -145,8 +145,13 @@ const DashboardPage: React.FC = () => {
                   <span className="w-2 h-6 bg-blue-500 rounded-full"></span>
                   Hoạt động gần đây
                 </h2>
-                <div className="flex flex-col items-center justify-center py-10 text-center">
-                  <p className="text-gray-400 text-sm">Chưa có hoạt động nào gần đây</p>
+                <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-xs font-semibold border border-blue-200">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
+                    Sắp ra mắt
+                  </span>
+                  <p className="text-gray-500 text-sm font-medium">Tính năng đang được phát triển</p>
+                  <p className="text-gray-400 text-xs">Lịch sử hoạt động sẽ hiển thị tại đây trong phiên bản tới</p>
                 </div>
               </div>
 
