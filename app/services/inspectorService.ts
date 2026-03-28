@@ -421,8 +421,38 @@ function mapHistoryItems(raw: RawObject): InspectorReviewDetail["history"] {
   });
 }
 
-function mapToReviewDetail(raw: RawObject): InspectorReviewDetail {
+function resolveImagePath(path: string): string {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (path.startsWith("/uploads/")) return `/backend${path}`;
+  if (path.startsWith("/public/")) return path;
+  return path.startsWith("/") ? path : `/${path}`;
+}
+
+function mapToReviewDetail(raw: RawObject, extraImages?: string[]): InspectorReviewDetail {
   const id = getListingId(raw);
+
+  // Build thumbs list from various possible field shapes
+  let thumbs: string[] = [];
+  if (extraImages && extraImages.length > 0) {
+    thumbs = extraImages;
+  } else if (Array.isArray(raw.images?.thumbs) && raw.images.thumbs.length > 0) {
+    thumbs = raw.images.thumbs.map((u: string) => resolveImagePath(u));
+  } else if (Array.isArray(raw.imageUrls) && raw.imageUrls.length > 0) {
+    thumbs = raw.imageUrls.map((u: string) => resolveImagePath(u));
+  } else if (Array.isArray(raw.images) && raw.images.length > 0) {
+    // Some backends return images as a flat array of objects with imagePath
+    thumbs = raw.images
+      .map((img: RawObject) => resolveImagePath(String(img.imagePath ?? img.url ?? img.imageUrl ?? "")))
+      .filter(Boolean);
+  } else if (raw.thumbnailUrl) {
+    thumbs = [resolveImagePath(String(raw.thumbnailUrl))];
+  } else if (raw.mainImageUrl) {
+    thumbs = [resolveImagePath(String(raw.mainImageUrl))];
+  }
+
+  const main = thumbs[0] ?? resolveImagePath(String(raw.images?.main ?? raw.mainImageUrl ?? raw.thumbnailUrl ?? ""));
+
   return {
     id,
     productName: getProductName(raw),
@@ -440,16 +470,7 @@ function mapToReviewDetail(raw: RawObject): InspectorReviewDetail {
     },
     waitingDays:
       Number(raw.waitingDays ?? raw.pendingDays ?? raw.daysWaiting ?? 0) || 0,
-    images: {
-      main: raw.images?.main ?? raw.mainImageUrl ?? raw.thumbnailUrl ?? "",
-      thumbs: Array.isArray(raw.images?.thumbs)
-        ? raw.images.thumbs
-        : Array.isArray(raw.imageUrls)
-          ? raw.imageUrls
-          : raw.thumbnailUrl
-            ? [raw.thumbnailUrl]
-            : [],
-    },
+    images: { main, thumbs },
     history: mapHistoryItems(raw),
   };
 }
@@ -527,13 +548,64 @@ export const inspectorService = {
   async getListingDetail(listingId: string): Promise<InspectorReviewDetail> {
     const inspectorId = getInspectorId();
     const normalizedListingId = String(listingId).trim();
+
+    // 1. Fetch main detail
     const response = await inspectorFetch<any>(
       `/inspector/${inspectorId}/listings/${normalizedListingId}/detail`,
       { method: "GET" },
     );
+    const payload = response?.data ?? response ?? {};
 
-    const payload = response?.data ?? response;
-    const detail = mapToReviewDetail(payload ?? {});
+    // 2. Try to fetch images separately (inspector images endpoint)
+    let extraImages: string[] = [];
+    try {
+      const imgResponse = await inspectorFetch<any>(
+        `/inspector/${inspectorId}/listings/${normalizedListingId}/images`,
+        { method: "GET" },
+      );
+      const imgArray: RawObject[] = Array.isArray(imgResponse)
+        ? imgResponse
+        : Array.isArray(imgResponse?.data)
+          ? imgResponse.data
+          : [];
+      if (imgArray.length > 0) {
+        const sorted = [...imgArray].sort(
+          (a, b) => (Number(a.imageOrder ?? a.order ?? 0)) - (Number(b.imageOrder ?? b.order ?? 0))
+        );
+        extraImages = sorted
+          .map((img) => resolveImagePath(String(img.imagePath ?? img.imageUrl ?? img.url ?? "")))
+          .filter(Boolean);
+      }
+    } catch {
+      // Inspector images endpoint might not exist — fallback below
+    }
+
+    // 3. If still no images, try public bikelistings endpoint
+    if (extraImages.length === 0) {
+      try {
+        const publicDetail = await inspectorFetch<any>(
+          `/bikelistings/${normalizedListingId}`,
+          { method: "GET" },
+        );
+        const pub = publicDetail?.data ?? publicDetail ?? {};
+        // Public endpoint may have images array or imageUrls
+        const pubImages: RawObject[] = Array.isArray(pub.images) ? pub.images : [];
+        if (pubImages.length > 0) {
+          const sorted = [...pubImages].sort(
+            (a, b) => (Number(a.imageOrder ?? a.order ?? 0)) - (Number(b.imageOrder ?? b.order ?? 0))
+          );
+          extraImages = sorted
+            .map((img) => resolveImagePath(String(img.imagePath ?? img.imageUrl ?? img.url ?? "")))
+            .filter(Boolean);
+        } else if (Array.isArray(pub.imageUrls) && pub.imageUrls.length > 0) {
+          extraImages = pub.imageUrls.map((u: string) => resolveImagePath(u)).filter(Boolean);
+        }
+      } catch {
+        // Public endpoint fallback also failed — use whatever raw has
+      }
+    }
+
+    const detail = mapToReviewDetail(payload, extraImages.length > 0 ? extraImages : undefined);
     detail.id = normalizedListingId;
     return detail;
   },
