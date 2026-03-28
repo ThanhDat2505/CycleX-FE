@@ -70,7 +70,8 @@ type ListingApiResponse = Partial<Listing> & {
 };
 
 interface SellerListingSearchItemResponse {
-    listingId: number;
+    listingId?: number;
+    id?: number;
     title?: string;
     brand: string;
     model: string;
@@ -82,6 +83,11 @@ interface SellerListingSearchItemResponse {
     locationCity?: string;
     createdAt?: string;
     updatedAt?: string;
+}
+
+function resolveListingId(item: SellerListingSearchItemResponse): number {
+    const candidate = Number(item.listingId ?? item.id);
+    return Number.isFinite(candidate) && candidate > 0 ? candidate : 0;
 }
 
 export interface SellerListingDetailResponse {
@@ -165,9 +171,10 @@ function mapStatusToBackend(status?: string): string | undefined {
 
 function mapSearchItemToListing(item: SellerListingSearchItemResponse): Listing {
     const parsedPrice = Number(item.price ?? 0);
+    const normalizedId = resolveListingId(item);
 
     return {
-        id: item.listingId,
+        id: normalizedId,
         brand: item.brand,
         model: item.model,
         type: item.title || '',
@@ -424,7 +431,9 @@ export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsRespo
     validateNumber(response.totalPages, 'totalPages');
     validateNumber(response.number, 'number');
 
-    const items = response.content.map(mapSearchItemToListing);
+    const items = response.content
+        .map(mapSearchItemToListing)
+        .filter((item) => Number.isFinite(item.id) && item.id > 0);
 
     return {
         items,
@@ -499,15 +508,21 @@ export async function searchMyListings(params: SearchListingsParams): Promise<Ge
  * Endpoint: GET /api/seller/{sellerId}/listings/{listingId}/preview
  */
 export async function getListingDetail(sellerId: number, listingId: number): Promise<SellerListingDetailResponse> {
-    const response = await apiCallGET<SellerListingDetailResponse>(`/seller/${sellerId}/listings/${listingId}/preview`);
+    const raw = await apiCallGET<any>(`/seller/${sellerId}/listings/${listingId}/preview`);
+    const response = (raw?.data ?? raw) as Partial<SellerListingDetailResponse> & { id?: number };
 
-    validateResponse(response, 'getListingDetail response');
-    validateNumber(response.listingId, 'listingId');
+    validateResponse(response as object, 'getListingDetail response');
+
+    const normalizedId = Number(response.listingId ?? response.id ?? listingId);
+    validateNumber(normalizedId, 'listingId');
     validateString(response.brand, 'brand');
     validateString(response.model, 'model');
     validateString(response.status, 'status');
 
-    return response;
+    return {
+        ...response,
+        listingId: normalizedId,
+    } as SellerListingDetailResponse;
 }
 
 /**

@@ -63,6 +63,10 @@ const DraftListingsPage: React.FC = () => {
 
   const handleDeleteDraft = async (draftId: number) => {
     if (!user?.userId) return;
+    if (!Number.isFinite(draftId) || draftId <= 0) {
+      alert("Không tìm thấy mã tin nháp hợp lệ để xóa.");
+      return;
+    }
     const confirmed = window.confirm(
       "Bạn có chắc muốn xóa tin nháp này không?"
     );
@@ -77,6 +81,14 @@ const DraftListingsPage: React.FC = () => {
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const handleContinueDraft = (draftId: number) => {
+    if (!Number.isFinite(draftId) || draftId <= 0) {
+      alert("Không tìm thấy mã tin nháp hợp lệ để tiếp tục.");
+      return;
+    }
+    router.push(`/seller/create-listing?draft=${draftId}`);
   };
 
   if (isAuthLoading) {
@@ -122,11 +134,15 @@ const DraftListingsPage: React.FC = () => {
 
       {!isFetchingDrafts && !fetchError && draftListings.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {draftListings.map((listing) => (
-            <div
-              key={listing.id}
-              className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition overflow-hidden"
-            >
+          {draftListings.map((listing, index) => {
+            const draftId = Number(listing.id);
+            const hasValidDraftId = Number.isFinite(draftId) && draftId > 0;
+
+            return (
+              <div
+                key={hasValidDraftId ? draftId : `${listing.brand}-${listing.model}-${index}`}
+                className="bg-white rounded-lg border border-gray-200 hover:shadow-lg transition overflow-hidden"
+              >
               {/* Thumbnail */}
               <div className="h-40 bg-gray-100 flex items-center justify-center overflow-hidden">
                 {listing.mainImageUrl ? (
@@ -162,23 +178,27 @@ const DraftListingsPage: React.FC = () => {
                 </p>
 
                 <div className="flex gap-2">
-                  <Link
-                    href={`/seller/create-listing?draft=${listing.id}`}
-                    className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center"
+                  <button
+                    type="button"
+                    onClick={() => handleContinueDraft(draftId)}
+                    disabled={!hasValidDraftId}
+                    className="flex-1 px-3 py-2 bg-[#FF8A00] text-white rounded text-sm font-medium hover:bg-[#FF7A00] transition text-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Tiếp tục
-                  </Link>
+                  </button>
                   <button
-                    onClick={() => handleDeleteDraft(listing.id)}
-                    disabled={deletingId === listing.id}
+                    type="button"
+                    onClick={() => handleDeleteDraft(draftId)}
+                    disabled={!hasValidDraftId || deletingId === draftId}
                     className="flex-1 px-3 py-2 border border-red-300 text-red-600 rounded text-sm font-medium hover:bg-red-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {deletingId === listing.id ? "Đang xóa..." : "Xóa"}
+                    {deletingId === draftId ? "Đang xóa..." : "Xóa"}
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
       )}
 

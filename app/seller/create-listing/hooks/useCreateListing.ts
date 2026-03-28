@@ -159,10 +159,8 @@ export const useCreateListing = () => {
       setSubmitError(null);
 
       try {
-        const [draft, images] = await Promise.all([
-          getListingDetail(user.userId, draftId),
-          getListingImages(user.userId, draftId),
-        ]);
+        const draft = await getListingDetail(user.userId, draftId);
+        const images = await getListingImages(user.userId, draftId).catch(() => []);
 
         if (!isMountedRef.current || cancelled) return;
 
@@ -212,6 +210,8 @@ export const useCreateListing = () => {
       } catch {
         if (!isMountedRef.current || cancelled) return;
         setSubmitError("Không thể tải tin đăng nháp. Vui lòng thử lại.");
+        addToast("Không thể tiếp tục tin nháp này. Vui lòng thử lại.", "error");
+        router.replace("/seller/draft-listings");
       } finally {
         if (!isMountedRef.current || cancelled) return;
         setIsCreatingDraft(false);
@@ -223,7 +223,7 @@ export const useCreateListing = () => {
     return () => {
       cancelled = true;
     };
-  }, [draftId, isLoading, isLoggedIn, role, user?.userId, isViewMode]);
+  }, [addToast, draftId, isLoading, isLoggedIn, role, router, user?.userId, isViewMode]);
 
   // Auto clear upload error
   useEffect(() => {
