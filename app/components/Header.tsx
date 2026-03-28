@@ -31,8 +31,9 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Role restrictions: ADMIN, SHIPPER, INSPECTOR get no nav/search/sell
-  const isRestrictedRole = !!user && ["ADMIN", "SHIPPER", "INSPECTOR"].includes(user.role);
-  const isBuyer = user?.role === "BUYER";
+  const userRole = user?.role?.toUpperCase();
+  const isRestrictedRole = !!user && !!userRole && ["ADMIN", "SHIPPER", "INSPECTOR"].includes(userRole);
+  const isBuyer = userRole === "BUYER";
 
   // Handle sell button click with auth check — blocks BUYER and restricted roles
   const handleSellClick = useCallback(() => {
@@ -91,8 +92,8 @@ export default function Header() {
                   onLogout={logout}
                 />
 
-                {/* Đăng Tin Button — only SELLER and Guest, NOT BUYER */}
-                {!isRestrictedRole && !isBuyer && (
+                {/* Đăng Tin Button — only SELLER, NOT BUYER/INSPECTOR/ADMIN/SHIPPER */}
+                {!isRestrictedRole && !isBuyer && userRole !== "INSPECTOR" && (
                   <Link
                     href="/seller/create-listing"
                     className="bg-brand-primary hover:bg-brand-primary-hover text-white px-6 py-2 rounded-lg font-medium transition-colors"

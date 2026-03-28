@@ -126,10 +126,6 @@ export default function ReviewDetailClient({
     return ["mismatch_desc", "missing_info", "other"].includes(reason);
   };
 
-  // Có thể xác nhận reject không
-  const canConfirmReject =
-    rejectReason !== "" &&
-    (!reasonNeedsDetails(rejectReason) || rejectReasonOther.trim() !== "");
 
   const isChecklistComplete = checklist.every((item) => item === true);
   const isReadOnly = ["APPROVED", "REJECTED", "DONE", "PASSED"].includes(
@@ -574,7 +570,7 @@ export default function ReviewDetailClient({
                       <button
                         className="btn btn-danger btn-reject-solid px-5 py-2 text-sm font-bold"
                         type="button"
-                        disabled={!canConfirmReject || submitting}
+                        disabled={submitting}
                         onClick={async () => {
                           if (!rejectReason) {
                             setRejectErrorMessage(
