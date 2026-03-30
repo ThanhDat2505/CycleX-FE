@@ -3,7 +3,7 @@
  * Shows current step in multi-step form (S-50)
  */
 
-import { Check } from 'lucide-react';
+import { Check } from '@/app/components/ui/Icons';
 import { MESSAGES } from '@/app/constants';
 
 /** Step definitions — static, defined outside component to avoid re-creation */

@@ -10,7 +10,7 @@ import { Button } from '@/app/components/ui';
 import { useToast } from '@/app/contexts/ToastContext';
 import { MESSAGES } from '@/app/constants/messages';
 import { getStatusColor, getStatusLabel } from '@/app/utils/deliveryUtils';
-import { ArrowLeft, Package, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Package, RefreshCw } from '@/app/components/ui/Icons';
 import { DeliveryDetailSkeleton } from '../components/DeliverySkeleton';
 import { BikeInfoCard } from '../components/BikeInfoCard';
 import { RouteInfoCard } from '../components/RouteInfoCard';

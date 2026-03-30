@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { X } from "lucide-react";
+import { X } from '@/app/components/ui/Icons';
 import { Button, Input } from "@/app/components/ui";
 import VietnameseAddressPicker from "./VietnameseAddressPicker";
 import { UserAddress, CreateAddressRequest } from "@/app/types/address";

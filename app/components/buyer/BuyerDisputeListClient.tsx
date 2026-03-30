@@ -6,7 +6,7 @@ import {
   getBuyerDisputes,
   type BuyerDisputeListRow,
 } from "@/app/services/buyerDisputeService";
-import { RefreshCw, Gavel, User, ExternalLink } from "lucide-react";
+import { RefreshCw, Gavel, User, ExternalLink } from '@/app/components/ui/Icons';
 import { useAuth } from "@/app/hooks/useAuth";
 
 const STATUS_OPTIONS = [

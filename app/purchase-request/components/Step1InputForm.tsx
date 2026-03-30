@@ -11,7 +11,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Banknote, Coins, Check, MapPin, BookOpen } from "lucide-react";
+import { Banknote, Coins, Check, MapPin, BookOpen } from '@/app/components/ui/Icons';
 import { PurchaseRequestForm, TransactionType } from "@/app/types/transaction";
 import { Input, Textarea, Button } from "@/app/components/ui";
 import { MESSAGES } from "@/app/constants";

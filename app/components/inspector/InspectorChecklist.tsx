@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft } from '@/app/components/ui/Icons';
 
 export default function InspectorChecklist() {
   const router = useRouter();

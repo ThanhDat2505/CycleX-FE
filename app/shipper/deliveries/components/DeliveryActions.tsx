@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { MESSAGES } from '@/app/constants/messages';
 import { Delivery } from '@/app/types/shipper';
 import { Button } from '@/app/components/ui';
-import { Truck, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Truck, AlertTriangle, CheckCircle } from '@/app/components/ui/Icons';
 
 interface DeliveryActionsProps {
     delivery: Delivery;

@@ -2,7 +2,7 @@
 
 import { MESSAGES } from '@/app/constants/messages';
 import { Delivery } from '@/app/types/shipper';
-import { ShoppingBag } from 'lucide-react';
+import { ShoppingBag } from '@/app/components/ui/Icons';
 
 interface OrderInfoSectionProps {
     delivery: Delivery;

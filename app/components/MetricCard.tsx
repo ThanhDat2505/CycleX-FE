@@ -5,7 +5,7 @@ import React from "react";
 interface MetricCardProps {
   label: string;
   value: string | number;
-  icon: string;
+  icon: React.ReactNode;
   change?: string;
   href?: string;
   isPositive?: boolean;
@@ -27,7 +27,7 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         <span className="text-xs font-semibold uppercase text-gray-600">
           {label}
         </span>
-        <span className="text-2xl">{icon}</span>
+        <span className="text-2xl flex items-center justify-center">{icon}</span>
       </div>
       <div className="text-3xl font-bold text-gray-900 mb-2">{value}</div>
       <div

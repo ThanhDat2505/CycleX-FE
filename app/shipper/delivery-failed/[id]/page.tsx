@@ -7,7 +7,7 @@ import { useToast } from '@/app/contexts/ToastContext';
 import { Delivery } from '@/app/types/shipper';
 import { getDeliveryDetail, reportDeliveryFailed } from '@/app/services/shipperService';
 import { MESSAGES } from '@/app/constants/messages';
-import { ArrowLeft, AlertTriangle, AlertCircle } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, AlertCircle } from '@/app/components/ui/Icons';
 import Link from 'next/link';
 import { Button } from '@/app/components/ui';
 import { getStatusColor, getStatusLabel } from '@/app/utils/deliveryUtils';

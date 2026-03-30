@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPin, Star, Pencil, Trash2, Phone, User } from "lucide-react";
+import { MapPin, Star, Pencil, Trash2, Phone, User } from '@/app/components/ui/Icons';
 import { UserAddress } from "@/app/types/address";
 
 interface AddressCardProps {

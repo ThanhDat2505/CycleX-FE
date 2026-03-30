@@ -10,7 +10,7 @@ import { useToast } from "@/app/contexts/ToastContext";
 import { LoadingSpinner, PageLoading } from "@/app/components/ui";
 import { ProfileInfoForm } from "./components/ProfileInfoForm";
 import { ChangePasswordForm } from "./components/ChangePasswordForm";
-import { User, Lock, ChevronRight, MapPin } from "lucide-react";
+import { User, Lock, ChevronRight, MapPin } from '@/app/components/ui/Icons';
 import AddressManagement from "@/app/components/address/AddressManagement";
 import Link from "next/link";
 

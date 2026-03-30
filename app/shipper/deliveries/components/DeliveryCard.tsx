@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Delivery } from "@/app/types/shipper";
 import { getStatusColor, getStatusLabel } from "@/app/utils/deliveryUtils";
-import { ArrowRight, Clock } from "lucide-react";
+import { ArrowRight, Clock } from '@/app/components/ui/Icons';
 
 interface DeliveryCardProps {
   delivery: Delivery;

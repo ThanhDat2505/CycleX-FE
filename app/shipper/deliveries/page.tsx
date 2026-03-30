@@ -13,7 +13,7 @@ import { parseDeliveryFilter } from '@/app/utils/deliveryUtils';
 import { DeliveryListSkeleton } from './components/DeliverySkeleton';
 import { DeliveryFilterBar } from './components/DeliveryFilterBar';
 import { DeliveryCard } from './components/DeliveryCard';
-import { Package, ArrowRight, RefreshCw } from 'lucide-react';
+import { Package, ArrowRight, RefreshCw } from '@/app/components/ui/Icons';
 
 export default function DeliveryListPage() {
     return (

@@ -2,7 +2,7 @@
 
 import { MESSAGES } from '@/app/constants/messages';
 import { Button } from '@/app/components/ui';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle } from '@/app/components/ui/Icons';
 
 interface DeliveryHistoryProps {
     deliveredCount: number;

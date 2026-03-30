@@ -11,7 +11,7 @@ import {
   ShieldAlert,
   History,
   MessageSquare,
-  Image as ImageIcon,
+  ImageIcon,
   ExternalLink,
   Zap,
   Clock,
@@ -19,7 +19,7 @@ import {
   Send,
   Upload,
   X,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 import {
   getDisputeById,
   overrideDispute,

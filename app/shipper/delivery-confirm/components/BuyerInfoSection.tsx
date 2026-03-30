@@ -2,7 +2,7 @@
 
 import { MESSAGES } from '@/app/constants/messages';
 import { Delivery } from '@/app/types/shipper';
-import { User, Phone, MapPin } from 'lucide-react';
+import { User, Phone, MapPin } from '@/app/components/ui/Icons';
 
 interface BuyerInfoSectionProps {
     receiver: Delivery['receiver'];

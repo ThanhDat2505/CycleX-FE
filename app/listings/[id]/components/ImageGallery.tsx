@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { ChevronLeft, ChevronRight, Bike } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bike } from '@/app/components/ui/Icons';
 import { MESSAGES } from '../../../constants';
 
 interface ImageGalleryProps {

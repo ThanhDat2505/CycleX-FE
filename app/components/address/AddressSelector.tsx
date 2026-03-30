@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { MapPin, Check, Star } from "lucide-react";
+import { MapPin, Check, Star } from '@/app/components/ui/Icons';
 import { UserAddress } from "@/app/types/address";
 import { addressService } from "@/app/services/addressService";
 

@@ -3,7 +3,7 @@
 import { ReactNode } from 'react';
 import { Modal } from './Modal';
 import { Button } from './Button';
-import { AlertTriangle, Info, HelpCircle } from 'lucide-react';
+import { AlertTriangle, Info, HelpCircle } from '@/app/components/ui/Icons';
 
 interface ConfirmModalProps {
     isOpen: boolean;
