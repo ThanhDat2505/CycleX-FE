@@ -177,7 +177,6 @@ export default function ProfilePage() {
                     profile={profile}
                     isSubmitting={isUpdatingProfile}
                     onSubmit={handleUpdateProfile}
-                    onImageError={(msg) => addToast(msg, "error")}
                   />
                 </div>
               )}

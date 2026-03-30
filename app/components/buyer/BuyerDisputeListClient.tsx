@@ -316,7 +316,13 @@ export default function BuyerDisputeListClient() {
                                 ? "Đang xử lý"
                                 : row.status === "RESOLVED"
                                   ? "Đã giải quyết"
-                                  : row.status}
+                                  : row.status === "NEED_MORE_INFO"
+                                    ? "Cần bổ sung"
+                                    : row.status === "ESCALATED"
+                                      ? "Đã chuyển Admin"
+                                      : row.status === "REJECTED"
+                                        ? "Đã từ chối"
+                                        : row.status}
                           </span>
                         </td>
                         <td className="px-8 py-6">
