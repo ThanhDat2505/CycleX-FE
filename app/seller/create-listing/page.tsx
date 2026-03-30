@@ -88,7 +88,7 @@ const CreateListingPageContent: React.FC = () => {
       {!isReadOnly && (
         <>
           {/* Progress Bar */}
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center justify-between mb-9">
             {STEP_LABELS.map(({ step: s }) => (
               <React.Fragment key={s}>
                 <div
@@ -111,9 +111,9 @@ const CreateListingPageContent: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex gap-4 mb-8 text-center text-sm">
+          <div className="grid grid-cols-4 mb-8 text-center text-sm">
             {STEP_LABELS.map(({ step: s, label }) => (
-              <div className="flex-1" key={s}>
+              <div key={s}>
                 <p className="font-semibold text-gray-900">Bước {s}</p>
                 <p className="text-gray-600">{label}</p>
               </div>
