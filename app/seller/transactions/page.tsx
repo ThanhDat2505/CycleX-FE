@@ -74,12 +74,7 @@ export default function SellerTransactionsPage() {
           );
         }
       } catch {
-<<<<<<< HEAD
-        if (isMounted)
-          addToast("Không thể tải danh sách giao dịch", "error");
-=======
         if (isMounted) addToast("Không thể tải danh sách giao dịch", "error");
->>>>>>> a0bef525a2e27d96b86909515250ed53ce1bc538
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -206,7 +201,7 @@ export default function SellerTransactionsPage() {
             </div>
           </div>
 
-          {/* T?ng doanh thu */}
+          {/* Tổng doanh thu */}
           <div className="bg-gradient-to-br from-orange-500 to-amber-500 rounded-2xl shadow-sm shadow-orange-200 p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
               <svg

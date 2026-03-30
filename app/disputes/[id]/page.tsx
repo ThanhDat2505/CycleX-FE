@@ -262,7 +262,7 @@ export default function DisputeResultPage() {
           : "brand-primary";
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900 p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
+    <div className="min-h-screen bg-white text-gray-900 p-4 lg:p-10 selection:bg-brand-primary/30 font-sans">
       <div className="max-w-4xl mx-auto">
         {/* Header Phase */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 pb-8 border-b border-gray-200">

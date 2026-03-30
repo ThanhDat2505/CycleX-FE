@@ -23,7 +23,6 @@ import React, { useEffect } from 'react';
 import Header from './components/Header';
 import HeroSection from './components/HeroSection';
 import FeaturesSection from './components/FeaturesSection';
-import FeaturedBikesSection from './components/FeaturedBikesSection';
 import CategorySection from './components/CategorySection';
 import Footer from './components/Footer';
 import { useAuth } from './hooks/useAuth';
@@ -83,9 +82,6 @@ export default function Home() {
 
             {/* Features Section */}
             <FeaturesSection />
-
-            {/* Featured Bikes - "Xe Đạp Đang Hot" */}
-            <FeaturedBikesSection />
 
             {/* Category Section */}
             <CategorySection />

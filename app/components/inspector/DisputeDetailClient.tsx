@@ -17,7 +17,6 @@ import {
   CheckCircle,
   XCircle,
   History,
-  MessageSquare,
   Image as ImageIcon,
   ExternalLink,
   Zap,
@@ -177,6 +176,14 @@ export default function DisputeDetailClient({
       currency: "VND",
     }).format(value);
   }, [detail?.listing.priceVnd]);
+
+  const visibleEvidence = useMemo(
+    () =>
+      detail?.evidence.filter(
+        (item: DisputeEvidence) => Boolean(item.url?.trim()),
+      ) ?? [],
+    [detail?.evidence],
+  );
 
   if (loading) {
     return (
@@ -492,11 +499,8 @@ export default function DisputeDetailClient({
                   </h3>
                 </div>
               </div>
-              <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100 relative overflow-hidden group">
-                <div className="absolute top-0 right-0 p-6 text-gray-200 group-hover:text-gray-300 transition-colors">
-                  <MessageSquare size={100} />
-                </div>
-                <p className="text-xl font-medium text-gray-700 leading-relaxed italic relative z-10">
+              <div className="p-8 bg-gray-50 rounded-3xl border border-gray-100">
+                <p className="text-xl font-medium text-gray-700 leading-relaxed italic">
                   &ldquo;{detail.description}&rdquo;
                 </p>
               </div>
@@ -513,7 +517,7 @@ export default function DisputeDetailClient({
                   </h3>
                 </div>
                 <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest">
-                  {detail.evidence.length} đối tượng
+                  {visibleEvidence.length} đối tượng
                 </span>
               </div>
 
@@ -523,13 +527,13 @@ export default function DisputeDetailClient({
                 </p>
               )}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {detail.evidence.length > 0 ? (
-                  detail.evidence.map((item, index) => (
+                {visibleEvidence.length > 0 ? (
+                  visibleEvidence.map((item, index) => (
                     <button
                       key={index}
                       type="button"
                       onClick={() => void handleOpenEvidence(item, index)}
-                      disabled={!item.url || openingEvidenceIndex === index}
+                      disabled={openingEvidenceIndex === index}
                       className="group relative bg-white border border-gray-200 rounded-3xl p-6 text-left hover:border-brand-primary/50 hover:shadow-lg transition-all active:scale-[0.98] overflow-hidden shadow-sm"
                     >
                       <div className="flex items-center justify-between mb-4">
@@ -741,24 +745,26 @@ export default function DisputeDetailClient({
                   </div>
                 </div>
 
-                <div className="pt-8 border-t border-gray-100">
-                  <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3">
-                    Inspector Phụ Trách
-                  </p>
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-orange-500 flex items-center justify-center">
-                      <User size={18} strokeWidth={2.5} />
-                    </div>
-                    <div>
-                      <p className="text-xs font-black text-gray-800">
-                        {detail.assignee.name}
-                      </p>
-                      <p className="text-[10px] font-medium text-gray-500">
-                        {detail.assignee.email}
-                      </p>
+                {viewerRole !== "ADMIN" && (
+                  <div className="pt-8 border-t border-gray-100">
+                    <p className="text-[9px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3">
+                      Inspector Phụ Trách
+                    </p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 text-orange-500 flex items-center justify-center">
+                        <User size={18} strokeWidth={2.5} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-gray-800">
+                          {detail.assignee.name}
+                        </p>
+                        <p className="text-[10px] font-medium text-gray-500">
+                          {detail.assignee.email}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
