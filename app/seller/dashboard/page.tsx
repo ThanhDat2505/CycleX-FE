@@ -110,6 +110,7 @@ const DashboardPage: React.FC = () => {
                 label="Tin đang hiển thị"
                 value={activeListings}
                 icon="📋"
+                change="Đang hoạt động"
                 href="/seller/my-listings?status=active"
               />
               {/* BR-S10-F01: PENDING listings */}

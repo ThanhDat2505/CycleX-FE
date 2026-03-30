@@ -1,0 +1,3 @@
+app/seller/transactions/page.tsx(835,5): error TS1128: Declaration or statement expected.
+app/seller/transactions/page.tsx(836,3): error TS1109: Expression expected.
+app/seller/transactions/page.tsx(837,1): error TS1128: Declaration or statement expected.

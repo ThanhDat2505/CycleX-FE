@@ -401,9 +401,6 @@ export default function ReviewDetailClient({
                       transition: "all 0.2s",
                       userSelect: "none",
                     }}>{text}</span>
-                    {checklist[idx] && (
-                      <span className="material-symbols-outlined" style={{ fontSize: 18, color: "#16a34a", marginLeft: "auto", flexShrink: 0 }}>check_circle</span>
-                    )}
                   </label>
                 ))}
               </div>
