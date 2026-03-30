@@ -286,7 +286,16 @@ export default function Step1InputForm({
             </button>
             <button
               type="button"
-              onClick={() => setAddressMode("manual")}
+              onClick={() => {
+                setAddressMode("manual");
+                setSelectedAddress(null);
+                onFormDataChange({
+                  ...formData,
+                  receiverName: "",
+                  receiverPhone: "",
+                  receiverAddress: "",
+                });
+              }}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 addressMode === "manual"
                   ? "bg-orange-50 text-orange-700 border border-orange-200"

@@ -232,6 +232,8 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
           onChange={onAddressChange}
           errors={{
             province: errors.location,
+            district: errors.addressDistrict,
+            ward: errors.addressWard,
             streetAddress: errors.pickupAddress,
           }}
         />
