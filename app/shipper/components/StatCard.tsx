@@ -7,7 +7,7 @@ import {
     Truck,
     AlertCircle,
     ArrowRight
-} from 'lucide-react';
+} from '@/app/components/ui/Icons';
 
 interface StatCardProps {
     id: string;

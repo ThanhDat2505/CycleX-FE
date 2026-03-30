@@ -16,7 +16,7 @@ import {
   Database,
   Clock,
   Fingerprint,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 import { auditLogService } from "../../services/auditLogService";
 import { AuditLog, AuditLogQuery, AuditLogAction } from "../../types/auditLog";
 import { useToast } from "../../contexts/ToastContext";

@@ -2,7 +2,7 @@
 
 import { MESSAGES } from '@/app/constants/messages';
 import { Button } from '@/app/components/ui';
-import { Truck, ArrowRight } from 'lucide-react';
+import { Truck, ArrowRight } from '@/app/components/ui/Icons';
 
 interface QuickActionsProps {
     onViewAll: () => void;

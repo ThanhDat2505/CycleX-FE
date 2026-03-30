@@ -4,7 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { MESSAGES } from "@/app/constants/messages";
 import { UserProfileResponse, UpdateProfileRequest } from "@/app/types/user";
 import { Button, Input } from "@/app/components/ui";
-import { User } from "lucide-react";
+import { User } from '@/app/components/ui/Icons';
 
 const PHONE_REGEX = /^0\d{9}$/;
 

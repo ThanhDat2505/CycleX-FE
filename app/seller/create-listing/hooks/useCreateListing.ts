@@ -449,7 +449,7 @@ export const useCreateListing = () => {
       setIsReadOnly(false);
       setStep(CREATE_LISTING_STEPS.VEHICLE_INFO);
       addToast(
-        "Cancel publish successful. You can edit this listing now.",
+        "Hủy đăng tin thành công. Bạn có thể chỉnh sửa tin đăng này ngay bây giờ.",
         "success",
       );
     } catch (error: any) {

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft } from '@/app/components/ui/Icons';
 import {
   inspectorService,
   type InspectorReviewDetail,

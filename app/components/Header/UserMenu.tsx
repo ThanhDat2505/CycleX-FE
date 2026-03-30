@@ -9,7 +9,7 @@ import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/hooks/useAuth";
 import { notificationService } from "@/app/services/notificationService";
-import { Bell } from "lucide-react";
+import { Bell } from '@/app/components/ui/Icons';
 
 interface UserMenuProps {
   isRestrictedRole: boolean;

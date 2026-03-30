@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2 } from '@/app/components/ui/Icons';
 
 const FEATURES = [
     'Nền tảng mua bán xe đạp uy tín hàng đầu',

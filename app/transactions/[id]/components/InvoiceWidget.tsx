@@ -6,7 +6,7 @@ import {
   TRANSACTION_TYPE,
   TRANSACTION_TYPE_LABELS,
 } from "@/app/constants/transactionStatus";
-import { Clock } from "lucide-react";
+import { Clock } from '@/app/components/ui/Icons';
 
 interface InvoiceWidgetProps {
   transaction: TransactionWithDetails;

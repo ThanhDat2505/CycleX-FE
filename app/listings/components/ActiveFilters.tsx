@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X } from 'lucide-react';
+import { X } from '@/app/components/ui/Icons';
 import { SearchFilters } from '../../types/listing';
 import { MESSAGES, BIKE_TYPES, CONDITION_OPTIONS } from '../../constants';
 

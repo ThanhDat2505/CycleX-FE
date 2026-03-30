@@ -17,7 +17,7 @@ import {
   CheckCircle,
   XCircle,
   History,
-  Image as ImageIcon,
+  ImageIcon,
   ExternalLink,
   Zap,
   ShoppingBag,
@@ -29,7 +29,7 @@ import {
   HelpCircle,
   Send,
   AlertTriangle,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 import { formatDate } from "@/app/utils/format";
 import { TRANSACTION_STATUS_LABELS, type TransactionStatus } from "@/app/constants/transactionStatus";
 

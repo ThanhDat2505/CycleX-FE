@@ -15,10 +15,10 @@ import {
   Store,
   Banknote,
   AlertTriangle,
-  Image as ImageIcon,
+  ImageIcon,
   ArrowLeftRight,
   Lightbulb,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 
 const SUGGESTION_LABELS: Record<string, string> = {
   REFUND_BUYER: "Hoàn tiền toàn bộ",
