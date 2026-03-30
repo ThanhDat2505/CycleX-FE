@@ -83,7 +83,6 @@ export default function ShipperDashboardPage() {
                         <div>
                             <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
                                 <span>{MESSAGES.S60_GREETING} {user?.fullName || MESSAGES.S60_GREETING_DEFAULT}!</span>
-                                <span className="text-2xl">👋</span>
                             </h1>
                             <p className="mt-1 text-gray-500 text-sm">
                                 {new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
