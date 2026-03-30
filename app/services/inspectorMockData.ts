@@ -1,5 +1,4 @@
-// TODO: Bật lại thành true nếu cần dùng mock data để test
-export const INSPECTOR_MOCK_ENABLED = true;
+export const INSPECTOR_MOCK_ENABLED = false;
 
 const MOCK_DELAY_MS = 300;
 

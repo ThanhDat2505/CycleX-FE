@@ -12,16 +12,16 @@ export default function InspectorGuard({
   const router = useRouter();
   const pathname = usePathname();
 
-  // useEffect(() => {
-  //   if (!isLoading) {
-  //     if (!user || user.role !== "INSPECTOR") {
-  //       router.replace("/login?redirect=" + encodeURIComponent(pathname));
-  //     }
-  //   }
-  // }, [user, isLoading, router, pathname]);
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user || user.role !== "INSPECTOR") {
+        router.replace("/login?redirect=" + encodeURIComponent(pathname));
+      }
+    }
+  }, [user, isLoading, router, pathname]);
 
-  // if (isLoading || !user || user.role !== "INSPECTOR") {
-  //   return null;
-  // }
+  if (isLoading || !user || user.role !== "INSPECTOR") {
+    return null;
+  }
   return <>{children}</>;
 }
