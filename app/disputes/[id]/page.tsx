@@ -314,7 +314,9 @@ export default function DisputeResultPage() {
           {/* Status Section */}
           <div className="animate-fade-in">
             <div
-              className={`relative overflow-hidden bg-white border border-gray-200 rounded-[2.5rem] p-10 text-center shadow-xl`}
+              className={`relative overflow-hidden bg-white border border-gray-200 rounded-[2.5rem] p-10 text-center ${
+                isNeedMoreInfo ? "shadow-none" : "shadow-xl"
+              }`}
             >
               {/* Visual Background Glow */}
               <div
@@ -324,7 +326,7 @@ export default function DisputeResultPage() {
                     : isRejected
                       ? "bg-rose-500"
                       : isNeedMoreInfo
-                        ? "bg-amber-500"
+                        ? "hidden"
                         : isEscalated
                           ? "bg-purple-500"
                           : "bg-brand-primary"
@@ -338,7 +340,7 @@ export default function DisputeResultPage() {
                     : isRejected
                       ? "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-glow-red"
                       : isNeedMoreInfo
-                        ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                        ? "bg-white text-amber-600 border-amber-300"
                         : isEscalated
                           ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
                           : "bg-brand-primary/10 text-brand-primary border-brand-primary/20 shadow-glow-orange"
@@ -354,7 +356,7 @@ export default function DisputeResultPage() {
                     : isRejected
                       ? "text-rose-400"
                       : isNeedMoreInfo
-                        ? "text-amber-400"
+                        ? "text-amber-600"
                         : isEscalated
                           ? "text-purple-400"
                           : "text-brand-primary"
@@ -436,15 +438,15 @@ export default function DisputeResultPage() {
 
               {/* Need More Info notice for buyer */}
               {isNeedMoreInfo && (
-                <div className="mt-10 pt-10 border-t border-gray-200 text-left bg-amber-50 -mx-10 px-10 rounded-b-[2.5rem] pb-4">
+                <div className="mt-10 pt-10 border-t border-gray-200 text-left bg-white -mx-10 px-10 rounded-b-[2.5rem] pb-4">
                   <div className="flex items-center gap-3 mb-4">
-                    <Clock size={16} className="text-amber-400" />
-                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-500">
+                    <Clock size={16} className="text-amber-600" />
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600">
                       Yêu cầu bổ sung thông tin
                     </h4>
                   </div>
                   {/* Show latest inspector message if exists */}
-                  <p className="text-sm font-medium text-gray-600 leading-relaxed mb-2">
+                  <p className="text-sm font-medium text-amber-600 leading-relaxed mb-2">
                     Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc bằng
                     chứng cho khiếu nại này. Vui lòng phản hồi bên dưới.
                   </p>
