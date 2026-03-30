@@ -101,6 +101,7 @@ export default function SellerSidebar() {
             </div>
             <button
               onClick={closeSidebar}
+              title="Đóng menu"
               className="p-1 hover:bg-white/10 rounded-full text-gray-400 hover:text-white transition-colors"
             >
               <X size={20} />
