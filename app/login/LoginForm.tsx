@@ -33,9 +33,6 @@ export function LoginForm() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Toggle to disable login validation (email/password) temporarily
-  const DISABLE_LOGIN_VALIDATION = true;
-
   const handleSubmit = useCallback(async () => {
     setError("");
 
@@ -44,16 +41,14 @@ export function LoginForm() {
       return;
     }
 
-    if (!DISABLE_LOGIN_VALIDATION) {
-      if (!validateEmail(email)) {
-        setError("Email không hợp lệ");
-        return;
-      }
+    if (!validateEmail(email)) {
+      setError("Email không hợp lệ");
+      return;
+    }
 
-      if (!validatePasswordLogin(password)) {
-        setError("Mật khẩu phải từ 6 ký tự");
-        return;
-      }
+    if (!validatePasswordLogin(password)) {
+      setError("Mật khẩu phải từ 6 ký tự");
+      return;
     }
 
     setIsLoading(true);
