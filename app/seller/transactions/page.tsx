@@ -18,11 +18,11 @@ import {
 } from "@/app/constants/transactionStatus";
 
 const STATUS_TABS = [
-  { key: "ALL", label: "T?t c?" },
-  { key: TRANSACTION_STATUS.PENDING_DELIVERY, label: "Ch? giao hàng" },
-  { key: TRANSACTION_STATUS.IN_DELIVERY, label: "Ðang giao" },
+  { key: "ALL", label: "Tất cả" },
+  { key: TRANSACTION_STATUS.PENDING_DELIVERY, label: "Chờ giao hàng" },
+  { key: TRANSACTION_STATUS.IN_DELIVERY, label: "Đang giao" },
   { key: TRANSACTION_STATUS.COMPLETED, label: "Hoàn thành" },
-  { key: TRANSACTION_STATUS.CANCELLED, label: "Ðã h?y" },
+  { key: TRANSACTION_STATUS.CANCELLED, label: "Đã hủy" },
 ];
 
 export default function SellerTransactionsPage() {
@@ -75,7 +75,7 @@ export default function SellerTransactionsPage() {
         }
       } catch {
         if (isMounted)
-          addToast("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch giao dá»‹ch", "error");
+          addToast("Không thể tải danh sách giao dịch", "error");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -153,7 +153,7 @@ export default function SellerTransactionsPage() {
             <p className="text-sm text-gray-400 mt-1.5">
               Tổng cộng{" "}
               <span className="font-bold text-gray-600">{transactions.length}</span>{" "}
-              giao dịch
+              Giao Dịch
             </p>
           </div>
 
@@ -182,7 +182,7 @@ export default function SellerTransactionsPage() {
                         </span>
                       </>
                     )}{" "}
-                    giao d?ch
+                    Giao Dịch
                   </p>
                 </div>
               </div>
