@@ -182,58 +182,26 @@ export default function Step1InputForm({
             </div>
           </div>
 
-          {/* Option 2: Deposit */}
-          <div
-            onClick={() => handleTypeChange("DEPOSIT")}
-            className={STYLES.paymentOption(
-              formData.transactionType === "DEPOSIT",
-            )}
-          >
-            {formData.transactionType === "DEPOSIT" && (
-              <div className={STYLES.checkIcon}>
-                <Check size={20} />
-              </div>
-            )}
+          {/* Option 2: Deposit (Disabled) */}
+          <div className={STYLES.disabledOption}>
             <div className="flex items-start gap-3">
-              <div
-                className={STYLES.paymentIcon(
-                  formData.transactionType === "DEPOSIT",
-                )}
-              >
-                <Coins size={24} />
-              </div>
+              <div className={STYLES.disabledCircle}></div>
               <div>
-                <h3
-                  className={STYLES.paymentTitle(
-                    formData.transactionType === "DEPOSIT",
-                  )}
-                >
-                  {MESSAGES.S50_PAYMENT_DEPOSIT_TITLE}
-                </h3>
-                <p className={STYLES.paymentDesc}>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-gray-500">
+                    {MESSAGES.S50_PAYMENT_DEPOSIT_TITLE}
+                  </span>
+                  <span className={STYLES.comingSoonBadge}>
+                    {MESSAGES.S50_PAYMENT_ONLINE_SOON}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-400 mt-1">
                   {MESSAGES.S50_PAYMENT_DEPOSIT_DESC}
                 </p>
               </div>
             </div>
-            ` `
           </div>
         </div>
-
-        {/* Option 2: Deposit
-                <div className={STYLES.disabledOption}>
-                    <div className="flex items-start gap-3">
-                        <div className={STYLES.disabledCircle}></div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <span className="font-medium text-gray-500">{MESSAGES.S50_PAYMENT_DEPOSIT_TITLE}</span>
-                                <span className={STYLES.comingSoonBadge}>{MESSAGES.S50_PAYMENT_ONLINE_SOON}</span>
-                            </div>
-                            <p className="text-sm text-gray-400 mt-1">
-                                {MESSAGES.S50_PAYMENT_DEPOSIT_DESC}
-                            </p>
-                        </div>
-                    </div>
-                </div> */}
 
         {/* Option 3: Online Payment (Disabled) */}
         <div className={STYLES.disabledOption}>
