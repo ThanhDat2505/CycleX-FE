@@ -120,7 +120,7 @@ export default function ReviewDetailClient({
 
   // Lý do nào cần nhập chi tiết
   const reasonNeedsDetails = (reason: string) => {
-    return ["mismatch_desc", "missing_info", "other"].includes(reason);
+    return ["other"].includes(reason);
   };
 
   // Có thể xác nhận reject không
@@ -675,7 +675,7 @@ export default function ReviewDetailClient({
                     {reasonNeedsDetails(rejectReason) && (
                       <div className="mt-3">
                         <textarea
-                          className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none"
+                          className="w-full border border-gray-300 rounded-lg shadow-sm focus:border-red-500 focus:ring-red-500 text-sm p-3 outline-none resize-none"
                           rows={3}
                           placeholder="Vui lòng nhập lý do cụ thể..."
                           value={rejectReasonOther}
@@ -702,7 +702,7 @@ export default function ReviewDetailClient({
                       <button
                         className="btn btn-danger btn-reject-solid px-5 py-2 text-sm font-bold"
                         type="button"
-                        disabled={!canConfirmReject || submitting}
+                        disabled={submitting}
                         onClick={async () => {
                           if (!rejectReason) {
                             setRejectErrorMessage(
