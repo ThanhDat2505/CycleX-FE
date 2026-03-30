@@ -254,6 +254,9 @@ export const useCreateListing = () => {
       newErrors.price = "Giá bán phải lớn hơn 0";
     }
     if (!formData.location.trim()) newErrors.location = "Vui lòng chọn tỉnh/thành phố";
+    if (!formData.addressDistrict.trim()) newErrors.addressDistrict = "Vui lòng chọn quận/huyện";
+    if (!formData.addressWard.trim()) newErrors.addressWard = "Vui lòng chọn phường/xã";
+    if (!formData.addressStreet.trim()) newErrors.pickupAddress = "Vui lòng nhập số nhà, tên đường";
     if (!formData.description.trim())
       newErrors.description = "Vui lòng nhập mô tả chi tiết";
 
@@ -325,6 +328,8 @@ export const useCreateListing = () => {
       setErrors((prev) => {
         const newErrors = { ...prev };
         if (data.province) delete newErrors.location;
+        if (data.district) delete newErrors.addressDistrict;
+        if (data.ward) delete newErrors.addressWard;
         if (data.fullAddress) delete newErrors.pickupAddress;
         return newErrors;
       });
