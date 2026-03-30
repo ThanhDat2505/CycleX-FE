@@ -53,6 +53,50 @@ export const formatCompactNumber = (num: number): string => {
     return num.toString();
 };
 
+/** Map condition enum → tiếng Việt */
+const CONDITION_VI: Record<string, string> = {
+    'New': 'Mới',
+    'Like New': 'Như mới',
+    'Excellent': 'Rất tốt',
+    'Good': 'Tốt',
+    'Fair': 'Khá',
+    'Used': 'Đã sử dụng',
+};
+
+export const formatCondition = (value?: string | null): string => {
+    if (!value) return '---';
+    return CONDITION_VI[value] ?? value;
+};
+
+/** Map bikeType enum → tiếng Việt */
+const BIKE_TYPE_VI: Record<string, string> = {
+    'Mountain': 'Xe Đạp Địa Hình',
+    'Road': 'Xe Đạp Đường Trường',
+    'Sport': 'Xe Đạp Thể Thao',
+    'Touring': 'Xe Đạp Touring',
+    'Racing': 'Xe Đạp Đua',
+    'Folding': 'Xe Đạp Gấp',
+    'Electric': 'Xe Đạp Điện',
+    'Kids': 'Xe Đạp Trẻ Em',
+};
+
+export const formatBikeType = (value?: string | null): string => {
+    if (!value) return '';
+    return BIKE_TYPE_VI[value] ?? value;
+};
+
+/** Map inspectionStatus enum → tiếng Việt */
+const INSPECTION_STATUS_VI: Record<string, string> = {
+    'PASSED': 'Đạt',
+    'FAILED': 'Không đạt',
+    'PENDING': 'Đang chờ',
+};
+
+export const formatInspectionStatus = (value?: string | null): string => {
+    if (!value) return '';
+    return INSPECTION_STATUS_VI[value] ?? value;
+};
+
 /**
  * Normalize phone number to Vietnamese format (0xxxxxxxxx)
  * Handles +84, 84 prefixes

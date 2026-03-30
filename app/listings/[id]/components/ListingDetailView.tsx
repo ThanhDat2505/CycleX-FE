@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { ListingDetail } from "../../../types/listing";
 import { MESSAGES } from "../../../constants";
-import { formatPrice, formatNumber } from "../../../utils/format";
+import { formatPrice, formatNumber, formatCondition, formatBikeType, formatInspectionStatus } from "../../../utils/format";
 import ImageGallery from "./ImageGallery";
 
 interface ListingDetailViewProps {
@@ -174,12 +174,12 @@ export default function ListingDetailView({
                       : STYLES.badgeUsed
                   }
                 >
-                  {listing.condition}
+                  {formatCondition(listing.condition)}
                 </span>
               )}
 
               {listing.bikeType && (
-                <span className={STYLES.badgeType}>{listing.bikeType}</span>
+                <span className={STYLES.badgeType}>{formatBikeType(listing.bikeType)}</span>
               )}
 
               <div className={STYLES.metaItem}>
@@ -235,7 +235,7 @@ export default function ListingDetailView({
                   {MESSAGES.DETAIL_SPEC_CONDITION}
                 </span>
                 <span className={STYLES.specValue}>
-                  {listing.condition || "---"}
+                  {formatCondition(listing.condition)}
                 </span>
               </div>
             </div>
@@ -321,7 +321,7 @@ export default function ListingDetailView({
             {listing.inspectionStatus && (
               <div className={inspectionStyles.badge}>
                 {inspectionStyles.icon}
-                <span>CycleX Đã Kiểm Định: {listing.inspectionStatus}</span>
+                <span>CycleX Đã Kiểm Định: {formatInspectionStatus(listing.inspectionStatus)}</span>
               </div>
             )}
 
