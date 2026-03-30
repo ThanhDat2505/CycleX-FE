@@ -1,5 +1,6 @@
 import React from "react";
 import { ListingFormData } from "../types";
+import { formatBikeType, formatCondition } from "@/app/utils/format";
 
 interface Step3PreviewProps {
   formData: ListingFormData;
@@ -30,12 +31,14 @@ const Step3Preview: React.FC<Step3PreviewProps> = ({ formData, imageUrls }) => {
           </div>
           <div>
             <p className="text-sm text-gray-500">Loại xe</p>
-            <p className="font-semibold text-gray-900">{formData.category}</p>
+            <p className="font-semibold text-gray-900">
+              {formatBikeType(formData.category)}
+            </p>
           </div>
           <div>
             <p className="text-sm text-gray-500">Tình trạng</p>
-            <p className="font-semibold text-gray-900 capitalize">
-              {formData.condition}
+            <p className="font-semibold text-gray-900">
+              {formatCondition(formData.condition)}
             </p>
           </div>
           <div>

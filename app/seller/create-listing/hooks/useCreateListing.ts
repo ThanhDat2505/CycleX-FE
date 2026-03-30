@@ -192,7 +192,7 @@ export const useCreateListing = () => {
           usageTime: draft.usageTime || "",
           reasonForSale: draft.reasonForSale || "",
           shipping: false,
-          addressProvince: "",
+          addressProvince: draft.locationCity || "",
           addressDistrict: "",
           addressWard: "",
           addressStreet: "",
@@ -245,6 +245,9 @@ export const useCreateListing = () => {
   // Validation
   const validateStep1 = useCallback(() => {
     const newErrors: Record<string, string> = {};
+    const normalizedLocation = formData.location.trim();
+    const normalizedProvince = formData.addressProvince.trim();
+
     if (!formData.title.trim()) newErrors.title = "Vui lòng nhập tiêu đề tin đăng";
     if (!formData.brand.trim()) newErrors.brand = "Vui lòng nhập thương hiệu xe";
     if (!formData.model.trim()) newErrors.model = "Vui lòng nhập dòng xe";
@@ -254,7 +257,9 @@ export const useCreateListing = () => {
     } else if (Number(formData.price) <= 0) {
       newErrors.price = "Giá bán phải lớn hơn 0";
     }
-    if (!formData.location.trim()) newErrors.location = "Vui lòng chọn tỉnh/thành phố";
+    if (!normalizedProvince || normalizedLocation !== normalizedProvince) {
+      newErrors.location = "Vui lòng chọn tỉnh/thành phố";
+    }
     if (!formData.addressDistrict.trim()) newErrors.addressDistrict = "Vui lòng chọn quận/huyện";
     if (!formData.addressWard.trim()) newErrors.addressWard = "Vui lòng chọn phường/xã";
     if (!formData.addressStreet.trim()) newErrors.pickupAddress = "Vui lòng nhập số nhà, tên đường";
