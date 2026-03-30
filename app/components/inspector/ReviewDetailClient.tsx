@@ -197,13 +197,21 @@ export default function ReviewDetailClient({
 
           <div className="meta">
             <span className="metaItem min-w-0" style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "5px 12px" }}>
-              <span className="material-symbols-outlined text-[16px] text-gray-400">calendar_today</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
               <span className="metaLabel">Gửi ngày:</span>
               <span className="font-bold wrap-break-word">{listing.submittedAt}</span>
             </span>
 
             <span className="metaItem min-w-0" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "5px 12px" }}>
-              <span className="material-symbols-outlined text-[16px]" style={{ color: "#f97316" }}>schedule</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#f97316" }}>
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
               <span className="metaLabel" style={{ color: "#ea580c" }}>Chờ duyệt:</span>
               <span className="font-bold wrap-break-word" style={{ color: "#c2410c" }}>{listing.waitingDays} ngày</span>
             </span>
@@ -766,21 +774,23 @@ export default function ReviewDetailClient({
             </div>
           ) : (
             <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-xl text-center shadow-inner flex flex-col justify-center items-center gap-2">
-              <span
-                className={`material-symbols-outlined text-3xl ${
-                  listing.status === "APPROVED" || listing.status === "PASSED"
-                    ? "text-green-500"
-                    : listing.status === "REJECTED"
-                      ? "text-red-500"
-                      : "text-gray-400"
-                }`}
-              >
-                {listing.status === "APPROVED" || listing.status === "PASSED"
-                  ? "check_circle"
-                  : listing.status === "REJECTED"
-                    ? "cancel"
-                    : "task_alt"}
-              </span>
+              {listing.status === "APPROVED" || listing.status === "PASSED" ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                  <polyline points="22 4 12 14.01 9 11.01" />
+                </svg>
+              ) : listing.status === "REJECTED" ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="15" y1="9" x2="9" y2="15" />
+                  <line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                  <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+              )}
               <span className="block text-sm text-gray-600 font-medium tracking-wide">
                 {listing.status === "APPROVED" || listing.status === "PASSED"
                   ? "Tin đăng đã được duyệt"
