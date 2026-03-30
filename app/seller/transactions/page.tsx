@@ -74,8 +74,7 @@ export default function SellerTransactionsPage() {
           );
         }
       } catch {
-        if (isMounted)
-          addToast("Không thể tải danh sách giao dịch", "error");
+        if (isMounted) addToast("Không thể tải danh sách giao dịch", "error");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -109,7 +108,7 @@ export default function SellerTransactionsPage() {
   const getStatusLabel = useCallback((status: string): string => {
     return (
       TRANSACTION_STATUS_LABELS[
-      status as keyof typeof TRANSACTION_STATUS_LABELS
+        status as keyof typeof TRANSACTION_STATUS_LABELS
       ] || status
     );
   }, []);
@@ -243,18 +242,20 @@ export default function SellerTransactionsPage() {
                   <button
                     key={tab.key}
                     onClick={() => setFilterStatus(tab.key)}
-                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-150 ${isActive
-                      ? "bg-orange-50 text-orange-600 border border-orange-200"
-                      : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
-                      }`}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-150 ${
+                      isActive
+                        ? "bg-orange-50 text-orange-600 border border-orange-200"
+                        : "text-gray-500 hover:text-gray-800 hover:bg-gray-50"
+                    }`}
                   >
                     {tab.label}
                     {count > 0 && (
                       <span
-                        className={`text-xs font-bold rounded-full px-1.5 py-0.5 min-w-5 text-center ${isActive
-                          ? "bg-orange-500 text-white"
-                          : "bg-gray-100 text-gray-500"
-                          }`}
+                        className={`text-xs font-bold rounded-full px-1.5 py-0.5 min-w-5 text-center ${
+                          isActive
+                            ? "bg-orange-500 text-white"
+                            : "bg-gray-100 text-gray-500"
+                        }`}
                       >
                         {count}
                       </span>
@@ -522,10 +523,11 @@ export default function SellerTransactionsPage() {
                         {/* Loại */}
                         <td className="px-6 py-4">
                           <span
-                            className={`text-xs font-bold px-2.5 py-1 rounded-lg ${t.transactionType === TRANSACTION_TYPE.PURCHASE
-                              ? "bg-blue-50 text-blue-600"
-                              : "bg-orange-50 text-orange-600"
-                              }`}
+                            className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
+                              t.transactionType === TRANSACTION_TYPE.PURCHASE
+                                ? "bg-blue-50 text-blue-600"
+                                : "bg-orange-50 text-orange-600"
+                            }`}
                           >
                             {TRANSACTION_TYPE_LABELS[
                               t.transactionType as keyof typeof TRANSACTION_TYPE_LABELS

@@ -1,0 +1,1 @@
+app/seller/dashboard/page.tsx(109,16): error TS2741: Property 'change' is missing in type '{ label: string; value: number; icon: string; href: string; }' but required in type 'MetricCardProps'.

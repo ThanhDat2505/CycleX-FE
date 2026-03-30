@@ -1,4 +1,3 @@
-// TODO: Bật lại thành true nếu cần dùng mock data để test
 export const INSPECTOR_MOCK_ENABLED = false;
 
 const MOCK_DELAY_MS = 300;
@@ -11,7 +10,7 @@ export type MockListing = {
   submittedAt: string;
   status: string;
   priceVnd: number;
-  specs: { brand: string; type: string; frame: string; weight: string };
+  specs: { brand: string; type: string; frame: string; weight: string; model?: string; year?: string; reason?: string; condition?: string };
   waitingDays: number;
   images: { main: string; thumbs: string[] };
   history: Array<{ at: string; tag: string; desc: string; type?: string }>;
@@ -35,9 +34,13 @@ export const mockInspectorListings: MockListing[] = [
     priceVnd: 15000000,
     specs: {
       brand: "Trek",
+      model: "Marlin 7",
+      year: "2023",
       type: "Mountain",
       frame: "Aluminum",
       weight: "14kg",
+      condition: "NEW",
+      reason: "Không sử dụng đến",
     },
     waitingDays: 2,
     images: {
@@ -60,7 +63,7 @@ export const mockInspectorListings: MockListing[] = [
     submittedAt: new Date(Date.now() - 5 * 86400000).toISOString(),
     status: "REVIEWING",
     priceVnd: 8000000,
-    specs: { brand: "Giant", type: "City", frame: "Aluminum", weight: "12kg" },
+    specs: { brand: "Giant", model: "Escape 3", year: "2022", type: "City", frame: "Aluminum", weight: "12kg", condition: "LIKE_NEW", reason: "Đổi xe mới" },
     waitingDays: 5,
     images: {
       main: "https://images.unsplash.com/photo-1532298229144-0ec0c57515c7",
@@ -87,7 +90,7 @@ export const mockInspectorListings: MockListing[] = [
     submittedAt: new Date(Date.now() - 1 * 86400000).toISOString(),
     status: "APPROVED",
     priceVnd: 5000000,
-    specs: { brand: "Asama", type: "Touring", frame: "Steel", weight: "16kg" },
+    specs: { brand: "Asama", model: "TRK-22", year: "2021", type: "Touring", frame: "Steel", weight: "16kg", condition: "GOOD", reason: "Chuyển nhà" },
     waitingDays: 1,
     images: {
       main: "https://images.unsplash.com/photo-1507035895480-2b3156c31bf8",
@@ -111,9 +114,13 @@ export const mockInspectorListings: MockListing[] = [
     priceVnd: 4500000,
     specs: {
       brand: "Trinx",
+      model: "TX16",
+      year: "2020",
       type: "Mountain",
       frame: "Aluminum",
       weight: "15kg",
+      condition: "FAIR",
+      reason: "Cần tiền mặt",
     },
     waitingDays: 3,
     images: {
@@ -138,9 +145,13 @@ export const mockInspectorListings: MockListing[] = [
     priceVnd: 22000000,
     specs: {
       brand: "VinFast",
+      model: "Impes",
+      year: "2022",
       type: "E-bike",
       frame: "Aluminum",
       weight: "24kg",
+      condition: "GOOD",
+      reason: "Đổi xe máy",
     },
     waitingDays: 4,
     images: {

@@ -26,10 +26,13 @@ export type InspectorReviewDetail = {
   sellerName: string;
   specs: {
     brand: string;
+    model?: string;
     type: string;
     frame: string;
     weight: string;
     condition: string;
+    year?: string;
+    reason?: string;
   };
   waitingDays: number;
   images: {
@@ -463,10 +466,13 @@ function mapToReviewDetail(raw: RawObject, extraImages?: string[]): InspectorRev
     sellerName: getSellerName(raw),
     specs: {
       brand: raw.specs?.brand ?? raw.brand ?? "—",
+      model: raw.specs?.model ?? raw.model ?? raw.bikeModel ?? "—",
       type: raw.specs?.type ?? raw.bikeType ?? raw.type ?? "—",
       frame: raw.specs?.frame ?? raw.frame ?? "—",
       weight: raw.specs?.weight ?? raw.weight ?? "—",
       condition: raw.specs?.condition ?? raw.condition ?? "—",
+      year: raw.specs?.year ?? raw.year ?? raw.manufactureYear ?? "—",
+      reason: raw.specs?.reason ?? raw.reason ?? raw.reasonToSell ?? raw.reasonForSale ?? "—",
     },
     waitingDays:
       Number(raw.waitingDays ?? raw.pendingDays ?? raw.daysWaiting ?? 0) || 0,

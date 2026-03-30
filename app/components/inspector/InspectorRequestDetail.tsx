@@ -85,7 +85,19 @@ export default function InspectorRequestDetail() {
 
   const price = formatVnd(listing?.priceVnd);
   const brand = listing?.specs?.brand ?? "—";
-  const type = listing?.specs?.type ?? "—";
+  const typeRaw = listing?.specs?.type ?? "—";
+  const type = (() => {
+    const t = String(typeRaw).toLowerCase();
+    if (t.includes("mountain")) return "Xe Đạp Địa Hình";
+    if (t.includes("road")) return "Xe Đạp Đường Trường";
+    if (t.includes("sport") || t.includes("city")) return "Xe Đạp Thể Thao";
+    if (t.includes("touring")) return "Xe Đạp Touring";
+    if (t.includes("racing")) return "Xe Đạp Đua";
+    if (t.includes("folding") || t.includes("fold")) return "Xe Đạp Gấp";
+    if (t.includes("electric") || t.includes("e-bike")) return "Xe Đạp Điện";
+    if (t.includes("kids") || t.includes("child")) return "Xe Đạp Trẻ Em";
+    return typeRaw;
+  })();
   const frame = listing?.specs?.frame ?? "—";
   const weight = listing?.specs?.weight ?? "—";
   const chatHref = `/inspector/inspector-chat?req=${encodeURIComponent(reqParam)}&id=${encodeURIComponent(idParam)}`;
@@ -263,7 +275,7 @@ export default function InspectorRequestDetail() {
                   </div>
                   <div className="irdSpecGrid">
                     <div className="specItem">
-                      <div className="specLabel">Hãng</div>
+                      <div className="specLabel">Thương hiệu</div>
                       <div className="specValue">{brand}</div>
                     </div>
                     <div className="specItem">
@@ -276,7 +288,16 @@ export default function InspectorRequestDetail() {
                     </div>
                     <div className="specItem">
                       <div className="specLabel">Tình trạng</div>
-                      <div className="specValue">Đã qua sử dụng</div>
+                      <div className="specValue">{(() => {
+                        const c = String(listing?.specs?.condition || "").toUpperCase().replace('_', ' ');
+                        if (c === "NEW") return "Mới 100%";
+                        if (c === "LIKE NEW") return "Như mới";
+                        if (c === "EXCELLENT") return "Rất tốt";
+                        if (c === "GOOD") return "Tốt";
+                        if (c === "FAIR") return "Khá";
+                        if (c === "USED" || c === "POOR") return "Đã sử dụng";
+                        return listing?.specs?.condition || "Đã qua sử dụng";
+                      })()}</div>
                     </div>
                   </div>
                 </div>
