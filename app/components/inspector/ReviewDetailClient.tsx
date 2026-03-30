@@ -411,8 +411,16 @@ export default function ReviewDetailClient({
             <h3 className="boxTitle">Thông số kỹ thuật</h3>
             <div className="specGrid">
               <div className="specItem">
-                <span className="specLabel">Hãng xe</span>
+                <span className="specLabel">Thương hiệu</span>
                 <span className="specValue">{listing.specs.brand}</span>
+              </div>
+              <div className="specItem">
+                <span className="specLabel">Dòng xe</span>
+                <span className="specValue">{listing.specs.model}</span>
+              </div>
+              <div className="specItem">
+                <span className="specLabel">Năm sản xuất</span>
+                <span className="specValue">{listing.specs.year}</span>
               </div>
               <div className="specItem">
                 <span className="specLabel">Loại xe</span>
@@ -430,14 +438,21 @@ export default function ReviewDetailClient({
                   return listing.specs.type || "—";
                 })()}</span>
               </div>
-
-              <div className="specItem">
-                <span className="specLabel">Màu sắc</span>
-                <span className="specValue">Đen / Đỏ</span>
-              </div>
               <div className="specItem">
                 <span className="specLabel">Tình trạng</span>
-                <span className="specValue">{listing.specs.condition}</span>
+                <span className="specValue">{(() => {
+                  const c = String(listing.specs.condition || "").toUpperCase();
+                  if (c === "NEW") return "Mới";
+                  if (c === "LIKE_NEW") return "Như mới";
+                  if (c === "GOOD") return "Tốt";
+                  if (c === "FAIR") return "Khá";
+                  if (c === "POOR") return "Kém";
+                  return listing.specs.condition || "—";
+                })()}</span>
+              </div>
+              <div className="specItem" style={{ gridColumn: "1 / -1" }}>
+                <span className="specLabel">Lý do bán</span>
+                <span className="specValue">{listing.specs.reason}</span>
               </div>
             </div>
           </section>

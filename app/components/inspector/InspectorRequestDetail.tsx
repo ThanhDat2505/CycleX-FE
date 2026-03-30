@@ -276,7 +276,7 @@ export default function InspectorRequestDetail() {
                   </div>
                   <div className="irdSpecGrid">
                     <div className="specItem">
-                      <div className="specLabel">Hãng</div>
+                      <div className="specLabel">Thương hiệu</div>
                       <div className="specValue">{brand}</div>
                     </div>
                     <div className="specItem">
@@ -289,7 +289,15 @@ export default function InspectorRequestDetail() {
                     </div>
                     <div className="specItem">
                       <div className="specLabel">Tình trạng</div>
-                      <div className="specValue">Đã qua sử dụng</div>
+                      <div className="specValue">{(() => {
+                        const c = String(listing?.specs?.condition || "").toUpperCase();
+                        if (c === "NEW") return "Mới";
+                        if (c === "LIKE_NEW") return "Như mới";
+                        if (c === "GOOD") return "Tốt";
+                        if (c === "FAIR") return "Khá";
+                        if (c === "POOR") return "Kém";
+                        return listing?.specs?.condition || "Đã qua sử dụng";
+                      })()}</div>
                     </div>
                   </div>
                 </div>
