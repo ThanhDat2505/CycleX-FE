@@ -337,7 +337,7 @@ export async function getSellerTransactions(
     status?: string
 ): Promise<TransactionWithDetails[]> {
     try {
-        const dataResponse = await apiCallGET<any>('/seller/transactions/pending?page=0&size=50');
+        const dataResponse = await apiCallGET<any>('/seller/transactions?page=0&size=50');
         const itemsArray = Array.isArray(dataResponse)
             ? dataResponse
             : (Array.isArray(dataResponse?.content) ? dataResponse.content : []);

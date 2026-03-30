@@ -23,6 +23,7 @@ const STATUS_TABS = [
   { key: TRANSACTION_STATUS.PENDING_DELIVERY, label: "Chờ giao hàng" },
   { key: TRANSACTION_STATUS.IN_DELIVERY, label: "Đang giao" },
   { key: TRANSACTION_STATUS.COMPLETED, label: "Hoàn thành" },
+  { key: TRANSACTION_STATUS.DISPUTED, label: "Tranh chấp" },
   { key: TRANSACTION_STATUS.CANCELLED, label: "Đã hủy" },
 ];
 
