@@ -433,26 +433,7 @@ export default function SellerTransactionsPage() {
                       />
                     </svg>
                   </div>
-<<<<<<< HEAD
-                  {stats.pending > 0 && (
-                    <span className="bg-white/25 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
-                      Cần xử lý
-                    </span>
-                    {(filterStatus !== "ALL" || searchTerm) && (
-                      <>
-                        {" "}
-                        /{" "}
-                        <span className="font-bold text-gray-600">
-                          {transactions.length}
-                        </span>
-                      </>
-                    )}{" "}
-                    Giao Dịch
-                  </p>
-                </div>
-=======
                 ))}
->>>>>>> a0bef525a2e27d96b86909515250ed53ce1bc538
               </div>
             </>
           )}
