@@ -111,16 +111,21 @@ export default function BuyerDisputeListClient() {
   const statusStyle = (status: string) => {
     const s = String(status).toUpperCase();
     if (s === "RESOLVED")
-      return "text-emerald-400 bg-emerald-500/10 border-emerald-500/20";
-    if (s === "OPEN") return "text-rose-400 bg-rose-500/10 border-rose-500/20";
+      return "text-emerald-600 bg-emerald-50 border-emerald-200";
+    if (s === "OPEN") return "text-rose-600 bg-rose-50 border-rose-200";
     if (s === "IN_PROGRESS")
-      return "text-amber-400 bg-amber-500/10 border-amber-500/20";
-    return "text-gray-400 bg-white/5 border-white/10";
+      return "text-amber-600 bg-amber-50 border-amber-200";
+    if (s === "NEED_MORE_INFO")
+      return "text-blue-600 bg-blue-50 border-blue-200";
+    if (s === "ESCALATED")
+      return "text-purple-600 bg-purple-50 border-purple-200";
+    if (s === "REJECTED") return "text-gray-600 bg-gray-100 border-gray-300";
+    return "text-gray-600 bg-gray-50 border-gray-200";
   };
 
   if (loading && !refreshing) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 bg-brand-bg min-h-[60vh]">
+      <div className="flex flex-col items-center justify-center py-32 bg-gray-50 min-h-[60vh]">
         <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin"></div>
         <p className="mt-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] animate-pulse">
           Đang tải...
@@ -232,7 +237,7 @@ export default function BuyerDisputeListClient() {
             <div className="overflow-x-auto min-h-[400px]">
               {error ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-red-500">
+                  <div className="w-24 h-24 bg-red-50 rounded-[2rem] flex items-center justify-center mb-6 text-red-500">
                     <Gavel size={48} />
                   </div>
                   <h3 className="text-2xl font-black text-black mb-2 tracking-tight">
@@ -242,7 +247,7 @@ export default function BuyerDisputeListClient() {
                 </div>
               ) : items.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-32 text-center">
-                  <div className="w-24 h-24 bg-white/5 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
+                  <div className="w-24 h-24 bg-gray-100 rounded-[2rem] flex items-center justify-center mb-6 text-gray-700">
                     <Gavel size={48} />
                   </div>
                   <h3 className="text-2xl font-black text-black mb-2 tracking-tight">
@@ -255,7 +260,7 @@ export default function BuyerDisputeListClient() {
               ) : (
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="border-b border-white/5 bg-white/[0.01]">
+                    <tr className="border-b border-gray-200 bg-gray-50/50">
                       <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-[0.2em]">
                         ID
                       </th>
@@ -273,26 +278,26 @@ export default function BuyerDisputeListClient() {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-gray-100">
                     {items.map((row) => (
                       <tr
                         key={row.id}
-                        className="group hover:bg-white/[0.02] transition-colors"
+                        className="group hover:bg-gray-50 transition-colors"
                       >
                         <td className="px-8 py-6">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
+                            <div className="w-10 h-10 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-xs font-black text-brand-primary group-hover:bg-brand-primary group-hover:text-white transition-all transform group-hover:rotate-6">
                               #{row.id}
                             </div>
                           </div>
                         </td>
                         <td className="px-8 py-6">
                           <div>
-                            <p className="text-sm font-black text-white mb-1 group-hover:text-brand-primary transition-colors">
+                            <p className="text-sm font-black text-gray-900 mb-1 group-hover:text-brand-primary transition-colors">
                               {row.listingTitle}
                             </p>
                             <div className="flex items-center gap-2">
-                              <span className="text-[10px] font-black text-gray-600 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                              <span className="text-[10px] font-black text-gray-600 bg-gray-100 px-2 py-0.5 rounded border border-gray-200">
                                 Order-{row.orderId}
                               </span>
                               <span className="text-[10px] font-bold text-gray-500 truncate max-w-[200px]">
@@ -311,12 +316,18 @@ export default function BuyerDisputeListClient() {
                                 ? "Đang xử lý"
                                 : row.status === "RESOLVED"
                                   ? "Đã giải quyết"
-                                  : row.status}
+                                  : row.status === "NEED_MORE_INFO"
+                                    ? "Cần bổ sung"
+                                    : row.status === "ESCALATED"
+                                      ? "Đã chuyển Admin"
+                                      : row.status === "REJECTED"
+                                        ? "Đã từ chối"
+                                        : row.status}
                           </span>
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex flex-col">
-                            <span className="text-[11px] font-black text-white">
+                            <span className="text-[11px] font-black text-gray-900">
                               {row.createdAt.split("T")[0]}
                             </span>
                             <span className="text-[9px] font-bold text-gray-600 uppercase tracking-tighter mt-1">
@@ -327,7 +338,7 @@ export default function BuyerDisputeListClient() {
                         <td className="px-8 py-6 text-right">
                           <Link
                             href={`/disputes/${row.id}`}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-white hover:bg-white/10 hover:border-brand-primary/50 transition-all active:scale-95"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 hover:text-brand-primary hover:bg-orange-50 hover:border-brand-primary/50 transition-all active:scale-95"
                           >
                             <ExternalLink size={14} /> Xem chi tiết
                           </Link>

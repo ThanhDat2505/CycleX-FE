@@ -79,4 +79,5 @@ export interface TransactionWithDetails extends Transaction {
     sellerName?: string;
     sellerPhone?: string;
     sellerAvatar?: string;
+    hasDispute?: boolean;
 }

@@ -163,16 +163,37 @@ export default function ReviewDetailClient({
             maxWidth: "90vw",
           }}
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#facc15" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#facc15"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
           {approveErrorMessage}
           <button
             onClick={() => setApproveErrorMessage("")}
-            style={{ marginLeft: 8, background: "none", border: "none", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: 0 }}
-          >×</button>
+            style={{
+              marginLeft: 8,
+              background: "none",
+              border: "none",
+              color: "rgba(255,255,255,0.6)",
+              cursor: "pointer",
+              fontSize: 18,
+              lineHeight: 1,
+              padding: 0,
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
 
@@ -181,11 +202,42 @@ export default function ReviewDetailClient({
           <div className="mt-7 mb-2">
             <Link
               href="/inspector/pending-list"
-              style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 999, background: "#f1f5f9", border: "1px solid #e2e8f0", color: "#475569", fontWeight: 700, fontSize: 13, transition: "all 0.18s", width: "fit-content" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background="#e2e8f0"; (e.currentTarget as HTMLElement).style.color="#0f172a"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background="#f1f5f9"; (e.currentTarget as HTMLElement).style.color="#475569"; }}
+              style={{
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                padding: "7px 14px",
+                borderRadius: 999,
+                background: "#f1f5f9",
+                border: "1px solid #e2e8f0",
+                color: "#475569",
+                fontWeight: 700,
+                fontSize: 13,
+                transition: "all 0.18s",
+                width: "fit-content",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "#e2e8f0";
+                (e.currentTarget as HTMLElement).style.color = "#0f172a";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "#f1f5f9";
+                (e.currentTarget as HTMLElement).style.color = "#475569";
+              }}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ flexShrink: 0 }}
+              >
                 <path d="M19 12H5" />
                 <path d="M12 19l-7-7 7-7" />
               </svg>
@@ -204,7 +256,9 @@ export default function ReviewDetailClient({
                 <line x1="3" y1="10" x2="21" y2="10"/>
               </svg>
               <span className="metaLabel">Gửi ngày:</span>
-              <span className="font-bold wrap-break-word">{listing.submittedAt}</span>
+              <span className="font-bold wrap-break-word">
+                {listing.submittedAt}
+              </span>
             </span>
 
             <span className="metaItem min-w-0" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "5px 12px" }}>
@@ -342,32 +396,61 @@ export default function ReviewDetailClient({
           </section>
 
           {!isReadOnly && (
-            <section className="box" style={{ border: "1px solid #dbeafe", background: "linear-gradient(180deg,#fff 0%,#f0f7ff 100%)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <h3 className="boxTitle" style={{ marginBottom: 0 }}>Checklist kiểm duyệt</h3>
-                <span style={{
-                  fontSize: 13,
-                  fontWeight: 800,
-                  padding: "4px 12px",
-                  borderRadius: 999,
-                  background: isChecklistComplete ? "#dcfce7" : "#fef9c3",
-                  color: isChecklistComplete ? "#15803d" : "#a16207",
-                  border: `1px solid ${isChecklistComplete ? "#bbf7d0" : "#fde68a"}`,
-                  transition: "all 0.3s",
-                }}>
+            <section
+              className="box"
+              style={{
+                border: "1px solid #dbeafe",
+                background: "linear-gradient(180deg,#fff 0%,#f0f7ff 100%)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 16,
+                }}
+              >
+                <h3 className="boxTitle" style={{ marginBottom: 0 }}>
+                  Checklist kiểm duyệt
+                </h3>
+                <span
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    padding: "4px 12px",
+                    borderRadius: 999,
+                    background: isChecklistComplete ? "#dcfce7" : "#fef9c3",
+                    color: isChecklistComplete ? "#15803d" : "#a16207",
+                    border: `1px solid ${isChecklistComplete ? "#bbf7d0" : "#fde68a"}`,
+                    transition: "all 0.3s",
+                  }}
+                >
                   {checkedCount}/{totalCount} mục
                 </span>
               </div>
 
               {/* Progress bar */}
-              <div style={{ height: 6, background: "#e2e8f0", borderRadius: 999, marginBottom: 18, overflow: "hidden" }}>
-                <div style={{
-                  height: "100%",
-                  width: `${(checkedCount / totalCount) * 100}%`,
-                  background: isChecklistComplete ? "linear-gradient(90deg,#16a34a,#22c55e)" : "linear-gradient(90deg,#f59e0b,#fbbf24)",
+              <div
+                style={{
+                  height: 6,
+                  background: "#e2e8f0",
                   borderRadius: 999,
-                  transition: "width 0.4s ease, background 0.4s ease",
-                }} />
+                  marginBottom: 18,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    width: `${(checkedCount / totalCount) * 100}%`,
+                    background: isChecklistComplete
+                      ? "linear-gradient(90deg,#16a34a,#22c55e)"
+                      : "linear-gradient(90deg,#f59e0b,#fbbf24)",
+                    borderRadius: 999,
+                    transition: "width 0.4s ease, background 0.4s ease",
+                  }}
+                />
               </div>
 
               <div className="flex flex-col gap-2">
@@ -400,7 +483,13 @@ export default function ReviewDetailClient({
                         setChecklist(newChecklist);
                         setApproveErrorMessage("");
                       }}
-                      style={{ width: 18, height: 18, accentColor: "#16a34a", cursor: "pointer", flexShrink: 0 }}
+                      style={{
+                        width: 18,
+                        height: 18,
+                        accentColor: "#16a34a",
+                        cursor: "pointer",
+                        flexShrink: 0,
+                      }}
                     />
                     <span style={{
                       fontSize: 14,
@@ -484,9 +573,9 @@ export default function ReviewDetailClient({
                 style={{ position: "relative" }}
                 onClick={() => {
                   if (!isChecklistComplete) {
-                    const remaining = checklist.filter(v => !v).length;
+                    const remaining = checklist.filter((v) => !v).length;
                     setApproveErrorMessage(
-                      `Vui lòng tick đủ ${totalCount} mục trong checklist để duyệt tin. Còn thiếu ${remaining} mục.`
+                      `Vui lòng tick đủ ${totalCount} mục trong checklist để duyệt tin. Còn thiếu ${remaining} mục.`,
                     );
                     // Auto clear after 4s
                     setTimeout(() => setApproveErrorMessage(""), 4000);
@@ -510,8 +599,7 @@ export default function ReviewDetailClient({
                           color: "#ffffff",
                           opacity: 0.55,
                           pointerEvents: "none",
-                        }
-                    )
+                        }),
                   }}
                   type="button"
                   disabled={!isChecklistComplete || submitting}
@@ -528,7 +616,10 @@ export default function ReviewDetailClient({
                         reasonCode: "MEETS_STANDARDS",
                         reasonText: "Đã qua kiểm duyệt (Checklist hoàn tất)",
                       };
-                      await inspectorService.approveListing(listing.id, payload);
+                      await inspectorService.approveListing(
+                        listing.id,
+                        payload,
+                      );
                       alert("Đã duyệt tin thành công!");
                       router.push("/inspector/dashboard");
                     } catch (err: any) {
@@ -541,8 +632,25 @@ export default function ReviewDetailClient({
                   {submitting ? (
                     "Đang xử lý..."
                   ) : isChecklistComplete ? (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8, justifyContent: "center" }}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 8,
+                        justifyContent: "center",
+                      }}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                       DUYỆT TIN
@@ -554,11 +662,26 @@ export default function ReviewDetailClient({
               </div>
               <button
                 className="btn btn-danger btn-reject-solid w-full py-3.5 text-[14px] font-bold shadow-sm"
-                style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 8,
+                }}
                 type="button"
                 onClick={() => togglePanel("REJECT")}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="17"
+                  height="17"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
                   <line x1="18" y1="6" x2="6" y2="18" />
                   <line x1="6" y1="6" x2="18" y2="18" />
                 </svg>

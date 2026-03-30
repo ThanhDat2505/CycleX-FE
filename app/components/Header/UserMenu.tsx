@@ -58,7 +58,27 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
       };
       fetchNotifsCount();
       const interval = setInterval(fetchNotifsCount, 30000);
-      return () => clearInterval(interval);
+
+      // Listen for immediate updates from notifications page
+      const handleNotificationsRead = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.count === 0) {
+          setUnreadNotifCount(0);
+        } else if (typeof detail?.delta === "number") {
+          setUnreadNotifCount((prev) => Math.max(0, prev - detail.delta));
+        } else {
+          fetchNotifsCount();
+        }
+      };
+      window.addEventListener("notifications-read", handleNotificationsRead);
+
+      return () => {
+        clearInterval(interval);
+        window.removeEventListener(
+          "notifications-read",
+          handleNotificationsRead,
+        );
+      };
     }
   }, [user?.userId]);
 
@@ -162,21 +182,21 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Bảng điều khiển
+                  Bảng điều khiển
                 </Link>
                 <Link
                   href="/seller/my-listings"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Tin đăng của tôi
+                  Tin đăng của tôi
                 </Link>
                 <Link
                   href="/seller/draft-listings"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Tin nháp
+                  Tin nháp
                 </Link>
                 <Link
                   href="/seller/transactions/pending"
@@ -184,7 +204,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   className="flex items-center justify-between w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors group"
                 >
                   <div className="flex items-center gap-2">
-                     Giao dịch chờ xử lý
+                    Giao dịch chờ xử lý
                   </div>
                   {pendingCount > 0 && (
                     <span className="bg-red-100 text-red-600 text-xs font-bold px-2 py-0.5 rounded-full group-hover:bg-red-200 transition-colors">
@@ -203,14 +223,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Đơn mua của tôi
+                  Đơn mua của tôi
                 </Link>
                 <Link
                   href="/buyer/disputes"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Khiếu nại của tôi
+                  Khiếu nại của tôi
                 </Link>
                 <hr className="my-2 border-gray-100" />
               </>
@@ -223,7 +243,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Bảng Điều Khiển Giao Hàng
+                  Bảng Điều Khiển Giao Hàng
                 </Link>
                 <hr className="my-2 border-gray-100" />
               </>
@@ -236,21 +256,21 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Bảng Điều Khiển Kiểm Định
+                  Bảng Điều Khiển Kiểm Định
                 </Link>
                 <Link
                   href="/inspector/disputes"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Hàng Đợi Khiếu Nại
+                  Hàng Đợi Khiếu Nại
                 </Link>
                 <Link
                   href="/inspector/pending-list"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Tin chờ duyệt
+                  Tin chờ duyệt
                 </Link>
               </>
             )}
@@ -262,14 +282,14 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Bảng Điều Khiển Admin
+                  Bảng Điều Khiển Admin
                 </Link>
                 <Link
                   href="/admin/users"
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Quản Lý Người Dùng
+                  Quản Lý Người Dùng
                 </Link>
                 {/* <Link
                   href="/admin/audit-logs"
@@ -283,7 +303,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
                 >
-                   Quản Lý Khiếu Nại
+                  Quản Lý Khiếu Nại
                 </Link>
               </>
             )}
@@ -293,7 +313,7 @@ export const UserMenu: React.FC<UserMenuProps> = ({ userRole, onLogout }) => {
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
             >
-               Thông tin cá nhân
+              Thông tin cá nhân
             </Link>
             <hr className="my-2 border-gray-100" />
 

@@ -217,7 +217,13 @@ export default function BuyerTransactionsPage() {
                         {formatPrice(t.totalAmount)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <StatusBadge status={t.status} showLabel />
+                        {t.hasDispute ? (
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                            Tranh chấp
+                          </span>
+                        ) : (
+                          <StatusBadge status={t.status} showLabel />
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end gap-2">

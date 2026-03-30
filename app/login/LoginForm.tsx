@@ -92,6 +92,8 @@ export function LoginForm() {
         router.push("/shipper");
       } else if (response.user.role === "INSPECTOR") {
         router.push("/inspector/dashboard");
+      } else if (response.user.role === "SELLER") {
+        router.push("/seller/dashboard");
       } else {
         router.push(returnUrl);
       }
