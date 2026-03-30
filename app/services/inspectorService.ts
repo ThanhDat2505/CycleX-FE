@@ -471,8 +471,8 @@ function mapToReviewDetail(raw: RawObject, extraImages?: string[]): InspectorRev
       frame: raw.specs?.frame ?? raw.frame ?? "—",
       weight: raw.specs?.weight ?? raw.weight ?? "—",
       condition: raw.specs?.condition ?? raw.condition ?? "—",
-      year: raw.specs?.year ?? raw.year ?? "—",
-      reason: raw.specs?.reason ?? raw.reason ?? raw.reasonToSell ?? "—",
+      year: raw.specs?.year ?? raw.year ?? raw.manufactureYear ?? "—",
+      reason: raw.specs?.reason ?? raw.reason ?? raw.reasonToSell ?? raw.reasonForSale ?? "—",
     },
     waitingDays:
       Number(raw.waitingDays ?? raw.pendingDays ?? raw.daysWaiting ?? 0) || 0,

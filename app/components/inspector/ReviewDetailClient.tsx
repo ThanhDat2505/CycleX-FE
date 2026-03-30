@@ -426,27 +426,27 @@ export default function ReviewDetailClient({
                 <span className="specLabel">Loại xe</span>
                 <span className="specValue">{(() => {
                   const t = String(listing.specs.type || "").toLowerCase();
-                  if (t.includes("mountain")) return "Xe đạp địa hình";
-                  if (t.includes("city") || t.includes("urban")) return "Xe đạp đường phố";
-                  if (t.includes("touring")) return "Xe đạp touring";
-                  if (t.includes("road")) return "Xe đạp đua (Road)";
-                  if (t.includes("e-bike") || t.includes("electric")) return "Xe đạp điện";
-                  if (t.includes("folding") || t.includes("fold")) return "Xe đạp gấp";
-                  if (t.includes("hybrid")) return "Xe đạp lai (Hybrid)";
-                  if (t.includes("bmx")) return "Xe đạp BMX";
-                  if (t.includes("kids") || t.includes("child")) return "Xe đạp trẻ em";
+                  if (t.includes("mountain")) return "Xe Đạp Địa Hình";
+                  if (t.includes("road")) return "Xe Đạp Đường Trường";
+                  if (t.includes("sport") || t.includes("city")) return "Xe Đạp Thể Thao";
+                  if (t.includes("touring")) return "Xe Đạp Touring";
+                  if (t.includes("racing")) return "Xe Đạp Đua";
+                  if (t.includes("folding") || t.includes("fold")) return "Xe Đạp Gấp";
+                  if (t.includes("electric") || t.includes("e-bike")) return "Xe Đạp Điện";
+                  if (t.includes("kids") || t.includes("child")) return "Xe Đạp Trẻ Em";
                   return listing.specs.type || "—";
                 })()}</span>
               </div>
               <div className="specItem">
                 <span className="specLabel">Tình trạng</span>
                 <span className="specValue">{(() => {
-                  const c = String(listing.specs.condition || "").toUpperCase();
-                  if (c === "NEW") return "Mới";
-                  if (c === "LIKE_NEW") return "Như mới";
+                  const c = String(listing.specs.condition || "").toUpperCase().replace('_', ' ');
+                  if (c === "NEW") return "Mới 100%";
+                  if (c === "LIKE NEW") return "Như mới";
+                  if (c === "EXCELLENT") return "Rất tốt";
                   if (c === "GOOD") return "Tốt";
                   if (c === "FAIR") return "Khá";
-                  if (c === "POOR") return "Kém";
+                  if (c === "USED" || c === "POOR") return "Đã sử dụng";
                   return listing.specs.condition || "—";
                 })()}</span>
               </div>
