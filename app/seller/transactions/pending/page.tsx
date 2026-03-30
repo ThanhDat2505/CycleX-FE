@@ -141,15 +141,12 @@ export default function PendingTransactionsPage() {
                             Mua ngay
                         </button>
                         <div className="w-px bg-gray-200 my-2 mx-1"></div>
-                        <button
-                            onClick={() => setFilterType('DEPOSIT')}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${filterType === 'DEPOSIT'
-                                ? 'bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-100'
-                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                                }`}
-                        >
+                        <div className="relative px-4 py-2 rounded-md text-sm font-medium text-gray-300 cursor-not-allowed flex items-center gap-2">
                             Đặt cọc
-                        </button>
+                            <span className="text-[10px] uppercase font-bold tracking-wider bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">
+                                Sắp ra mắt
+                            </span>
+                        </div>
                     </div>
 
                     {/* Sort Dropdown */}
