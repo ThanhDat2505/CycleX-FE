@@ -85,7 +85,20 @@ export default function InspectorRequestDetail() {
 
   const price = formatVnd(listing?.priceVnd);
   const brand = listing?.specs?.brand ?? "—";
-  const type = listing?.specs?.type ?? "—";
+  const typeRaw = listing?.specs?.type ?? "—";
+  const type = (() => {
+    const t = String(typeRaw).toLowerCase();
+    if (t.includes("mountain")) return "Xe đạp địa hình";
+    if (t.includes("city") || t.includes("urban")) return "Xe đạp đường phố";
+    if (t.includes("touring")) return "Xe đạp touring";
+    if (t.includes("road")) return "Xe đạp đua (Road)";
+    if (t.includes("e-bike") || t.includes("electric")) return "Xe đạp điện";
+    if (t.includes("folding") || t.includes("fold")) return "Xe đạp gấp";
+    if (t.includes("hybrid")) return "Xe đạp lai (Hybrid)";
+    if (t.includes("bmx")) return "Xe đạp BMX";
+    if (t.includes("kids") || t.includes("child")) return "Xe đạp trẻ em";
+    return typeRaw;
+  })();
   const frame = listing?.specs?.frame ?? "—";
   const weight = listing?.specs?.weight ?? "—";
   const chatHref = `/inspector/inspector-chat?req=${encodeURIComponent(reqParam)}&id=${encodeURIComponent(idParam)}`;

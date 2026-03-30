@@ -416,7 +416,19 @@ export default function ReviewDetailClient({
               </div>
               <div className="specItem">
                 <span className="specLabel">Loại xe</span>
-                <span className="specValue">{listing.specs.type}</span>
+                <span className="specValue">{(() => {
+                  const t = String(listing.specs.type || "").toLowerCase();
+                  if (t.includes("mountain")) return "Xe đạp địa hình";
+                  if (t.includes("city") || t.includes("urban")) return "Xe đạp đường phố";
+                  if (t.includes("touring")) return "Xe đạp touring";
+                  if (t.includes("road")) return "Xe đạp đua (Road)";
+                  if (t.includes("e-bike") || t.includes("electric")) return "Xe đạp điện";
+                  if (t.includes("folding") || t.includes("fold")) return "Xe đạp gấp";
+                  if (t.includes("hybrid")) return "Xe đạp lai (Hybrid)";
+                  if (t.includes("bmx")) return "Xe đạp BMX";
+                  if (t.includes("kids") || t.includes("child")) return "Xe đạp trẻ em";
+                  return listing.specs.type || "—";
+                })()}</span>
               </div>
 
               <div className="specItem">
