@@ -16,7 +16,7 @@ import {
   BarChart3,
   Package,
   FileText,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 import TimeRangeFilter from "../../components/admin/TimeRangeFilter";
 import { getAdminDashboardData } from "../../services/adminDashboardService";
 import {

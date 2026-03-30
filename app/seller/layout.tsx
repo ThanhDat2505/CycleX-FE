@@ -12,7 +12,7 @@ import {
   ArrowLeftRight,
   ClipboardList,
   Clock,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 
 const NAV_ITEMS = [
   {

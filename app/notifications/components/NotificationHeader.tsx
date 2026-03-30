@@ -2,7 +2,7 @@
 
 import { MESSAGES } from '@/app/constants/messages';
 import { Button } from '@/app/components/ui';
-import { CheckCheck } from 'lucide-react';
+import { CheckCheck } from '@/app/components/ui/Icons';
 
 interface NotificationHeaderProps {
     unreadCount: number;

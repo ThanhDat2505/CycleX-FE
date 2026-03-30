@@ -1,7 +1,7 @@
 'use client';
 
 import { MESSAGES } from '@/app/constants/messages';
-import { Phone, MapPin } from 'lucide-react';
+import { Phone, MapPin } from '@/app/components/ui/Icons';
 
 interface ContactInfo {
     name: string;

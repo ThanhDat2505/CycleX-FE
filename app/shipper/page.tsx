@@ -8,7 +8,7 @@ import { DeliverySummary } from '@/app/types/shipper';
 import { LoadingSpinner, Button, PageLoading } from '@/app/components/ui';
 import { useToast } from '@/app/contexts/ToastContext';
 import { MESSAGES } from '@/app/constants/messages';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw } from '@/app/components/ui/Icons';
 import { StatCard, buildStatsConfig } from './components/StatCard';
 import { QuickActions } from './components/QuickActions';
 import { DeliveryHistory } from './components/DeliveryHistory';

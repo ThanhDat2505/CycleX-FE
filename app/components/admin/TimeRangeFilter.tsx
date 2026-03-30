@@ -1,6 +1,6 @@
 import React from 'react';
 import { TimeRange } from '../../types/adminDashboard';
-import { Calendar } from 'lucide-react';
+import { Calendar } from '@/app/components/ui/Icons';
 
 interface TimeRangeFilterProps {
     currentRange: TimeRange;

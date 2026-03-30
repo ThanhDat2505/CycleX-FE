@@ -2,7 +2,7 @@
 
 import { MESSAGES } from '@/app/constants/messages';
 import { Delivery } from '@/app/types/shipper';
-import { Clock } from 'lucide-react';
+import { Clock } from '@/app/components/ui/Icons';
 
 interface TimelineCardProps {
     delivery: Delivery;

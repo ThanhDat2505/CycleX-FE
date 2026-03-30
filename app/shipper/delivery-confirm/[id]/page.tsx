@@ -14,7 +14,7 @@ import { DeliveryDetailSkeleton } from '../../deliveries/components/DeliverySkel
 import { BuyerInfoSection } from '../components/BuyerInfoSection';
 import { OrderInfoSection } from '../components/OrderInfoSection';
 import { ConfirmForm } from '../components/ConfirmForm';
-import { ArrowLeft, Package, AlertTriangle, CheckCircle } from 'lucide-react';
+import { ArrowLeft, Package, AlertTriangle, CheckCircle } from '@/app/components/ui/Icons';
 
 // ── Constants ──
 const REQUIRED_DELIVERY_STATUS = 'IN_PROGRESS';

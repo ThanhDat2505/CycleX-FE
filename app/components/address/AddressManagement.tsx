@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Plus, MapPin } from "lucide-react";
+import { Plus, MapPin } from '@/app/components/ui/Icons';
 import { UserAddress, CreateAddressRequest } from "@/app/types/address";
 import { addressService } from "@/app/services/addressService";
 import { ConfirmModal } from "@/app/components/ui";

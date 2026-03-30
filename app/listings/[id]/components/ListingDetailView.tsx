@@ -13,7 +13,7 @@ import {
   FileText,
   CheckCircle2,
   Video,
-} from "lucide-react";
+} from '@/app/components/ui/Icons';
 import { ListingDetail } from "../../../types/listing";
 import { MESSAGES } from "../../../constants";
 import { formatPrice, formatNumber, formatCondition, formatBikeType, formatInspectionStatus } from "../../../utils/format";

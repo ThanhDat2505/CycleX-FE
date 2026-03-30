@@ -3,7 +3,7 @@
 import { NotificationResponse } from '@/app/types/notification';
 import { NotificationItem } from './NotificationItem';
 import { MESSAGES } from '@/app/constants/messages';
-import { BellMinus } from 'lucide-react';
+import { BellMinus } from '@/app/components/ui/Icons';
 
 interface NotificationListProps {
     notifications: NotificationResponse[];

@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { MESSAGES } from '@/app/constants/messages';
-import { CheckCircle, Upload, X } from 'lucide-react';
+import { CheckCircle, Upload, X } from '@/app/components/ui/Icons';
 
 // ── Constants ──
 const PHONE_REGEX = /^0\d{9}$/;

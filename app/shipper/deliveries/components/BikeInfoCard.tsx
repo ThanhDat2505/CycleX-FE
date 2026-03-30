@@ -2,7 +2,7 @@
 
 import { MESSAGES } from "@/app/constants/messages";
 import { Delivery } from "@/app/types/shipper";
-import { Package, AlertTriangle } from "lucide-react";
+import { Package, AlertTriangle } from '@/app/components/ui/Icons';
 
 interface BikeInfoCardProps {
   delivery: Delivery;

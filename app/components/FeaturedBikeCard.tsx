@@ -19,7 +19,7 @@ import { HomeBike } from "../types/listing";
 import { formatPrice } from "../utils/format";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../contexts/ToastContext";
-import { MapPin, ShoppingCart } from "lucide-react";
+import { MapPin, ShoppingCart } from '@/app/components/ui/Icons';
 
 const FALLBACK_IMAGE = "/images/bike-placeholder.svg";
 const HOT_THRESHOLD = 10;

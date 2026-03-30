@@ -13,7 +13,7 @@
 
 import { use, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft } from '@/app/components/ui/Icons';
 import { useRouter } from "next/navigation";
 import { MESSAGES } from "../../constants";
 import { useListingDetail } from "./hooks/useListingDetail";

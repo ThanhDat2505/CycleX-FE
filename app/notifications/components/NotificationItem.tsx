@@ -5,7 +5,7 @@ import {
   NotificationType,
 } from "@/app/types/notification";
 import { MESSAGES } from "@/app/constants/messages";
-import { ShoppingBag, Box, AlertOctagon, Bell } from "lucide-react";
+import { ShoppingBag, Box, AlertOctagon, Bell } from '@/app/components/ui/Icons';
 
 interface NotificationItemProps {
   notification: NotificationResponse;
