@@ -257,6 +257,7 @@ export default function DisputeForm({
             </label>
             <div className="relative">
               <select
+                title="Lý do khiếu nại"
                 value={reasonId}
                 onChange={(e) => {
                   setReasonId(Number(e.target.value));
@@ -373,6 +374,7 @@ export default function DisputeForm({
                   />
                   <button
                     type="button"
+                    title="Xóa ảnh"
                     onClick={() => removeFile(index)}
                     className="absolute top-1.5 right-1.5 w-5 h-5 bg-rose-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity active:scale-90"
                   >

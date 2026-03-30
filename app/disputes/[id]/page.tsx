@@ -445,9 +445,8 @@ export default function DisputeResultPage() {
                   </div>
                   {/* Show latest inspector message if exists */}
                   <p className="text-sm font-medium text-gray-600 leading-relaxed mb-2">
-                    Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc
-                    bằng chứng cho khiếu nại này. Vui lòng phản hồi bên
-                    dưới.
+                    Kiểm duyệt viên yêu cầu bạn bổ sung thêm thông tin hoặc bằng
+                    chứng cho khiếu nại này. Vui lòng phản hồi bên dưới.
                   </p>
                 </div>
               )}
@@ -582,7 +581,7 @@ export default function DisputeResultPage() {
                   <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
                     <ImageIcon size={18} />
                   </div>
-                  <h3 className="text-lg font-black tracking-tight uppercase tracking-[0.1em]">
+                  <h3 className="text-lg font-black tracking-tight uppercase">
                     Bằng chứng hình ảnh
                   </h3>
                 </div>

@@ -250,31 +250,39 @@ export const authService = {
   },
 
   /**
-   * Save authentication token to localStorage
+   * Save authentication token to localStorage or sessionStorage
    * @param token - JWT token from backend
+   * @param remember - whether to persist in localStorage
    */
   saveToken: (token: string, remember: boolean = true): void => {
     if (typeof window !== "undefined") {
+      localStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken");
       if (remember) {
         localStorage.setItem("authToken", token);
       } else {
         sessionStorage.setItem("authToken", token);
       }
+      window.dispatchEvent(new Event("auth-changed"));
     }
   },
 
   /**
-   * Save user data to localStorage
+   * Save user data to localStorage or sessionStorage
    * @param user - User object from login response
+   * @param remember - whether to persist in localStorage
    */
   saveUser: (user: User, remember: boolean = true): void => {
     if (typeof window !== "undefined") {
       const userData = JSON.stringify(user);
+      localStorage.removeItem("userData");
+      sessionStorage.removeItem("userData");
       if (remember) {
         localStorage.setItem("userData", userData);
       } else {
         sessionStorage.setItem("userData", userData);
       }
+      window.dispatchEvent(new Event("auth-changed"));
     }
   },
 
