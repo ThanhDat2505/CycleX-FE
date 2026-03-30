@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -169,25 +169,64 @@ export default function SellerTransactionsPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  {stats.pending > 0 && (
+                  {stats.inProgress > 0 && (
                     <span className="bg-white/25 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
                       Cần xử lý
                     </span>
-                    {(filterStatus !== "ALL" || searchTerm) && (
-                      <>
-                        {" "}
-                        /{" "}
-                        <span className="font-bold text-gray-600">
-                          {transactions.length}
-                        </span>
-                      </>
-                    )}{" "}
-                    giao d?ch
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black mb-1">{stats.inProgress}</h3>
+                  <p className="text-sm font-medium text-orange-100 uppercase tracking-wider">
+                    Đang xử lý
                   </p>
                 </div>
               </div>
-            </>
-          )}
+            </div>
+
+            {/* Hoàn thành */}
+            <div className="relative bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white overflow-hidden shadow-xl shadow-emerald-500/25 group hover:-translate-y-1 transition-transform duration-200 cursor-default">
+              <div className="absolute -right-6 -top-6 w-28 h-28 bg-white/10 rounded-full group-hover:scale-110 transition-transform duration-300" />
+              <div className="absolute right-2 bottom-1 w-16 h-16 bg-white/5 rounded-full" />
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2.5">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black mb-1">{stats.completed}</h3>
+                  <p className="text-sm font-medium text-emerald-100 uppercase tracking-wider">
+                    Hoàn thành
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Doanh thu */}
+            <div className="relative col-span-2 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white overflow-hidden shadow-xl shadow-blue-500/25 group hover:-translate-y-1 transition-transform duration-200 cursor-default">
+              <div className="absolute -right-6 -top-6 w-40 h-40 bg-white/10 rounded-full group-hover:scale-110 transition-transform duration-300" />
+              <div className="absolute right-4 bottom-2 w-20 h-20 bg-white/5 rounded-full" />
+              <div className="relative z-10">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="bg-white/20 backdrop-blur-sm rounded-xl p-2.5">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="text-3xl font-black mb-1">{formatPrice(stats.totalRevenue)}</h3>
+                  <p className="text-sm font-medium text-blue-100 uppercase tracking-wider">
+                    Tổng doanh thu
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       </div>
     </div>

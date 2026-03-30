@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { MESSAGES } from "@/app/constants/messages";
 import { UserProfileResponse, UpdateProfileRequest } from "@/app/types/user";
 import { Button, Input } from "@/app/components/ui";
+import { User } from "lucide-react";
 
 const PHONE_REGEX = /^0\d{9}$/;
 
@@ -77,6 +78,25 @@ export function ProfileInfoForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Avatar Section (read-only) */}
+      <div className="flex items-center gap-6">
+        <div className="relative">
+          {profile.avatarUrl ? (
+            <div className="w-24 h-24 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden">
+              <img
+                src={profile.avatarUrl}
+                alt="Avatar"
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-24 h-24 rounded-full border border-gray-200 bg-gray-100 flex items-center justify-center">
+              <User className="w-10 h-10 text-gray-400" />
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className="border-t border-gray-200 pt-6 space-y-4">
         {/* Email (Read-only as per S-04-BR05) */}
         <Input
