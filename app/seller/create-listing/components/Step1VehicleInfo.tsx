@@ -177,11 +177,6 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
               errors.price ? "border-red-500" : "border-gray-300"
             }`}
           />
-          {!errors.price && (
-            <p className="text-xs text-gray-500 mt-1">
-              FE sẽ tự bỏ dấu chấm hoặc dấu phẩy để lưu đúng giá trị số.
-            </p>
-          )}
           {errors.price && (
             <p className="text-red-500 text-sm mt-1">{errors.price}</p>
           )}
