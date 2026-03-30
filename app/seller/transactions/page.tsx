@@ -20,9 +20,9 @@ import {
 const STATUS_TABS = [
   { key: "ALL", label: "Tất cả" },
   { key: TRANSACTION_STATUS.PENDING_DELIVERY, label: "Chờ giao hàng" },
-  { key: TRANSACTION_STATUS.IN_DELIVERY, label: "Ðang giao" },
+  { key: TRANSACTION_STATUS.IN_DELIVERY, label: "Đang giao" },
   { key: TRANSACTION_STATUS.COMPLETED, label: "Hoàn thành" },
-  { key: TRANSACTION_STATUS.CANCELLED, label: "Ðã hủy" },
+  { key: TRANSACTION_STATUS.CANCELLED, label: "Đã hủy" },
 ];
 
 export default function SellerTransactionsPage() {
@@ -75,7 +75,7 @@ export default function SellerTransactionsPage() {
         }
       } catch {
         if (isMounted)
-          addToast("KhÃ´ng thá»ƒ táº£i danh sÃ¡ch giao dá»‹ch", "error");
+          addToast("Không thể tải danh sách giao dịch", "error");
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -137,10 +137,10 @@ export default function SellerTransactionsPage() {
         <div className="max-w-7xl mx-auto px-6 py-8">
           <div className="flex items-center gap-3 mb-1">
             <div className="w-1 h-6 bg-orange-500 rounded-full" />
-            <h1 className="text-2xl font-black text-gray-900">Giao d?ch</h1>
+            <h1 className="text-2xl font-black text-gray-900">Giao dịch</h1>
           </div>
           <p className="text-sm text-gray-500 ml-4">
-            Qu?n lý t?t c? giao d?ch mua bán c?a b?n
+            Quản lý tất cả giao dịch mua bán của bạn
           </p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function SellerTransactionsPage() {
       <div className="max-w-7xl mx-auto px-6 py-8 space-y-6">
         {/* -- Stat Cards -- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Ðang x? lý */}
+          {/* Đang xử lý */}
           <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
             <div className="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0">
               <svg
@@ -167,7 +167,7 @@ export default function SellerTransactionsPage() {
             </div>
             <div>
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">
-                Ðang x? lý
+                Đang xử lý
               </p>
               <p className="text-3xl font-black text-amber-500 leading-none mt-1">
                 {stats.inProgress}
@@ -221,7 +221,7 @@ export default function SellerTransactionsPage() {
             </div>
             <div>
               <p className="text-xs font-semibold text-orange-100 uppercase tracking-wide">
-                T?ng doanh thu
+                Tổng doanh thu
               </p>
               <p className="text-xl font-black text-white leading-none mt-1">
                 {formatPrice(stats.totalRevenue)}
@@ -289,6 +289,7 @@ export default function SellerTransactionsPage() {
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
+                  title="Xóa tìm kiếm"
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
                   <svg
@@ -313,7 +314,7 @@ export default function SellerTransactionsPage() {
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-24 gap-3">
               <LoadingSpinner />
-              <p className="text-sm text-gray-400">Ðang t?i giao d?ch...</p>
+              <p className="text-sm text-gray-400">Đang tải giao dịch...</p>
             </div>
           ) : filteredTransactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 px-6 text-center">
@@ -333,19 +334,19 @@ export default function SellerTransactionsPage() {
                 </svg>
               </div>
               <p className="font-bold text-gray-800 text-lg">
-                Không tìm th?y giao d?ch nào
+                Không tìm thấy giao dịch nào
               </p>
               <p className="text-gray-400 text-sm mt-2 max-w-xs leading-relaxed">
                 {searchTerm
-                  ? `Không có k?t qu? cho "${searchTerm}". Th? t? khóa khác nhé.`
-                  : "Các giao d?ch c?a b?n s? xu?t hi?n ? dây sau khi có don hàng."}
+                  ? `Không có kết quả cho "${searchTerm}". Thử từ khóa khác nhé.`
+                  : "Các giao dịch của bạn sẽ xuất hiện ở đây sau khi có đơn hàng."}
               </p>
               {searchTerm && (
                 <button
                   onClick={() => setSearchTerm("")}
                   className="mt-4 px-4 py-2 text-sm font-semibold text-orange-600 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
                 >
-                  Xóa b? l?c
+                  Xóa bộ lọc
                 </button>
               )}
             </div>
@@ -435,22 +436,22 @@ export default function SellerTransactionsPage() {
                   <thead>
                     <tr className="border-b border-gray-100 bg-gray-50/60">
                       <th className="px-6 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Ðon hàng
+                        Đơn hàng
                       </th>
                       <th className="px-6 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Khách hàng
                       </th>
                       <th className="px-6 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Lo?i
+                        Loại
                       </th>
                       <th className="px-6 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider text-right">
-                        Giá tr?
+                        Giá trị
                       </th>
                       <th className="px-6 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
-                        Ti?n d?
+                        Tiến độ
                       </th>
                       <th className="px-6 py-3.5 text-xs font-bold text-gray-400 uppercase tracking-wider text-center">
-                        Tr?ng thái
+                        Trạng thái
                       </th>
                       <th className="px-6 py-3.5" />
                     </tr>
@@ -464,7 +465,7 @@ export default function SellerTransactionsPage() {
                         }
                         className="hover:bg-orange-50/30 transition-colors cursor-pointer group"
                       >
-                        {/* Ðon hàng */}
+                        {/* Đơn hàng */}
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="w-12 h-12 flex-shrink-0 bg-gray-100 rounded-xl overflow-hidden border border-gray-200 group-hover:border-orange-200 transition-colors">
@@ -518,7 +519,7 @@ export default function SellerTransactionsPage() {
                           </div>
                         </td>
 
-                        {/* Lo?i */}
+                        {/* Loại */}
                         <td className="px-6 py-4">
                           <span
                             className={`text-xs font-bold px-2.5 py-1 rounded-lg ${t.transactionType === TRANSACTION_TYPE.PURCHASE
@@ -532,21 +533,21 @@ export default function SellerTransactionsPage() {
                           </span>
                         </td>
 
-                        {/* Giá tr? */}
+                        {/* Giá trị */}
                         <td className="px-6 py-4 text-right">
                           <p className="text-sm font-black text-gray-900">
                             {formatPrice(t.totalAmount)}
                           </p>
                         </td>
 
-                        {/* Ti?n d? */}
+                        {/* Tiến độ */}
                         <td className="px-6 py-4">
                           <div className="flex justify-center">
                             <MiniTimeline status={t.status} />
                           </div>
                         </td>
 
-                        {/* Tr?ng thái */}
+                        {/* Trạng thái */}
                         <td className="px-6 py-4 text-center">
                           <span
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${getStatusBadgeClasses(t.status)}`}
@@ -567,7 +568,7 @@ export default function SellerTransactionsPage() {
                             }
                             className="inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-500 hover:text-white rounded-lg border border-orange-200 hover:border-orange-500 transition-all"
                           >
-                            Chi ti?t
+                            Chi tiết
                             <svg
                               className="w-3 h-3"
                               fill="none"
@@ -591,7 +592,7 @@ export default function SellerTransactionsPage() {
                 {/* Footer */}
                 <div className="px-6 py-3 bg-gray-50/50 border-t border-gray-100">
                   <p className="text-xs text-gray-400">
-                    Hi?n th?{" "}
+                    Hiển thị{" "}
                     <span className="font-bold text-gray-600">
                       {filteredTransactions.length}
                     </span>
@@ -604,7 +605,7 @@ export default function SellerTransactionsPage() {
                         </span>
                       </>
                     )}{" "}
-                    giao d?ch
+                    giao dịch
                   </p>
                 </div>
               </div>

@@ -101,6 +101,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
           </label>
           <select
             name="category"
+            title="Loại xe"
             value={formData.category}
             onChange={onChange}
             className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
@@ -126,6 +127,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
           </label>
           <select
             name="condition"
+            title="Tình trạng xe"
             value={formData.condition}
             onChange={onChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
@@ -148,6 +150,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
           </label>
           <select
             name="year"
+            title="Năm sản xuất"
             value={formData.year}
             onChange={onChange}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary"
@@ -192,6 +195,7 @@ const Step1VehicleInfo: React.FC<Step1VehicleInfoProps> = ({
           <input
             type="date"
             name="usageTime"
+            title="Thời gian sử dụng"
             value={formData.usageTime}
             onChange={onChange}
             max={new Date().toISOString().split("T")[0]}
