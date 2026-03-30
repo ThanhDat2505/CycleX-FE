@@ -14,6 +14,7 @@ import {
   cancelPublish,
   setImageAsPrimary,
   saveListingVideo,
+  deleteListingImage,
 } from "@/app/services/myListingsService";
 import { uploadImage } from "@/app/services/imageUploadService";
 import {
@@ -719,16 +720,30 @@ export const useCreateListing = () => {
   }, []);
 
   const removeImage = useCallback(
-    (indexToRemove: number) => {
+    async (indexToRemove: number) => {
       if (isReadOnly) return;
+
+      const imageIdToDelete = imageIds[indexToRemove];
+
+      // Update local state immediately for responsive UI
       setImageUrls((prev) =>
         prev.filter((_, index) => index !== indexToRemove),
       );
       setImageIds((prev) =>
         prev.filter((_, index) => index !== indexToRemove),
       );
+
+      // Delete from backend so the image is truly removed
+      if (imageIdToDelete && listingId && user?.userId) {
+        try {
+          await deleteListingImage(user.userId, listingId, imageIdToDelete);
+        } catch {
+          // Image already removed from local state; log but don't revert
+          console.warn("Failed to delete image from backend", imageIdToDelete);
+        }
+      }
     },
-    [isReadOnly],
+    [isReadOnly, imageIds, listingId, user?.userId],
   );
 
   const handleSetPrimary = useCallback(
