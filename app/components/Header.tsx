@@ -84,7 +84,7 @@ export default function Header() {
           <div className="flex items-center gap-4">
             {/* Search - only for Guest and BUYER */}
             <div className="relative">
-              {(!isLoggedIn || user?.role === "BUYER") && <SearchBar />}
+             {(!isLoading && (!isLoggedIn || user?.role === "BUYER")) && <SearchBar />}
             </div>
 
             {isLoading ? (
