@@ -50,10 +50,17 @@ const CANCELLABLE_STATUSES: ReadonlySet<string> = new Set([
   "APPROVE",
 ]);
 
+const CANCELLABLE_STATUSES: ReadonlySet<string> = new Set([
+  "PENDING",
+  "APPROVE",
+]);
+
 export function MyListingCard({
   listing,
   onDelete,
   isDeleting,
+  onCancelPublish,
+  isCancelling,
   onCancelPublish,
   isCancelling,
 }: MyListingCardProps) {
