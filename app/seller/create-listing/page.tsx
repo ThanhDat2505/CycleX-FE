@@ -88,36 +88,53 @@ const CreateListingPageContent: React.FC = () => {
       {!isReadOnly && (
         <>
           {/* Progress Bar */}
-          <div className="flex items-center justify-between mb-9">
-            {STEP_LABELS.map(({ step: s }) => (
-              <React.Fragment key={s}>
-                <div
-                  className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${
-                    s <= step
-                      ? "bg-brand-primary text-white"
-                      : "bg-gray-200 text-gray-600"
-                  }`}
-                >
-                  {s}
-                </div>
-                {s < CREATE_LISTING_STEPS.PREVIEW && (
-                  <div
-                    className={`h-1 flex-1 mx-2 transition ${
-                      s < step ? "bg-brand-primary" : "bg-gray-200"
-                    }`}
-                  />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
+          <div className="mb-8">
+            <div className="grid grid-cols-7 items-start gap-y-4 text-center text-sm">
+              {STEP_LABELS.map(({ step: s, label }, index) => {
+                const circleColumn = index * 2 + 1;
+                const connectorColumn = circleColumn + 1;
 
-          <div className="grid grid-cols-4 mb-8 text-center text-sm">
-            {STEP_LABELS.map(({ step: s, label }) => (
-              <div key={s}>
-                <p className="font-semibold text-gray-900">Bước {s}</p>
-                <p className="text-gray-600">{label}</p>
-              </div>
-            ))}
+                return (
+                  <React.Fragment key={s}>
+                    <div
+                      className="flex flex-col items-center"
+                      style={{ gridColumn: circleColumn }}
+                    >
+                      <div
+                        className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${
+                          s <= step
+                            ? "bg-brand-primary text-white"
+                            : "bg-gray-200 text-gray-600"
+                        }`}
+                      >
+                        {s}
+                      </div>
+                    </div>
+
+                    {s < CREATE_LISTING_STEPS.PREVIEW && (
+                      <div
+                        className="flex items-center"
+                        style={{ gridColumn: connectorColumn }}
+                      >
+                        <div
+                          className={`h-1 w-full transition ${
+                            s < step ? "bg-brand-primary" : "bg-gray-200"
+                          }`}
+                        />
+                      </div>
+                    )}
+
+                    <div
+                      className="flex flex-col items-center gap-1 leading-tight"
+                      style={{ gridColumn: circleColumn }}
+                    >
+                      <p className="font-semibold text-gray-900 leading-none">Bước {s}</p>
+                      <p className="text-gray-600 leading-5">{label}</p>
+                    </div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
           </div>
         </>
       )}
