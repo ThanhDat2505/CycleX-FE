@@ -131,9 +131,9 @@ export async function checkDisputeEligibility(orderId: number, buyerId: number, 
     // 1. Kiểm tra đơn hàng có tồn tại (đã pass qua props)
     if (!orderId) return { allowed: false, reason: 'Mã đơn hàng không hợp lệ.' };
 
-    // 2. Kiểm tra đơn hàng đã hoàn thành hoặc giao hàng thất bại (DISPUTED)
-    if (status !== 'COMPLETED' && status !== 'DISPUTED') {
-        return { allowed: false, reason: 'Chỉ có thể khiếu nại đơn hàng đã hoàn thành hoặc giao hàng thất bại.' };
+    // 2. Kiểm tra đơn hàng đã hoàn thành, bị hủy do giao hàng thất bại (CANCELLED), hoặc đang tranh chấp (DISPUTED)
+    if (status !== 'COMPLETED' && status !== 'CANCELLED' && status !== 'DISPUTED') {
+        return { allowed: false, reason: 'Chỉ có thể khiếu nại đơn hàng đã hoàn thành hoặc bị hủy do giao hàng thất bại.' };
     }
 
     // 3. Kiểm tra thời hạn khiếu nại (24 giờ sau khi đơn hoàn thành)
@@ -178,7 +178,7 @@ export const DISPUTE_DEADLINE_HOURS = 24;
  * Returns 0 if already expired or status not eligible.
  */
 export function getDisputeHoursRemaining(status: string, completedAt: string): number {
-    if (status !== 'COMPLETED' && status !== 'DISPUTED') return 0;
+    if (status !== 'COMPLETED' && status !== 'CANCELLED' && status !== 'DISPUTED') return 0;
     if (!completedAt) return 0;
     const deadline = new Date(completedAt).getTime() + DISPUTE_DEADLINE_HOURS * 60 * 60 * 1000;
     const remaining = deadline - Date.now();
@@ -189,7 +189,7 @@ export function getDisputeHoursRemaining(status: string, completedAt: string): n
  * Simple helper to check 24h window (for UI visibility)
  */
 export function canCreateDispute(status: string, completedAt: string): boolean {
-    if (status !== 'COMPLETED' && status !== 'DISPUTED') return false;
+    if (status !== 'COMPLETED' && status !== 'CANCELLED' && status !== 'DISPUTED') return false;
     return getDisputeHoursRemaining(status, completedAt) > 0;
 }
 
