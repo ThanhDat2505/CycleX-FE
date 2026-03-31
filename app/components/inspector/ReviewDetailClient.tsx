@@ -290,6 +290,7 @@ export default function ReviewDetailClient({
             >
               {listing.images.main || listing.images.thumbs[0] ? (
                 <img
+                  key={selectedThumb} // This triggers React to unmount/mount the element to play the animation
                   src={
                     listing.images.thumbs[selectedThumb] || listing.images.main
                   }
@@ -300,7 +301,7 @@ export default function ReviewDetailClient({
                     objectFit: "contain",
                   }}
                   onClick={() => setShowImageModal(true)}
-                  className="cursor-zoom-in"
+                  className="cursor-zoom-in animate-fade-scale"
                   title="Xem ảnh lớn"
                 />
               ) : (
@@ -323,7 +324,6 @@ export default function ReviewDetailClient({
                   }}
                   onClick={() => {
                     setSelectedThumb(idx);
-                    setShowImageModal(true);
                   }}
                 >
                   {url ? (
@@ -930,7 +930,11 @@ export default function ReviewDetailClient({
                       : "bg-gray-200 text-gray-800 border border-gray-300"
                 }`}
               >
-                {listing.status}
+                {listing.status === "APPROVED" || listing.status === "PASSED"
+                  ? "Đã duyệt"
+                  : listing.status === "REJECTED"
+                    ? "Từ chối"
+                    : listing.status}
               </span>
             </div>
           )}

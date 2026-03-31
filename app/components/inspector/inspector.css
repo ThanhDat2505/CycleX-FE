@@ -204,6 +204,20 @@
   margin-bottom: 24px;
 }
 
+@keyframes fadeScale {
+  0% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.animate-fade-scale {
+  animation: fadeScale 0.3s ease-out forwards;
+}
+
 /* ══════════════════════════════════════
    COMMON: Wraps, Headers, Titles
    ══════════════════════════════════════ */
@@ -676,12 +690,14 @@
   border: 2px solid var(--dark);
 }
 .btnOutline:hover {
-  background: #fafafa;
+  background: #ed742e;
+  color: #fff;
+  border-color: #ed742e;
 }
 .btnGhost:hover {
-  background: #111827;
+  background: #ed742e;
   color: #fff;
-  border-color: #111827;
+  border-color: #ed742e;
   opacity: 0.95;
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
@@ -733,10 +749,10 @@
   box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08);
 }
 .viewBtn:hover {
-  background: #111827;
+  background: #ed742e;
   color: #fff;
-  border-color: #111827;
-  box-shadow: 0 14px 24px rgba(15, 23, 42, 0.18);
+  border-color: #ed742e;
+  box-shadow: 0 14px 24px rgba(237, 116, 46, 0.25);
 }
 
 .actionLink {
@@ -752,9 +768,9 @@
   font-size: 14px;
 }
 .actionLink:hover {
-  background: #111827;
+  background: #ed742e;
   color: #fff;
-  border-color: #111827;
+  border-color: #ed742e;
 }
 
 .summary-btn {
