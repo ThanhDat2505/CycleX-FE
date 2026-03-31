@@ -86,6 +86,8 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
     );
   }
 
+  const backHref = userRole === "SELLER" ? "/seller/my-listings" : "/listings";
+
   // Error state
   if (error || !listing) {
     return (
@@ -94,7 +96,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
         <h1 className={STYLES.errorTitle}>
           {error || MESSAGES.DETAIL_NOT_FOUND}
         </h1>
-        <Link href="/listings" className={STYLES.errorLink}>
+        <Link href={backHref} className={STYLES.errorLink}>
           {MESSAGES.DETAIL_BACK_TO_LISTINGS}
         </Link>
       </div>
@@ -105,7 +107,7 @@ export default function ListingDetailPage({ params }: ListingDetailPageProps) {
   return (
     <div className={STYLES.container}>
       {/* Back button */}
-      <Link href="/listings" className={STYLES.backLink}>
+      <Link href={backHref} className={STYLES.backLink}>
         <ArrowLeft size={20} />
         {MESSAGES.DETAIL_BACK_TO_LISTINGS}
       </Link>
