@@ -25,6 +25,7 @@ export interface Listing {
     location: string;
     status: ListingStatus;
     rejectionReason?: string;
+    inspectorEmail?: string;
     shipping: boolean;
     views: number;
     inquiries: number;
@@ -79,6 +80,7 @@ interface SellerListingSearchItemResponse {
     status: string;
     viewsCount?: number;
     rejectionReason?: string;
+    inspectorEmail?: string;
     condition?: string;
     locationCity?: string;
     createdAt?: string;
@@ -183,6 +185,7 @@ function mapSearchItemToListing(item: SellerListingSearchItemResponse): Listing 
         location: item.locationCity || '',
         status: mapStatusFromBackend(item.status),
         rejectionReason: item.rejectionReason,
+        inspectorEmail: item.inspectorEmail,
         shipping: false,
         views: item.viewsCount ?? 0,
         inquiries: 0,
