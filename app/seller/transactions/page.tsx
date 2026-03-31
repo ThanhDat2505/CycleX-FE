@@ -68,6 +68,7 @@ export default function SellerTransactionsPage() {
         setIsLoading(true);
         const data = await getAllSellerTransactions(user.userId);
         if (isMounted) {
+          console.log("Fetched transactions:", data);
           setTransactions(
             data.filter(
               (t) => t.status !== TRANSACTION_STATUS.PENDING_SELLER_CONFIRM,
