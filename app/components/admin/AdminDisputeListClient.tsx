@@ -19,7 +19,7 @@ import {
   AlertTriangle,
   Eye,
   User,
-} from '@/app/components/ui/Icons';
+} from "@/app/components/ui/Icons";
 
 const STATUS_OPTIONS = [
   { value: "ALL", label: "Tất cả trạng thái" },
@@ -37,6 +37,15 @@ const SORT_OPTIONS = [
   { value: "updatedAt:DESC", label: "Cập nhật gần đây" },
   { value: "status:ASC", label: "Trạng thái A-Z" },
 ];
+
+const STATUS_LABELS: Record<string, string> = {
+  OPEN: "Đang mở",
+  IN_PROGRESS: "Đang xử lý",
+  NEED_MORE_INFO: "Cần bổ sung",
+  ESCALATED: "Đã chuyển Admin",
+  RESOLVED: "Đã giải quyết",
+  REJECTED: "Đã từ chối",
+};
 
 /** Detail link with Tailwind-only styling to avoid inspector.css conflicts */
 function DetailLink({ disputeId }: { disputeId: number }) {
@@ -352,7 +361,9 @@ export default function AdminDisputeListClient() {
                               <User size={14} className="text-gray-500" />
                             </div>
                             <span className="text-sm font-semibold text-gray-700">
-                              {row.requesterName && row.requesterName.trim().length > 1 && row.requesterName !== "-"
+                              {row.requesterName &&
+                              row.requesterName.trim().length > 1 &&
+                              row.requesterName !== "-"
                                 ? row.requesterName
                                 : "Không rõ"}
                             </span>
@@ -365,7 +376,7 @@ export default function AdminDisputeListClient() {
                             className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
                           >
                             {getStatusIcon(row.status)}
-                            {row.status}
+                            {STATUS_LABELS[row.status] || row.status}
                           </span>
                         </td>
 
@@ -376,7 +387,8 @@ export default function AdminDisputeListClient() {
                               {row.createdAt?.split("T")[0] || "—"}
                             </span>
                             <span className="text-sm font-medium text-gray-500 mt-0.5">
-                              {row.createdAt?.split("T")[1]?.split(".")[0] || ""}
+                              {row.createdAt?.split("T")[1]?.split(".")[0] ||
+                                ""}
                             </span>
                           </div>
                         </td>
