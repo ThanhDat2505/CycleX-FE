@@ -200,8 +200,7 @@ export default function Step2Review({
                   {listing.locationCity}
                 </div>
                 <p className={STYLES.priceText}>
-                  <span className="text-sm font-black opacity-40">đ</span>
-                  {formatPrice(listing.price).replace("đ", "")}
+                  {formatPrice(listing.price)}
                 </p>
               </div>
             </div>
