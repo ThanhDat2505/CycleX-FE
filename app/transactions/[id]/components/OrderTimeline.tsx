@@ -92,7 +92,7 @@ export default function OrderTimeline({
             </svg>
           </div>
           <h3 className="text-lg font-bold text-orange-700">
-            Đơn hàng đang tranh chấp
+            Đơn hàng tranh chấp
           </h3>
           <p className="text-sm text-orange-600">
             Cập nhật: {formatDate(updatedAt)}
