@@ -156,6 +156,8 @@ function mapStatusFromBackend(status: string): ListingStatus {
         return 'PENDING';
     }
 
+    // DELETED should never be returned by the API, but guard defensively
+    // Fall through to PENDING as a safe default for any future unknown statuses
     return 'PENDING';
 }
 
