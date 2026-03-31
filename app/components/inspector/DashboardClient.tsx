@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import InspectorHeroLayout from "@/app/components/inspector/InspectorHeroLayout";
 import { inspectorService } from "@/app/services/inspectorService";
+import { useAuth } from "@/app/hooks/useAuth";
 
 type FilterKey =
   | "all"
@@ -164,6 +165,7 @@ function SkeletonCard() {
 
 export default function DashboardClient() {
   const router = useRouter();
+  const { user } = useAuth();
   const [listings, setListings] = useState<ListingRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -315,7 +317,7 @@ export default function DashboardClient() {
     <InspectorHeroLayout
       title="Trang"
       highlightTitle="Tổng Quan"
-      description={`Chào mừng trở lại! Bạn có ${counts.pendingAll} tin cần duyệt hôm nay.`}
+      description={`Chào mừng trở lại, ${user?.fullName || user?.email || "bạn"}! Bạn có ${counts.pendingAll} tin cần duyệt hôm nay.`}
     >
 
 
