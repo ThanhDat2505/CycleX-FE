@@ -18,7 +18,7 @@ import {
   ImageIcon,
   ArrowLeftRight,
   Lightbulb,
-} from '@/app/components/ui/Icons';
+} from "@/app/components/ui/Icons";
 
 const SUGGESTION_LABELS: Record<string, string> = {
   REFUND_BUYER: "Hoàn tiền toàn bộ",
@@ -197,7 +197,10 @@ export default function DisputeResolutionClient({
 
               {/* Amount */}
               <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
-                <Banknote size={20} className="text-yellow-600 mt-0.5 shrink-0" />
+                <Banknote
+                  size={20}
+                  className="text-yellow-600 mt-0.5 shrink-0"
+                />
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
                     Số tiền giao dịch
@@ -210,7 +213,10 @@ export default function DisputeResolutionClient({
 
               {/* Reason */}
               <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
-                <AlertTriangle size={20} className="text-red-600 mt-0.5 shrink-0" />
+                <AlertTriangle
+                  size={20}
+                  className="text-red-600 mt-0.5 shrink-0"
+                />
                 <div>
                   <p className="text-xs text-gray-500 uppercase font-semibold">
                     Lý do khiếu nại
@@ -268,7 +274,10 @@ export default function DisputeResolutionClient({
               <div className="mt-3 space-y-3">
                 {detail.escalationSuggestion && (
                   <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-lg">
-                    <Lightbulb size={20} className="text-purple-600 mt-0.5 shrink-0" />
+                    <Lightbulb
+                      size={20}
+                      className="text-purple-600 mt-0.5 shrink-0"
+                    />
                     <div>
                       <p className="text-xs text-gray-500 uppercase font-semibold">
                         Đề xuất hướng xử lý
@@ -296,12 +305,6 @@ export default function DisputeResolutionClient({
                     <span className="font-medium text-gray-700">
                       {detail.escalatedBy.name}
                     </span>
-                    {detail.escalatedAt && (
-                      <>
-                        {" "}
-                        — {new Date(detail.escalatedAt).toLocaleString("vi-VN")}
-                      </>
-                    )}
                   </p>
                 )}
               </div>

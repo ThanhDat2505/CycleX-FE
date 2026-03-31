@@ -99,10 +99,10 @@ export function RegisterForm() {
       );
       const sendOtpResponse = await authService.sendOtp(email);
 
-      if (sendOtpResponse.message !== "OTP sent successfully") {
+      if (sendOtpResponse.message !== "Đã gửi mã OTP thành công") {
         throw new Error("Không thể gửi mã OTP");
       }
-      if (response.message !== "Registration successful") {
+      if (response.message !== "Đăng ký thành công") {
         throw new Error("Đăng ký không thành công");
       }
 
