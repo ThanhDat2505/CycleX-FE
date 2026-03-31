@@ -41,9 +41,22 @@ export interface MyListingCardProps {
   };
   onDelete?: (id: number) => void;
   isDeleting?: boolean;
+  onCancelPublish?: (id: number) => void;
+  isCancelling?: boolean;
 }
 
-export function MyListingCard({ listing, onDelete, isDeleting }: MyListingCardProps) {
+const CANCELLABLE_STATUSES: ReadonlySet<string> = new Set([
+  "PENDING",
+  "APPROVE",
+]);
+
+export function MyListingCard({
+  listing,
+  onDelete,
+  isDeleting,
+  onCancelPublish,
+  isCancelling,
+}: MyListingCardProps) {
   const editHref = `/seller/create-listing?draft=${listing.id}`;
   const viewHref =
     listing.status === "APPROVE" || listing.status === "SOLD"
@@ -114,14 +127,24 @@ export function MyListingCard({ listing, onDelete, isDeleting }: MyListingCardPr
               Sửa
             </Link>
           )}
+          {/* Hủy đăng: PENDING / APPROVE → DRAFT */}
+          {CANCELLABLE_STATUSES.has(listing.status) && onCancelPublish && (
+            <button
+              onClick={() => onCancelPublish(listing.id)}
+              disabled={isCancelling}
+              className="flex-1 px-3 py-2 border border-yellow-400 text-yellow-700 rounded text-sm font-medium hover:bg-yellow-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isCancelling ? "Đang hủy..." : "Hủy đăng"}
+            </button>
+          )}
           <Link
             href={viewHref}
             className="flex-1 px-3 py-2 border border-gray-300 text-gray-900 rounded text-sm font-medium hover:bg-gray-50 transition text-center"
           >
             Xem
           </Link>
-          {/* Delete button: only for DRAFT status */}
-          {onDelete && listing.status === "DRAFT" && (
+          {/* Delete: DRAFT only — BE requires DRAFT status */}
+          {listing.status === "DRAFT" && onDelete && (
             <button
               onClick={() => onDelete(listing.id)}
               disabled={isDeleting}
