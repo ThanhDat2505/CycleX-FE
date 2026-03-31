@@ -89,51 +89,34 @@ const CreateListingPageContent: React.FC = () => {
         <>
           {/* Progress Bar */}
           <div className="mb-8">
-            <div className="grid grid-cols-7 items-start gap-y-4 text-center text-sm">
-              {STEP_LABELS.map(({ step: s, label }, index) => {
-                const circleColumn = index * 2 + 1;
-                const connectorColumn = circleColumn + 1;
-
-                return (
-                  <React.Fragment key={s}>
-                    <div
-                      className="flex flex-col items-center"
-                      style={{ gridColumn: circleColumn }}
-                    >
-                      <div
-                        className={`flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${
-                          s <= step
-                            ? "bg-brand-primary text-white"
-                            : "bg-gray-200 text-gray-600"
-                        }`}
-                      >
-                        {s}
-                      </div>
-                    </div>
-
-                    {s < CREATE_LISTING_STEPS.PREVIEW && (
-                      <div
-                        className="flex items-center"
-                        style={{ gridColumn: connectorColumn }}
-                      >
-                        <div
-                          className={`h-1 w-full transition ${
-                            s < step ? "bg-brand-primary" : "bg-gray-200"
-                          }`}
-                        />
-                      </div>
-                    )}
-
-                    <div
-                      className="flex flex-col items-center gap-1 leading-tight"
-                      style={{ gridColumn: circleColumn }}
-                    >
-                      <p className="font-semibold text-gray-900 leading-none">Bước {s}</p>
-                      <p className="text-gray-600 leading-5">{label}</p>
-                    </div>
-                  </React.Fragment>
-                );
-              })}
+            {/* Hàng 1: 4 ô circles nối nhau, mỗi ô chiếm 1/4 chiều ngang */}
+            <div className="grid grid-cols-4 items-center mb-3">
+              {STEP_LABELS.map(({ step: s }, index) => (
+                <div key={s} className="flex items-center">
+                  <div
+                    className={`h-1 flex-1 mx-2 ${index === 0 ? "invisible" : s <= step ? "bg-brand-primary" : "bg-gray-200"}`}
+                  />
+                  <div
+                    className={`flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full font-bold transition ${
+                      s <= step ? "bg-brand-primary text-white" : "bg-gray-200 text-gray-600"
+                    }`}
+                  >
+                    {s}
+                  </div>
+                  <div
+                    className={`h-1 flex-1 mx-2 ${index === STEP_LABELS.length - 1 ? "invisible" : s < step ? "bg-brand-primary" : "bg-gray-200"}`}
+                  />
+                </div>
+              ))}
+            </div>
+            {/* Hàng 2: labels căn giữa, cùng grid-cols-4 nên tâm chữ khớp tâm circle phía trên */}
+            <div className="grid grid-cols-4 text-center text-sm">
+              {STEP_LABELS.map(({ step: s, label }) => (
+                <div key={s}>
+                  <p className="font-semibold text-gray-900">Bước {s}</p>
+                  <p className="text-gray-600">{label}</p>
+                </div>
+              ))}
             </div>
           </div>
         </>
