@@ -97,7 +97,14 @@ export default function SellerLayout({
         <nav className="p-4 space-y-1">
           {NAV_ITEMS.map((item) => {
             const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
+              pathname === item.href ||
+              (pathname.startsWith(item.href + "/") &&
+                !NAV_ITEMS.some(
+                  (other) =>
+                    other.href !== item.href &&
+                    other.href.startsWith(item.href + "/") &&
+                    (pathname === other.href || pathname.startsWith(other.href + "/")),
+                ));
             const Icon = item.icon;
             return (
               <Link
@@ -131,7 +138,14 @@ export default function SellerLayout({
         <nav className="flex justify-around py-2">
           {NAV_ITEMS.filter(item => ["/seller/dashboard", "/seller/my-listings", "/seller/transactions/pending", "/seller/transactions", "/seller/create-listing"].includes(item.href)).map((item) => {
             const isActive =
-              pathname === item.href || pathname.startsWith(item.href + "/");
+              pathname === item.href ||
+              (pathname.startsWith(item.href + "/") &&
+                !NAV_ITEMS.some(
+                  (other) =>
+                    other.href !== item.href &&
+                    other.href.startsWith(item.href + "/") &&
+                    (pathname === other.href || pathname.startsWith(other.href + "/")),
+                ));
             const Icon = item.icon;
             return (
               <Link
