@@ -8,7 +8,7 @@ import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useAuth } from "@/app/hooks/useAuth";
 import { useMyListings } from "@/app/hooks/useMyListings";
-import { deleteDraft, getDrafts, type Listing } from "@/app/services/myListingsService";
+import { cancelPublish, deleteDraft, getDrafts, type Listing } from "@/app/services/myListingsService";
 import { ErrorBanner } from "@/app/components/ErrorBanner";
 import { MyListingCard } from "./components/MyListingCard";
 import Pagination from "../../listings/components/Pagination";
@@ -151,6 +151,28 @@ function MyListingsContent() {
     }
   };
 
+  const [cancellingId, setCancellingId] = useState<number | null>(null);
+
+  const handleCancelPublish = async (listingId: number) => {
+    if (!user?.userId) return;
+    const confirmed = window.confirm(
+      "Hủy đăng tin sẽ chuyển tin về Bản nháp. Bạn có chắc không?"
+    );
+    if (!confirmed) return;
+
+    setCancellingId(listingId);
+    try {
+      await cancelPublish(listingId, user.userId);
+      retry();
+      // Switch filter to draft so user can see the newly reverted listing
+      setFilterStatus("draft");
+    } catch {
+      alert("Hủy đăng thất bại. Vui lòng thử lại.");
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const startIndex = (page - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
@@ -237,6 +259,8 @@ function MyListingsContent() {
                 listing={listing}
                 onDelete={handleDelete}
                 isDeleting={deletingId === listing.id}
+                onCancelPublish={handleCancelPublish}
+                isCancelling={cancellingId === listing.id}
               />
           ))}
         </div>

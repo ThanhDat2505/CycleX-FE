@@ -37,6 +37,7 @@ const CANCELLABLE_STATUSES = new Set([
   "PENDING",
   "REVIEWING",
   "WAITING_INSPECTOR_REVIEW",
+  "APPROVED",
 ]);
 
 const normalizeStatus = (status?: string | null) =>
