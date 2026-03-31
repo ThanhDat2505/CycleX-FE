@@ -375,7 +375,6 @@ export default function AdminDisputeListClient() {
                           <span
                             className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
                           >
-                            {getStatusIcon(row.status)}
                             {STATUS_LABELS[row.status] || row.status}
                           </span>
                         </td>

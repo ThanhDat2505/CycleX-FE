@@ -27,7 +27,7 @@ import {
   LayoutDashboard,
   ClipboardList,
   History,
-} from '@/app/components/ui/Icons';
+} from "@/app/components/ui/Icons";
 import { formatDate } from "@/app/utils/format";
 
 const STATUS_OPTIONS = [
@@ -46,6 +46,15 @@ const SORT_OPTIONS = [
   { value: "updatedAt:DESC", label: "Cập nhật gần đây" },
   { value: "status:ASC", label: "Trạng thái A-Z" },
 ];
+
+const STATUS_LABELS: Record<string, string> = {
+  OPEN: "Đang mở",
+  IN_PROGRESS: "Đang xử lý",
+  NEED_MORE_INFO: "Cần bổ sung",
+  ESCALATED: "Đã chuyển Admin",
+  RESOLVED: "Đã giải quyết",
+  REJECTED: "Đã từ chối",
+};
 
 export default function DisputeListClient() {
   const [items, setItems] = useState<DisputeListRow[]>([]);
@@ -332,7 +341,7 @@ export default function DisputeListClient() {
                           <span
                             className={`inline-flex px-4 py-1.5 rounded-xl text-[10px] font-black tracking-widest uppercase border transition-all ${statusStyle(row.status)}`}
                           >
-                            {row.status}
+                            {STATUS_LABELS[row.status] || row.status}
                           </span>
                         </td>
                         <td className="px-8 py-6">
