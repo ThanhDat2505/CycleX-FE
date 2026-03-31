@@ -200,8 +200,11 @@ export default function TransactionHistoryPage() {
             <div className="flex bg-gray-100 p-1 rounded-lg w-full sm:w-auto overflow-x-auto">
               {[
                 "ALL",
-                TRANSACTION_STATUS.CONFIRMED,
+                TRANSACTION_STATUS.PENDING_SELLER_CONFIRM,
+                TRANSACTION_STATUS.PENDING_DELIVERY,
+                TRANSACTION_STATUS.IN_DELIVERY,
                 TRANSACTION_STATUS.COMPLETED,
+                TRANSACTION_STATUS.DISPUTED,
                 TRANSACTION_STATUS.CANCELLED,
               ].map((status) => (
                 <button
