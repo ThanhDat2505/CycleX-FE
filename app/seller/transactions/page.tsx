@@ -356,7 +356,7 @@ export default function SellerTransactionsPage() {
           ) : (
             <>
               {/* Mobile Cards */}
-              <div className="lg:hidden divide-y divide-gray-50">
+              <div className="divide-y divide-gray-50">
                 {filteredTransactions.map((t) => (
                   <div
                     key={t.transactionId}
