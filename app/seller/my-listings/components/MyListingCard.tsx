@@ -132,7 +132,7 @@ export function MyListingCard({
             <button
               onClick={() => onCancelPublish(listing.id)}
               disabled={isCancelling}
-              className="flex-1 px-3 py-2 border border-yellow-400 text-yellow-700 rounded text-sm font-medium hover:bg-yellow-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-2 border border-[#FF8A00] text-[#FF8A00] rounded text-sm font-medium hover:bg-orange-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isCancelling ? "Đang hủy..." : "Hủy đăng"}
             </button>
