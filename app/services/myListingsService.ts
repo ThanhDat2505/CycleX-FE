@@ -440,8 +440,10 @@ export async function getDrafts(params: GetDraftsParams): Promise<GetDraftsRespo
         .map(mapSearchItemToListing)
         .filter((item) => Number.isFinite(item.id) && item.id > 0);
 
+    const itemsWithImages = await attachMainImageToListings(sellerId, items);
+
     return {
-        items,
+        items: itemsWithImages,
         pagination: {
             totalItems: response.totalElements,
             totalPages: response.totalPages,
