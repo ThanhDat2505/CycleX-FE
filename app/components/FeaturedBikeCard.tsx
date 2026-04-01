@@ -19,7 +19,7 @@ import { HomeBike } from "../types/listing";
 import { formatPrice } from "../utils/format";
 import { useAuth } from "../hooks/useAuth";
 import { useToast } from "../contexts/ToastContext";
-import { MapPin, ShoppingCart } from '@/app/components/ui/Icons';
+import { MapPin, ShoppingCart } from "@/app/components/ui/Icons";
 
 const FALLBACK_IMAGE = "/images/bike-placeholder.svg";
 const HOT_THRESHOLD = 10;
@@ -40,14 +40,13 @@ const STYLES = {
   content: "p-5 flex flex-col flex-grow",
   title:
     "text-gray-800 font-bold leading-snug group-hover:text-brand-primary transition-colors mb-4",
-  bottomRow:
-    "mt-auto flex items-end justify-between gap-3 pt-4 border-t border-gray-100",
+  bottomRow: "mt-auto flex flex-col gap-3 pt-4 border-t border-gray-100",
   priceLabel:
     "text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5 whitespace-nowrap",
   priceValue:
     "text-lg font-black text-brand-primary tracking-tight whitespace-normal break-all",
   purchaseButton:
-    "flex items-center gap-2 px-4 py-2 bg-brand-bg text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-brand-primary/20 group/btn active:scale-95 whitespace-nowrap flex-shrink-0",
+    "flex items-center justify-center gap-2 w-full px-4 py-2 bg-brand-bg text-white text-xs font-bold rounded-xl hover:bg-gray-800 transition-all shadow-lg hover:shadow-brand-primary/20 group/btn active:scale-95",
   purchaseIcon: "w-3.5 h-3.5 group-hover/btn:rotate-12 transition-transform",
 } as const;
 
