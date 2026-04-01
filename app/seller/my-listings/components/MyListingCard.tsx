@@ -45,10 +45,7 @@ export interface MyListingCardProps {
   isCancelling?: boolean;
 }
 
-const CANCELLABLE_STATUSES: ReadonlySet<string> = new Set([
-  "PENDING",
-  "APPROVE",
-]);
+const CANCELLABLE_STATUSES: ReadonlySet<string> = new Set(["PENDING"]);
 
 export function MyListingCard({
   listing,
