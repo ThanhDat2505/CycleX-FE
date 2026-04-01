@@ -248,12 +248,31 @@ export default function ReviewDetailClient({
           <h1 className="page-title wrap-break-word">{listing.productName}</h1>
 
           <div className="meta">
-            <span className="metaItem min-w-0" style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 8, padding: "5px 12px" }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-                <line x1="16" y1="2" x2="16" y2="6"/>
-                <line x1="8" y1="2" x2="8" y2="6"/>
-                <line x1="3" y1="10" x2="21" y2="10"/>
+            <span
+              className="metaItem min-w-0"
+              style={{
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 8,
+                padding: "5px 12px",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-gray-400"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
               <span className="metaLabel">Gửi ngày:</span>
               <span className="font-bold wrap-break-word">
@@ -261,13 +280,39 @@ export default function ReviewDetailClient({
               </span>
             </span>
 
-            <span className="metaItem min-w-0" style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "5px 12px" }}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#f97316" }}>
-                <circle cx="12" cy="12" r="10"/>
-                <polyline points="12 6 12 12 16 14"/>
+            <span
+              className="metaItem min-w-0"
+              style={{
+                background: "#fff7ed",
+                border: "1px solid #fed7aa",
+                borderRadius: 8,
+                padding: "5px 12px",
+              }}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                style={{ color: "#f97316" }}
+              >
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
               </svg>
-              <span className="metaLabel" style={{ color: "#ea580c" }}>Chờ duyệt:</span>
-              <span className="font-bold wrap-break-word" style={{ color: "#c2410c" }}>{listing.waitingDays} ngày</span>
+              <span className="metaLabel" style={{ color: "#ea580c" }}>
+                Chờ duyệt:
+              </span>
+              <span
+                className="font-bold wrap-break-word"
+                style={{ color: "#c2410c" }}
+              >
+                {listing.waitingDays} ngày
+              </span>
             </span>
           </div>
         </div>
@@ -491,13 +536,17 @@ export default function ReviewDetailClient({
                         flexShrink: 0,
                       }}
                     />
-                    <span style={{
-                      fontSize: 14,
-                      fontWeight: checklist[idx] ? 700 : 500,
-                      color: checklist[idx] ? "#15803d" : "#4b5563",
-                      transition: "all 0.2s",
-                      userSelect: "none",
-                    }}>{text}</span>
+                    <span
+                      style={{
+                        fontSize: 14,
+                        fontWeight: checklist[idx] ? 700 : 500,
+                        color: checklist[idx] ? "#15803d" : "#4b5563",
+                        transition: "all 0.2s",
+                        userSelect: "none",
+                      }}
+                    >
+                      {text}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -521,31 +570,41 @@ export default function ReviewDetailClient({
               </div>
               <div className="specItem">
                 <span className="specLabel">Loại xe</span>
-                <span className="specValue">{(() => {
-                  const t = String(listing.specs.type || "").toLowerCase();
-                  if (t.includes("mountain")) return "Xe Đạp Địa Hình";
-                  if (t.includes("road")) return "Xe Đạp Đường Trường";
-                  if (t.includes("sport") || t.includes("city")) return "Xe Đạp Thể Thao";
-                  if (t.includes("touring")) return "Xe Đạp Touring";
-                  if (t.includes("racing")) return "Xe Đạp Đua";
-                  if (t.includes("folding") || t.includes("fold")) return "Xe Đạp Gấp";
-                  if (t.includes("electric") || t.includes("e-bike")) return "Xe Đạp Điện";
-                  if (t.includes("kids") || t.includes("child")) return "Xe Đạp Trẻ Em";
-                  return listing.specs.type || "—";
-                })()}</span>
+                <span className="specValue">
+                  {(() => {
+                    const t = String(listing.specs.type || "").toLowerCase();
+                    if (t.includes("mountain")) return "Xe Đạp Địa Hình";
+                    if (t.includes("road")) return "Xe Đạp Đường Trường";
+                    if (t.includes("sport") || t.includes("city"))
+                      return "Xe Đạp Thể Thao";
+                    if (t.includes("touring")) return "Xe Đạp Touring";
+                    if (t.includes("racing")) return "Xe Đạp Đua";
+                    if (t.includes("folding") || t.includes("fold"))
+                      return "Xe Đạp Gấp";
+                    if (t.includes("electric") || t.includes("e-bike"))
+                      return "Xe Đạp Điện";
+                    if (t.includes("kids") || t.includes("child"))
+                      return "Xe Đạp Trẻ Em";
+                    return listing.specs.type || "—";
+                  })()}
+                </span>
               </div>
               <div className="specItem">
                 <span className="specLabel">Tình trạng</span>
-                <span className="specValue">{(() => {
-                  const c = String(listing.specs.condition || "").toUpperCase().replace('_', ' ');
-                  if (c === "NEW") return "Mới 100%";
-                  if (c === "LIKE NEW") return "Như mới";
-                  if (c === "EXCELLENT") return "Rất tốt";
-                  if (c === "GOOD") return "Tốt";
-                  if (c === "FAIR") return "Khá";
-                  if (c === "USED" || c === "POOR") return "Đã sử dụng";
-                  return listing.specs.condition || "—";
-                })()}</span>
+                <span className="specValue">
+                  {(() => {
+                    const c = String(listing.specs.condition || "")
+                      .toUpperCase()
+                      .replace("_", " ");
+                    if (c === "NEW") return "Mới 100%";
+                    if (c === "LIKE NEW") return "Như mới";
+                    if (c === "EXCELLENT") return "Rất tốt";
+                    if (c === "GOOD") return "Tốt";
+                    if (c === "FAIR") return "Khá";
+                    if (c === "USED" || c === "POOR") return "Đã sử dụng";
+                    return listing.specs.condition || "—";
+                  })()}
+                </span>
               </div>
               <div className="specItem" style={{ gridColumn: "1 / -1" }}>
                 <span className="specLabel">Lý do bán</span>
@@ -855,19 +914,38 @@ export default function ReviewDetailClient({
                           );
                           if (!confirmed) return;
 
+                          const reasonMap: Record<
+                            string,
+                            { code: string; text: string }
+                          > = {
+                            mismatch_desc: {
+                              code: "MISMATCH_DESC",
+                              text: "Sai mô tả",
+                            },
+                            missing_info: {
+                              code: "MISSING_INFO",
+                              text: "Thiếu thông tin",
+                            },
+                            duplicate_post: {
+                              code: "DUPLICATE_POST",
+                              text: "Tin bị trùng",
+                            },
+                            spam_content: {
+                              code: "SPAM_CONTENT",
+                              text: "Nội dung spam",
+                            },
+                            wrong_photo: {
+                              code: "WRONG_PHOTO",
+                              text: "Ảnh không đúng",
+                            },
+                            other: { code: "OTHER", text: "" },
+                          };
                           const reasonCode =
-                            rejectReason === "mismatch_desc"
-                              ? "MISMATCH_DESC"
-                              : rejectReason === "missing_info"
-                                ? "MISSING_INFO"
-                                : rejectReason === "duplicate_post"
-                                  ? "DUPLICATE_POST"
-                                  : rejectReason === "spam_content"
-                                    ? "SPAM_CONTENT"
-                                    : rejectReason === "wrong_photo"
-                                      ? "WRONG_PHOTO"
-                                      : "OTHER";
-                          const reasonText = rejectReasonOther;
+                            reasonMap[rejectReason]?.code || "OTHER";
+                          const reasonText =
+                            rejectReasonOther.trim() ||
+                            reasonMap[rejectReason]?.text ||
+                            rejectReason;
 
                           try {
                             setSubmitting(true);
@@ -898,18 +976,51 @@ export default function ReviewDetailClient({
           ) : (
             <div className="mt-6 p-5 bg-gray-50 border border-gray-200 rounded-xl text-center shadow-inner flex flex-col justify-center items-center gap-2">
               {listing.status === "APPROVED" || listing.status === "PASSED" ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-green-500"
+                >
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
               ) : listing.status === "REJECTED" ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-500">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-red-500"
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="15" y1="9" x2="9" y2="15" />
                   <line x1="9" y1="9" x2="15" y2="15" />
                 </svg>
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-gray-400"
+                >
                   <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
                   <path d="m9 12 2 2 4-4" />
                 </svg>
