@@ -303,8 +303,8 @@ export default function DisputeDetailClient({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3">
-            {/* Claim button - only for OPEN disputes */}
-            {isOpen && (
+            {/* Claim button - only for OPEN disputes, not for admin */}
+            {isOpen && viewerRole !== "ADMIN" && (
               <button
                 onClick={handleClaim}
                 disabled={claiming}
@@ -319,10 +319,11 @@ export default function DisputeDetailClient({
               </button>
             )}
 
-            {/* Request more info button */}
-            {(isInProgress ||
-              isNeedMoreInfo ||
-              (isEscalated && viewerRole === "ADMIN")) && (
+            {/* Request more info button:
+                 - Inspector: visible when IN_PROGRESS or NEED_MORE_INFO
+                 - Admin: only visible when ESCALATED */}
+            {((viewerRole !== "ADMIN" && (isInProgress || isNeedMoreInfo)) ||
+              (viewerRole === "ADMIN" && isEscalated)) && (
               <button
                 onClick={() => setShowRequestInfo(!showRequestInfo)}
                 className="group flex items-center gap-3 px-6 py-4 bg-amber-50 text-amber-700 border border-amber-200 rounded-2xl text-[10px] font-black uppercase tracking-[0.15em] transition-all active:scale-95 shadow-sm"
@@ -343,11 +344,12 @@ export default function DisputeDetailClient({
               </button>
             )}
 
-            {/* Resolution button */}
+            {/* Resolution button:
+                 - Inspector: visible when IN_PROGRESS or NEED_MORE_INFO
+                 - Admin: only visible when ESCALATED */}
             {canAct &&
-              (isInProgress ||
-                isNeedMoreInfo ||
-                (isEscalated && viewerRole === "ADMIN")) && (
+              ((viewerRole !== "ADMIN" && (isInProgress || isNeedMoreInfo)) ||
+                (viewerRole === "ADMIN" && isEscalated)) && (
                 <Link
                   href={
                     viewerRole === "ADMIN"
