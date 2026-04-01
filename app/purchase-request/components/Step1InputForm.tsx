@@ -11,7 +11,13 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { Banknote, Coins, Check, MapPin, BookOpen } from '@/app/components/ui/Icons';
+import {
+  Banknote,
+  Coins,
+  Check,
+  MapPin,
+  BookOpen,
+} from "@/app/components/ui/Icons";
 import { PurchaseRequestForm, TransactionType } from "@/app/types/transaction";
 import { Input, Textarea, Button } from "@/app/components/ui";
 import { MESSAGES } from "@/app/constants";
@@ -283,27 +289,6 @@ export default function Step1InputForm({
             >
               <BookOpen size={16} />
               Chọn từ sổ địa chỉ
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAddressMode("manual");
-                setSelectedAddress(null);
-                onFormDataChange({
-                  ...formData,
-                  receiverName: "",
-                  receiverPhone: "",
-                  receiverAddress: "",
-                });
-              }}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                addressMode === "manual"
-                  ? "bg-orange-50 text-orange-700 border border-orange-200"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"
-              }`}
-            >
-              <MapPin size={16} />
-              Nhập thủ công
             </button>
           </div>
         )}
